@@ -1,0 +1,69 @@
+package com.cresign.tools.pojo.po;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.pojo.po.prodCard.ProdInfo;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+/**
+ * ##author: kevin
+ * ##updated: 2021/6/1
+ * ##version: 1.0.0
+ * ##description: 产品实体类
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Document(collection = "Prod")
+@Data
+public class Prod {
+
+    private String id;
+
+    private ProdInfo info;
+
+    private JSONArray view;
+
+    private JSONObject part;
+
+    private JSONObject spec;
+
+    private JSONObject file00s;
+
+    private JSONObject pack;
+
+    private JSONObject text00s;
+
+    private JSONObject task00s;
+
+    private JSONObject picroll00s;
+
+    private JSONObject color;
+
+    private JSONObject priceQty;
+
+    private JSONObject cost;
+
+    private JSONObject link00s;   // 连接
+
+    private JSONObject pdf;        // pdf
+
+    private JSONObject qtySafe;    // 产品安全库存
+
+    private JSONObject ch00s;
+
+
+    private JSONObject buyInit;
+
+
+    private JSONObject qrShareCode;
+
+    private JSONObject testP1;
+
+    private JSONObject testP2;
+
+    private Integer tvs = 1;
+
+
+
+}
