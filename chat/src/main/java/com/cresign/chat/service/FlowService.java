@@ -17,10 +17,10 @@ public interface FlowService {
      * @version 1.0.0
      * @date 2021/6/16 14:53
      */
-    ApiResponse getDgResult(String id_OParent, String id_U, String id_C, JSONObject wrdNU, Long teStart);
+    ApiResponse getDgResult(String id_OParent, String id_U, String id_C, Long teStart);
 
 
-        /**
+    /**
          * 递归验证 - 注释完成
          * ##param id_P 产品编号
          * @return java.lang.String  返回结果: 递归结果
@@ -53,8 +53,21 @@ public interface FlowService {
      */
     ApiResponse getPartIsNull(String id_P);
 
+    /**
+     * 时间处理方法
+     * @param id_O	订单编号
+     * @param id_U	用户编号
+     * @param id_C	公司编号
+     * @param teStart	开始时间
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/5/19 10:30
+     */
+    ApiResponse timeHandle(String id_O, String id_U, String id_C, Long teStart,Integer wn0TPrior);
 
-    ApiResponse dgRemove(String oId,String cId,String uId,JSONObject wrdNU);
+
+    ApiResponse dgRemove(String oId,String cId,String uId);
 
 
 }

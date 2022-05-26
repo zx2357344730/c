@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 
 /**
@@ -147,7 +148,10 @@ public class LogServiceImpl  implements LogService {
         String rname = bindingInfo.getString("rname");
 
         String assetId = coupaUtil.getAssetId(cid, "a-core");
-        Asset asset = coupaUtil.getAssetById(assetId, Arrays.asList("rpi"));
+        System.out.println("输出:");
+        System.out.println(cid);
+        System.out.println(assetId);
+        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("rpi"));
         JSONObject rpi = asset.getRpi();
         JSONObject rnames = rpi.getJSONObject("rnames");
         JSONObject r = rnames.getJSONObject(rname);

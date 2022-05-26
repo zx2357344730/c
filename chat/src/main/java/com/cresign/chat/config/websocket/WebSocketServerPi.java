@@ -97,6 +97,9 @@ public class WebSocketServerPi {
 
         // 字符串转换
         String s = publicKey.replaceAll(",", "/");
+        s = s.replaceAll("%0A","\n");
+        s = s.replaceAll("%2C","/");
+        s = s.replaceAll("%2B","+");
 
         // 设置前端公钥
         loginPublicKeyList.put(this.session,s);
@@ -208,6 +211,10 @@ public class WebSocketServerPi {
     private void sendMessage(JSONObject stringMap,String key) {
         //用前端的公钥来解密AES的key，并转成Base64
         try {
+            System.out.println("stringMap:");
+            System.out.println(JSON.toJSONString(stringMap));
+            System.out.println(key);
+            System.out.println(loginPublicKeyList.get(this.session));
             // 使用前端公钥加密key
             String aesKey2 = Base64.encodeBase64String(RsaUtil.
                     encryptByPublicKey(key.getBytes(), loginPublicKeyList.get(this.session)));
@@ -293,7 +300,7 @@ public class WebSocketServerPi {
                 jsonObject = piData.get(rname) == null ? new JSONObject() : piData.get(rname);
                 JSONObject data1 = log.getData();
                 JSONObject data2 = data1.getJSONObject("data");
-                String gpIo = data2.getString("gpIo");
+                String gpIo = data2.getString("gpio");
                 JSONObject gpIoObj = jsonObject.getJSONObject(gpIo);
                 if (null == gpIoObj) {
                     gpIoObj = new JSONObject();
@@ -310,13 +317,15 @@ public class WebSocketServerPi {
                 if (null == jsonObject) {
                     return;
                 }
-                String gpIo = log.getData().getString("gpIo");
+                String gpIo = log.getData().getString("gpio");
                 JSONObject gpIoObj = jsonObject.getJSONObject(gpIo);
                 gpIoObj.put("info",new JSONObject());
                 jsonObject.put(gpIo,gpIoObj);
                 piData.put(rname,jsonObject);
                 System.out.println("输出piData:");
                 System.out.println(JSON.toJSONString(piData));
+            } else if ("gx_tz".equals(type)) {
+                sendInfo(log);
             }
         } catch (Exception e) {
             e.printStackTrace();

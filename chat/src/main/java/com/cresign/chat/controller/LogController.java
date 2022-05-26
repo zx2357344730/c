@@ -82,8 +82,8 @@ public class LogController {
 //        String cid = can.getString(ChatConstants.L_C_REQUEST_CID);
 //        String gpIo = can.getString("gpIo");
 //        String rname = can.getString("rname");
-        can.put("uId",tokData.getString("id_U"));
-
+        can.put("id_U",tokData.getString("id_U"));
+        System.out.println("进入绑定");
         return logService.setGpio(can);
     }
 
@@ -105,7 +105,8 @@ public class LogController {
 //        String cid = can.getString(ChatConstants.L_C_REQUEST_CID);
 //        String gpIo = can.getString("gpIo");
 //        String rname = can.getString("rname");
-        can.put("uId",tokData.getString("id_U"));
+        can.put("id_U",tokData.getString("id_U"));
+        System.out.println("进入解除绑定");
         return logService.unsetGpio(can);
     }
 

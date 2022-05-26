@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * @ClassName OrderODate
- * @Description 作者很懒什么也没写
+ * @Description 订单时间操作处理专用类
  * @Author tang
  * @Date 2021/9/16 11:15
  * @Version 1.0.0
@@ -15,12 +15,36 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class OrderODate {
 
     /**
+     * 存储零件数量
+     */
+    private Double wn2qtyneed;
+    /**
+     * 存储公司编号
+     */
+    private String id_C;
+    /**
+     * 记录，存储是递归第一层的，序号为1和序号为最后一个状态,
+     * 1 : 是递归第一层的第一层，2 : 正常操作，3 : 是递归的最后一个-直系为1并且是部件，4 : 是递归不是第一层的第一层，5 : 是部件-直系不为1并且是部件
+     */
+    private Integer kaiJie;
+
+    /**
+     * --直系存储状态--序号是否为1层级: 记录是不是属于递归产品的第一层,0 不属于，1 属于
+     */
+    private Integer csSta;
+
+    /**
      * 部门
      */
     private String dep;
 
     /**
      * 职位
+     */
+    private String grpB;
+
+    /**
+     * 用户权限
      */
     private String grpU;
 
@@ -114,4 +138,28 @@ public class OrderODate {
      */
     private Long teDelayDate = 0L;
 
+    /**
+     * 父产品id
+     */
+    private String id_PF;
+
+    /**
+     * 产品id
+     */
+    private String id_P;
+
+    /**
+     * item里的序号
+     */
+    private Integer priorItem;
+
+    /**
+     * 存储判断是否是空任务
+     */
+    private Boolean empty = false;
+
+    /**
+     * 链接下标
+     */
+    private Integer linkInd;
 }

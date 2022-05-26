@@ -41,6 +41,17 @@ public class FlowController {
         @Autowired
         private GetUserIdByToken getUserToken;
 
+        @SecurityParameter
+        @PostMapping("/v1/timeHandle")
+        public ApiResponse timeHandle(@RequestBody JSONObject reqJson){
+            return flowService.timeHandle(
+                    reqJson.getString("id_O"),
+                    getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    reqJson.getString("id_C"),
+                    reqJson.getLong("teStart"),
+                    reqJson.getInteger("wn0TPrior"));
+        }
+
 
         /**
          * 根据请求参数，获取更新后的订单oitem
@@ -70,11 +81,11 @@ public class FlowController {
         @SecurityParameter
         @PostMapping("/v2/getDg")
         public ApiResponse getDgResult(@RequestBody JSONObject reqJson){
+            System.out.println("进入接口？？？");
             return flowService.getDgResult(
                     reqJson.getString("id_O"),
                     getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
                     reqJson.getString("id_C"),
-                    reqJson.getJSONObject("wrdNU"),
                     reqJson.getLong("teStart"));
         }
 
@@ -146,8 +157,7 @@ public class FlowController {
         return flowService.dgRemove(
                 reqJson.getString("id_O"),
                 tokData.getString("id_C"),
-                tokData.getString("id_U"),
-                tokData.getJSONObject("wrdNU"));
+                tokData.getString("id_U"));
     }
 
 

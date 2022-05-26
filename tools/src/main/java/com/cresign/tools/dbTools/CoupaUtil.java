@@ -95,7 +95,7 @@ public class CoupaUtil {
      */
     public String getAssetId(String id_C, String ref) {
 
-        System.out.println("what?"+id_C+ref);
+//        System.out.println("what?"+id_C+ref);
 
         Query getAsset = new Query(new Criteria("info.id_C").is(id_C).and("info.ref").is(ref));
 
@@ -104,7 +104,7 @@ public class CoupaUtil {
 //        Query getAsset = new Query(new Criteria("_id").is(id_A));
         getAsset.fields().include("_id");
         Asset one = mongoTemplate.findOne(getAsset, Asset.class);
-        System.out.print("one"+one);
+//        System.out.print("one"+one);
         if (null != one) {
             return one.getId();
         } else {

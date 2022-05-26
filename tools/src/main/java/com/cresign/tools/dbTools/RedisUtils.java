@@ -47,22 +47,22 @@ public class RedisUtils {
      **/
     public String getId_A(String id_C, String ref) {
         Boolean bool = redisTemplate0.opsForHash().hasKey("login:module_id:compId-" + id_C, ref);
-        System.out.println("bool=" + bool);
+//        System.out.println("bool=" + bool);
         if (bool) {
             String id_A = (String) redisTemplate0.opsForHash().get("login:module_id:compId-" + id_C, ref);
-            System.out.println("id_A=" + id_A);
+//            System.out.println("id_A=" + id_A);
             return id_A;
         } else {
             Query queryAsset = new Query(new Criteria("info.id_C").is(id_C).and("info.ref").is(ref));
             queryAsset.fields().include("id");
             Asset asset = mongoTemplate.findOne(queryAsset, Asset.class);
-            System.out.println("what"+id_C+ref);
+//            System.out.println("what"+id_C+ref);
             if (asset == null) {
 //                throw new ErrorResponseException(HttpStatus.FORBIDDEN, ToolEnum.ASSET_NOT_FOUND.getCode(), null);
                 return "none";
             }
             redisTemplate0.opsForHash().put("login:module_id:compId-" + id_C, ref, asset.getId());
-            System.out.println("id_A=" + asset.getId());
+//            System.out.println("id_A=" + asset.getId());
             return asset.getId();
         }
     }
