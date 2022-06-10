@@ -52,6 +52,13 @@ public class FlowController {
                     reqJson.getInteger("wn0TPrior"));
         }
 
+        @SecurityParameter
+        @PostMapping("/v1/removeTime")
+        public ApiResponse removeTime(@RequestBody JSONObject reqJson){
+            return flowService.removeTime(reqJson.getString("id_O"),
+                    reqJson.getString("id_C"));
+        }
+
 
         /**
          * 根据请求参数，获取更新后的订单oitem

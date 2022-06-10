@@ -69,5 +69,6 @@ public interface FlowService {
 
     ApiResponse dgRemove(String oId,String cId,String uId);
 
+    ApiResponse removeTime(String id_O, String id_C);
 
 }

@@ -47,143 +47,17 @@ import java.util.*;
 public class FlowServiceImpl implements FlowService {
 
     /**
-     * 用于存储测试，每个组别对应的部门信息
-     */
-    private static final JSONObject grpBGroup = new JSONObject();
-
-    /**
-     * 根据当前唯一ID存储时间处理的最初开始时间
-     */
-    private static final JSONObject hTeC = new JSONObject();
-    /**
-     * 根据当前唯一ID存储时间处理的第一个时间信息的结束时间
-     */
-    private static final JSONObject csTe = new JSONObject();
-    /**
-     * 根据当前唯一ID存储时间处理的最初产品编号
-     */
-    private static final JSONObject csId_P = new JSONObject();
-
-    /**
-     * 用于存储递归层级
-     */
-    private static int isJsLj = 0;
-
-    static {
-        // 创建存储递归零件分组信息obj
-        JSONObject objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","1xx1");
-        objDep.put("id","jD45FAxp");
-        grpBGroup.put("1002",objDep);
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","1xx1");
-        objDep.put("id","jD45FAxp");
-        grpBGroup.put("1001",objDep);
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","665591821169");
-        objDep.put("id","o-x000");
-        grpBGroup.put("1000",objDep);
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","0000");
-        objDep.put("id","o-x");
-        grpBGroup.put("673722114758",objDep);
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","0000");
-        objDep.put("id","o-x");
-        grpBGroup.put("347152414139",objDep);
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","1111");
-        objDep.put("id","o-x2");
-        grpBGroup.put("546679828566",objDep);
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","1111");
-        objDep.put("id","o-x2");
-        grpBGroup.put("386677624296",objDep);
-
-//        objDep = new JSONObject();
-//        // 添加字段信息
-//        objDep.put("dep","0xx1");
-//        objDep.put("id","jD45FAxp");
-//        grpBGroup.put("1100",objDep);
-    }
-    static {
-        // 创建存储递归零件分组信息obj
-        JSONObject objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","2xx0");
-        objDep.put("id","o-2x");
-        grpBGroup.put("774653425478",objDep);
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","2xx0");
-        objDep.put("id","o-2x");
-        grpBGroup.put("562895845324",objDep);
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","2xx0");
-        objDep.put("id","o-2x");
-        grpBGroup.put("544993734644",objDep);
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","2xx0");
-        objDep.put("id","o-2x");
-        grpBGroup.put("729275885261",objDep);
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","2xx0");
-        objDep.put("id","o-2x");
-        grpBGroup.put("298493828259",objDep);
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","2xx0");
-        objDep.put("id","o-2x");
-        grpBGroup.put("914975375143",objDep);
-    }
-    static {
-        // 创建存储递归零件分组信息obj
-        JSONObject objDep;
-
-        objDep = new JSONObject();
-        // 添加字段信息
-        objDep.put("dep","2xx0");
-        objDep.put("id","o-2x");
-        grpBGroup.put("735966326474",objDep);
-    }
-
-    /**
      checkAllBmdPt - dgCheck - dgCheckUtil
 
      dgRemove / setAllBmdpt / getPartIsNull
 
      getDgResult -> dgProcess   / mergePart -> dgMergQtySet -> updateSalesOrder
      **/
-
     @Autowired
     private CoupaUtil coupaUtil;
 
     @Resource
     private RestHighLevelClient client;
-
-//    @Autowired
-//    private OrderService orderService;
 
     @Autowired
     private DateUtils dateUtils;
@@ -250,9 +124,6 @@ public class FlowServiceImpl implements FlowService {
         // 转换oItem为list
         JSONArray oParent_objItem = salesOrderData.getOItem().getJSONArray("objItem");
 
-        // 获取唯一下标
-        String random = MongoUtils.GetObjectId();
-
         Double oParent_prior = salesOrderData.getInfo().getPriority();
 
         // 创建存储递归OItem结果的Map
@@ -284,11 +155,11 @@ public class FlowServiceImpl implements FlowService {
 
             //dgType: 1 = firstLayer (sales Items), 2 = regular/subTask or subProd, 3 = depSplit regular
             // T/P - T/P -T/P.... problem is id_P == ""?
-//            Map<Integer,Integer> priorInd = new HashMap<>(Constants.HASH_MAP_DEFAULT_LENGTH);
-//            JSONArray priorArrData = new JSONArray();
+            JSONObject isJsLj = new JSONObject();
+            isJsLj.put("1",0);
             this.dgProcess(1, myCompId, id_OParent, objOItem, objAction, casItemData, oParent_objItem
-                    , item, objOItemCollection, objActionCollection, pidActionCollection,random
-                    ,objOItem.getId_P(), oDates,oTasks,mergeJ,0);
+                    , item, objOItemCollection, objActionCollection, pidActionCollection
+                    ,objOItem.getId_P(), oDates,oTasks,mergeJ,0,null,isJsLj);
         }
 
         // 判断递归结果是否为空
@@ -310,17 +181,8 @@ public class FlowServiceImpl implements FlowService {
         thisOrderData.put("wrdN", salesOrderData.getInfo().getWrdN());
         casItemData.add(thisOrderData);
 
-        System.out.println("oDates:");
-        System.out.println(JSON.toJSONString(oDates));
-        System.out.println("oTasks:");
-        System.out.println(JSON.toJSONString(oTasks));
-
-//        // 调用任务最后处理方法
-//        timeZjService.setZui(teDaF,random,myCompId);
-
         // 获取递归结果键
         Set<String> actionCollection = objActionCollection.keySet();
-        int i = 1;
         // 遍历键，并创建采购单
         for (String thisOrderId : actionCollection) {
 
@@ -598,14 +460,16 @@ public class FlowServiceImpl implements FlowService {
     private void dgProcess(Integer dgType, String myCompId, String id_OParent, OrderOItem upperOItem
             , OrderAction upperAction, JSONArray casItemData, JSONArray partArray, Integer partIndex,
             Map<String, List<OrderOItem>> objOItemCollection, Map<String, List<OrderAction>> objActionCollection,
-            Map<String, OrderAction> pidActionCollection,String random,String id_PF
-            ,List<OrderODate> oDates,List<Task> oTasks,JSONObject mergeJ,int csSta) {
-        isJsLj++;
-        int dq = isJsLj;
+            Map<String, OrderAction> pidActionCollection,String id_PF
+            ,List<OrderODate> oDates,List<Task> oTasks,JSONObject mergeJ,int csSta,String csId_P,JSONObject isJsLj) {
+//        isJsLj++;
+//        int dq = isJsLj;
+        isJsLj.put("1",(isJsLj.getInteger("1")+1));
+        int dq = isJsLj.getInteger("1");
         // 存储序号是否为1层级
         int csStaN = 0;
         // 获取父id是否是当前唯一ID存储时间处理的最初产品编号存储
-        boolean isPf = id_PF.equals(csId_P.getString(random));
+        boolean isPf = id_PF.equals(csId_P);
         // 判断上一个序号是否为1层级
         if (csSta == 1) {
             // 判断是，则将自己也设置为是
@@ -916,7 +780,8 @@ public class FlowServiceImpl implements FlowService {
             upperAction.setSumChild(partArray.size());
         }
         if (dq == 1) {
-            csId_P.put(random,objOItem.getId_P());
+//            csId_P.put(random,objOItem.getId_P());
+            csId_P=objOItem.getId_P();
         }
 
         //////////////// prtPrev sumPrev, prtNext, subParts SumChild 3 things set here, then prnt set above
@@ -936,7 +801,7 @@ public class FlowServiceImpl implements FlowService {
                         for (int item = 0; item < partArrayNext.size(); item++) {
                             this.dgProcess(2, myCompId, id_OParent, objOItem, objAction, casItemData,
                                     partArrayNext, item, objOItemCollection, objActionCollection,
-                                    pidActionCollection,random, thisProd.getId(),oDates,oTasks,mergeJ,csStaN);
+                                    pidActionCollection, thisProd.getId(),oDates,oTasks,mergeJ,csStaN,csId_P,isJsLj);
                         }
                     }
                 }
@@ -946,7 +811,7 @@ public class FlowServiceImpl implements FlowService {
                 for (int item = 0; item < objOItem.getSubTask().size(); item++) {
                     this.dgProcess(2, myCompId, newOrderId, objOItem, objAction, casItemData
                             , objOItem.getSubTask(), item, objOItemCollection, objActionCollection,
-                            pidActionCollection,random,id_PF,oDates,oTasks,mergeJ,csStaN);
+                            pidActionCollection,id_PF,oDates,oTasks,mergeJ,csStaN,csId_P,isJsLj);
                 }
             }
         }
@@ -987,7 +852,6 @@ public class FlowServiceImpl implements FlowService {
             // 判断bmdpt等于部件
             if (objAction.getBmdpt() == 2) {
                 // 设置订单时间操作信息
-//                orderODate.setTeDurTotal(0L);
                 orderODate.setTePrep(180L);
                 orderODate.setTeDur(0L);
                 // 判断层级为第一层
@@ -998,14 +862,9 @@ public class FlowServiceImpl implements FlowService {
                     orderODate.setKaiJie(5);
                 }
             }
-//            else {
-////                System.out.println("teDur:"+orderODate.getTeDur()+",qty:"+objOItem.getWn2qtyneed()+",num:"+orderODate.getGrpUNum());
-//                // 设置订单时间操作信息
-//                orderODate.setTeDurTotal((long) ((orderODate.getTeDur()*objOItem.getWn2qtyneed())/orderODate.getGrpUNum()));
-//            }
-//            System.out.println("wn2qtyneed:"+objOItem.getWn2qtyneed()+" - teDurTotal:"
-//                    +orderODate.getTeDurTotal()+" - tePrep:"+orderODate.getTePrep()+" - prior:"+objOItem.getWn0prior());
-//            System.out.println("csTeJ:"+" - id_P:"+objOItem.getId_P()+" - id_PF:"+id_PF);
+            System.out.println("wn2qtyneed:"+objOItem.getWn2qtyneed()+" - teDurTotal:"
+                    +orderODate.getTeDurTotal()+" - tePrep:"+orderODate.getTePrep()+" - prior:"+objOItem.getWn0prior());
+            System.out.println("csTeJ:"+" - id_P:"+objOItem.getId_P()+" - id_PF:"+id_PF+" - dq:"+dq);
             // 添加信息
             orderODate.setId_O(objAction.getId_O());
             orderODate.setId_C(myCompId);
@@ -1439,438 +1298,9 @@ public class FlowServiceImpl implements FlowService {
      */
     @Override
     public ApiResponse timeHandle(String id_O, String id_U, String id_C, Long teStart,Integer wn0TPrior) {
-        System.out.println("初始-teStart:"+teStart);
+        System.out.println("初始-teStart:"+teStart+" , id_U:"+id_U);
 
-        // 调用添加测试数据方法
-        Obj.addTasks(teStart,"1001","1xx1",id_C,coupaUtil);
-        Obj.addTasksAndOrder(teStart,id_C,coupaUtil);
-        Obj.addTasksAndOrder3(teStart,id_C,coupaUtil);
-        Obj.addOrder(teStart,coupaUtil);
-        Obj.addOrder2(teStart,coupaUtil);
-        Obj.addOrder3(teStart,coupaUtil);
-
-        // 调用方法获取订单信息
-        Order salesOrderData = coupaUtil.getOrderByListKey(
-                id_O, Arrays.asList("oItem", "info", "view", "action", "casItemx"));
-
-        // 判断订单是否为空
-        if (null == salesOrderData || null == salesOrderData.getAction() || null == salesOrderData.getOItem()
-                || null == salesOrderData.getCasItemx()) {
-            // 返回为空错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
-        }
-        // 获取唯一下标
-        String random = MongoUtils.GetObjectId();
-        // 设置存储当前唯一编号的第一个当前时间戳
-        TimeZjServiceImpl.onlyStartMap.put(random,teStart);
-        // 设置存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
-        TimeZjServiceImpl.onlyIsDs.put(random,0);
-        // 创建任务最初始开始时间存储
-        hTeC.put(random,0L);
-
-        // 获取递归订单列表
-        JSONArray objOrder = salesOrderData.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
-        // 创建订单信息存储json
-        JSONObject ozMap = new JSONObject();
-        // 遍历订单列表
-        for (int i = 0; i < objOrder.size(); i++) {
-            // 获取订单列表的订单编号
-            String id_Oz = objOrder.getJSONObject(i).getString("id_O");
-            // 根据订单编号查询action卡片信息
-            Order ozAction = coupaUtil.getOrderByListKey(id_Oz, Collections.singletonList("action"));
-            // 获取递归信息
-            JSONArray objAction = ozAction.getAction().getJSONArray("objAction");
-            // 根据订单编号添加订单信息存储
-            ozMap.put(id_Oz,objAction);
-        }
-        // 添加当前时间处理的订单信息
-        TimeZjServiceImpl.randomAction.put(random,ozMap);
-
-        // 获取递归存储的时间处理信息
-        JSONArray oDates = salesOrderData.getAction().getJSONArray("oDates");
-        // 获取递归存储的时间任务信息
-        JSONArray oTasks = salesOrderData.getAction().getJSONArray("oTasks");
-        // 用于存储时间冲突的副本
-        JSONObject teDaF = new JSONObject();
-        // 用于存储判断镜像是否是第一个被冲突的产品
-        JSONObject sho = new JSONObject();
-        // 用于存储控制只进入一次的判断，用于记录第一个数据处理的结束时间
-        boolean isPn = true;
-        // 定义用来存储最大结束时间
-        long maxSte = 0;
-        // 用于存储每一个时间任务的结束时间
-        JSONArray teFinList = new JSONArray();
-        // 用于存储，产品序号为1处理的，按照父零件编号存储每个序号的最后结束时间
-        JSONObject pfTe = new JSONObject();
-        // 用于存储，产品序号为1处理的，按照父零件编号存储每个序号的预计开始时间
-        JSONObject pfTeSta = new JSONObject();
-        // 遍历时间处理信息集合
-        for (int i = 0; i < oDates.size(); i++) {
-            // 获取i对应的时间处理信息
-            JSONObject oDa = oDates.getJSONObject(i);
-            // 获取时间处理的序号
-            Integer priorItem = oDa.getInteger("priorItem");
-            // 获取时间处理的父零件编号
-            String id_PF = oDa.getString("id_PF");
-            // 获取时间处理的序号是否为1层级
-            Integer csSta = oDa.getInteger("csSta");
-            // 获取时间处理的判断是否是空时间信息
-            Boolean empty = oDa.getBoolean("empty");
-            // 判断当前时间处理为空时间信息
-            if (empty) {
-                // 获取时间处理的链接下标
-                Integer linkInd = oDa.getInteger("linkInd");
-                // 根据链接下标获取指定的结束时间
-                Long aLongL = teFinList.getLong(linkInd);
-                // 判断父id的预计开始时间为空，并且序号为第一个
-                if (null == pfTeSta.getLong(id_PF) && priorItem == 1) {
-                    pfTeSta.put(id_PF,aLongL);
-                }
-                // 根据父零件编号获取序号信息
-                JSONObject pfTeZ = pfTe.getJSONObject(id_PF);
-                // 判断序号信息为空
-                if (null == pfTeZ) {
-                    // 创建序号信息
-                    pfTeZ = new JSONObject();
-                    // 添加序号的结束时间，默认为0
-                    pfTeZ.put(priorItem.toString(),0);
-                }
-                // 获取序号结束时间
-                Long aLong = pfTeZ.getLong(priorItem.toString());
-                // 添加链接结束时间到当前空时间处理结束时间列表内
-                teFinList.add(aLongL);
-                // 判断链接结束时间大于当前结束时间
-                if (aLongL > aLong) {
-                    // 修改当前结束时间为链接结束时间
-                    pfTeZ.put(priorItem.toString(),aLongL);
-                    // 根据父零件编号添加序号信息
-                    pfTe.put(id_PF,pfTeZ);
-                }
-                continue;
-            }
-
-            // 获取当前唯一ID存储时间处理的最初开始时间
-            Long hTeStart = hTeC.getLong(random);
-            // 根据当前递归信息创建添加存储判断镜像是否是第一个被冲突的产品信息
-            JSONObject js1 = new JSONObject();
-            JSONObject js2 = new JSONObject();
-            // 设置为-1代表的是递归的零件
-            js2.put("zOk",-1);
-            js2.put("z","-1");
-            js1.put(oDa.getString("index"),js2);
-            sho.put(oDa.getString("id_O"),js1);
-            // 设置统一随机数存储对象值
-            TimeZjServiceImpl.randoms.put(random,random);
-            // 设置订单id和订单index统一存储记录状态-根据random存储值
-            TimeZjServiceImpl.storageReset.put(random,new HashMap<>());
-            // 获取时间处理的组别
-            String grpB = oDa.getString("grpB");
-            // 根据组别获取部门
-            String dep = grpBGroup.getJSONObject(grpB).getString("dep");
-//            // 获取时间处理的部门
-//            String dep = oDa.getString("dep");
-            // 调用根据grpB，dep获取数据库职位总人数方法并且添加信息
-//            orderODate.setGrpUNum(timeZjService.getObjGrpUNum(objOItem.getGrpB(),dep,myCompId));
-//            .setDep(dep);
-            oDa.put("dep",dep);
-            oDa.put("grpUNum",timeZjService.getObjGrpUNum(grpB,dep,oDa.getString("id_C")));
-            // 获取时间处理的零件产品编号
-            String id_P = oDa.getString("id_P");
-            // 获取时间处理的记录，存储是递归第一层的，序号为1和序号为最后一个状态
-            Integer kaiJie = oDa.getInteger("kaiJie");
-            // 获取时间处理的实际准备时间
-            Long tePrep = oDa.getLong("tePrep");
-//            // 获取时间处理的总任务时间
-//            Long teDurTotal = oDa.getLong("teDurTotal");
-            Long teDur = oDa.getLong("teDur");
-            Double wn2qtyneed = oDa.getDouble("wn2qtyneed");
-//            System.out.println(JSON.toJSONString(oDa));
-            long l = (long)(teDur * wn2qtyneed);
-//            System.out.println("teDur:"+teDur+",wn2qty:"+wn2qtyneed+",l:"+l);
-            // 获取时间处理的总任务时间
-            Long teDurTotal = (l/ oDa.getInteger("grpUNum"));
-            System.out.println("teDurTotalTe:" +teDurTotal+" - tePrep:"
-                    +tePrep+" - prior:"+priorItem);
-            System.out.println("csTeJTe:"+" - id_PF:"+id_PF);
-            // 判断当前唯一ID存储时间处理的最初开始时间为0
-            if (hTeStart == 0) {
-                // 调用获取当前时间戳方法设置开始时间
-                oDa.put("teStart",timeZjService.getTeS(random,grpB,dep));
-            } else {
-                // 判断序号是为1层级并且记录，存储是递归第一层的，序号为1和序号为最后一个状态为第一层
-                if (csSta == 1 && kaiJie == 1) {
-                    // 获取当前唯一ID存储时间处理的第一个时间信息的结束时间
-                    hTeStart = csTe.getLong(random);
-                }
-                oDa.put("teStart",hTeStart);
-            }
-            // 存储判断执行方法
-            boolean isD1 = false;
-            // 序号是不为1层级
-            if (csSta == 0 || (kaiJie != 1 && csSta == 1)) {
-                isD1 = true;
-            }
-//            // 记录，存储是递归第一层的，序号为1和序号为最后一个状态,不为第一层
-//            if (kaiJie != 1 && csSta == 1) {
-//                isD1 = true;
-//            }
-            // 判断执行方法为true
-            if (isD1) {
-                // 定义获取存储，产品序号为1处理的，按照父零件编号存储每个序号的最后结束时间
-                JSONObject jsonObject;
-                // 获取判断自己的id是否等于已存在的父id
-                boolean b = pfTe.containsKey(id_P);
-                // 判断自己的id是已存在的父id
-                if (b) {
-                    // 根据自己的id获取按照父零件编号存储每个序号的最后结束时间
-                    jsonObject = pfTe.getJSONObject(id_P);
-                    // 转换键信息
-                    List<String> list = new ArrayList<>(jsonObject.keySet());
-                    // 获取最后一个时间信息
-                    String s = list.get(list.size() - 1);
-                    // 赋值为最后一个时间信息
-                    hTeStart = jsonObject.getLong(s);
-                } else {
-                    // 根据父id获取按照父零件编号存储每个序号的最后结束时间
-                    jsonObject = pfTe.getJSONObject(id_PF);
-                    // 获取上一个序号的时间信息并赋值
-                    hTeStart = jsonObject.getLong(((priorItem - 1) + ""));
-                }
-                // 设置开始时间
-                oDa.put("teStart",hTeStart);
-            }
-
-            // 获取任务的最初开始时间备份
-            Long teStartN = oDa.getLong("teStart");
-            // 设置最初结束时间
-            oDa.put("teFin",(teStartN+(teDurTotal+tePrep)));
-            // 获取最初结束时间
-            Long teFin = oDa.getLong("teFin");
-            // 获取任务信息，并且转换为任务类
-            Task task = JSON.parseObject(JSON.toJSONString(oTasks.get(i)),Task.class);
-            // 设置最初任务信息的时间信息
-            task.setTeDurTotal((teFin - teStartN));
-            task.setTePStart(teStartN);
-            task.setTePFinish(teFin);
-            task.setTeCsStart(teStartN);
-            task.setTeCsSonOneStart(0L);
-            // 判断优先级不等于-1
-            if (wn0TPrior != -1) {
-                // 设置优先级为传参的优先级
-                task.setPriority(wn0TPrior);
-            }
-            // 判断父id的预计开始时间为空并且，序号为1，并且不是部件并且不是递归的最后一个
-            if (null == pfTeSta.getLong(id_PF) && priorItem == 1 && kaiJie != 5 && kaiJie != 3) {
-                // 根据父id添加开始时间
-                pfTeSta.put(id_PF,task.getTeCsStart());
-            } else if (kaiJie == 3 || kaiJie == 5) {
-                // 添加子最初开始时间
-                task.setTeCsSonOneStart(pfTeSta.getLong(id_P));
-            }
-
-            // TODO zj : teDate int写成当天的消费时间
-            // 创建当前处理的任务的所在日期对象
-            JSONObject teDate = new JSONObject();
-            System.out.println("taskTe:");
-            System.out.println(JSON.toJSONString(task));
-            // 获取订单编号
-            String id_On = oDa.getString("id_O");
-            // 获取订单下标
-            Integer index = oDa.getInteger("index");
-            // 调用时间处理方法
-            JSONObject jo = timeZjService.chkInJi(task,hTeStart,grpB,dep,id_On,index,0,random
-                    ,1,teDate,teDaF,0,sho,0,csSta,true);
-            // 更新任务最初始开始时间
-            hTeStart = jo.getLong("hTeStart");
-            System.out.println("最外层:"+hTeStart);
-            // 添加结束时间
-            teFinList.add(hTeStart);
-
-            // 根据唯一id获取当前时间处理的订单信息
-            JSONObject randAct = TimeZjServiceImpl.randomAction.getJSONObject(random);
-            // 根据订单编号获取递归集合
-            JSONArray jsonArray = randAct.getJSONArray(id_On);
-            // 根据订单下标获取递归信息并且转换为递归类
-            OrderAction orderAction = JSON.parseObject(JSON.toJSONString(jsonArray.getJSONObject(index)),OrderAction.class);
-            // 更新递归信息
-            orderAction.setDep(dep);
-            orderAction.setGrpB(grpB);
-            orderAction.setTeDate(teDate);
-            // 将更新的递归信息写入回去
-            jsonArray.set(index,orderAction);
-            randAct.put(id_On,jsonArray);
-            TimeZjServiceImpl.randomAction.put(random,randAct);
-
-            // 定义存储最后结束时间参数
-            long pfT;
-            // 判断序号是为1层级
-            if (csSta == 1) {
-                // 获取实际结束时间
-                Long xFin = jo.getLong("xFin");
-//                System.out.println("xFinW:"+xFin);
-                // 定义存储判断实际结束时间是否为空
-                boolean isXf = false;
-                // 判断实际结束时间不等于空
-                if (null != xFin) {
-//                    System.out.println("xFin:"+xFin);
-                    // 赋值实际结束时间
-                    hTeStart = xFin;
-                    // 判断当前实际结束时间大于最大结束时间
-                    if (xFin > maxSte) {
-                        // 判断大于则更新最大结束时间为当前结束时间
-                        maxSte = xFin;
-                    }
-                    // 设置不为空
-                    isXf = true;
-                } else {
-                    // 判断当前实际结束时间大于最大结束时间：注 ： xFin 和 task.getTePFinish() 有时候是不一样的，不能随便改
-                    if (task.getTePFinish() > maxSte) {
-                        // 判断大于则更新最大结束时间为当前结束时间
-                        maxSte = task.getTePFinish();
-                    }
-                }
-//                System.out.println("maxSte:"+maxSte);
-                // 判断实际结束时间不为空
-                if (isXf) {
-                    // 赋值结束时间
-                    pfT = xFin;
-                } else {
-                    // 赋值结束时间
-                    pfT = task.getTePFinish();
-                }
-                // 判断是第一次进入
-                if (isPn) {
-                    // 添加设置第一层的开始时间
-                    csTe.put(random,task.getTePStart());
-                    // 设置只能进入一次
-                    isPn = false;
-                }
-            } else {
-                // 直接赋值最后结束时间
-                pfT = hTeStart;
-            }
-            // 根据父id获取最后结束时间信息
-            JSONObject pfTeZ = pfTe.getJSONObject(id_PF);
-            // 判断最后结束时间信息为空
-            if (null == pfTeZ) {
-                // 创建并且赋值最后结束时间
-                pfTeZ = new JSONObject();
-                pfTeZ.put(priorItem.toString(),0);
-            }
-            // 根据序号获取最后结束时间
-            Long aLong = pfTeZ.getLong(priorItem.toString());
-            // 判断最后结束时间为空
-            if (null == aLong) {
-                // 为空，则直接添加最后结束时间信息
-                pfTeZ.put(priorItem.toString(),pfT);
-                pfTe.put(id_PF,pfTeZ);
-            } else {
-                // 不为空，则判断当前最后结束时间大于已存在的最后结束时间
-                if (pfT > aLong) {
-                    // 判断当前最后结束时间大于，则更新最后结束时间为当前结束时间
-                    pfTeZ.put(priorItem.toString(),pfT);
-                    pfTe.put(id_PF,pfTeZ);
-                }
-            }
-//            if (csSta == 0) {
-//                JSONObject pfTeZ = pfTe.getJSONObject(id_PF);
-//                if (null == pfTeZ) {
-//                    pfTeZ = new JSONObject();
-//                    pfTeZ.put(priorItem.toString(),0);
-//                }
-//                Long aLong = pfTeZ.getLong(priorItem.toString());
-//                if (null == aLong) {
-//                    pfTeZ.put(priorItem.toString(),hTeStart);
-//                    pfTe.put(id_PF,pfTeZ);
-//                } else {
-//                    if (hTeStart > aLong) {
-//                        pfTeZ.put(priorItem.toString(),hTeStart);
-//                        pfTe.put(id_PF,pfTeZ);
-//                    }
-//                }
-//                System.out.println();
-//            } else {
-//                long pfT;
-//                if (csSta == 1) {
-//                    Long xFin = jo.getLong("xFin");
-////                    System.out.println("xFinW:"+xFin);
-//                    boolean isXf = false;
-////                    long pfT;
-//                    if (null != xFin) {
-//                        System.out.println("xFin:"+xFin);
-//                        hTeStart = xFin;
-//                        if (xFin > maxSte) {
-//                            maxSte = xFin;
-//                        }
-//                        isXf = true;
-//                    } else {
-//                        if (task.getTePFinish() > maxSte) {
-//                            maxSte = task.getTePFinish();
-//                        }
-//                    }
-////                    System.out.println("maxSte:"+maxSte);
-//                    System.out.println();
-//
-//                    if (isXf) {
-//                        pfT = xFin;
-//                    } else {
-//                        pfT = task.getTePFinish();
-//                    }
-//                } else {
-//                    pfT = hTeStart;
-//                }
-//
-//                JSONObject pfTeZ = pfTe.getJSONObject(id_PF);
-//                if (null == pfTeZ) {
-//                    pfTeZ = new JSONObject();
-//                    pfTeZ.put(priorItem.toString(),0);
-//                }
-//                Long aLong = pfTeZ.getLong(priorItem.toString());
-//                if (null == aLong) {
-//                    pfTeZ.put(priorItem.toString(),pfT);
-//                    pfTe.put(id_PF,pfTeZ);
-//                } else {
-//                    if (pfT > aLong) {
-//                        pfTeZ.put(priorItem.toString(),pfT);
-//                        pfTe.put(id_PF,pfTeZ);
-//                    }
-//                }
-//
-//                if (isPn) {
-//                    csTe.put(random,task.getTePStart());
-//                    isPn = false;
-//                }
-//            }
-            // 更新当前唯一ID存储时间处理的最初开始时间
-            hTeC.put(random,hTeStart);
-            System.out.println();
-        }
-
-        // 遍历递归订单列表
-        for (int i = 0; i < objOrder.size(); i++) {
-            // 获取递归订单编号
-            String id_Oz = objOrder.getJSONObject(i).getString("id_O");
-            // 根据唯一id获取当前时间处理的订单信息
-            JSONObject randAct = TimeZjServiceImpl.randomAction.getJSONObject(random);
-            // 根据订单编号获取递归列表信息
-            JSONArray objAction = randAct.getJSONArray(id_Oz);
-            // 创建请求更改参数
-            JSONObject mapKey = new JSONObject();
-            // 添加请求更改参数信息
-            mapKey.put("action.objAction",objAction);
-            // 调用接口发起数据库更改信息请求
-            coupaUtil.updateOrderByListKeyVal(id_Oz,mapKey);
-        }
-
-        // 调用任务最后处理方法
-        timeZjService.setZui(teDaF,random,id_C);
-
-        // 递归完成了，删除存储当前唯一编号的第一个当前时间戳
-        TimeZjServiceImpl.onlyStartMap.remove(random);
-        // 递归完成了，删除根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
-        TimeZjServiceImpl.onlyStartMapAndDep.remove(random);
-        // 根据唯一id删除当前时间
-        hTeC.remove(random);
+        timeZjService.getAtFirst(id_O,teStart,id_C,wn0TPrior);
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "时间处理成功!");
     }
@@ -1972,6 +1402,13 @@ public class FlowServiceImpl implements FlowService {
 
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "删除成功！！!!!");
+    }
+
+    @Override
+    public ApiResponse removeTime(String id_O, String id_C) {
+        timeZjService.removeTime(id_O,id_C);
+        // 抛出操作成功异常
+        return retResult.ok(CodeEnum.OK.getCode(), "时间删除处理成功!");
     }
 
 }

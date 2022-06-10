@@ -1,6 +1,5 @@
 package com.cresign.chat.utils;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.service.impl.TimeZjServiceImpl;
@@ -20,38 +19,6 @@ import java.util.List;
  */
 public class Obj {
 
-    /**
-     *
-     * @param bcdStatus	递归状态: == 1 111，== 2 222
-     * @param bispush
-     * @param bisactivate
-     * @param id_O
-     * @param id_OP
-     * @param index
-     * @param bmdpt
-     * @param sumSonCount
-     * @param id_ONext
-     * @param indONext
-     * @param id_OUpper
-     * @param indOUpper
-     * @param indexOnly
-     * @param wn2qtynow
-     * @param wn2qtyfin
-     * @param cn
-     * @param wn2qtyneed
-     * @param priority
-     * @param isZp
-     * @param zcnprep
-     * @param merge
-     * @param dep
-     * @param grpB
-     * @param subParts
-     * @param teDate
-     * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
-     * @author tang
-     * @version 1.0.0
-     * @date 2022/4/18 10:31
-     */
     public static JSONObject newActZ(int bcdStatus, int bispush, int bisactivate, String id_O, String id_OP, int index, int bmdpt
             , Integer sumSonCount, String id_ONext, Integer indONext, String id_OUpper, Integer indOUpper
             , int indexOnly, int wn2qtynow, int wn2qtyfin, String cn, double wn2qtyneed
@@ -128,7 +95,8 @@ public class Obj {
      * @date 2022/2/18 16:58
      */
     public static Task getTask(Long tePStart, Long tePFinish, String id_O, Integer index
-            , Long teDurTotal, Integer priority, String wrdNs, Long prep, Long teDelayDate
+            , Long teDurTotal, Integer priority, String wrdNs, Long prep
+            , Long teDelayDate
             , String id_C,Long teCsStart,Long teCsSonOneStart){
         Task task1 = new Task();
         task1.setTePStart(tePStart);
@@ -191,23 +159,23 @@ public class Obj {
         return task1;
     }
 
-    public static Task getTaskL(Long tePStart, Long tePFinish,String wrdNs,Task task){
-        Task task1 = getTaskC(task,0);
-        task1.setTePStart(tePStart);
-        task1.setTePFinish(tePFinish);
-        JSONObject wrdN = new JSONObject();
-        wrdN.put("cn",wrdNs);
-        task1.setWrdN(wrdN);
-
-//        task1.setId_O(task.getId_O());
-//        task1.setIndex(task.getIndex());
-//        task1.setTeDurTotal(task.getTeDurTotal());
-//        task1.setPriority(task.getPriority());
-//        task1.setId_C(task.getId_C());
-//        task1.setPrep(task.getPrep());
-//        task1.setTeDelayDate(task.getTeDelayDate());
-        return task1;
-    }
+//    public static Task getTaskL(Long tePStart, Long tePFinish,String wrdNs,Task task){
+//        Task task1 = getTaskC(task,0);
+//        task1.setTePStart(tePStart);
+//        task1.setTePFinish(tePFinish);
+//        JSONObject wrdN = new JSONObject();
+//        wrdN.put("cn",wrdNs);
+//        task1.setWrdN(wrdN);
+//
+////        task1.setId_O(task.getId_O());
+////        task1.setIndex(task.getIndex());
+////        task1.setTeDurTotal(task.getTeDurTotal());
+////        task1.setPriority(task.getPriority());
+////        task1.setId_C(task.getId_C());
+////        task1.setPrep(task.getPrep());
+////        task1.setTeDelayDate(task.getTeDelayDate());
+//        return task1;
+//    }
 
     public static Task getTaskY(Task task){
 //        System.out.println("进入-taskY:");
@@ -504,7 +472,7 @@ public class Obj {
      * @version 1.0.0
      * @date 2022/2/17 21:02
      */
-    public static void addTasksAndOrder(Long teS,String id_C, CoupaUtil coupaUtil){
+    public static void addTasksAndOrder(Long teS,String id_C,JSONObject objTaskAll){
         List<Task> tasks;
         long zon;
 
@@ -518,7 +486,7 @@ public class Obj {
         tasks.add(Obj.getTask((teS+61200),(teS+64800),"t-1",2,3600L,1,"我-1",0L,0L,id_C,(teS+61200),0L));
         tasks.add(Obj.getTask((teS+64800),(teS+86400),"",-1,21600L,-1,"电脑",0L,0L,id_C,0L,0L));
         zon = 12600L;
-        TimeZjServiceImpl.setTasksAndZon(tasks,"1000","0xx0",teS,id_C,false,zon,coupaUtil);
+        TimeZjServiceImpl.setTasksAndZon(tasks,"1000","0xx0",teS,zon,objTaskAll);
 
 //        System.out.println("-------------------------- 分割线 --------------------------");
 
@@ -530,7 +498,7 @@ public class Obj {
         tasks.add(Obj.getTask((teS2+43200),(teS2+50400),"",-1,7200L,-1,"电脑",0L,0L,id_C,0L,0L));
         tasks.add(Obj.getTask((teS2+64800),(teS2+86400),"",-1,21600L,-1,"电脑",0L,0L,id_C,0L,0L));
         zon = 19800L;
-        TimeZjServiceImpl.setTasksAndZon(tasks,"1000","0xx0",teS2,id_C,false,zon,coupaUtil);
+        TimeZjServiceImpl.setTasksAndZon(tasks,"1000","0xx0",teS2,zon,objTaskAll);
     }
 
     /**
@@ -541,7 +509,7 @@ public class Obj {
      * @version 1.0.0
      * @date 2022/2/17 21:02
      */
-    public static void addTasksAndOrder3(Long teS,String id_C, CoupaUtil coupaUtil){
+    public static void addTasksAndOrder3(Long teS,String id_C,JSONObject objTaskAll){
         List<Task> tasks;
         long zon;
 
@@ -560,7 +528,7 @@ public class Obj {
 
         zon = 0L;
 //        zon = 16200L;
-        TimeZjServiceImpl.setTasksAndZon(tasks,"1000","0xx0",teS,id_C,false,zon,coupaUtil);
+        TimeZjServiceImpl.setTasksAndZon(tasks,"1000","0xx0",teS,zon,objTaskAll);
 
 //        System.out.println("-------------------------- 分割线 --------------------------");
 
@@ -573,7 +541,7 @@ public class Obj {
         tasks.add(Obj.getTask((teS2+64800),(teS2+86400),"",-1,21600L,-1,"电脑",0L,0L,id_C,0L,0L));
 
         zon = 19800L;
-        TimeZjServiceImpl.setTasksAndZon(tasks,"1000","0xx0",teS2,id_C,false,zon,coupaUtil);
+        TimeZjServiceImpl.setTasksAndZon(tasks,"1000","0xx0",teS2,zon,objTaskAll);
     }
 
     /**
@@ -586,7 +554,7 @@ public class Obj {
      * @version 1.0.0
      * @date 2022/2/17 21:03
      */
-    public static void addTasks(Long teS,String grpB,String dep,String id_C, CoupaUtil coupaUtil){
+    public static void addTasks(Long teS,String grpB,String dep,String id_C,JSONObject objTaskAll){
         System.out.println("-----进入添加模拟信息-----");
 //        System.out.println("teS:"+teS+",-- grpB:"+grpB+",-- dep:"+dep);
         List<Task> tasks;
@@ -603,7 +571,47 @@ public class Obj {
         long zon;
 //        zon = 16200L;
         zon = 14400L;
-        TimeZjServiceImpl.setTasksAndZon(tasks,grpB,dep,teS,id_C,true,zon,coupaUtil);
+        TimeZjServiceImpl.setTasksAndZon(tasks,grpB,dep,teS,zon,objTaskAll);
+    }
+
+    public static JSONArray getXbJson(){
+        JSONArray objXb = new JSONArray();
+        JSONObject objXbZ = new JSONObject();
+        objXbZ.put("priority",-1);
+        objXbZ.put("tePStart",0L);
+        objXbZ.put("tePFinish",28800L);
+        objXbZ.put("zon",28800L);
+        objXb.add(objXbZ);
+        objXbZ = new JSONObject();
+        objXbZ.put("priority",-1);
+        objXbZ.put("tePStart",43200L);
+        objXbZ.put("tePFinish",50400L);
+        objXbZ.put("zon",7200L);
+        objXb.add(objXbZ);
+        objXbZ = new JSONObject();
+        objXbZ.put("priority",-1);
+        objXbZ.put("tePStart",64800L);
+        objXbZ.put("tePFinish",86400L);
+        objXbZ.put("zon",21600L);
+        objXb.add(objXbZ);
+        return objXb;
+    }
+
+    public static JSONArray getSbJson(){
+        JSONArray objSb = new JSONArray();
+        JSONObject objSbZ = new JSONObject();
+        objSbZ.put("priority",0);
+        objSbZ.put("tePStart",28800L);
+        objSbZ.put("tePFinish",43200L);
+        objSbZ.put("zon",14400L);
+        objSb.add(objSbZ);
+        objSbZ = new JSONObject();
+        objSbZ.put("priority",1);
+        objSbZ.put("tePStart",50400L);
+        objSbZ.put("tePFinish",64800L);
+        objSbZ.put("zon",14400L);
+        objSb.add(objSbZ);
+        return objSb;
     }
 
 }
