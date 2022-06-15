@@ -22,9 +22,7 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
@@ -46,37 +44,29 @@ public class WebSocketUserServer {
     @Override
     public native int hashCode();
 
-
-
     /**
      * 用来存储每个产品的WebSocket单独连接
      */
     private static CopyOnWriteArraySet<WebSocketUserServer> webSocketSet;
-
     /**
      * 用来存储所有产品的连接
      */
     private static final Map<String,CopyOnWriteArraySet<WebSocketUserServer>> map = new HashMap<>(ChatConstants.HASH_MAP_DEFAULT_LENGTH);
-
     /**
      * 用来存储所有产品连接的在线人数
      */
     private static final JSONObject onlineCount = new JSONObject();
-
     /**
      * 用户的前端公钥Map集合
      */
     private static final Map<Session, String> loginPublicKeyList = new HashMap<>(ChatConstants.HASH_MAP_DEFAULT_LENGTH);
-
     /**
      * 后端聊天室对应公钥私钥Map集合
      */
     private static final Map<String,JSONObject> keyJava = new HashMap<>(ChatConstants.HASH_MAP_DEFAULT_LENGTH);
-
     private static LogService logService;
     private static RedisUtils redisUtils;
     private static StringRedisTemplate redisTemplate1;
-
     // 注入的时候，给类的 service 注入
     @Autowired
     public void setWebSocketUserServer(RedisUtils redisUtils,LogService logService, StringRedisTemplate redisTemplate1) {
@@ -85,12 +75,10 @@ public class WebSocketUserServer {
         WebSocketUserServer.redisUtils = redisUtils;
         WebSocketUserServer.redisTemplate1 = redisTemplate1;
     }
-
     /**
      * 与某个客户端的连接会话，需要通过它来给客户端发送数据
      */
     private Session session;
-
     /**
      * 用户自身编号
      */
@@ -221,7 +209,7 @@ public class WebSocketUserServer {
      * ##updated: 2020/8/5 9:14:20
      */
     @OnClose
-    public void onClose(@PathParam("uId") String uId) {
+    public synchronized void onClose(@PathParam("uId") String uId) {
 
         // 获取当前产品连接
         webSocketSet = map.get(uId);
@@ -273,7 +261,7 @@ public class WebSocketUserServer {
      * ##version: 1.0.0
      * ##updated: 2020/8/5 9:14:20
      */
-    private void sendMessage(JSONObject stringMap, String key, boolean isEncrypt) {
+    private synchronized void sendMessage(JSONObject stringMap, String key, boolean isEncrypt) {
 
         if (isEncrypt) {
             //用前端的公钥来解密AES的key，并转成Base64
@@ -290,12 +278,44 @@ public class WebSocketUserServer {
         }
         // 向前端推送log消息
         try {
+            if (!this.session.isOpen()) {
+                System.out.println("消息发送失败，session 处于关闭状态:" + session.getId());
+                return;
+            }
             // 发送返回数据
             this.session.getBasicRemote().sendText(JSON.toJSONString(stringMap));
         } catch (IOException e) {
             System.out.println("sendMessage出现错误");
         }
     }
+
+//    private static Allocator allT = Allocator.getAllocator();
+//    static class Allocator{
+//        private static Allocator allocator = new Allocator();
+//
+//        private Allocator(){}
+//
+//        public static Allocator getAllocator(){return allocator;}
+//
+//        private List<Object> als = new ArrayList<>();
+//
+//        // 一次性申请所有资源
+//        synchronized boolean apply(Object from, Object to){
+//            if (als.contains(from) || als.contains(to)) {
+//                return false;
+//            } else {
+//                als.add(from);
+//                als.add(to);
+//            }
+//            return true;
+//        }
+//
+//        // 归还资源
+//        synchronized void free(Object from, Object to){
+//            als.remove(from);
+//            als.remove(to);
+//        }
+//    }
 
     /**
      * 群发自定义消息
@@ -305,6 +325,7 @@ public class WebSocketUserServer {
      * ##updated: 2020/8/5 9:14:20
      */
     public static void sendLog(LogFlow logContent) {
+//        while (!allT.apply(this, socket)) {;}
 //        System.out.println("进入这里---sendLog");
         System.out.println("logContent:"+JSON.toJSONString(logContent));
 
@@ -369,13 +390,13 @@ public class WebSocketUserServer {
                                         // 循环遍历产品连接，并向所有连接人发送信息
                                         webSocketUserServers.forEach(socketConnected -> sendWSLogUserOnline(socketConnected, stringMap, key));
                                     } else {
-//                                    if (roomSetting1.getInteger("imp") <= logContent.getImp()) {
-//                                        String id_client = roomSetting1.getString("id_APP");
-//                                        JSONObject wrdNU = logContent.getWrdNU();
-//                                        if (id_client != null && wrdNU != null) {
-//                                            logService.sendPush(id_client, wrdNU.getString("cn"), logContent.getZcndesc());
+//                                        if (roomSetting1.getInteger("imp") <= logContent.getImp()) {
+//                                            String id_client = roomSetting1.getString("id_APP");
+//                                            JSONObject wrdNU = logContent.getWrdNU();
+//                                            if (id_client != null && wrdNU != null) {
+//                                                logService.sendPush(id_client, wrdNU.getString("cn"), logContent.getZcndesc());
+//                                            }
 //                                        }
-//                                    }
                                     }
                                 } else {
                                     System.out.println(socket.userId + " 发送给自己 " + id_U);
@@ -441,9 +462,7 @@ public class WebSocketUserServer {
         }
     }
 
-
     private static void sendWSLogUserOnline(WebSocketUserServer socket, JSONObject stringMap, String key){
-       
             socket.sendMessage(stringMap,key,true);
     }
 
@@ -517,7 +536,6 @@ public class WebSocketUserServer {
                 this.sendMessage(stringMap,null,false);
             } else {
                 RsaUtil.encryptionSend(map,keyJava.get(id).getString("privateKeyJava"),logService);
-
             }
         }
     }

@@ -165,7 +165,7 @@ public class WebSocketLoginServer {
      * ##Updated: 2020/8/5 10:51
      */
 
-    private void sendMessage(JSONObject stringMap) {
+    private synchronized void sendMessage(JSONObject stringMap) {
 
         // 向前端推送log消息
         try {

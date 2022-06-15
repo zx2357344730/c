@@ -130,7 +130,7 @@ public class WebSocketServerPi {
      * ##updated: 2020/8/5 9:14:20
      */
     @OnClose
-    public void onClose(@PathParam("name") String name){
+    public synchronized void onClose(@PathParam("name") String name){
         System.out.println("关闭-java-WebSocket");
         if (this.z == 2) {
             return;
@@ -151,7 +151,7 @@ public class WebSocketServerPi {
      * ##updated: 2020/8/5 9:14:20
      */
     @OnError
-    public void onError(Throwable error,@PathParam("name") String name) {
+    public synchronized void onError(Throwable error,@PathParam("name") String name) {
 
         // 输出错误信息
 
@@ -208,7 +208,7 @@ public class WebSocketServerPi {
      * ##version: 1.0.0
      * ##updated: 2020/8/5 9:14:20
      */
-    private void sendMessage(JSONObject stringMap,String key) {
+    private synchronized void sendMessage(JSONObject stringMap,String key) {
         //用前端的公钥来解密AES的key，并转成Base64
         try {
             System.out.println("stringMap:");

@@ -83,10 +83,55 @@ public class LogServiceImpl  implements LogService {
         push.put("push_message",push_message);
         JSONObject heads = new JSONObject();
         heads.put("token",getToken());
-        HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/single/cid", push, heads);
-        System.out.println(HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/single/cid"
-                , push, heads));
+        String s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/single/cid", push, heads);
+//        String s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/single/batch/cid", push, heads);
+//        System.out.println(HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/single/cid", push, heads));
+        System.out.println(s);
+
+//        getTestToListPush("聊天信息","...");
         System.out.println("推送成功");
+    }
+
+    public void getTestToListPush(String title,String body){
+        String group_name = "任务组名";
+        String request_id = MongoUtils.GetObjectId();
+        JSONObject settings = new JSONObject();
+        int ttl = 3600000;
+        settings.put("ttl",ttl);
+        JSONObject push_message = new JSONObject();
+        JSONObject notification = new JSONObject();
+        notification.put("title",title);
+        notification.put("body",body);
+        notification.put("click_type","startapp");
+        notification.put("url","https://www.baidu.com");
+        push_message.put("notification",notification);
+        JSONObject push = new JSONObject();
+        push.put("request_id",request_id);
+        push.put("group_name",group_name);
+        push.put("settings",settings);
+        push.put("push_message",push_message);
+        JSONObject heads = new JSONObject();
+        heads.put("token",getToken());
+        String s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/message", push, heads);
+        System.out.println("创建message返回结果:");
+        System.out.println(s);
+
+
+        JSONObject re = JSONObject.parseObject(s);
+        String taskid = re.getJSONObject("data").getString("taskid");
+        JSONObject audience = new JSONObject();
+        JSONArray cid = new JSONArray();
+        cid.add("clientId1");
+        cid.add("clientId2");
+        cid.add("clientId3");
+        audience.put("cid",cid);
+        push = new JSONObject();
+        push.put("audience",audience);
+        push.put("taskid",taskid);
+        push.put("is_async",true);
+        s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/cid", push, heads);
+        System.out.println("批量推送创建的message返回结果:");
+        System.out.println(s);
     }
 
     /**

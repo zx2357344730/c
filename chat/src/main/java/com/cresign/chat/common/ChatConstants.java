@@ -1,5 +1,7 @@
 package com.cresign.chat.common;
 
+import com.cresign.tools.mongo.MongoUtils;
+
 /**
  * ##ClassName: ChatConstants
  * ##description: chat静态变量定义类
@@ -15,5 +17,5 @@ public class ChatConstants {
      */
     public static final int HASH_MAP_DEFAULT_LENGTH = 16;
 
-
+    public static final String Chat_Id = MongoUtils.GetObjectId();
 }
