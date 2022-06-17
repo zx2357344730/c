@@ -324,7 +324,7 @@ public class WebSocketUserServer {
      * ##version: 1.0.0
      * ##updated: 2020/8/5 9:14:20
      */
-    public static void sendLog(LogFlow logContent) {
+    public synchronized static void sendLog(LogFlow logContent) {
 //        while (!allT.apply(this, socket)) {;}
 //        System.out.println("进入这里---sendLog");
         System.out.println("logContent:"+JSON.toJSONString(logContent));
@@ -462,7 +462,7 @@ public class WebSocketUserServer {
         }
     }
 
-    private static void sendWSLogUserOnline(WebSocketUserServer socket, JSONObject stringMap, String key){
+    private synchronized static void sendWSLogUserOnline(WebSocketUserServer socket, JSONObject stringMap, String key){
             socket.sendMessage(stringMap,key,true);
     }
 
