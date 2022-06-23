@@ -1,5 +1,6 @@
 package com.cresign.chat.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.pojo.po.LogFlow;
@@ -79,6 +80,10 @@ public interface LogService {
      * @date 2021/7/12 14:47
      */
     void sendPush(String clientId,String title,String body);
+
+    void sendPushX(JSONArray pushUList,String title,String body);
+
+    void sendTestToListPush(JSONArray pushUList, String title, String body);
 
     /**
      * 发送logL信息到User-websocket

@@ -36,17 +36,17 @@
         <!--Console:日志输出到控制台标准输出 -->
 
         <!-- 控制台的配置 -->
-<!--        <Console name="STDOUT">-->
-<!--            &lt;!&ndash; 控制台只输出level及以上级别的信息 &ndash;&gt;-->
-<!--            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>-->
-<!--            &lt;!&ndash;pattern:日期,线程名,日志级别,日志名称,日志信息,换行 &ndash;&gt;-->
-<!--            &lt;!&ndash; 输出日志的格式&ndash;&gt;-->
-<!--            <PatternLayout pattern="${format}" charset="UTF-8"/>-->
-<!--            &lt;!&ndash;  改成JSON格式 官方說明：https://logging.apache.org/log4j/2.x/log4j-core/apidocs/org/apache/logging/log4j/core/layout/JsonLayout.html &ndash;&gt;-->
-<!--            &lt;!&ndash;<JsonLayout compact="true" locationInfo="true" complete="false" eventEol="true" pattern="${format}" charset="UTF-8"/>&ndash;&gt;-->
-<!--            &lt;!&ndash;<JsonLayout compact="true" locationInfo="true" complete="false" eventEol="true"  charset="UTF-8"/>&ndash;&gt;-->
+        <Console name="STDOUT">
+            <!-- 控制台只输出level及以上级别的信息 -->
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!--pattern:日期,线程名,日志级别,日志名称,日志信息,换行 -->
+            <!-- 输出日志的格式-->
+            <PatternLayout pattern="${format}" charset="UTF-8"/>
+            <!--  改成JSON格式 官方說明：https://logging.apache.org/log4j/2.x/log4j-core/apidocs/org/apache/logging/log4j/core/layout/JsonLayout.html -->
+            <!--<JsonLayout compact="true" locationInfo="true" complete="false" eventEol="true" pattern="${format}" charset="UTF-8"/>-->
+            <!--<JsonLayout compact="true" locationInfo="true" complete="false" eventEol="true"  charset="UTF-8"/>-->
 
-<!--        </Console>-->
+        </Console>
 
         <!--RollingFile:日志输出到文件,下面的文件都使用相对路径 -->
         <!--fileName:当前日志输出的文件名称 -->

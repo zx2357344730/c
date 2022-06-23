@@ -2,6 +2,7 @@ package com.cresign.chat.utils;
 
 
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.chat.config.websocket.WebSocketUserServerQ;
 import com.cresign.chat.service.LogService;
 import com.cresign.tools.pojo.po.LogFlow;
 import org.apache.commons.codec.binary.Base64;
@@ -227,7 +228,8 @@ public class RsaUtil {
 
             LogFlow log1 = JSONObject.parseObject(decrypt,LogFlow.class);
 
-            logService.sendLogWSU(log1);
+//            logService.sendLogWSU(log1);
+            WebSocketUserServerQ.sendLog(log1);
         } catch (Exception e) {
             e.printStackTrace();
         }

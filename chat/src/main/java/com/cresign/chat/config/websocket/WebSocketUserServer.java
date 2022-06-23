@@ -356,7 +356,6 @@ public class WebSocketUserServer {
 //                System.out.println("进入这里:");
                 String id_C = logContent.getId_C();
                 String id_CS = logContent.getId_CS();
-
                 String assetId = redisUtils.getId_A(id_C, "a-auth"); // assetServiceEdited
                 System.out.println("id_c:"+id_C);
                 if (!assetId.equals("none")) // possibly it's unreal comp
