@@ -42,6 +42,9 @@ public class User {
 
     private JSONObject qrShareCode;
 
+    private JSONObject summ00s;
+
+
 
     private Integer tvs = 1;
 

@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 /**
  * ##description:
@@ -59,10 +58,8 @@ public class AccountLoginController {
 
         return accountLoginService.scanLoginCode(
                 reqJson.getString("token"),
-               //"5f28bf314f65cc7dc2e60386",
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("clientType")
-
+                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+//                reqJson.getString("clientType")
         );
     }
 

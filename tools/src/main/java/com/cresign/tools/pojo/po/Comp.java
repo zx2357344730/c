@@ -25,12 +25,13 @@ public class Comp {
 
     private JSONArray view;
 
+    private JSONObject summ00s;
 
     private JSONObject spec;
 
     private JSONObject text00s;
 
-    private JSONObject task00s;
+//    private JSONObject task00s;
 
     private JSONObject picroll00s;
 
@@ -38,7 +39,7 @@ public class Comp {
 
     private JSONObject link00s;
 
-    private JSONObject devc;
+//    private JSONObject devc;
 
     private JSONObject recentOP;
 
@@ -47,6 +48,7 @@ public class Comp {
     private JSONObject joinCode;
 
 //    private JSONObject qrCodeType;
+
 
     private Integer bcdNet ;
 

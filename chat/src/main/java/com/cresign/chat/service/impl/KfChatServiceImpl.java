@@ -10,10 +10,10 @@ import com.cresign.chat.service.LogService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.common.Constants;
-import com.cresign.tools.dbTools.CommUtils;
 import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
-import com.cresign.tools.dbTools.RedisUtils;
+import com.cresign.tools.dbTools.DbUtils;
+import com.cresign.tools.dbTools.Ut;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -56,17 +56,17 @@ import java.util.*;
 @Slf4j
 public class KfChatServiceImpl implements KfChatService {
 
-//    @Autowired
-//    private OrderService orderService;
-
     @Autowired
     private CoupaUtil coupaUtil;
 
     @Autowired
-    private CommUtils commUtils;
+    private Ut ut;
 
     @Autowired
     private DateUtils dateUtils;
+
+    @Autowired
+    private DbUtils dbUtils;
 
     /**
      * 自动注入LogService接口
@@ -76,9 +76,6 @@ public class KfChatServiceImpl implements KfChatService {
 
     @Autowired
     private LogUtil logUtil;
-
-    @Autowired
-    private RedisUtils redisUtils;
 
 
     @Autowired
@@ -270,7 +267,7 @@ public class KfChatServiceImpl implements KfChatService {
         List<LogFlow> resultZon = new ArrayList<>();
         Map<Integer,List<LogFlow>> map = new HashMap<>(Constants.HASH_MAP_DEFAULT_LENGTH);
         result.forEach(log1 -> {
-            Integer indexOnly = commUtils.objToInteger(log1.getData().get("indexOnly"));
+            Integer indexOnly = ut.objToInteger(log1.getData().get("indexOnly"));
             JSONObject data = log1.getData();
             data.put("isOk",2);
             log1.setData(data);
@@ -284,10 +281,10 @@ public class KfChatServiceImpl implements KfChatService {
         });
         map.keySet().forEach(k -> {
             List<LogFlow> list = map.get(k);
-            commUtils.sortIs(2,list, DateEnum.DATE_TWO.getDate());
+            ut.sortIs(2,list, DateEnum.DATE_TWO.getDate());
             resultZon.addAll(list);
         });
-        commUtils.sortIs(2,resultZon,DateEnum.DATE_TWO.getDate());
+        ut.sortIs(2,resultZon,DateEnum.DATE_TWO.getDate());
         return resultZon;
     }
 
@@ -406,7 +403,7 @@ public class KfChatServiceImpl implements KfChatService {
     @Override
     public ApiResponse getScoreUser(String id_U,String id_C,String id_O,String uuId,Integer score) {
 
-        String assetId = redisUtils.getId_A(id_C, "a-auth");
+        String assetId = dbUtils.getId_A(id_C, "a-auth");
 
         Asset one = coupaUtil.getAssetById(assetId, Collections.singletonList("flowControl"));
         if (null == one) {

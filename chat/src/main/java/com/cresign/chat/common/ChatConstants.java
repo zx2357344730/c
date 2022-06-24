@@ -2,8 +2,6 @@ package com.cresign.chat.common;
 
 import com.cresign.tools.mongo.MongoUtils;
 
-import java.util.UUID;
-
 /**
  * ##ClassName: ChatConstants
  * ##description: chat静态变量定义类

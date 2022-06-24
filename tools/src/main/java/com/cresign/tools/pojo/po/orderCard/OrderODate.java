@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * @ClassName OrderODate
- * @Description 订单时间操作处理专用类
+ * @Description 作者很懒什么也没写
  * @Author tang
  * @Date 2021/9/16 11:15
  * @Version 1.0.0
@@ -43,8 +43,9 @@ public class OrderODate {
      */
     private String grpB;
 
+
     /**
-     * 用户权限
+     * 职位
      */
     private String grpU;
 
@@ -162,4 +163,5 @@ public class OrderODate {
      * 链接下标
      */
     private Integer linkInd;
+
 }

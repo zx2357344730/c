@@ -9,14 +9,14 @@ import com.cresign.login.service.MenuService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
-import com.cresign.tools.dbTools.RedisUtils;
+import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
-import com.cresign.tools.pojo.po.assetCard.MainMenuBO;
-import com.cresign.tools.pojo.po.assetCard.SubMenuBO;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.InitJava;
+import com.cresign.tools.pojo.po.assetCard.MainMenuBO;
+import com.cresign.tools.pojo.po.assetCard.SubMenuBO;
 import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.lang3.ObjectUtils;
 import org.bson.Document;
@@ -52,10 +52,10 @@ public class MenuServiceImpl implements MenuService {
     private AuthCheck authCheck;
 
     @Autowired
-    private StringRedisTemplate redisTemplate0;
+    private DbUtils dbUtils;
 
     @Autowired
-    private RedisUtils redisUtils;
+    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private RetResult retResult;
@@ -132,7 +132,7 @@ public class MenuServiceImpl implements MenuService {
 
         // 查询该公司的菜单
 
-        String id_A = redisUtils.getId_A(id_C, "a-auth");
+        String id_A = dbUtils.getId_A(id_C, "a-auth");
         Query menuQuery = new Query(new Criteria("_id").is(id_A));
 
         menuQuery.fields().include("menu");
@@ -223,7 +223,7 @@ public class MenuServiceImpl implements MenuService {
             }
         }
 
-        String id_A = redisUtils.getId_A(id_C, "a-auth");
+        String id_A = dbUtils.getId_A(id_C, "a-auth");
         Query menuQuery = new Query(new Criteria("_id").is(id_A));
         menuQuery.fields().include("menu");
         Update mainMenuUd = new Update();
@@ -244,7 +244,7 @@ public class MenuServiceImpl implements MenuService {
     public ApiResponse getSubMenusData(String id_C) {
 
 
-        String id_A = redisUtils.getId_A(id_C, "a-auth");
+        String id_A = dbUtils.getId_A(id_C, "a-auth");
         Query menuQuery = new Query(new Criteria("_id").is(id_A));
         menuQuery.fields().include("menu");
         Asset asset = mongoTemplate.findOne(menuQuery, Asset.class);
@@ -273,7 +273,7 @@ public class MenuServiceImpl implements MenuService {
 //        authFilterService.getUserSelectAuth(id_U,id_C,"lBAsset","1003","card");
 
 
-        String id_A = redisUtils.getId_A(id_C, "a-auth");
+        String id_A = dbUtils.getId_A(id_C, "a-auth");
         Query menuQuery = new Query(new Criteria("_id").is(id_A));
         menuQuery.fields().include("menu");
         Update mainMenuUd = new Update();
@@ -289,7 +289,7 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public ApiResponse getDefListType(String id_C) {
 
-        String id_A = redisUtils.getId_A(id_C, "a-auth");
+        String id_A = dbUtils.getId_A(id_C, "a-auth");
         Query query = new Query(new Criteria("_id").is(id_A));
 
         query.fields().include("def");

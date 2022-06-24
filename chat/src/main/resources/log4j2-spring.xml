@@ -34,7 +34,6 @@
     <appenders>
 
         <!--Console:日志输出到控制台标准输出 -->
-
         <!-- 控制台的配置 -->
         <Console name="STDOUT">
             <!-- 控制台只输出level及以上级别的信息 -->
@@ -47,7 +46,6 @@
             <!--<JsonLayout compact="true" locationInfo="true" complete="false" eventEol="true"  charset="UTF-8"/>-->
 
         </Console>
-
         <!--RollingFile:日志输出到文件,下面的文件都使用相对路径 -->
         <!--fileName:当前日志输出的文件名称 -->
         <!--filePattern:备份日志文件名称，备份目录为logs下面以年月命名的目录，备份时使用gz格式压缩 -->

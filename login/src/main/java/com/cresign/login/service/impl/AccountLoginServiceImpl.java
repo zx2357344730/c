@@ -15,7 +15,6 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.uuid.UUID19;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -109,7 +108,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     }
 
     @Override
-    public ApiResponse scanLoginCode( String token, String id_U, String clientType) {
+    public ApiResponse scanLoginCode( String token, String id_U) {
 
         String keyName = SCANCODE_LOGINCOMP + token;
         Boolean hasKey = redisTemplate1.hasKey(keyName);
@@ -133,7 +132,7 @@ LOGIN_CODE_OVERDUE.getCode(),null);
         }
 
         // 返回json数据给前端
-        JSONObject result = loginResult.allResult(user, clientType, "web");
+        JSONObject result = loginResult.allResult(user, "web", "web");
         System.out.println("result = " + result);
         //判断redis里面有  webSocket_id键
         if (entries.containsKey("id")){

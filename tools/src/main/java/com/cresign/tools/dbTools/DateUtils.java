@@ -114,7 +114,7 @@ public class DateUtils {
         //创建日期转换对象：年月日 时分秒
         SimpleDateFormat sdf = new SimpleDateFormat(date);
         String[] s = date1.split(Constants.STRING_BLANK_SPACE);
-        int qu = CommUtils.getIndex(s);
+        int qu = Ut.getIndex(s);
         boolean flag = false;
         try {
             //转换为 date 类型 Debug：Sun Nov 11 11:11:11 CST 2018
@@ -204,24 +204,24 @@ public class DateUtils {
         }
         if (addOrReduce == 0) {
             if (m >= shu) {
-                sb.append(CommUtils.getBl(h));
+                sb.append(Ut.getBl(h));
                 sb.append(Constants.COLON);
-                sb.append(CommUtils.getBl((m - shu)));
+                sb.append(Ut.getBl((m - shu)));
             } else {
-                sb.append(CommUtils.getBl((h - Constants.INT_ONE)));
+                sb.append(Ut.getBl((h - Constants.INT_ONE)));
                 sb.append(Constants.COLON);
-                sb.append(CommUtils.getBl(((m + Constants.DATE_SIXTY) - shu)));
+                sb.append(Ut.getBl(((m + Constants.DATE_SIXTY) - shu)));
             }
         } else {
             int l = m + shu;
             if (l >= Constants.DATE_SIXTY) {
-                sb.append(CommUtils.getBl((h + Constants.INT_ONE)));
+                sb.append(Ut.getBl((h + Constants.INT_ONE)));
                 sb.append(Constants.COLON);
-                sb.append(CommUtils.getBl((l - Constants.DATE_SIXTY)));
+                sb.append(Ut.getBl((l - Constants.DATE_SIXTY)));
             } else {
-                sb.append(CommUtils.getBl(h));
+                sb.append(Ut.getBl(h));
                 sb.append(Constants.COLON);
-                sb.append(CommUtils.getBl(l));
+                sb.append(Ut.getBl(l));
             }
         }
         sb.append(Constants.COLON);
@@ -466,9 +466,9 @@ public class DateUtils {
         //定义被减数日期
         Date nowDateZ = null;
 
-        int qu1 = CommUtils.getIndex(str1);
+        int qu1 = Ut.getIndex(str1);
 
-        int qu2 = CommUtils.getIndex(str2);
+        int qu2 = Ut.getIndex(str2);
 
         //必须捕获异常
         try {

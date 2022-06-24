@@ -64,8 +64,6 @@ public class lBUser implements Serializable {
 
     private String tmk;
 
-    //
-
     private JSONObject wrddesc;
 
     private String id_APP;

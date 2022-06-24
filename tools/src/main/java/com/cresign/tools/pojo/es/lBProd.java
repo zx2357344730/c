@@ -1,5 +1,6 @@
 package com.cresign.tools.pojo.es;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
@@ -58,6 +59,8 @@ public class lBProd {
 
     private JSONObject wrddesc;
 
+    private JSONArray arrP;
+
     private String grp;
 
     private String grpB;
@@ -72,13 +75,13 @@ public class lBProd {
 
     private String pic;
 
-    private Integer lDC;//
+    private Integer lDC;
 
     private Integer lUT;
 
     private Integer lCR;//
 
-    private double wn4price;//
+    private double wn4price;
 
     private String tmd;
 

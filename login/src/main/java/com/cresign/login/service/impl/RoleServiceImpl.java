@@ -9,7 +9,7 @@ import com.cresign.login.service.RoleService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
-import com.cresign.tools.dbTools.RedisUtils;
+import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
@@ -50,13 +50,13 @@ public class RoleServiceImpl implements RoleService {
     private StringRedisTemplate redisTemplate0;
 
     @Autowired
+    private DbUtils dbUtils;
+
+    @Autowired
     private AuthCheck authCheck;
 
     @Autowired
     private RetResult retResult;
-
-    @Autowired
-    private RedisUtils redisUtils;
 
     @Override
     public ApiResponse getRole(String id_U, String id_C, String grpU) {
@@ -222,7 +222,7 @@ public class RoleServiceImpl implements RoleService {
         authCheck.getUserUpdateAuth(id_U,id_C,"lBAsset","1003","card",new JSONArray().fluentAdd("role"));
 
 
-        String id_A = redisUtils.getId_A(id_C, "a-auth");
+        String id_A = dbUtils.getId_A(id_C, "a-auth");
         Query query = new Query(new Criteria("_id").is(id_A));
         query.fields().include("def");
         Asset asset = mongoTemplate.findOne(query, Asset.class);
@@ -274,7 +274,7 @@ public class RoleServiceImpl implements RoleService {
 
         }
 
-        String id_A = redisUtils.getId_A(id_C, "a-auth");
+        String id_A = dbUtils.getId_A(id_C, "a-auth");
         Query query = new Query(new Criteria("_id").is(id_A));
         query.fields().include("role.objAuth." + grpU + "." + listType + "." + grp);
         Asset asset = mongoTemplate.findOne(query, Asset.class);
@@ -362,7 +362,7 @@ public class RoleServiceImpl implements RoleService {
 
         //try{
             //
-            String id_A = redisUtils.getId_A(id_C, "a-auth");
+            String id_A = dbUtils.getId_A(id_C, "a-auth");
             Query query = new Query(new Criteria("_id").is(id_A));
             query.fields().include("role.objAuth." + grpU + "." + listType + "." + grp);
             Asset asset = mongoTemplate.findOne(query, Asset.class);
@@ -374,7 +374,7 @@ public class RoleServiceImpl implements RoleService {
             JSONObject initJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(initQ, InitJava.class));
 
             // 先获取该用户已拥有的模块
-            String id_A2 = redisUtils.getId_A(id_C, "a-module");
+            String id_A2 = dbUtils.getId_A(id_C, "a-module");
             Query myModQ = new Query(new Criteria("_id").is(id_A2));
             myModQ.fields().include("control");
             JSONObject controlJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(myModQ, Asset.class));
@@ -524,7 +524,7 @@ public class RoleServiceImpl implements RoleService {
 
         authCheck.getUserUpdateAuth(id_U,id_C,"lBAsset","1003","card",new JSONArray().fluentAdd("role"));
 
-        String id_A = redisUtils.getId_A(id_C, "a-auth");
+        String id_A = dbUtils.getId_A(id_C, "a-auth");
 
         Query roleQ = new Query(
                 new Criteria("_id").is(id_A));
@@ -690,7 +690,7 @@ public class RoleServiceImpl implements RoleService {
             JSONObject initJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(initQ, InitJava.class));
 
             // 先获取该用户已拥有的模块
-            String id_A = redisUtils.getId_A(id_C, "a-module");
+            String id_A = dbUtils.getId_A(id_C, "a-module");
             Query myModQ = new Query(new Criteria("_id").is(id_A));
             myModQ.fields().include("control");
             JSONObject controlJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(myModQ, Asset.class));
@@ -781,7 +781,7 @@ public class RoleServiceImpl implements RoleService {
             result.put("batch", resultBatchArray);
 
             // 添加初始化模块的权限数据
-            String id_A2 = redisUtils.getId_A(id_C, "a-auth");
+            String id_A2 = dbUtils.getId_A(id_C, "a-auth");
             Query roleQ = new Query(new Criteria("_id").is(id_A2));
             Update roleUpdate = new Update();
             roleUpdate.set("role.objAuth." + grpU + "." + listType + "." + grp, result);

@@ -6,7 +6,7 @@ import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.AuthFilterService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.dbTools.RedisUtils;
+import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
@@ -33,13 +33,13 @@ public class AuthFilterServiceImpl implements AuthFilterService {
     private MongoTemplate mongoTemplate;
 
     @Autowired
+    private DbUtils dbUtils;
+
+    @Autowired
     private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private RetResult retResult;
-
-    @Autowired
-    private RedisUtils redisUtils;
 
 
 //    @Override
@@ -68,7 +68,7 @@ public class AuthFilterServiceImpl implements AuthFilterService {
 //
 //            }
 //        }
-//String id_A = redisUtils.getId_A(id_C, "a-auth");
+//String id_A = dbUtils.getId_A(id_C, "a-auth");
 //	Query menuQuery = new Query(new Criteria("_id").is(id_A));
 //        Query roleQ = new Query(new Criteria("info.id_C").is(id_C).and("info.ref").is("a-auth"));
 //        roleQ.fields().include("role");
@@ -181,7 +181,7 @@ public class AuthFilterServiceImpl implements AuthFilterService {
 //            }
 //
 //        }
-//String id_A = redisUtils.getId_A(id_C, "a-auth");
+//String id_A = dbUtils.getId_A(id_C, "a-auth");
 //	Query menuQuery = new Query(new Criteria("_id").is(id_A));
 //        Query roleQ = new Query(new Criteria("info.id_C").is(id_C).and("info.ref").is("a-auth"));
 //        roleQ.fields().include("role");
@@ -274,7 +274,7 @@ public class AuthFilterServiceImpl implements AuthFilterService {
         // 用户的role下标
         String user_grpU = "1099";
 
-        String id_A = redisUtils.getId_A(id_C, "a-auth");
+        String id_A = dbUtils.getId_A(id_C, "a-auth");
         Query roleQ = new Query(new Criteria("_id").is(id_A));
         roleQ.fields().include("role");
         Asset asset = mongoTemplate.findOne(roleQ, Asset.class);

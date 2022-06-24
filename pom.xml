@@ -9,19 +9,26 @@
     <version>1.0</version>
     <modules>
         <module>tools</module>
-<!--        <module>gateway</module>-->
-        <!-- 目前在用 -->
+        <module>gateway</module>
         <module>login</module>
-<!--        <module>details</module>-->
-<!--        <module>search</module>-->
-<!--        <module>file</module>-->
-        <!-- 目前在用 -->
+        <module>details</module>
+        <module>search</module>
+        <module>file</module>
         <module>purchase</module>
         <module>chat</module>
-        <!-- 目前在用 -->
         <module>timer</module>
+        <module>listener</module>
+        <module>testCode</module>
+
+        <!--        <module>time</module>-->
 
     </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+    </dependencies>
 
     <packaging>pom</packaging>
 
@@ -227,7 +234,7 @@
         <repository>
             <id>aliyun-repos</id>
             <name>Aliyun Repository</name>
-            <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+            <url>https://maven.aliyun.com/nexus/content/groups/public</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -283,7 +290,7 @@
         <pluginRepository>
             <id>aliyun-repos</id>
             <name>Aliyun Repository</name>
-            <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+            <url>https://repo.spring.io/plugins-release</url>
             <releases>
                 <enabled>true</enabled>
             </releases>

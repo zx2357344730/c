@@ -71,6 +71,8 @@ public class UserInfo {
 
     private Integer phoneType;
 
+    private String authCode;
+
     private String tmd;
 
     private String tmk;

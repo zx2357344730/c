@@ -52,7 +52,10 @@ public class AssetInfo {
 
     private String pic;
 
-    private Double wn2qty = 0.0;//
+    private Double wn2qty = 0.0;
+
+    private Double wn4price = 0.0;
+
 
     @JsonProperty("lAT")
     private Integer lAT; //Asset Type

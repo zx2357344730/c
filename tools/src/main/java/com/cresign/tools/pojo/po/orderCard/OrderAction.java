@@ -38,7 +38,7 @@ public class OrderAction {
         this.bisactivate = bisactivate;
         this.id_O = id_O;
         this.id_OP = id_OP;
-        this.refOP = refOP;
+        this.refOP = refOP == null || refOP == "" ? "": refOP;
         this.id_P = id_P;
         this.index = index;
         this.bmdpt = bmdpt;

@@ -10,7 +10,7 @@ import com.cresign.login.utils.Oauth;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
-import com.cresign.tools.dbTools.RedisUtils;
+import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
@@ -44,10 +44,10 @@ public class SetAuthServicelmpl implements SetAuthService {
     private Oauth oauth;
 
     @Autowired
-    private AuthFilterService authFilterService;
+    private DbUtils dbUtils;
 
     @Autowired
-    private RedisUtils redisUtils;
+    private AuthFilterService authFilterService;
 
 
     @Override
@@ -128,7 +128,7 @@ public class SetAuthServicelmpl implements SetAuthService {
         // 用户的role权限
         String grpU = rolex.getString("grpU");
 
-        String id_A = redisUtils.getId_A(id_C, "a-auth");
+        String id_A = dbUtils.getId_A(id_C, "a-auth");
         Query query = new Query(new Criteria("_id").is(id_A));
         query.fields().include("role.objAuth." + grpU + "." + listType + "." + grp + ".card");
         Asset asset = mongoTemplate.findOne(query, Asset.class);
