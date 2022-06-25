@@ -79,11 +79,9 @@ public interface LogService {
      * @version 1.0.0
      * @date 2021/7/12 14:47
      */
-    void sendPush(String clientId,String title,String body);
+    void sendPush(String clientId,String title,String body,String token);
 
-    void sendPushX(JSONArray pushUList,String title,String body);
-
-    void sendTestToListPush(JSONArray pushUList, String title, String body);
+    void sendTestToListPush(JSONArray pushUList, String title, String body,String token);
 
     /**
      * 发送logL信息到User-websocket

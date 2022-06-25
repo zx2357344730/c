@@ -18,8 +18,8 @@ import org.springframework.context.annotation.ComponentScan;
 // 开启nacos的客户端
 @EnableDiscoveryClient
 // 开启feign的客户端
-//@EnableFeignClients(basePackages = {"com.cresign.chat.client"})
-@EnableFeignClients(basePackages = {"com.cresign.chat"})
+@EnableFeignClients(basePackages = {"com.cresign.chat.client"})
+//@EnableFeignClients(basePackages = {"com.cresign.chat"})
 @ComponentScan({"com.cresign.tools", "com.cresign.chat"})
 @SpringBootApplication
 
