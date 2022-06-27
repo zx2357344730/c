@@ -26,9 +26,7 @@ public class Order {
     @JsonProperty("oItem")
     private JSONObject oItem;
 
-    /**
-     * 卡片
-     */
+
     private JSONArray view;
 
     private JSONObject casItemx;
@@ -43,9 +41,7 @@ public class Order {
 
     private JSONObject picroll00s;
 
-    private JSONObject task00s;
-
-    private JSONArray errItem;
+//    private JSONObject task00s;
 
     //private JSONObject saleCyclex;
 
@@ -54,14 +50,12 @@ public class Order {
     @JsonProperty("oPdf")
     private JSONObject oPdf;
 
+    private JSONObject shipping;
+
 
     private JSONObject action;
 
-    private JSONObject prob;
-
     private JSONObject merge;
-
-    private JSONObject task;
 
     private JSONObject cusmsg;
 
@@ -78,6 +72,15 @@ public class Order {
     private JSONObject oMoney;
 
     private JSONObject qrShareCode;
+
+    private JSONObject summ00s;
+
+    private JSONObject summx;
+
+    private JSONObject tempa;
+
+
+
 
     private Integer tvs = 1;
 

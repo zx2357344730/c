@@ -9,7 +9,6 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DbUtils;
-import com.cresign.tools.dbTools.RedisUtils;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -56,9 +55,6 @@ public class ModuleServicelmpl implements ModuleService {
 
     @Autowired
     private RetResult retResult;
-
-    @Autowired
-    private RedisUtils redisUtils;
 
 
     @Override
@@ -392,7 +388,7 @@ public class ModuleServicelmpl implements ModuleService {
         infoData.put("wrdNC",comp.getInfo().getWrdN());
 
 
-        redisUtils.addES( infoData, "lbuser");
+        dbUtils.addES( infoData, "lbuser");
 
 
         //a-auth
@@ -458,7 +454,7 @@ public class ModuleServicelmpl implements ModuleService {
 
 
         // 先获取该用户已拥有的模块
-        String id_A = redisUtils.getId_A(id_C, "a-module");
+        String id_A = dbUtils.getId_A(id_C, "a-module");
         Query myModQ = new Query(new Criteria("_id").is(id_A));
         myModQ.fields().include("control");
         Asset asset = mongoTemplate.findOne(myModQ, Asset.class);
@@ -670,7 +666,7 @@ public class ModuleServicelmpl implements ModuleService {
 //                assetflow.put("tmd",DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
 //
 //
-//                redisUtils.addES(assetflow,"assetflow");
+//                dbUtils.addES(assetflow,"assetflow");
 
 
 

@@ -28,6 +28,6 @@ public interface AccountLoginService {
 
     ApiResponse generateLoginCode(String id);
 
-    ApiResponse scanLoginCode(String id, String id_U, String clientType);
+    ApiResponse scanLoginCode(String id, String id_U);
 
 }

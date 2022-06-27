@@ -34,7 +34,7 @@ public class Prod {
 
     private JSONObject text00s;
 
-    private JSONObject task00s;
+    private JSONObject summ00s;
 
     private JSONObject picroll00s;
 
@@ -52,15 +52,19 @@ public class Prod {
 
     private JSONObject ch00s;
 
-
     private JSONObject buyInit;
-
 
     private JSONObject qrShareCode;
 
     private JSONObject testP1;
 
     private JSONObject testP2;
+
+    private JSONObject summx;
+
+    private JSONObject tempa;
+
+
 
     private Integer tvs = 1;
 

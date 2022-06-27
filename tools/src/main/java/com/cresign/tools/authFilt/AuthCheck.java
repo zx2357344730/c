@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.dbTools.RedisUtils;
+import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.mongo.MongoUtils;
@@ -33,11 +33,11 @@ public class AuthCheck {
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private RetResult retResult;
+    private DbUtils dbUtils;
 
     @Autowired
-    private RedisUtils redisUtils;
-
+    private RetResult retResult;
+    
 
     public JSONArray getUserSelectAuth(String id_U, String id_C, String grpU, String listType, String grp, String authType) {
 
@@ -64,7 +64,7 @@ public class AuthCheck {
 //            System.out.println("result Array from Redis"+enabledArray.toString());
 
         } else {
-            String id_A = redisUtils.getId_A(id_C, "a-auth");
+            String id_A = dbUtils.getId_A(id_C, "a-auth");
             Query roleQ = new Query(new Criteria("_id").is(id_A));
             roleQ.fields().include("role.objAuth."+user_grpU+"."+listType+"."+grp);
             Asset asset = mongoTemplate.findOne(roleQ, Asset.class);
@@ -115,7 +115,7 @@ public class AuthCheck {
             enabledArray = result.getJSONArray("result");
 
         } else {
-            String id_A = redisUtils.getId_A(id_C, "a-auth");
+            String id_A = dbUtils.getId_A(id_C, "a-auth");
             Query roleQ = new Query(new Criteria("_id").is(id_A));
             roleQ.fields().include("role.objAuth."+user_grpU+"."+listType+"."+grp);
             Asset asset = mongoTemplate.findOne(roleQ, Asset.class);

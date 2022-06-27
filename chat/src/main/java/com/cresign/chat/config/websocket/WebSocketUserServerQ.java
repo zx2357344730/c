@@ -9,7 +9,7 @@ import com.cresign.chat.service.impl.LogServiceImpl;
 import com.cresign.chat.utils.AesUtil;
 import com.cresign.chat.utils.RsaUtil;
 import com.cresign.tools.dbTools.DateUtils;
-import com.cresign.tools.dbTools.RedisUtils;
+import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
@@ -85,7 +85,7 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
     /**
      * 注入redis工具类
      */
-    private static RedisUtils redisUtils;
+    private static DbUtils dbUtils;
     /**
      * 注入redis数据库下标1模板
      */
@@ -104,7 +104,7 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
     private Session session;
     /**
      * 注入的时候，给类的 service 注入
-     * @param redisUtils	redis工具类
+     * @param dbUtils	redis工具类
      * @param logService	日志接口
      * @param redisTemplate1	redis下标为1的数据库模板
      * @param rocketMQTemplate	rocketMQ模板
@@ -114,10 +114,10 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
      * @date 2022/6/22
      */
     @Autowired
-    public void setWebSocketUserServer(RedisUtils redisUtils,LogService logService
+    public void setWebSocketUserServer(DbUtils dbUtils,LogService logService
             , StringRedisTemplate redisTemplate1,RocketMQTemplate rocketMQTemplate) {
         WebSocketUserServerQ.logService = logService;
-        WebSocketUserServerQ.redisUtils = redisUtils;
+        WebSocketUserServerQ.dbUtils = dbUtils;
         WebSocketUserServerQ.redisTemplate1 = redisTemplate1;
         WebSocketUserServerQ.rocketMQTemplate = rocketMQTemplate;
     }
@@ -523,13 +523,13 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
     private static void getA(String id_C,LogFlow logContent,String wsUQwId_U
             ,JSONObject stringMap,String key){
         // 根据公司编号获取a-auth的asset信息的编号
-        String assetId = redisUtils.getId_A(id_C, "a-auth");
+        String assetId = dbUtils.getId_A(id_C, "a-auth");
         // 判断asset编号为空
         if (null == assetId || "none".equals(assetId)) {
             return;
         }
         // 根据asset编号获取asset信息
-        Asset asset = redisUtils.getAssetById(assetId, Collections.singletonList("flowControl"));
+        Asset asset = dbUtils.getAssetById(assetId, Collections.singletonList("flowControl"));
         // 获取卡片信息
         JSONObject flowControl = asset.getFlowControl();
         // 获取卡片data信息

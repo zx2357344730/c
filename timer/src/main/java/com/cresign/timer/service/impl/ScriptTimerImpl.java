@@ -4,11 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.timer.client.WSFilterClient;
+import com.cresign.timer.service.ScriptTimer;
 import com.cresign.tools.advice.RetResult;
-import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DbUtils;
-import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.logger.LogUtil;
 import com.cresign.tools.pojo.po.*;
@@ -27,7 +26,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import com.cresign.timer.service.ScriptTimer;
 import org.springframework.stereotype.Service;
 
 import javax.script.*;
@@ -64,89 +62,163 @@ public class ScriptTimerImpl implements ScriptTimer {
     private RetResult retResult;
 
     @Override
-    public Object scriptEngine(JSONArray arrayTrigger) throws ScriptException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
-        Integer count = 0;
-        for (int i = 0; i < arrayTrigger.size(); i++) {
-            //Each Trigger go get all Var calculated
-            JSONObject jsonTrigger = arrayTrigger.getJSONObject(i);
-            String id_O = jsonTrigger.getString("id_O");
-            String id_A = jsonTrigger.getString("id_A");
-            JSONObject jsonObjVar = jsonTrigger.getJSONObject("objVar");
-            System.out.println("jsonObjVar=" + jsonObjVar);
-            JSONObject jsonObjGlobal = jsonTrigger.getJSONObject("objGlobal");
-            System.out.println("jsonObjGlobal=" + jsonObjGlobal);
-            if (jsonObjGlobal == null) {
-                jsonObjGlobal = jsonObjVar;
+    public Object scriptEngine(JSONObject jsonTrigger) throws ScriptException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        String id_O = jsonTrigger.getString("id_O");
+        String id_A = jsonTrigger.getString("id_A");
+        JSONObject jsonObjVar = jsonTrigger.getJSONObject("objVar");
+        System.out.println("jsonObjVar=" + jsonObjVar);
+        JSONObject jsonObjGlobal = jsonTrigger.getJSONObject("objGlobal");
+        System.out.println("jsonObjGlobal=" + jsonObjGlobal);
+        if (jsonObjGlobal == null) {
+            jsonObjGlobal = jsonObjVar;
+        }
+        jsonObjGlobal.putAll(jsonObjVar);
+        //遍历计算jsonObjVar的值
+        if (id_O != null) {
+            for (Map.Entry<String, Object> entry : jsonObjVar.entrySet()) {
+                Object var = this.scriptEngineVar(jsonObjVar.getString(entry.getKey()), jsonObjGlobal);
+                jsonObjVar.put(entry.getKey(), var);
             }
-            jsonObjGlobal.putAll(jsonObjVar);
-            //遍历计算jsonObjVar的值
-            if (id_O != null) {
-                for (Map.Entry<String, Object> entry : jsonObjVar.entrySet()) {
-                    System.out.println("count=" + count);
-                    Object var = this.scriptEngineVar(jsonObjVar.getString(entry.getKey()), jsonObjGlobal);
-                    count ++;
-                    jsonObjVar.put(entry.getKey(), var);
+        }
+        //Either id_O or id_A
+        else if (id_A != null) {
+            for (Map.Entry<String, Object> entry : jsonObjVar.entrySet()) {
+                Object var = this.scriptEngineVar(jsonObjVar.getString(entry.getKey()), jsonObjVar);
+                jsonObjVar.put(entry.getKey(), var);
+            }
+        }
+        System.out.println("jsonObjVar=" + jsonObjVar);
+
+        JSONObject jsonObjIf = jsonTrigger.getJSONObject("objIf");
+        String script = jsonObjIf.getString("script");
+        if (script.startsWith("##")) {
+            String scriptResult = scriptEngineIf(script, jsonObjVar, jsonTrigger.getJSONObject("objExec"));
+        } else {
+            //KEV all isDone change to isActive;
+            // if isActive == null, this is a routine and will do it every time, never stop
+            if (jsonObjIf.getBoolean("isActive") == null) {
+                //判断执行哪个exec
+                String scriptResult = scriptEngineIf(script, jsonObjVar, new JSONObject());
+                System.out.println("scriptResult=" + scriptResult);
+                JSONArray arrayObjExec = jsonTrigger.getJSONObject("objExec").getJSONArray(scriptResult);
+                //if's result is either null or a String
+                if (arrayObjExec != null) {
+                    //执行
+                    this.scriptEngineExec(arrayObjExec, jsonObjVar);
                 }
             }
-            //Either id_O or id_A
-            else if (id_A != null) {
-                for (Map.Entry<String, Object> entry : jsonObjVar.entrySet()) {
-                    System.out.println("count=" + count);
-                    Object var = this.scriptEngineVar(jsonObjVar.getString(entry.getKey()), jsonObjVar);
-                    count ++;
-                    jsonObjVar.put(entry.getKey(), var);
-                }
-            }
-            System.out.println("jsonObjVar=" + jsonObjVar);
-            JSONArray arrayObjIf = jsonTrigger.getJSONArray("objIf");
-            for (int j = 0; j < arrayObjIf.size(); j++) {
-                JSONObject jsonObjIf = arrayObjIf.getJSONObject(j);
-                String script = jsonObjIf.getString("script");
-                if (script.startsWith("##")) {
-                    String scriptResult = scriptEngineIf(script, jsonObjVar, jsonTrigger.getJSONObject("objExec"));
-                } else {
-                    //KEV all isDone change to isActive;
-                    // if isActive == null, this is a routine and will do it every time, never stop
-                    if (jsonObjIf.getBoolean("isActive") == null) {
-                        //判断执行哪个exec
-                        String scriptResult = scriptEngineIf(script, jsonObjVar, new JSONObject());
-                        System.out.println("scriptResult=" + scriptResult);
-                        JSONArray arrayObjExec = jsonTrigger.getJSONObject("objExec").getJSONArray(scriptResult);
-                        //if's result is either null or a String
-                        if (arrayObjExec != null) {
-                            //执行
-                            this.scriptEngineExec(arrayObjExec, jsonObjVar);
-                        }
+            //isActive为true执行
+            else if (jsonObjIf.getBoolean("isActive")) {
+                //判断执行哪个exec
+                String scriptResult = scriptEngineIf(script, jsonObjVar, new JSONObject());
+                System.out.println("scriptResult=" + scriptResult);
+                JSONArray arrayObjExec = jsonTrigger.getJSONObject("objExec").getJSONArray(scriptResult);
+                if (arrayObjExec != null) {
+                    //执行
+                    this.scriptEngineExec(arrayObjExec, jsonObjVar);
+                    // After execute, set the Active to false so next time it won't exec again
+                    if (id_O != null) {
+//                        Query queryOrder = new Query(new Criteria("_id").is(id_O));
+//                        Update updateOrder = new Update();
+//                        updateOrder.set("oTrigger." + jsonTrigger.getString("log") + ".objIf." + j + ".isActive", false);
+//                        UpdateResult updateResult = mongoTemplate.updateFirst(queryOrder, updateOrder, Order.class);
                     }
-                    //isActive为true执行
-                    else if (jsonObjIf.getBoolean("isActive")) {
-                        //判断执行哪个exec
-                        String scriptResult = scriptEngineIf(script, jsonObjVar, new JSONObject());
-                        System.out.println("scriptResult=" + scriptResult);
-                        JSONArray arrayObjExec = jsonTrigger.getJSONObject("objExec").getJSONArray(scriptResult);
-                        if (arrayObjExec != null) {
-                            //执行
-                            this.scriptEngineExec(arrayObjExec, jsonObjVar);
-                            // After execute, set the Active to false so next time it won't exec again
-                            if (id_O != null) {
-                                Query queryOrder = new Query(new Criteria("_id").is(id_O));
-                                Update updateOrder = new Update();
-                                updateOrder.set("oTrigger." + jsonTrigger.getString("log") + ".objIf." + j + ".isActive", false);
-                                UpdateResult updateResult = mongoTemplate.updateFirst(queryOrder, updateOrder, Order.class);
-                            }
-                            if (id_A != null) {
-                                Query queryAsset = new Query(new Criteria("_id").is(id_A));
-                                Update updateAsset = new Update();
-                                updateAsset.set("cTrigger.objData.objIf." + jsonObjIf.getString("ref") + ".isActive", false);
-                                UpdateResult updateResult = mongoTemplate.updateFirst(queryAsset, updateAsset, Asset.class);
-                            }
-                        }
+                    if (id_A != null) {
+                        Query queryAsset = new Query(new Criteria("_id").is(id_A));
+                        Update updateAsset = new Update();
+                        updateAsset.set("cTrigger.objData.objIf." + jsonObjIf.getString("ref") + ".isActive", false);
+                        UpdateResult updateResult = mongoTemplate.updateFirst(queryAsset, updateAsset, Asset.class);
                     }
                 }
             }
         }
         return null;
     }
+
+//    @Override
+//    public Object scriptEngine(JSONArray arrayTrigger) throws ScriptException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+//        Integer count = 0;
+//        for (int i = 0; i < arrayTrigger.size(); i++) {
+//            //Each Trigger go get all Var calculated
+//            JSONObject jsonTrigger = arrayTrigger.getJSONObject(i);
+//            String id_O = jsonTrigger.getString("id_O");
+//            String id_A = jsonTrigger.getString("id_A");
+//            JSONObject jsonObjVar = jsonTrigger.getJSONObject("objVar");
+//            System.out.println("jsonObjVar=" + jsonObjVar);
+//            JSONObject jsonObjGlobal = jsonTrigger.getJSONObject("objGlobal");
+//            System.out.println("jsonObjGlobal=" + jsonObjGlobal);
+//            if (jsonObjGlobal == null) {
+//                jsonObjGlobal = jsonObjVar;
+//            }
+//            jsonObjGlobal.putAll(jsonObjVar);
+//            //遍历计算jsonObjVar的值
+//            if (id_O != null) {
+//                for (Map.Entry<String, Object> entry : jsonObjVar.entrySet()) {
+//                    System.out.println("count=" + count);
+//                    Object var = this.scriptEngineVar(jsonObjVar.getString(entry.getKey()), jsonObjGlobal);
+//                    count ++;
+//                    jsonObjVar.put(entry.getKey(), var);
+//                }
+//            }
+//            //Either id_O or id_A
+//            else if (id_A != null) {
+//                for (Map.Entry<String, Object> entry : jsonObjVar.entrySet()) {
+//                    System.out.println("count=" + count);
+//                    Object var = this.scriptEngineVar(jsonObjVar.getString(entry.getKey()), jsonObjVar);
+//                    count ++;
+//                    jsonObjVar.put(entry.getKey(), var);
+//                }
+//            }
+//            System.out.println("jsonObjVar=" + jsonObjVar);
+//            JSONArray arrayObjIf = jsonTrigger.getJSONArray("objIf");
+//            for (int j = 0; j < arrayObjIf.size(); j++) {
+//                JSONObject jsonObjIf = arrayObjIf.getJSONObject(j);
+//                String script = jsonObjIf.getString("script");
+//                if (script.startsWith("##")) {
+//                    String scriptResult = scriptEngineIf(script, jsonObjVar, jsonTrigger.getJSONObject("objExec"));
+//                } else {
+//                    //KEV all isDone change to isActive;
+//                    // if isActive == null, this is a routine and will do it every time, never stop
+//                    if (jsonObjIf.getBoolean("isActive") == null) {
+//                        //判断执行哪个exec
+//                        String scriptResult = scriptEngineIf(script, jsonObjVar, new JSONObject());
+//                        System.out.println("scriptResult=" + scriptResult);
+//                        JSONArray arrayObjExec = jsonTrigger.getJSONObject("objExec").getJSONArray(scriptResult);
+//                        //if's result is either null or a String
+//                        if (arrayObjExec != null) {
+//                            //执行
+//                            this.scriptEngineExec(arrayObjExec, jsonObjVar);
+//                        }
+//                    }
+//                    //isActive为true执行
+//                    else if (jsonObjIf.getBoolean("isActive")) {
+//                        //判断执行哪个exec
+//                        String scriptResult = scriptEngineIf(script, jsonObjVar, new JSONObject());
+//                        System.out.println("scriptResult=" + scriptResult);
+//                        JSONArray arrayObjExec = jsonTrigger.getJSONObject("objExec").getJSONArray(scriptResult);
+//                        if (arrayObjExec != null) {
+//                            //执行
+//                            this.scriptEngineExec(arrayObjExec, jsonObjVar);
+//                            // After execute, set the Active to false so next time it won't exec again
+//                            if (id_O != null) {
+//                                Query queryOrder = new Query(new Criteria("_id").is(id_O));
+//                                Update updateOrder = new Update();
+//                                updateOrder.set("oTrigger." + jsonTrigger.getString("log") + ".objIf." + j + ".isActive", false);
+//                                UpdateResult updateResult = mongoTemplate.updateFirst(queryOrder, updateOrder, Order.class);
+//                            }
+//                            if (id_A != null) {
+//                                Query queryAsset = new Query(new Criteria("_id").is(id_A));
+//                                Update updateAsset = new Update();
+//                                updateAsset.set("cTrigger.objData.objIf." + jsonObjIf.getString("ref") + ".isActive", false);
+//                                UpdateResult updateResult = mongoTemplate.updateFirst(queryAsset, updateAsset, Asset.class);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
 //    @Override
     public Object scriptEngineVar(String var, JSONObject jsonObjGlobal) throws ScriptException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -216,6 +288,10 @@ public class ScriptTimerImpl implements ScriptTimer {
                 }
                 if (var.startsWith("##CS")) {
                     String scriptResult = jsonVar.getString(scriptSplit[scriptSplit.length - 1]);
+                    return scriptResult;
+                }
+                if (var.startsWith("##CI")) {
+                    Integer scriptResult = jsonVar.getInteger(scriptSplit[scriptSplit.length - 1]);
                     return scriptResult;
                 }
                 if (var.startsWith("##CN")) {
@@ -397,6 +473,11 @@ public class ScriptTimerImpl implements ScriptTimer {
                 }
                 if (var.startsWith("##S")) {
                     String scriptResult = compiledScript.eval(bindings).toString();
+                    return scriptResult;
+                }
+                if (var.startsWith("##I")) {
+                    Integer scriptResult = (Integer) compiledScript.eval(bindings);
+                    System.out.println("##I=" + scriptResult);
                     return scriptResult;
                 }
                 if (var.startsWith("##N")) {
@@ -686,8 +767,8 @@ public class ScriptTimerImpl implements ScriptTimer {
 //        }
         long end = System.currentTimeMillis();
         System.out.println("time=" + (end - start) + "ms");
-        Object o = scriptEngine(arrayTrigger);
-        System.out.println("o=" + o);
+//        Object o = scriptEngine(arrayTrigger);
+//        System.out.println("o=" + o);
         return arrayTrigger;
     }
 }

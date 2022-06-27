@@ -2,7 +2,6 @@ package com.cresign.timer.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.apires.ApiResponse;
 
 import javax.script.ScriptException;
 import java.io.IOException;
@@ -20,7 +19,8 @@ public interface ScriptTimer {
          * @Return java.lang.Object
          * @Card
          **/
-        Object scriptEngine(JSONArray arrayTrigger) throws ScriptException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException;
+        Object scriptEngine(JSONObject jsonTrigger) throws ScriptException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException;
+//        Object scriptEngine(JSONArray arrayTrigger) throws ScriptException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException;
 
         /**
          * 处理trigger变量

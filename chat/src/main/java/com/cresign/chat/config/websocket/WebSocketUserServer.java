@@ -8,7 +8,7 @@ import com.cresign.chat.service.LogService;
 import com.cresign.chat.utils.AesUtil;
 import com.cresign.chat.utils.RsaUtil;
 import com.cresign.tools.dbTools.DateUtils;
-import com.cresign.tools.dbTools.RedisUtils;
+import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
@@ -22,7 +22,9 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
@@ -65,14 +67,14 @@ public class WebSocketUserServer {
      */
     private static final Map<String,JSONObject> keyJava = new HashMap<>(ChatConstants.HASH_MAP_DEFAULT_LENGTH);
     private static LogService logService;
-    private static RedisUtils redisUtils;
+    private static DbUtils dbUtils;
     private static StringRedisTemplate redisTemplate1;
     // 注入的时候，给类的 service 注入
     @Autowired
-    public void setWebSocketUserServer(RedisUtils redisUtils,LogService logService, StringRedisTemplate redisTemplate1) {
+    public void setWebSocketUserServer(DbUtils dbUtils,LogService logService, StringRedisTemplate redisTemplate1) {
 
         WebSocketUserServer.logService = logService;
-        WebSocketUserServer.redisUtils = redisUtils;
+        WebSocketUserServer.dbUtils = dbUtils;
         WebSocketUserServer.redisTemplate1 = redisTemplate1;
     }
     /**
@@ -356,11 +358,12 @@ public class WebSocketUserServer {
 //                System.out.println("进入这里:");
                 String id_C = logContent.getId_C();
                 String id_CS = logContent.getId_CS();
-                String assetId = redisUtils.getId_A(id_C, "a-auth"); // assetServiceEdited
+
+                String assetId = dbUtils.getId_A(id_C, "a-auth"); // assetServiceEdited
                 System.out.println("id_c:"+id_C);
                 if (!assetId.equals("none")) // possibly it's unreal comp
                 {
-                    Asset asset = redisUtils.getAssetById(assetId, Collections.singletonList("flowControl")); // assetServiceEdited
+                    Asset asset = dbUtils.getAssetById(assetId, Collections.singletonList("flowControl")); // assetServiceEdited
                     JSONObject flowControl = asset.getFlowControl();
                     JSONArray flowData = flowControl.getJSONArray("objData");
 
@@ -408,11 +411,11 @@ public class WebSocketUserServer {
                 // IF two companies aren't the same, need to push to both companies
                 if (id_CS != null && !id_C.equals(id_CS))
                 {
-                    String assetIdCS = redisUtils.getId_A(id_CS, "a-auth"); // assetServiceEdited
+                    String assetIdCS = dbUtils.getId_A(id_CS, "a-auth"); // assetServiceEdited
                     System.out.println("id_cs:"+id_CS+assetIdCS);
                     if (!assetIdCS.equals("none")) // possibly it's unreal comp
                     {
-                    Asset assetCS = redisUtils.getAssetById(assetIdCS, Collections.singletonList("flowControl")); // assetServiceEdited
+                    Asset assetCS = dbUtils.getAssetById(assetIdCS, Collections.singletonList("flowControl")); // assetServiceEdited
                     JSONObject flowControlCS = assetCS.getFlowControl();
                     JSONArray flowDataCS = flowControlCS.getJSONArray("objData");
 

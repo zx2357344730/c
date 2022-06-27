@@ -2,23 +2,14 @@ package com.cresign.login.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.advice.RetResult;
-import com.cresign.tools.dbTools.RedisUtils;
 import com.cresign.tools.jwt.JwtUtil;
-import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.User;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -40,9 +31,6 @@ public class Oauth {
 
     @Autowired
     private JwtUtil jwtUtil;
-
-    @Autowired
-    private RedisUtils redisUtils;
 
     /**
      *##description:      设置该用户的基本信息存入到redis中
@@ -188,7 +176,7 @@ public class Oauth {
 //
 //            if (!redisTemplate1.opsForHash().hasKey("compMenu", cid)) {
 //
-//                String id_A = redisUtils.getId_A(cid, "a-auth");
+//                String id_A = dbUtils.getId_A(cid, "a-auth");
 //                Query query = new Query(new Criteria("_id").is(id_A));
 //                Asset asset = mongoTemplate.findOne(query, Asset.class);
 //

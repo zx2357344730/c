@@ -3,32 +3,21 @@ package com.cresign.tools.dbTools;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.common.Constants;
-import com.cresign.tools.dbTools.RedisUtils;
-import com.cresign.tools.enumeration.ToolEnum;
-import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.lSBOrder;
 import com.cresign.tools.pojo.po.*;
 import com.mongodb.client.result.DeleteResult;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Field;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -43,10 +32,10 @@ public class CoupaUtil {
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private RedisUtils redisUtils;
+    private RestHighLevelClient client;
 
     @Autowired
-    private RestHighLevelClient client;
+    private DbUtils dbUtils;
 
 
     /////////////////////////////COMP//////////////////////////////////////////
@@ -95,16 +84,16 @@ public class CoupaUtil {
      */
     public String getAssetId(String id_C, String ref) {
 
-//        System.out.println("what?"+id_C+ref);
+        System.out.println("what?"+id_C+ref);
 
         Query getAsset = new Query(new Criteria("info.id_C").is(id_C).and("info.ref").is(ref));
 
-//        String id_A = redisUtils.getId_A(id_C, ref);
+//        String id_A = dbUtils.getId_A(id_C, ref);
 //        System.out.println(id_A+"......");
 //        Query getAsset = new Query(new Criteria("_id").is(id_A));
         getAsset.fields().include("_id");
         Asset one = mongoTemplate.findOne(getAsset, Asset.class);
-//        System.out.print("one"+one);
+        System.out.print("one"+one);
         if (null != one) {
             return one.getId();
         } else {
@@ -258,7 +247,7 @@ public class CoupaUtil {
      */
     public String getAssetByGrp(String cId, String ref, String grp) {
 
-        String id_A = redisUtils.getId_A(cId, ref);
+        String id_A = dbUtils.getId_A(cId, ref);
         Query getAsset = new Query(new Criteria("_id").is(id_A));
         getAsset.fields().include("_id").include("flowControl");
         Asset one = mongoTemplate.findOne(getAsset, Asset.class);
@@ -280,7 +269,7 @@ public class CoupaUtil {
      * ##Updated: 2021/1/13 9:18
      */
     public JSONObject getAssetByKf(String cId,String oId) {
-        String id_A = redisUtils.getId_A(cId, "a-auth");
+        String id_A = dbUtils.getId_A(cId, "a-auth");
         Query getAsset = new Query(new Criteria("_id").is(id_A));
         getAsset.fields().include("flowControl");
         Asset one = mongoTemplate.findOne(getAsset, Asset.class);
@@ -492,49 +481,49 @@ public class CoupaUtil {
     }
 
 
-    ///////////////////// ES get list ////////////////////
-    public JSONArray getListData(String listType, String Key1, String Val1, String Key2, String Val2) {
-        SearchRequest request = new SearchRequest(listType);
-
-        JSONArray result = new JSONArray();
-
-        // 构建搜索条件
-        SearchSourceBuilder builder = new SearchSourceBuilder();
-        builder.size(100);
-        QueryBuilder queryBuilder;
-        System.out.println("input"+Key1+"x"+Val1+"x"+Key2+"x"+Val2+"x");
-
-//        QueryBuilder queryBuilder1 = QueryBuilders.termQuery(Key1, Val1);
-
-
-        if (!Key2.equals("") && Key2 != null) {
-//            QueryBuilder queryBuilder2 = QueryBuilders.termQuery(Key2, Val2);
-            queryBuilder = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.termQuery(Key1, Val1))
-                    .must(QueryBuilders.termQuery(Key2, Val2));
-        } else {
-            queryBuilder = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.termQuery(Key1, Val1));
-        }
-
-        builder.query(queryBuilder);
-
-        request.source(builder);
-
-        try {
-            SearchResponse search = client.search(request, RequestOptions.DEFAULT);
-            for (SearchHit hit : search.getHits().getHits()) {
-                    result.add(hit.getSourceAsMap());
-                }
-
-            System.out.println("result"+result);
-            return result;
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+//    ///////////////////// ES get list ////////////////////
+//    public JSONArray getListData(String listType, String Key1, String Val1, String Key2, String Val2) {
+//        SearchRequest request = new SearchRequest(listType);
+//
+//        JSONArray result = new JSONArray();
+//
+//        // 构建搜索条件
+//        SearchSourceBuilder builder = new SearchSourceBuilder();
+//        builder.size(100);
+//        QueryBuilder queryBuilder;
+//        System.out.println("input"+Key1+"x"+Val1+"x"+Key2+"x"+Val2+"x");
+//
+////        QueryBuilder queryBuilder1 = QueryBuilders.termQuery(Key1, Val1);
+//
+//
+//        if (!Key2.equals("") && Key2 != null) {
+////            QueryBuilder queryBuilder2 = QueryBuilders.termQuery(Key2, Val2);
+//            queryBuilder = QueryBuilders.boolQuery()
+//                    .must(QueryBuilders.termQuery(Key1, Val1))
+//                    .must(QueryBuilders.termQuery(Key2, Val2));
+//        } else {
+//            queryBuilder = QueryBuilders.boolQuery()
+//                    .must(QueryBuilders.termQuery(Key1, Val1));
+//        }
+//
+//        builder.query(queryBuilder);
+//
+//        request.source(builder);
+//
+//        try {
+//            SearchResponse search = client.search(request, RequestOptions.DEFAULT);
+//            for (SearchHit hit : search.getHits().getHits()) {
+//                    result.add(hit.getSourceAsMap());
+//                }
+//
+//            System.out.println("result"+result);
+//            return result;
+//        } catch (
+//                IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
     /**
      * 根据key和val修改keyVal的对应数据
@@ -613,6 +602,8 @@ public class CoupaUtil {
             e.printStackTrace();
         }
     }
+
+
 
     /**
      * 根据key和val获取listKey需要的信息
@@ -693,19 +684,19 @@ public class CoupaUtil {
      * ##version: 1.0.0
      * ##Updated: 2020/8/6 15:09
      */
-    public void setProdByRefAndSpec(String ref, JSONObject spec) {
-        // 查询条件
-        Query query = new Query(new Criteria("info.ref").is(ref));
-
-        // 创建修改条件
-        Update update = new Update();
-
-        // 添加修改条件
-        update.set("spec", spec);
-
-        // 修改数据
-        mongoTemplate.updateFirst(query, update, Prod.class);
-    }
+//    public void setProdByRefAndSpec(String ref, JSONObject spec) {
+//        // 查询条件
+//        Query query = new Query(new Criteria("info.ref").is(ref));
+//
+//        // 创建修改条件
+//        Update update = new Update();
+//
+//        // 添加修改条件
+//        update.set("spec", spec);
+//
+//        // 修改数据
+//        mongoTemplate.updateFirst(query, update, Prod.class);
+//    }
 
     public void saveOrder(Order order) {
         // 新增order信息

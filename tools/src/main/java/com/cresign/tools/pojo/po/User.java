@@ -42,6 +42,9 @@ public class User {
 
     private JSONObject qrShareCode;
 
+    private JSONObject summ00s;
+
+    private JSONObject summx;  //公司资料缓存
 
     private Integer tvs = 1;
 

@@ -229,7 +229,7 @@ public class RsaUtil {
             LogFlow log1 = JSONObject.parseObject(decrypt,LogFlow.class);
 
             logService.sendLogWSU(log1);
-//            WebSocketUserServerQ.sendLog(log1);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

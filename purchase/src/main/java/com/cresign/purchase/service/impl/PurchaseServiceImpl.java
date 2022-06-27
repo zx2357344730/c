@@ -4,15 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.purchase.enumeration.PurchaseEnum;
-//import com.cresign.purchase.service.AssetService;
 import com.cresign.purchase.service.PurchaseService;
-import com.cresign.purchase.utils.*;
+import com.cresign.purchase.utils.HttpClientUtils;
+import com.cresign.purchase.utils.QRCodeUtil;
+import com.cresign.purchase.utils.SMSTencent;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.common.Constants;
-import com.cresign.tools.dbTools.CommUtils;
-import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.CoupaUtil;
+import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.Ut;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.SMSTemplateEnum;
@@ -62,7 +63,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private MongoTemplate mongoTemplate;
     
     @Autowired
-    private CommUtils commUtils;
+    private Ut ut;
 
     @Autowired
     private DateUtils dateUtils;
@@ -276,7 +277,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         reDataMap.put("body", orderById.get("wcnN").toString());
         // 商户订单号
         reDataMap.put("out_trade_no", rechargeNo);
-        int price = (int) ((commUtils.getDouble(orderById.get("wn2PaidPrice").toString())) * 100);
+        int price = (int) ((ut.getDouble(orderById.get("wn2PaidPrice").toString())) * 100);
         // 获取支付订单价格
         reDataMap.put("total_fee", price + "");
 
@@ -430,7 +431,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         String aId_BuyTemp = null;
         String view = null;
         String id_O = null;
-        int optionType = commUtils.objToInteger(orderById.get("optionType"));
+        int optionType = ut.objToInteger(orderById.get("optionType"));
         if (optionType == 0) {
 
         } else if (optionType == 1 || optionType == 2) {
@@ -460,11 +461,11 @@ public class PurchaseServiceImpl implements PurchaseService {
 //                }
 
                 if (optionType == 1) {
-                    orderById.put("tdurDay", (commUtils.objToInteger(orderById.get("tdurDay")) + commUtils.objToInteger(mod.get("tdurDay"))));
+                    orderById.put("tdurDay", (ut.objToInteger(orderById.get("tdurDay")) + ut.objToInteger(mod.get("tdurDay"))));
                 }
-                orderById.put("tdurMonth", (commUtils.objToInteger(orderById.get("tdurMonth")) + commUtils.objToInteger(mod.get("tdurMonth"))));
-                orderById.put("wn2PaidPrice", (commUtils.getDouble(orderById.get("wn2PaidPrice").toString()) + commUtils.getDouble(mod.get("wn2PaidPrice").toString())));
-                orderById.put("wn2EstPrice", (commUtils.getDouble(orderById.get("wn2EstPrice").toString()) + commUtils.getDouble(mod.get("wn2EstPrice").toString())));
+                orderById.put("tdurMonth", (ut.objToInteger(orderById.get("tdurMonth")) + ut.objToInteger(mod.get("tdurMonth"))));
+                orderById.put("wn2PaidPrice", (ut.getDouble(orderById.get("wn2PaidPrice").toString()) + ut.getDouble(mod.get("wn2PaidPrice").toString())));
+                orderById.put("wn2EstPrice", (ut.getDouble(orderById.get("wn2EstPrice").toString()) + ut.getDouble(mod.get("wn2EstPrice").toString())));
             } else {
                 // 返回处理结果
 //                return RetResult.errorJsonResult(HttpStatus.OK, PurchaseEnum.PR_GET_NULL.getCode(), "失败:购买信息为空！！！");

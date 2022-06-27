@@ -10,14 +10,10 @@ import lombok.Getter;
  */
 @Getter
 public enum TimerEnum {
-
-    //统计分组字段为空
-    EXCELFIELD_IS_NULL("070001"),
-    //统计数据大于1000条
-    STAT_LENGTH_GT("070002"),
-    //文件名小于3字
-    FILENAME_LENGTH_LT("070003"),
-
+    //jobName已存在
+    JOBNAME_IS_EXIST("070001"),
+    //jobName不存在
+    JOBNAME_NOT_EXIST("070002")
 
     ;
     /**

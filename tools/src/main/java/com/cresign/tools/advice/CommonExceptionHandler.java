@@ -93,7 +93,7 @@ public class CommonExceptionHandler {
 
             map.put("message",reEx.getMessage());
 
-            map.put("tid",reEx.getTid());
+//            map.put("tid",reEx.getTid());
 
             map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
 

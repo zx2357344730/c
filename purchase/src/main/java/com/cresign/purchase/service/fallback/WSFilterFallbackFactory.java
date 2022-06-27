@@ -2,10 +2,8 @@ package com.cresign.login.service.fallback;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.client.WSFilterClient;
-import com.cresign.tools.pojo.po.LogFlow;
 import feign.hystrix.FallbackFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**
@@ -33,13 +31,13 @@ public class WSFilterFallbackFactory implements FallbackFactory<WSFilterClient> 
     {
         return new WSFilterClient()
         {
-            @Override
-            public void sendLogWS(@RequestBody LogFlow logData){ }
-
-
-            @Override
-            public void sendWSU(@RequestBody LogFlow logData){ }
-                        //发送消息体
+//            @Override
+//            public void sendLogWS(@RequestBody LogFlow logData){ }
+//
+//
+//            @Override
+//            public void sendWSU(@RequestBody LogFlow logData){ }
+//                        //发送消息体
             @Override
             public void sendLoginDesc(@RequestBody JSONObject reqJson) { }
         };

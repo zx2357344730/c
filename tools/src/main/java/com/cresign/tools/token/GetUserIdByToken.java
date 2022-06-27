@@ -1,7 +1,6 @@
 package com.cresign.tools.token;
 
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.jwt.JwtUtil;

@@ -5,7 +5,6 @@ import com.cresign.login.client.WSFilterClient;
 import com.cresign.tools.pojo.po.LogFlow;
 import feign.hystrix.FallbackFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**

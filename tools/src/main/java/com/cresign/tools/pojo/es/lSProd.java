@@ -1,5 +1,6 @@
 package com.cresign.tools.pojo.es;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
@@ -39,7 +40,7 @@ public class lSProd implements Serializable {
         this.grp = grp == null ? "1000": grp;
         this.ref = ref == null ? "": ref;
         this.pic = pic  == null ? "": pic;
-//        this.lDC = lDC  == null ? 0: lDC;
+        this.lDC = lDC  == null ? 0: lDC;
         this.lUT = lUT  == null ? 0: lUT;
         this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
         this.tmk = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
@@ -54,6 +55,8 @@ public class lSProd implements Serializable {
     private JSONObject wrdN;
 
     private JSONObject wrddesc;
+
+    private JSONArray arrP;
 
     private String grp;
 

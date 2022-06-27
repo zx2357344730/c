@@ -1,31 +1,27 @@
 package com.cresign.timer.quartz;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.timer.client.file.FileClient;
-import com.cresign.timer.service.ScriptTimer;
-import com.cresign.timer.service.StatService;
-import com.cresign.timer.utils.ElasticsearchUtils;
-import com.cresign.tools.dbTools.*;
-
+//import com.cresign.timer.service.ScriptTimer;
+//import com.cresign.timer.service.StatService;
+//import com.cresign.timer.utils.ElasticsearchUtils;
+import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.DbUtils;
+import com.cresign.tools.dbTools.Ut;
 import com.cresign.tools.enumeration.DateEnum;
-import com.cresign.tools.pojo.po.*;
+import com.cresign.tools.pojo.po.Asset;
+import com.cresign.tools.pojo.po.Init;
+import com.cresign.tools.pojo.po.Order;
+import com.cresign.tools.pojo.po.Prod;
 import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.client.indices.GetIndexRequest;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
@@ -42,15 +38,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.script.*;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Component
 @Slf4j
@@ -60,20 +52,17 @@ public class ESQuartz implements Job {
     //@Qualifier("getRestHighLevelClient")//指定Bean
     private RestHighLevelClient restHighLevelClient;
 
-    @Autowired
-    private ElasticsearchUtils elasticsearchUtils;
+//    @Autowired
+//    private ElasticsearchUtils elasticsearchUtils;
 
     @Resource
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private CommUtils commUtils;
-    
-    @Autowired
-    private DateUtils dateUtils;
+    private Ut ut;
 
     @Autowired
-    private RedisUtils redisUtils;
+    private DateUtils dateUtils;
 
     @Autowired
     private DbUtils dbUtils;
@@ -81,11 +70,11 @@ public class ESQuartz implements Job {
     @Autowired
     private FileClient fileClient;
 
-    @Autowired
-    private StatService statService;
-
-    @Autowired
-    private ScriptTimer scriptTimer;
+//    @Autowired
+//    private StatService statService;
+//
+//    @Autowired
+//    private ScriptTimer scriptTimer;
 
     /**
      * 定时器删除任务方法
@@ -284,7 +273,7 @@ public class ESQuartz implements Job {
 //                }else{
 
                     //对方公司id、我放公司id
-                    int bcdNet = redisUtils.judgeComp( hit.getSourceAsMap().get("id_CB").toString(),hit.getSourceAsMap().get("id_C").toString());
+                    int bcdNet = dbUtils.judgeComp( hit.getSourceAsMap().get("id_CB").toString(),hit.getSourceAsMap().get("id_C").toString());
 
                     if (bcdNet == 0 || bcdNet == 2){
 
@@ -509,7 +498,7 @@ public class ESQuartz implements Job {
         Query query = new Query(new Criteria("_id").is("cn_java").and("exchangeRate").exists(true));
 
         try {
-            result = commUtils.net(url, params, "POST");
+            result = ut.net(url, params, "POST");
             //将字符串转化成JSON对象
             JSONObject object = JSONObject.parseObject(result);
             //转化成JSON数组

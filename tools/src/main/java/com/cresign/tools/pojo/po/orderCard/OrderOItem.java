@@ -23,6 +23,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrderOItem {
 
+
+    //TODO KEV this is not ok, must use the original one (inventory is wrong)
     public OrderOItem(String id_P, String id_C, String id_CP, String id_CB, JSONObject wrdN,
                       JSONObject wrddesc, JSONObject wrdprep, String grp, String grpB, String ref,
                       String refB, String pic, Integer lCR, Integer lUT, Double wn2qtyneed,

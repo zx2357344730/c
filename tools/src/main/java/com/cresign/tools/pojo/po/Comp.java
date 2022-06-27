@@ -17,46 +17,32 @@ public class Comp {
 
     private JSONObject file00s;
 
-
     private JSONObject contact;
 
     private CompInfo info;
 
-
     private JSONArray view;
 
+    private JSONObject summ00s;
 
     private JSONObject spec;
 
     private JSONObject text00s;
 
-    private JSONObject task00s;
-
     private JSONObject picroll00s;
 
-    private JSONObject saleCyclex;
-
     private JSONObject link00s;
-
-    private JSONObject devc;
-
-    private JSONObject recentOP;
 
     private JSONObject qrShareCode;
 
     private JSONObject joinCode;
 
-//    private JSONObject qrCodeType;
+    private JSONObject summx;
+
+    private JSONObject tempa;
 
     private Integer bcdNet ;
 
     private Integer tvs = 1;
-
-//    private JSONObject aList;
-
-
-
-
-
 
 }

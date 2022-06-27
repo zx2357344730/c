@@ -2,9 +2,7 @@ package com.cresign.login.client;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.login.service.fallback.WSFilterFallbackFactory;
-
 import com.cresign.tools.pojo.po.LogFlow;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;

@@ -1,6 +1,5 @@
 package com.cresign.tools.pojo.po;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
@@ -24,6 +23,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class LogFlow {
 
     public LogFlow(JSONObject tokData, JSONObject oItem, JSONObject action, String id_CB, String id_O, Integer index, String logType, String subType, String zcndesc, Integer imp) {
+
         this.id = action.getJSONObject("grpBGroup").getJSONObject(oItem.getString("grpB")) == null ||
                 action.getJSONObject("grpBGroup").getJSONObject(oItem.getString("grpB")).getString("id_Flow") == null ?
                 "" : action.getJSONObject("grpBGroup").getJSONObject(oItem.getString("grpB")).getString("id_Flow");
@@ -89,6 +89,7 @@ public class LogFlow {
     public static LogFlow getInstance(){
         return LogFlow.Hod.instance;
     }
+
     private static class Hod{
         private static final LogFlow instance = new LogFlow();
     }
@@ -99,23 +100,24 @@ public class LogFlow {
      * private String type; 是普通 0/ 管理员 1/ 自动trigger 2
      * errId / errIndex / pan
      */
-    public void setActionData(Integer bisactivate, Integer bcdStatus, JSONArray id_Us, Double priority,String id_P,
-                              String id_OP, Integer ind_OP, Integer bmdpt, JSONObject wrdNP,JSONObject wrdN) {
-        JSONObject data = new JSONObject();
-        data.put("bisactivate",bisactivate);
-        data.put("bcdStatus",bcdStatus);
-        data.put("bmdpt", bmdpt);
-        data.put("id_O", id_OP);
-        data.put("index",ind_OP);
-        data.put("id_OP", ind_OP);
-        data.put("id_P",id_P);
-        data.put("priority",priority);
-        data.put("ex_wrdNP",wrdNP);
-        data.put("ex_wrdN",wrdN);
-
-
-        this.data = data;
-    }
+//    public void setActionData(Integer bisactivate, Integer bcdStatus, JSONArray id_Us, Double priority,String id_P,
+//                              String id_OP, Integer ind_OP, String refOP, Integer bmdpt, JSONObject wrdNP,JSONObject wrdN) {
+//        JSONObject data = new JSONObject();
+//        data.put("bisactivate",bisactivate);
+//        data.put("bcdStatus",bcdStatus);
+//        data.put("bmdpt", bmdpt);
+//        data.put("id_O", id_OP);
+//        data.put("index",ind_OP);
+//        data.put("id_OP", ind_OP);
+//        data.put("refOP", refOP);
+//        data.put("id_P",id_P);
+//        data.put("priority",priority);
+//        data.put("ex_wrdNP",wrdNP);
+//        data.put("ex_wrdN",wrdN);
+//
+//
+//        this.data = data;
+//    }
 
     public void setLogData_action (OrderAction orderAction, OrderOItem orderOItem) {
         JSONObject data = new JSONObject();
@@ -131,11 +133,6 @@ public class LogFlow {
         data.put("ex_wrdNP",orderAction.getWrdNP());
         data.put("ex_wrdN",orderAction.getWrdN());
 
-//        // 添加状态
-//        if (null != orderAction.getId_Us()) {
-//            // 添加返回值
-//            data.put("id_Us",orderAction.getId_Us());
-//        }
         this.data = data;
     }
 
@@ -147,11 +144,11 @@ public class LogFlow {
 
         this.data = data;
     }
-    public void setLogData_assetflow (Double qtynow, String id_A, JSONObject unitAction) {
+    public void setLogData_assetflow (Double qtynow, Double price, String id_A, Integer bcdStatus) {
         JSONObject data = new JSONObject();
         data.put("wn2qtynow",qtynow);
-        data.put("bcdStatus",unitAction.getInteger("bcdStatus"));
-
+        data.put("wn4price", price);
+        data.put("bcdStatus",bcdStatus);
         data.put("id_A", id_A);
 
         this.data = data;
@@ -168,8 +165,6 @@ public class LogFlow {
         data.put("ex_wrdNP",orderAction.getWrdNP());
         data.put("ex_wrdN",orderAction.getWrdN());
 
-        // 添加状态
-//        data.put("isOk",0);
         if (null != orderAction.getId_Us()) {
             // 添加返回值
             data.put("id_Us",orderAction.getId_Us());
