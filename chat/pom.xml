@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>cresign_java</artifactId>
+        <groupId>com.cresign_java</groupId>
+        <version>1.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>chat</artifactId>
+
+
+    <dependencies>
+
+
+        <!-- https://mvnrepository.com/artifact/com.getui.push/restful-sdk -->
+        <dependency>
+            <groupId>com.getui.push</groupId>
+            <artifactId>restful-sdk</artifactId>
+            <version>1.0.0.1</version>
+        </dependency>
+
+        <!-- Spring Boot Begin -->
+        <!--<dependency>-->
+        <!--<groupId>org.springframework.boot</groupId>-->
+        <!--<artifactId>spring-boot-starter-actuator</artifactId>-->
+        <!--</dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-test</artifactId>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
+        <!-- Spring Boot End -->
+
+        <dependency>
+            <groupId>com.cresign_java</groupId>
+            <artifactId>tools</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <!-- 自己导的-以下 -->
+
+        <!--个推-->
+<!--        <dependency>-->
+<!--            <groupId>com.gexin.platform</groupId>-->
+<!--            <artifactId>gexin-rp-sdk-http</artifactId>-->
+<!--            <version>4.1.1.4</version>-->
+<!--        </dependency>-->
+
+        <!-- Base64编码需要,生成AES和RSA加密  -->
+        <dependency>
+            <groupId>org.apache.directory.studio</groupId>
+            <artifactId>org.apache.commons.codec</artifactId>
+            <version>1.8</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.64</version>
+        </dependency>
+
+        <!-- Feign -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.56</version>
+        </dependency>
+        <!-- Mongodb -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+        <!-- Redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+
+        <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+
+        <!-- 引入RocketMQ依赖 -->
+        <!-- https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-client -->
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-client</artifactId>
+            <version>4.8.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-spring-boot-starter -->
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-spring-boot-starter</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+
+        <!-- 引入WebSocket依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <!--   jwt     -->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <!--            <exclusions>-->
+            <!--                <exclusion>-->
+            <!--                    <groupId>org.springframework.boot</groupId>-->
+            <!--                    <artifactId>spring-boot-starter-tomcat</artifactId>-->
+            <!--                </exclusion>-->
+            <!--            </exclusions>-->
+        </dependency>
+
+        <!-- 自己导的-以上 -->
+
+        <!-- Spring Cloud Begin -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+        </dependency>
+        <!-- Spring Cloud End -->
+
+
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>7.8.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>7.8.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-client</artifactId>
+            <version>7.8.0</version>
+        </dependency>
+
+        <!-- 微信支付依赖wxpay-sdk -->
+        <dependency>
+            <groupId>com.github.wxpay</groupId>
+            <artifactId>wxpay-sdk</artifactId>
+            <version>0.0.3</version>
+        </dependency>
+
+        <!--   支付依赖     -->
+        <!-- https://mvnrepository.com/artifact/com.stripe/stripe-java -->
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>19.8.0</version>
+        </dependency>
+
+        <!--    谷歌sdk    -->
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>1.30.9</version>
+        </dependency>
+
+
+
+
+    </dependencies>
+
+    <!--个推私有库-->
+<!--    <repositories>-->
+<!--        <repository>-->
+<!--            <id>getui-nexus</id>-->
+<!--            <url>http://mvn.gt.getui.com/nexus/content/repositories/releases/</url>-->
+<!--        </repository>-->
+<!--    </repositories>-->
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--<plugin>-->
+            <!--    <groupId>com.spotify</groupId>-->
+            <!--    <artifactId>docker-maven-plugin</artifactId>-->
+            <!--    <version>1.0.0</version>-->
+            <!--    <configuration>-->
+            <!--        &lt;!&ndash; 镜像名称 guoweixin/exam&ndash;&gt;-->
+            <!--        <imageName>${docker.image.prefix}/${project.artifactId}</imageName>-->
+            <!--        &lt;!&ndash;指定标签&ndash;&gt;-->
+            <!--        <imageTags>-->
+            <!--            <imageTag>latest</imageTag>-->
+            <!--        </imageTags>-->
+            <!--        &lt;!&ndash; 基础镜像jdk 1.8&ndash;&gt;-->
+            <!--        <baseImage>java</baseImage>-->
+            <!--        &lt;!&ndash; 制作者提供本人信息 &ndash;&gt;-->
+            <!--        <maintainer>852649348@qq.com</maintainer>-->
+            <!--        &lt;!&ndash;切换到/ROOT目录 &ndash;&gt;-->
+            <!--        <workdir>/ROOT</workdir>-->
+            <!--        &lt;!&ndash;                    <cmd>["java", "-version"]</cmd>&ndash;&gt;-->
+            <!--        <entryPoint>["java", "-jar", "${project.build.finalName}.jar"]</entryPoint>-->
+            <!--        &lt;!&ndash; 指定 Dockerfile 路径 <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory> &ndash;&gt;&lt;!&ndash;指定远程 docker api地址&ndash;&gt;-->
+            <!--        <dockerHost>http://192.168.1.108:2828</dockerHost>-->
+            <!--        &lt;!&ndash; 这里是复制 jar 包到 docker 容器指定目录配置 &ndash;&gt;-->
+            <!--        <resources>-->
+            <!--            <resource>-->
+            <!--                <targetPath>/ROOT</targetPath>-->
+            <!--                &lt;!&ndash;用于指定需要复制的根目录，${project.build.directory}表示target目 录&ndash;&gt;-->
+            <!--                <directory>${project.build.directory}</directory>-->
+            <!--                &lt;!&ndash;用于指定需要复制的文件。${project.build.finalName}.jar指的是打包 后的jar包文件。&ndash;&gt;-->
+            <!--                <include>${project.build.finalName}.jar</include>-->
+            <!--            </resource>-->
+            <!--        </resources>-->
+            <!--    </configuration>-->
+            <!--    <executions>-->
+            <!--        <execution>-->
+            <!--            <id>build-image</id>-->
+            <!--            <phase>package</phase>-->
+            <!--            <goals>-->
+            <!--                <goal>build</goal>-->
+            <!--            </goals>-->
+            <!--        </execution>-->
+            <!--    </executions>-->
+            <!--</plugin>-->
+        </plugins>
+    </build>
+
+</project>
