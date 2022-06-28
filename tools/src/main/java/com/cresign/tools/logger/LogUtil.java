@@ -77,9 +77,9 @@ public class LogUtil {
 
    public void sendLog(String logType,LogFlow data){
 
-       //this.sendLogByES(logType, data);
+       this.sendLogByES(logType, data);
 
-       this.sendLogByFilebeat(logType,JSON.toJSONString(data));
+//       this.sendLogByFilebeat(logType,JSON.toJSONString(data));
        
    }
 

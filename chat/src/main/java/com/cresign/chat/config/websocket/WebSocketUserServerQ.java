@@ -16,8 +16,6 @@ import com.cresign.tools.pojo.po.LogFlow;
 import io.netty.channel.ChannelHandler.Sharable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.rocketmq.spring.annotation.MessageModel;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
@@ -135,7 +133,7 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
             ,@PathParam("token") String token
     ) {
         log.info(WebSocketUserServerQ.bz+"-ws打开:"+uId);
-//        System.out.println(WebSocketUserServerQ.bz+"-ws打开:"+uId);
+        System.out.println(WebSocketUserServerQ.bz+"-ws打开:"+uId);
         this.userId = uId;
         // 获取当前用户session
         this.session = session;
@@ -166,9 +164,7 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
 
         WebSocketUserServerQ.webSocketSet.put(uId,this);
 
-//        System.out.println(token);
         String s1 = redisTemplate1.opsForValue().get(token);
-//        System.out.println("查询结果:"+s1);
         if (!uId.equals(s1)) {
             // 创建回应前端日志
             LogFlow logContent = LogFlow.getInstance();
@@ -217,7 +213,7 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
         stringMap.put("totalOnlineCount",getZonO());
         // 发送到前端
         this.sendMessage(stringMap,keyAes,true);
-//        System.out.println("在线人数:"+getZonO());
+        System.out.println("在线人数:"+getZonO());
         log.info("在线人数:"+getZonO());
     }
 
@@ -230,10 +226,10 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
      */
     @OnClose
     public void onClose(@PathParam("uId") String uId) {
-//        System.out.println(WebSocketUserServerQ.bz+"-关闭ws:"+uId);
+        System.out.println(WebSocketUserServerQ.bz+"-关闭ws:"+uId);
         log.info(WebSocketUserServerQ.bz+"-关闭ws:"+uId);
         eliminateWS(uId);
-//        System.out.println("在线人数:"+getZonO());
+        System.out.println("在线人数:"+getZonO());
         log.info("在线人数:"+getZonO());
     }
 
@@ -246,12 +242,12 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
      */
     @OnError
     public void onError(Throwable error) {
-//        System.out.println(WebSocketUserServerQ.bz+"-出现错误:"+this.userId);
+        System.out.println(WebSocketUserServerQ.bz+"-出现错误:"+this.userId);
         log.info(WebSocketUserServerQ.bz+"-出现错误:"+this.userId);
 //        eliminateWS(this.userId);
         // 输出错误信息
 //        error.printStackTrace();
-//        System.out.println(error.getMessage());
+        System.out.println(error.getMessage());
         log.info(error.getMessage());
     }
 
@@ -301,9 +297,7 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
         // 设置日志时间
         logContent.setTmd(DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
 
-        // 根据角色获取要发送的连接
-        // 获取当前聊天室对象
-        WebSocketUserServerQ wsUQw = WebSocketUserServerQ.webSocketSet.get(logContent.getId_U());
+        String id_U = logContent.getId_U();
 
         //每次响应之前随机获取AES的key，加密data数据
         String key = AesUtil.getKey();
@@ -312,22 +306,19 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
         JSONObject stringMap = aes(logContent,key);
         stringMap.put("en",true);
 
-        // 判断连接不为空
-        if (wsUQw != null) {
-//            System.out.println(wsUQw.userId + " 发送给自己 " + logContent.getId_U());
-            // 发送消息给自己
-            wsUQw.sendMessage(stringMap,key,true);
-            // 获取公司编号
-            String id_C = logContent.getId_C();
-            // 获取供应商编号
-            String id_CS = logContent.getId_CS();
+        // 调用检测id_U在不在本服务并发送信息方法
+        sendZjOrMq(id_U,stringMap,key);
+
+        // 获取公司编号
+        String id_C = logContent.getId_C();
+        // 获取供应商编号
+        String id_CS = logContent.getId_CS();
+        // 调用获取用户群列表并且判断推送方法
+        getA(id_C,logContent,id_U,stringMap,key);
+        // IF two companies aren't the same, need to push to both companies
+        if (id_CS != null && !id_C.equals(id_CS)) {
             // 调用获取用户群列表并且判断推送方法
-            getA(id_C,logContent,wsUQw.userId,stringMap,key);
-            // IF two companies aren't the same, need to push to both companies
-            if (id_CS != null && !id_C.equals(id_CS)) {
-                // 调用获取用户群列表并且判断推送方法
-                getA(id_CS,logContent,wsUQw.userId,stringMap,key);
-            }
+            getA(id_CS,logContent,id_U,stringMap,key);
         }
     }
 
@@ -419,6 +410,7 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
             // 判断当前连接存在用户编号ws连接
             if (WebSocketUserServerQ.webSocketSet.containsKey(id_u)) {
                 log.info("在本服务:"+" - "+json.getString("bz")+" - "+"进入Chat_MQ:当前ws标志-"+WebSocketUserServerQ.bz);
+                System.out.println("在本服务:"+" - "+json.getString("bz")+" - "+"进入Chat_MQ:当前ws标志-"+WebSocketUserServerQ.bz);
                 // 发送消息
                 WebSocketUserServerQ.webSocketSet.get(id_u)
                         .sendMessage(json.getJSONObject("stringMap")
@@ -565,27 +557,17 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
                     if (!id_U.equals(wsUQwId_U)) {
                         // 获取群用户id的在线状态
                         String wsU = getWsU(id_U);
+                        boolean isPU = false;
+                        if (id_U.equals("6256789ae1908c03460f906f")||id_U.equals("5f28bf314f65cc7dc2e60386"))
+                            isPU = true;
 //                        System.out.println("wsU:"+wsU+" - "+id_U);
                         // 判断在线
-                        if ("1".equals(wsU)) {
-                            // 判断存在当前服务
-                            if (WebSocketUserServerQ.webSocketSet.containsKey(id_U)) {
-//                                System.out.println("在本服务:");
-//                                log.info("在本服务:");
-                                // 直接发送消息
-                                WebSocketUserServerQ.webSocketSet.get(id_U)
-                                        .sendMessage(stringMap,key,true);
-                            } else {
-//                                System.out.println("不在本服务:");
-                                JSONObject db = new JSONObject();
-                                db.put("stringMap",stringMap);
-                                db.put("key",key);
-                                db.put("id_U",id_U);
-                                db.put("bz",WebSocketUserServerQ.bz);
-                                // mq消息推送
-                                rocketMQTemplate.convertAndSend("chatTopic:chatTap", db);
-                            }
-                        }
+                        if ("1".equals(wsU)
+                                &&isPU
+                        ) {
+                            // 调用检测id_U在不在本服务并发送信息方法
+                            sendZjOrMq(id_U,stringMap,key);
+                        } else continue;
 //                        else {
                             // 推送
 //                            System.out.println("进入需要推送--");
@@ -629,5 +611,36 @@ public class WebSocketUserServerQ implements RocketMQListener<String> {
 //        log.info(token);
         logService.sendTestToListPush(pushUList, title, body, token);
 //        logService.sendPush("48b3d22eeee3cba5ec49b918e97bccdb",title,body, token);
+    }
+
+    /**
+     * 检测id_U在不在本服务并发送信息方法，在：直接发送、不在：放入mq发送
+     * @param id_U	用户编号
+     * @param stringMap	发送的加密数据
+     * @param key	加密key
+     * @return void  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/6/28
+     */
+    private static void sendZjOrMq(String id_U,JSONObject stringMap,String key){
+        System.out.println("id_U:"+id_U);
+        // 判断存在当前服务
+        if (WebSocketUserServerQ.webSocketSet.containsKey(id_U)) {
+            System.out.println("在本服务:");
+            log.info("在本服务:");
+            // 直接发送消息
+            WebSocketUserServerQ.webSocketSet.get(id_U)
+                    .sendMessage(stringMap,key,true);
+        } else {
+            System.out.println("不在本服务:");
+            JSONObject db = new JSONObject();
+            db.put("stringMap",stringMap);
+            db.put("key",key);
+            db.put("id_U",id_U);
+            db.put("bz",WebSocketUserServerQ.bz);
+            // mq消息推送
+            rocketMQTemplate.convertAndSend("chatTopic:chatTap", db);
+        }
     }
 }
