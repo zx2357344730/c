@@ -3,6 +3,7 @@ package com.cresign.chat.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.config.websocket.WebSocketLoginServer;
 import com.cresign.chat.config.websocket.WebSocketUserServerQ;
+import com.cresign.chat.config.websocket.WebSocketUserServerQF;
 import com.cresign.chat.service.LogService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
@@ -61,7 +62,8 @@ public class LogController {
     @PostMapping("/v1/sendWS")
     public void sendLogWS(@RequestBody LogFlow logData){
 //        WebSocketUserServer.sendLog(logData);
-        WebSocketUserServerQ.sendLog(logData);
+//        WebSocketUserServerQ.sendLog(logData);
+        WebSocketUserServerQF.sendLog(logData);
     }
 
     /**

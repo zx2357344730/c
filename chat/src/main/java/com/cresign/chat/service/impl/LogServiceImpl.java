@@ -7,6 +7,7 @@ import com.cresign.chat.common.ChatEnum;
 import com.cresign.chat.config.websocket.WebSocketServerPi;
 import com.cresign.chat.config.websocket.WebSocketUserServer;
 import com.cresign.chat.config.websocket.WebSocketUserServerQ;
+import com.cresign.chat.config.websocket.WebSocketUserServerQF;
 import com.cresign.chat.service.LogService;
 import com.cresign.chat.utils.HttpClientUtils;
 import com.cresign.chat.utils.RsaUtil;
@@ -164,13 +165,14 @@ public class LogServiceImpl  implements LogService {
     public void sendLogWSU(LogFlow logData) {
 
 //        WebSocketUserServer.sendLog(logData);
-        WebSocketUserServerQ.sendLog(logData);
+//        WebSocketUserServerQ.sendLog(logData);
+        WebSocketUserServerQF.sendLog(logData);
 
         //KEV  COW @ close but send message error
         //KEV actually this sending bindingInfo move to WSU
         //https://blog.csdn.net/canot/article/details/52495333
 
-        logUtil.sendLog(logData.getLogType(),logData);
+//        logUtil.sendLog(logData.getLogType(),logData);
 
     }
 
