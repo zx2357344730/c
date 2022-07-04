@@ -537,7 +537,11 @@ public class WebSocketUserServer {
 
                 this.sendMessage(stringMap,null,false);
             } else {
-                RsaUtil.encryptionSend(map,keyJava.get(id).getString("privateKeyJava"),logService);
+                LogFlow logData = RsaUtil.encryptionSend(map,keyJava.get(id).getString("privateKeyJava"));
+
+                WebSocketUserServer.sendLog(logData);
+
+
             }
         }
     }

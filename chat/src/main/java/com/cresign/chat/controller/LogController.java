@@ -3,7 +3,6 @@ package com.cresign.chat.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.config.websocket.WebSocketLoginServer;
 import com.cresign.chat.config.websocket.WebSocketUserServerQ;
-import com.cresign.chat.config.websocket.WebSocketUserServerQF;
 import com.cresign.chat.service.LogService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
@@ -46,10 +45,10 @@ public class LogController {
      * @date 2021/6/30 16:13
      */
     @PostMapping("/v1/sendLoginDesc")
-    public void sendLoginDesc(@RequestBody JSONObject can){
+    public void sendLoginDesc(@RequestBody JSONObject reqJson){
         WebSocketLoginServer.sendInfo(
-                can.getString("id"),
-                can.getJSONObject("infoData"));
+                reqJson.getString("id"),
+                reqJson.getJSONObject("infoData"));
     }
 
     /**
@@ -61,14 +60,12 @@ public class LogController {
      */
     @PostMapping("/v1/sendWS")
     public void sendLogWS(@RequestBody LogFlow logData){
-//        WebSocketUserServer.sendLog(logData);
-//        WebSocketUserServerQ.sendLog(logData);
-        WebSocketUserServerQF.sendLog(logData);
+        WebSocketUserServerQ.sendLog(logData);
     }
 
     /**
-     * 根据can获取单个用户信息
-     * ##Params: can	请求参数
+     * 根据reqJson获取单个用户信息
+     * ##Params: reqJson	请求参数
      * ##return: java.lang.String  返回结果:用户信息
      * ##Author: tang
      * ##version: 1.0.0
@@ -76,23 +73,23 @@ public class LogController {
      */
     @SecurityParameter
     @PostMapping("/v1/setGpio")
-    public ApiResponse setGpio(@RequestBody JSONObject can){
+    public ApiResponse setGpio(@RequestBody JSONObject reqJson){
 
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
 
         // 获取用户id
-//        String uid = can.getString(ChatConstants.L_C_REQUEST_UID);
-//        String cid = can.getString(ChatConstants.L_C_REQUEST_CID);
-//        String gpIo = can.getString("gpIo");
-//        String rname = can.getString("rname");
-        can.put("id_U",tokData.getString("id_U"));
+//        String uid = reqJson.getString(ChatConstants.L_C_REQUEST_UID);
+//        String cid = reqJson.getString(ChatConstants.L_C_REQUEST_CID);
+//        String gpIo = reqJson.getString("gpIo");
+//        String rname = reqJson.getString("rname");
+        reqJson.put("id_U",tokData.getString("id_U"));
         System.out.println("进入绑定");
-        return logService.setGpio(can);
+        return logService.setGpio(reqJson);
     }
 
     /**
-     * 根据can获取单个用户信息
-     * ##Params: can	请求参数
+     * 根据reqJson获取单个用户信息
+     * ##Params: reqJson	请求参数
      * ##return: java.lang.String  返回结果:用户信息
      * ##Author: tang
      * ##version: 1.0.0
@@ -100,22 +97,22 @@ public class LogController {
      */
     @SecurityParameter
     @PostMapping("/v1/unsetGpio")
-    public ApiResponse unsetGpio(@RequestBody JSONObject can){
+    public ApiResponse unsetGpio(@RequestBody JSONObject reqJson){
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
 
         // 获取用户id
-//        String uid = can.getString(ChatConstants.L_C_REQUEST_UID);
-//        String cid = can.getString(ChatConstants.L_C_REQUEST_CID);
-//        String gpIo = can.getString("gpIo");
-//        String rname = can.getString("rname");
-        can.put("id_U",tokData.getString("id_U"));
+//        String uid = reqJson.getString(ChatConstants.L_C_REQUEST_UID);
+//        String cid = reqJson.getString(ChatConstants.L_C_REQUEST_CID);
+//        String gpIo = reqJson.getString("gpIo");
+//        String rname = reqJson.getString("rname");
+        reqJson.put("id_U",tokData.getString("id_U"));
         System.out.println("进入解除绑定");
-        return logService.unsetGpio(can);
+        return logService.unsetGpio(reqJson);
     }
 
 //    /**
-//     * 根据can获取单个用户信息
-//     * ##Params: can	请求参数
+//     * 根据reqJson获取单个用户信息
+//     * ##Params: reqJson	请求参数
 //     * ##return: java.lang.String  返回结果:用户信息
 //     * ##Author: tang
 //     * ##version: 1.0.0
@@ -123,10 +120,10 @@ public class LogController {
 //     */
 //    @SecurityParameter
 //    @PostMapping("/v1/getIdCAndRpI")
-//    public ApiResponse getIdCAndRpI(@RequestBody JSONObject can){
+//    public ApiResponse getIdCAndRpI(@RequestBody JSONObject reqJson){
 //
 //        // 获取用户id
-////        String uid = can.getString(ChatConstants.L_C_REQUEST_UID);
+////        String uid = reqJson.getString(ChatConstants.L_C_REQUEST_UID);
 //        return logService.getIdCAndRpI();
 //    }
 
