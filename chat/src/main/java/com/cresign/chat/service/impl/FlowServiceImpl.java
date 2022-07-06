@@ -309,8 +309,6 @@ public class FlowServiceImpl implements FlowService {
                 if (!prodCompId.equals(myCompId))
                 {
                     aId2 = dbUtils.getId_A(prodCompId, "a-auth");
-                } else if (myCompId.equals(targetCompId)) {
-                    aId2 = "none";
                 } else {
                     aId2 = myId_A;
                 }
@@ -327,7 +325,8 @@ public class FlowServiceImpl implements FlowService {
                     }
                     JSONArray defResultSP = asset.getDef().getJSONArray("objlSProd");
                     JSONArray defResultSC = asset.getDef().getJSONArray("objlSComp");
-                    
+
+
                     for (int i1 = 0; i1 < unitOItem.size(); i1++) {
                         if (grpGroup.getJSONObject(unitOItem.get(i1).getGrp()) == null) {
                             for (int i2 = 0; i2 < defResultSP.size(); i2++) {
@@ -337,11 +336,10 @@ public class FlowServiceImpl implements FlowService {
                         }
                     }
                     // get GrpB and grpS of id_CB
-//                    if (prodCompId.equals(targetCompId))
-//                    {   // I am both
-//                        grpO = "1010";
-//                    } else
-//                    {
+                    if (prodCompId.equals(targetCompId))
+                    {   // I am both
+                        grpO = "1010";
+                    } else {
                         String compGrpB = listData.getString("grp");
                         for (int k = 0; k < defResultSC.size(); k++)
                         {
@@ -352,7 +350,8 @@ public class FlowServiceImpl implements FlowService {
                                 break;
                             }
                         }
-//                    }
+                    }
+
 
                   }
 
@@ -362,8 +361,6 @@ public class FlowServiceImpl implements FlowService {
                     // make sales order Action
                     System.out.print("sales order");
                     System.out.print(unitAction);
-
-                    System.out.print(oDates);
 
                     this.updateSalesOrder(casItemData,unitAction,unitOItem,salesOrderData,grpBGroup, grpGroup, prodCompId
                     ,oDates,oTasks);
@@ -1128,6 +1125,10 @@ public class FlowServiceImpl implements FlowService {
     {
         // upperAction and upperOItem @ dgLayer = 1 is here with just regular shit
 
+        System.out.println("dglayer1 ="+upperOItem);
+        System.out.println("dglayer1 ="+upperAction);
+
+
         // qtyNeed = upperOItem.qtyNeed
         Double qtyNeed = upperOItem.getWn2qtyneed();
 
@@ -1137,7 +1138,8 @@ public class FlowServiceImpl implements FlowService {
         String finO = pidActionCollection.get(id_P).getId_O();
         Integer fin_Ind = pidActionCollection.get(id_P).getIndex();
         Integer myPrior = partArray.getJSONObject(partIndex).getInteger("wn0prior");
-
+        System.out.println("all "+ partIndex + " " + qtyNeed);
+        System.out.println("upper"+ upperOItem);
         partArray.getJSONObject(partIndex).put("fin_O", finO);
         partArray.getJSONObject(partIndex).put("fin_Ind", fin_Ind);
 
@@ -1189,6 +1191,7 @@ public class FlowServiceImpl implements FlowService {
 
                 if (!dgType.equals(1)) {
                     unitAction.getUpPrnts().add(upPrntsData);
+                    System.out.println("*** upData" + upPrntsData);
                 } else {
                     for (int i = 0; i < unitAction.getSubParts().size(); i++)
                     {
@@ -1257,38 +1260,30 @@ public class FlowServiceImpl implements FlowService {
         OrderOItem unitOItem = objOItemCollection.get(finO).get(fin_Ind);
         OrderAction unitAction = objActionCollection.get(finO).get(fin_Ind);
 
+        //ZJ
+        Integer ind = mergeJ.getInteger(unitOItem.getId_P());
+        OrderODate oDa = oDates.get(ind);
+
+        //ZJ
         if (qtySubNeed == null)
         {
             qtySubNeed = 1.0;
         }
 
-
-
         Double currentQty = unitOItem.getWn2qtyneed();
-//
-//        System.out.println("current"+currentQty);
-//        System.out.println("qtyNeed"+qtyNeed);
-//        System.out.println("qtySub"+qtySubNeed);
-        System.out.println("I am checking here");
-        System.out.println(currentQty);
-        System.out.println(unitOItem.getWrdN().getString("cn"));
-        System.out.println(qtyNeed);
+        //ZJ
+        oDa.setWn2qtyneed(oDa.getWn2qtyneed()+currentQty);
+        oDates.set(ind,oDa);
+        //ZJ
 
-        unitOItem.setWn2qtyneed(currentQty + qtyNeed * qtySubNeed);
+        System.out.println("current"+currentQty);
+        System.out.println("qtyNeed"+qtyNeed);
+        System.out.println("qtySub"+qtySubNeed);
 
 
         // summ qtyall and qtyneed if I am not the main Parent
         if (!id_OP.equals(finO)) {
-
-            System.out.println("I am checking here");
-            System.out.println(currentQty);
-            System.out.println(unitOItem.getWrdN().getString("cn"));
-            System.out.println(qtyNeed);
-
-            Integer ind = mergeJ.getInteger(unitOItem.getId_P());
-            OrderODate oDa = oDates.get(ind);
-            oDa.setWn2qtyneed(oDa.getWn2qtyneed()+currentQty);
-            oDates.set(ind,oDa);
+            unitOItem.setWn2qtyneed(currentQty + qtyNeed * qtySubNeed);
 
             System.out.println(id_OP+finO);
             JSONObject upPrntsData = unitAction.getUpPrnts().getJSONObject(0); //******
