@@ -81,7 +81,7 @@ public interface LogService {
      */
     void sendPush(String clientId,String title,String body,String token);
 
-    void sendTestToListPush(JSONArray pushUList, String title, String body,String token);
+    void sendPushBatch(JSONArray cidArray, String title, String body);
 
     /**
      * 发送logL信息到User-websocket
@@ -91,7 +91,7 @@ public interface LogService {
      * @version 1.0.0
      * @date 2021/8/4 15:39
      */
-    void sendLogWSU(LogFlow logL);
+//    void sendLogWSU(LogFlow logL);
 
     /**
      * 根据can获取单个用户信息
@@ -112,6 +112,9 @@ public interface LogService {
      * Updated: 2020/8/6 8:21
      */
     ApiResponse unsetGpio(JSONObject can);
+
+    String getToken();
+
 
 //    /**
 //     * 根据can获取单个用户信息

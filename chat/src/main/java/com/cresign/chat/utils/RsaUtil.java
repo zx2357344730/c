@@ -211,11 +211,12 @@ public class RsaUtil {
         return encdeStr;
     }
 
-    public static void encryptionSend(JSONObject map, String privateKeyJava, LogService logService){
+    public static LogFlow encryptionSend(JSONObject map, String privateKeyJava){
         // AES加密后的数据
         String data = map.getString("data");
         // 后端RSA公钥加密后的AES的key
         String aesKey = map.getString("aesKey");
+        String decrypt = "";
         // 后端私钥解密的到AES的key
         try {
             byte[] plaintext = RsaUtil.decryptByPrivateKey(Base64.decodeBase64(aesKey)
@@ -224,14 +225,17 @@ public class RsaUtil {
             //RSA解密出来字符串多一对双引号
             aesKey = aesKey.substring(1, aesKey.length() - 1);
             //AES解密得到明文data数据
-            String decrypt = AesUtil.decrypt(data, aesKey);
+            decrypt = AesUtil.decrypt(data, aesKey);
 
-            LogFlow log1 = JSONObject.parseObject(decrypt,LogFlow.class);
-
-            logService.sendLogWSU(log1);
+//            LogFlow log1 = JSONObject.parseObject(decrypt,LogFlow.class);
+//
+//            logService.sendLogWSU(log1);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return JSONObject.parseObject(decrypt,LogFlow.class);
+
     }
 }

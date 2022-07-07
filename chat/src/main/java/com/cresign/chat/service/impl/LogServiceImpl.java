@@ -7,7 +7,6 @@ import com.cresign.chat.common.ChatEnum;
 import com.cresign.chat.config.websocket.WebSocketServerPi;
 import com.cresign.chat.config.websocket.WebSocketUserServer;
 import com.cresign.chat.config.websocket.WebSocketUserServerQ;
-import com.cresign.chat.config.websocket.WebSocketUserServerQF;
 import com.cresign.chat.service.LogService;
 import com.cresign.chat.utils.HttpClientUtils;
 import com.cresign.chat.utils.RsaUtil;
@@ -105,11 +104,13 @@ public class LogServiceImpl  implements LogService {
     }
 
     @Override
-    public void sendTestToListPush(JSONArray pushUList,String title,String body,String token){
+    public void sendPushBatch(JSONArray cidArray,String title,String body){
         String s;
         JSONObject heads = new JSONObject();
+        String token = this.getToken();
         heads.put("token",token);
         JSONObject push;
+
 
         String group_name = "任务组名";
         String request_id = MongoUtils.GetObjectId();
@@ -141,7 +142,7 @@ public class LogServiceImpl  implements LogService {
         JSONObject re = JSONObject.parseObject(s);
         String taskid = re.getJSONObject("data").getString("taskid");
         JSONObject audience = new JSONObject();
-        audience.put("cid",pushUList);
+        audience.put("cid",cidArray);
         push = new JSONObject();
         push.put("audience",audience);
         push.put("taskid",taskid);
@@ -161,22 +162,22 @@ public class LogServiceImpl  implements LogService {
      * @version 1.0.0
      * @date 2021/8/4 15:39
      */
-    @Override
-    public void sendLogWSU(LogFlow logData) {
-
-//        WebSocketUserServer.sendLog(logData);
+//    @Override
+//    public void sendLogWSU(LogFlow logData) {
+//
+////        WebSocketUserServer.sendLog(logData);
 //        WebSocketUserServerQ.sendLog(logData);
-        WebSocketUserServerQF.sendLog(logData);
-
-        //KEV  COW @ close but send message error
-        //KEV actually this sending bindingInfo move to WSU
-        //https://blog.csdn.net/canot/article/details/52495333
-
+//
+//        //KEV  COW @ close but send message error
+//        //KEV actually this sending bindingInfo move to WSU
+//        //https://blog.csdn.net/canot/article/details/52495333
+//
 //        logUtil.sendLog(logData.getLogType(),logData);
+//
+//    }
 
-    }
-
-    public static String getToken(){
+    @Override
+    public String getToken(){
         String appKey = "ShxgT3kg6s73NbuZeAe3I";
         String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
         long timestamp = System.currentTimeMillis();
@@ -190,6 +191,8 @@ public class LogServiceImpl  implements LogService {
         JSONObject data = tokenResult.getJSONObject("data");
         return data.getString("token");
     }
+    
+    
     @Override
     public ApiResponse setGpio(JSONObject bindingInfo) {
         
