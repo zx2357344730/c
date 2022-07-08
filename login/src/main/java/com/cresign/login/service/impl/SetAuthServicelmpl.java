@@ -320,7 +320,7 @@ public class SetAuthServicelmpl implements SetAuthService {
     public ApiResponse updateDefCard(String id_U, String id_C, JSONObject defData) {
 
 
-        authCheck.getUserUpdateAuth(id_U, id_C, "lBAsset", "1003", "card", new JSONArray().fluentAdd("def"));
+        authCheck.getUserUpdateAuth(id_U, id_C, "lSAsset", "1003", "card", new JSONArray().fluentAdd("def"));
 
             Query menuQuery = new Query(
                     new Criteria("info.id_C").is(id_C)

@@ -152,7 +152,7 @@ public class ModuleServicelmpl implements ModuleService {
     private void obtainObjAuth(String ref ,Integer bcdLevel,String id_C) {
 
         List<String> listType = new LinkedList<>();
-        listType.add("lBUser");listType.add("lSOrder");listType.add("lBAsset");
+        listType.add("lBUser");listType.add("lSOrder");listType.add("lSAsset");
         listType.add("lBProd");listType.add("lBOrder");listType.add("lSComp");
         listType.add("lSProd");listType.add("lBComp");
 
@@ -439,7 +439,7 @@ public class ModuleServicelmpl implements ModuleService {
 
     private JSONObject setRole (String id_C) {
 
-        String listType = "lBAsset";
+        String listType = "lSAsset";
 
         String grp = "1009";
 
@@ -614,7 +614,7 @@ public class ModuleServicelmpl implements ModuleService {
             System.out.println("ok inserted  "+ id);
 
             //指定ES索引
-            IndexRequest request = new IndexRequest("lbasset");
+            IndexRequest request = new IndexRequest("lSAsset");
 
             //ES列表
             JSONObject listObject = new  JSONObject();

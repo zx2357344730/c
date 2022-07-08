@@ -14,10 +14,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @AllArgsConstructor//全参构造
 @NoArgsConstructor//无参构造
-@Document(collection = "lBAsset")
-public class lBAsset {
+@Document(collection = "lSAsset")
+public class lSAsset {
 
-    public lBAsset(String id_A, String id_C, String id_CP, String id_P, Double wn2qty, JSONObject wrdN, JSONObject wrddesc, String grp,
+    public lSAsset(String id_A, String id_C, String id_CP, String id_P, Double wn2qty, JSONObject wrdN, JSONObject wrddesc, String grp,
                    String pic, String ref, Integer lAT) {
 
         JSONObject wrdEmpty = new JSONObject();

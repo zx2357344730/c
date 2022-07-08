@@ -138,7 +138,7 @@ public class CoupaUtil {
 //                int i = 0;
 //                for (int j = 0; j < objMenu.size(); j++) {
 //                    JSONObject map = objMenu.getJSONObject(j);
-//                    if (null != map.get("bmdlistType") && map.get("bmdlistType").equals("lBAsset")) {
+//                    if (null != map.get("bmdlistType") && map.get("bmdlistType").equals("lSAsset")) {
 //                        if (null != map.get("lrefcard")) {
 //                            // 创建修改条件
 //                            Update update = new Update();
@@ -223,7 +223,7 @@ public class CoupaUtil {
                 int i = 0;
                 for (int j = 0; j < objMenu.size(); j++) {
                     JSONObject map = objMenu.getJSONObject(j);
-                    if (null != map.get("bmdlistType") && map.get("bmdlistType").equals("lBAsset")) {
+                    if (null != map.get("bmdlistType") && map.get("bmdlistType").equals("lSAsset")) {
                         if (null != map.get("lrefcard")) {
                             // 创建修改条件
                             Update update = new Update();

@@ -119,8 +119,8 @@ public class ActionServiceImpl implements ActionService {
                 logStart.setLogData_action(oAction, oItem);
                 logStart.getData().put("bcdStatus", 1);
 
-                this.sendLogWSU(logStop);
-                this.sendLogWSU(logStart);
+                ws.sendWS(logStop);
+                ws.sendWS(logStart);
             }
         }
         return retResult.ok(CodeEnum.OK.getCode(), "换群成功");
@@ -166,8 +166,8 @@ public class ActionServiceImpl implements ActionService {
                 logStart.setLogData_action(oAction, oItem);
                 logStart.getData().put("bcdStatus", 1);
 
-                this.sendLogWSU(logStop);
-                this.sendLogWSU(logStart);
+                ws.sendWS(logStop);
+                ws.sendWS(logStart);
             }
         }
         return retResult.ok(CodeEnum.OK.getCode(), "换群成功");
@@ -355,7 +355,6 @@ public class ActionServiceImpl implements ActionService {
 
             logL.setLogData_action(orderAction,orderOItem);
 
-            this.sendLogWSU(logL);
 
             // if Quest, send log + update OItem of myself = task = DG = above
             // get upPrnt data, and find the prob, set that status of Prob to status
@@ -388,7 +387,10 @@ public class ActionServiceImpl implements ActionService {
 //                    this.updateNext(orderAction, id_C, id_U,grpU, dep, wrdNU, logType);
 //                }
             }
-            // 抛出操作成功异常
+
+            ws.sendWS(logL);
+
+                // 抛出操作成功异常
             return retResult.ok(CodeEnum.OK.getCode(), res);
         }
 
@@ -425,7 +427,7 @@ public class ActionServiceImpl implements ActionService {
                                 logL.setLogData_action(orderAction1, orderOItem1);
 
                                 // 调用发送日志方法
-                                this.sendLogWSU(logL);
+                                ws.sendWS(logL);
                                 // 把修改好的信息设置回去
 
 //                                JSONObject mapKey = new JSONObject();
@@ -459,7 +461,7 @@ public class ActionServiceImpl implements ActionService {
                                                 "", dep, "准备开始", 3, subOItem.getWrdN(), wrdNU);
                                         logLP.setLogData_action(subAction, subOItem);
 
-                                        this.sendLogWSU(logLP);
+                                        ws.sendWS(logLP);
                                     }
                                 }
                             }
@@ -519,7 +521,7 @@ public class ActionServiceImpl implements ActionService {
 
                         logL.setLogData_action(unitActionPrnt, unitOItemPrnt);
 
-                        this.sendLogWSU(logL);
+                        ws.sendWS(logL);
                     }
 
                         JSONObject mapKey = new JSONObject();
@@ -608,16 +610,14 @@ public class ActionServiceImpl implements ActionService {
 //                    method: "post",
 //                    url: "/chat/flow/v1/up_FC_action_grpB",
 
-    private void sendLogWSU(LogFlow logData) {
-
-        ws.sendWS(logData);
-
-        //KEV  COW @ close but send message error
-        //https://blog.csdn.net/canot/article/details/52495333
-
-        logUtil.sendLog(logData.getLogType(),logData);
-
-    }
+//    private void sendLogWSU(LogFlow logData) {
+//
+////        logUtil.sendLog(logData.getLogType(),logData);
+//
+//        ws.sendWS(logData);
+//
+//
+//    }
 
 
     private JSONObject getActionData(String oid, Integer index) {
@@ -725,7 +725,7 @@ public class ActionServiceImpl implements ActionService {
                         "",dep,"准备开始",3,unitOItem.getWrdN(),wrdNU);
                 logLP.setLogData_action(unitAction,unitOItem);
 
-                this.sendLogWSU(logLP);
+                ws.sendWS(logLP);
 
             } else {
                 throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经推送过了");
@@ -810,7 +810,7 @@ public class ActionServiceImpl implements ActionService {
                                         "",dep,"准备开始",3,subOItem.getWrdN(),wrdNU);
                                 logLP.setLogData_action(subAction,subOItem);
 
-                                this.sendLogWSU(logLP);
+                                ws.sendWS(logLP);
                             } else {
                                 System.out.println("break @ "+k);
                                 break;
@@ -851,7 +851,7 @@ public class ActionServiceImpl implements ActionService {
                                 unitOItem.getId_P(), unitOItem.getGrpB(),unitOItem.getGrp(),unitAction.getId_O(), unitAction.getIndex(),
                                 myCompId, unitOItem.getId_C(), "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
                         logLP.setLogData_action(unitAction, unitOItem);
-                        this.sendLogWSU(logLP);
+                        ws.sendWS(logLP);
                         // 发送日志
                     }
                 }
@@ -934,7 +934,7 @@ public class ActionServiceImpl implements ActionService {
         mapKey.put("oItem.objItem."+index,unitOItem);
         coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
 
-        this.sendLogWSU(logLP);
+        ws.sendWS(logLP);
 
         return retResult.ok(CodeEnum.OK.getCode(), "done");
     }
@@ -1036,7 +1036,7 @@ public class ActionServiceImpl implements ActionService {
 
         coupaUtil.updateOrderByListKeyVal(id_Prob,probResult);
 
-        this.sendLogWSU(logProb);
+        ws.sendWS(logProb);
 
         return retResult.ok(CodeEnum.OK.getCode(), "done");
 
@@ -1116,7 +1116,7 @@ public class ActionServiceImpl implements ActionService {
                             "", tokData.getString("dep"), newMsg, 3, subOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
                     logLP.setLogData_action(subAction, subOItem);
 
-                    this.sendLogWSU(logLP);
+                    ws.sendWS(logLP);
 
             }
         }

@@ -75,47 +75,47 @@ public class LogUtil {
 
    private static Logger logger = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME);
 
-   public void sendLog(String logType,LogFlow data){
-
-       this.sendLogByES(logType, data);
-
-//       this.sendLogByFilebeat(logType,JSON.toJSONString(data));
-       
-   }
-
-    private void sendLogByFilebeat(String logType,Object data){
-
-        JSONObject logObj = selectLogType(logType);
-        logger.log(Level.forName(logObj.getString("name"),logObj.getInteger("intValue")),  data);
-    }
-
-    private void sendLogByES(String logType, LogFlow logFlow){
-
-        GetIndexRequest request = new GetIndexRequest(logType);
-        try {
-            // 获取结果
-            boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
-            // 判断结果
-            if (!exists) {
-                // 1、创建索引请求
-                CreateIndexRequest requestC = new CreateIndexRequest(logType);
-                // 新增索引
-                client.indices().create(requestC, RequestOptions.DEFAULT);
-            }
-
-            // 创建插入数据请求
-            IndexRequest requestI = new IndexRequest(logType);
-
-            // 将我们的数据放入请求 json
-            requestI.source(JSON.toJSONString(logFlow), XContentType.JSON);
-            // 写入完成立即刷新
-            requestI.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
-            // 写入数据
-            client.index(requestI, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//   public void sendLog(String logType,LogFlow data){
+//
+//       this.sendLogByES(logType, data);
+//
+//       //this.sendLogByFilebeat(logType,JSON.toJSONString(data));
+//
+//   }
+//
+//    private void sendLogByFilebeat(String logType,Object data){
+//
+//        JSONObject logObj = selectLogType(logType);
+//        logger.log(Level.forName(logObj.getString("name"),logObj.getInteger("intValue")),  data);
+//    }
+//
+//    private void sendLogByES(String logType, LogFlow logFlow){
+//
+//        GetIndexRequest request = new GetIndexRequest(logType);
+//        try {
+//            // 获取结果
+//            boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
+//            // 判断结果
+//            if (!exists) {
+//                // 1、创建索引请求
+//                CreateIndexRequest requestC = new CreateIndexRequest(logType);
+//                // 新增索引
+//                client.indices().create(requestC, RequestOptions.DEFAULT);
+//            }
+//
+//            // 创建插入数据请求
+//            IndexRequest requestI = new IndexRequest(logType);
+//
+//            // 将我们的数据放入请求 json
+//            requestI.source(JSON.toJSONString(logFlow), XContentType.JSON);
+//            // 写入完成立即刷新
+//            requestI.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
+//            // 写入数据
+//            client.index(requestI, RequestOptions.DEFAULT);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 
 

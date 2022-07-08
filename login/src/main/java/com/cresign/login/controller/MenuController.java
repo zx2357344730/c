@@ -55,7 +55,7 @@ public class MenuController {
                 tokData.getString("id_U"),
                 tokData.getString("id_C"),
                 tokData.getString("grpU"),
-                "lBAsset", "1003", "card");
+                "lSAsset", "1003", "card");
         if (!canUpdate.contains("menu"))
         {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
@@ -70,7 +70,7 @@ public class MenuController {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         JSONArray canUpdate = authCheck.getUserSelectAuth(
                 tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
-                "lBAsset", "1003", "card");
+                "lSAsset", "1003", "card");
         if (!canUpdate.contains("menu"))
         {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
@@ -88,7 +88,7 @@ public class MenuController {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         JSONArray canUpdate = authCheck.getUserSelectAuth(
                 tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
-                "lBAsset", "1003", "card");
+                "lSAsset", "1003", "card");
         if (!canUpdate.contains("menu"))
         {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
@@ -132,7 +132,7 @@ public class MenuController {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         JSONArray canUpdate = authCheck.getUserSelectAuth(
                 tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
-                "lBAsset", "1003", "card");
+                "lSAsset", "1003", "card");
         if (!canUpdate.contains("menu"))
         {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);

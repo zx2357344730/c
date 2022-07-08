@@ -1,6 +1,7 @@
 package com.cresign.tools.exception;
 
 import lombok.Getter;
+import org.apache.skywalking.apm.toolkit.trace.TraceContext;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -33,14 +34,14 @@ public class ErrorResponseException extends RuntimeException{
     /**
      * traceId skyWalking返回id
      */
-//    private String tid;
+    private String tid;
 
 
     public ErrorResponseException(HttpStatus status, String code, String des) {
         this.status = status;
         this.code = code;
         this.des = des;
-//        this.tid = TraceContext.traceId();
+        this.tid = TraceContext.traceId();
     }
 
 }

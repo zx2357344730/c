@@ -66,7 +66,7 @@ public class RoleServiceImpl implements RoleService {
 //        JSONObject reqJson = new JSONObject();
 //        reqJson.put("id_U", id_U);
 //        reqJson.put("id_C", id_C);
-//        reqJson.put("listType", "lBAsset");
+//        reqJson.put("listType", "lSAsset");
 //        reqJson.put("grp", "1003");
 //        reqJson.put("authType", "card");
 //        reqJson.put("params", params);
@@ -74,7 +74,7 @@ public class RoleServiceImpl implements RoleService {
 //        authFilterClient.getUserSelectAuth(reqJson);
 
         //之前是调用login服务的权限API，现在是移到login服务了，直接调用
-        JSONArray canUpdate = authCheck.getUserSelectAuth(id_U,id_C, grpU,"lBAsset","1003","card");
+        JSONArray canUpdate = authCheck.getUserSelectAuth(id_U,id_C, grpU,"lSAsset","1003","card");
 
         if (canUpdate.contains("role")) {
             Query menuQuery = new Query(
@@ -106,7 +106,7 @@ public class RoleServiceImpl implements RoleService {
 //
 //        authFilterClient.getUserSelectAuth(reqJson);
 
-        JSONArray canUpdate = authCheck.getUserSelectAuth(id_U,id_C, grpU,"lBAsset","1003","card");
+        JSONArray canUpdate = authCheck.getUserSelectAuth(id_U,id_C, grpU,"lSAsset","1003","card");
 
 
         if (canUpdate.contains("role")) {
@@ -175,7 +175,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public ApiResponse updateRole(String id_U, String id_C, String listType, String grp, String dataName, String authType, Integer auth, String grpU) {
 
-        authCheck.getUserUpdateAuth(id_U,id_C,"lBAsset","1003","card",new JSONArray().fluentAdd("role"));
+        authCheck.getUserUpdateAuth(id_U,id_C,"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
         // 查询出该修改的键，并且修改
         Query roleQ = new Query(
@@ -219,7 +219,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public ApiResponse getListTypeGrp(String id_U, String id_C) {
 
-        authCheck.getUserUpdateAuth(id_U,id_C,"lBAsset","1003","card",new JSONArray().fluentAdd("role"));
+        authCheck.getUserUpdateAuth(id_U,id_C,"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
 
         String id_A = dbUtils.getId_A(id_C, "a-auth");
@@ -259,7 +259,7 @@ public class RoleServiceImpl implements RoleService {
 //        JSONObject reqJson = new JSONObject();
 //        reqJson.put("id_U", id_U);
 //        reqJson.put("id_C", id_C);
-//        reqJson.put("listType", "lBAsset");
+//        reqJson.put("listType", "lSAsset");
 //        reqJson.put("grp", "1003");
 //        reqJson.put("authType", "card");
 //        reqJson.put("params", params);
@@ -267,7 +267,7 @@ public class RoleServiceImpl implements RoleService {
 //        authFilterClient.getUserUpdateAuth(reqJson);
 
 
-        //authFilterService.getUserUpdateAuth(id_U,id_C,"lBAsset","1003","card",new JSONArray().fluentAdd("role"));
+        //authFilterService.getUserUpdateAuth(id_U,id_C,"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
         if (grpU.equals("1099") && !listType.equals("lSProd")){
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, LoginEnum.GRP_NOT_AUTH.getCode(), null);
@@ -358,7 +358,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public ApiResponse updateNewestRole(String id_U, String id_C, String listType, String grp, String grpU) {
 
-        //authFilterService.getUserUpdateAuth(id_U,id_C,"lBAsset","1003","card",new JSONArray().fluentAdd("role"));
+        //authFilterService.getUserUpdateAuth(id_U,id_C,"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
         //try{
             //
@@ -522,7 +522,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public ApiResponse upRoleOfAuth(String id_U, String id_C, String listType, String grp, Integer upAuth, String upType, String grpU) {
 
-        authCheck.getUserUpdateAuth(id_U,id_C,"lBAsset","1003","card",new JSONArray().fluentAdd("role"));
+        authCheck.getUserUpdateAuth(id_U,id_C,"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
         String id_A = dbUtils.getId_A(id_C, "a-auth");
 

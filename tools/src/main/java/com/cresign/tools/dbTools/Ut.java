@@ -629,7 +629,7 @@ public class Ut {
                 contentMap.put("id", contentMap.get("id_U"));
             } else if (listType.equals("lSComp")) {
                 contentMap.put("id", contentMap.get("id_CB"));
-            } else if (listType.equals("lBAsset")) {
+            } else if (listType.equals("lSAsset")) {
                 contentMap.put("id", contentMap.get("id_A"));
             }
 

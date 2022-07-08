@@ -1,6 +1,7 @@
 package com.cresign.tools.apires;
 
 import lombok.Data;
+import org.apache.skywalking.apm.toolkit.trace.TraceContext;
 
 /**
  * ##description:
@@ -29,12 +30,12 @@ public class ApiResponse {
     /**
      * traceId skyWalking返回id
      */
-//    private String tid;
+    private String tid;
 
     public ApiResponse(String code, String message, String des) {
         this.code = code;
         this.message = message;
         this.des = des;
-//        this.tid = TraceContext.traceId();
+        this.tid = TraceContext.traceId();
     }
 }

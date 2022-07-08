@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
-@Document(collection = "lBAsset")
+@Document(collection = "lSAsset")
 public class AssetAStock {
 
     public AssetAStock(String locAddr, JSONArray locSpace, JSONArray spaceQty) {

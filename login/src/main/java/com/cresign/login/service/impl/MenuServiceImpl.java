@@ -190,7 +190,7 @@ public class MenuServiceImpl implements MenuService {
     @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
     public ApiResponse updateMenuData(String id_U, String id_C, String grpU, List<MainMenuBO> mainMenusData) {
 
-        authCheck.getUserUpdateAuth(id_U, id_C, "lBAsset", "1003", "card", new JSONArray().fluentAdd("menu"));
+        authCheck.getUserUpdateAuth(id_U, id_C, "lSAsset", "1003", "card", new JSONArray().fluentAdd("menu"));
 
         boolean judge = true;
 
@@ -263,14 +263,14 @@ public class MenuServiceImpl implements MenuService {
 //        JSONObject reqJson = new JSONObject();
 //        reqJson.put("id_U", id_U);
 //        reqJson.put("id_C", id_C);
-//        reqJson.put("listType", "lBAsset");
+//        reqJson.put("listType", "lSAsset");
 //        reqJson.put("grp", "1003");
 //        reqJson.put("authType", "card");
 //        reqJson.put("params", params);
 //
 //        authFilterClient.getUserUpdateAuth(reqJson);
 
-//        authFilterService.getUserSelectAuth(id_U,id_C,"lBAsset","1003","card");
+//        authFilterService.getUserSelectAuth(id_U,id_C,"lSAsset","1003","card");
 
 
         String id_A = dbUtils.getId_A(id_C, "a-auth");

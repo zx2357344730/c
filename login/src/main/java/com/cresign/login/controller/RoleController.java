@@ -138,7 +138,7 @@ public class RoleController {
     public ApiResponse copyGrpRoleToOtherGrp(@RequestBody JSONObject reqJson) {
 
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-        authCheck.getUserUpdateAuth(tokData.getString("id_U"),tokData.getString("id_C"),"lBAsset","1003","card",new JSONArray().fluentAdd("role"));
+        authCheck.getUserUpdateAuth(tokData.getString("id_U"),tokData.getString("id_C"),"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
         return roleService.copyGrpRoleToOtherGrp(
                 tokData.getString("id_U"),
@@ -153,7 +153,7 @@ public class RoleController {
     @PostMapping("/v1/copyGrpU")
     public ApiResponse copyGrpU(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-        authCheck.getUserUpdateAuth(tokData.getString("id_U"),tokData.getString("id_C"),"lBAsset","1003","card",new JSONArray().fluentAdd("role"));
+        authCheck.getUserUpdateAuth(tokData.getString("id_U"),tokData.getString("id_C"),"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
         return roleService.copyGrpU(
                 tokData.getString("id_U"),
