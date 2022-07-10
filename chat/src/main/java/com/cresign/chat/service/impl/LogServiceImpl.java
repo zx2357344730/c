@@ -5,8 +5,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.common.ChatEnum;
 import com.cresign.chat.config.websocket.WebSocketServerPi;
-import com.cresign.chat.config.websocket.WebSocketUserServer;
-import com.cresign.chat.config.websocket.WebSocketUserServerQ;
 import com.cresign.chat.service.LogService;
 import com.cresign.chat.utils.HttpClientUtils;
 import com.cresign.chat.utils.RsaUtil;
@@ -15,7 +13,6 @@ import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
-import com.cresign.tools.logger.LogUtil;
 import com.cresign.tools.mongo.MongoUtils;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
@@ -24,13 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.UUID;
-
-import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
-import static org.apache.commons.codec.digest.DigestUtils.sha256;
-
 
 /**
  * ##author: tangzejin
@@ -42,8 +33,6 @@ import static org.apache.commons.codec.digest.DigestUtils.sha256;
 @Slf4j
 public class LogServiceImpl  implements LogService {
 
-    @Autowired
-    private LogUtil logUtil;
 
     @Autowired
     private RetResult retResult;
@@ -154,27 +143,6 @@ public class LogServiceImpl  implements LogService {
 //        log.info(s);
     }
 
-    /**
-     * 发送logL信息到User-websocket
-     * ##param logData	日志信息
-     * @return void  返回结果: 结果
-     * @author tang
-     * @version 1.0.0
-     * @date 2021/8/4 15:39
-     */
-//    @Override
-//    public void sendLogWSU(LogFlow logData) {
-//
-////        WebSocketUserServer.sendLog(logData);
-//        WebSocketUserServerQ.sendLog(logData);
-//
-//        //KEV  COW @ close but send message error
-//        //KEV actually this sending bindingInfo move to WSU
-//        //https://blog.csdn.net/canot/article/details/52495333
-//
-//        logUtil.sendLog(logData.getLogType(),logData);
-//
-//    }
 
     @Override
     public String getToken(){

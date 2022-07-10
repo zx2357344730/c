@@ -334,15 +334,6 @@ public class ActionServiceImpl implements ActionService {
             // 设置产品状态
             orderAction.setBcdStatus(status);
 
-            mapKey.put("action.objAction."+index,orderAction);
-            coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
-
-            if( listCol != null) {
-                QueryBuilder queryBuilder = QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery("id_O", id_O));
-                dbUtils.updateListCol(queryBuilder, "lsborder", listCol);
-            }
-
             if (logType.endsWith("SL"))
             {
                 id_C = actData.getJSONObject("info").getString("id_CB");
@@ -355,6 +346,21 @@ public class ActionServiceImpl implements ActionService {
 
             logL.setLogData_action(orderAction,orderOItem);
 
+
+            try {
+                ws.sendWS(logL);
+
+                mapKey.put("action.objAction."+index,orderAction);
+                coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+
+                if( listCol != null) {
+                    QueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                            .must(QueryBuilders.termQuery("id_O", id_O));
+                    dbUtils.updateListCol(queryBuilder, "lsborder", listCol);
+                }
+            } catch (RuntimeException e) {
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始,"+e);
+            }
 
             // if Quest, send log + update OItem of myself = task = DG = above
             // get upPrnt data, and find the prob, set that status of Prob to status
@@ -388,7 +394,6 @@ public class ActionServiceImpl implements ActionService {
 //                }
             }
 
-            ws.sendWS(logL);
 
                 // 抛出操作成功异常
             return retResult.ok(CodeEnum.OK.getCode(), res);

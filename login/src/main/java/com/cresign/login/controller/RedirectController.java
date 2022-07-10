@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 /**
  * ##description:
@@ -132,6 +133,39 @@ public class RedirectController {
                 getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
                 reqJson.getString("id_O"),
                 reqJson.getString("id_C")
+        );
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/create_joincomp")
+    public ApiResponse generateJoinCompCode(@RequestBody JSONObject reqJson) {
+        return redirectService.generateJoinCompCode(
+                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                reqJson.getString("id_C"),
+                reqJson.getString("mode"),
+                reqJson.getJSONObject("data"));
+//                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/scan_joincomp")
+    public ApiResponse scanJoinCompCode(@RequestBody JSONObject reqJson) throws IOException {
+        return redirectService.scanJoinCompCode(
+                reqJson.getString("token"),
+                //"t3RCVlkDOMTuyNeNhIx",
+                //"60dd20a5d8555e3fdbba4ccc"
+                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+        );
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/reset_joincomp_code")
+    public ApiResponse resetJoinCompCode(@RequestBody JSONObject reqJson) throws IOException {
+        return redirectService.resetJoinCompCode(
+                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+//                "5f28bf314f65cc7dc2e60386",
+                reqJson.getString("id_C")
+//                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
         );
     }
 

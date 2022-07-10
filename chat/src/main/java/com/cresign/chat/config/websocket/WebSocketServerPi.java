@@ -25,7 +25,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @Date 2022/3/1 11:28
  * @Version 1.0.0
  */
-@ServerEndpoint("/pi/{id_C}/{name}/{publicKey}")
+@ServerEndpoint("/wsU/pi/{id_C}/{name}/{publicKey}")
 @Component
 //@Sharable
 public class WebSocketServerPi {

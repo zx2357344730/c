@@ -22,7 +22,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * ##version: 1.0.0
  * ##description: 微信登录websocket
  */
-@ServerEndpoint("/login/{id}")
+@ServerEndpoint("/wsU/login/{id}")
 @Component
 public class WebSocketLoginServer {
 

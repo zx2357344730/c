@@ -676,8 +676,9 @@ public class DbUtils {
      */
     public  void addES(JSONObject infoObject , String indexes ) throws IOException {
 
+        //8-1 indexes = indexes + "-write";
         infoObject.put("tmk", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-        //指定ES索引
+        //指定ES索引 "assetflow" / "assetflow-write / assetflow-read
         IndexRequest request = new IndexRequest(indexes);
         //ES列表
         request.source(infoObject, XContentType.JSON);

@@ -2,8 +2,6 @@ package com.cresign.chat.utils;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.chat.config.websocket.WebSocketUserServerQ;
-import com.cresign.chat.service.LogService;
 import com.cresign.tools.pojo.po.LogFlow;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;

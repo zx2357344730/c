@@ -2,7 +2,7 @@ package com.cresign.chat.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.config.websocket.WebSocketLoginServer;
-import com.cresign.chat.config.websocket.WebSocketUserServerQ;
+import com.cresign.chat.config.websocket.WebSocketUserServer;
 import com.cresign.chat.service.LogService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
  * ##description: 日志接口提供类
  */
 @RestController
-//@Slf4j
 @RequestMapping("/log")
 public class LogController {
 
@@ -60,7 +59,7 @@ public class LogController {
      */
     @PostMapping("/v1/sendWS")
     public void sendLogWS(@RequestBody LogFlow logData){
-        WebSocketUserServerQ.sendLog(logData);
+        WebSocketUserServer.sendLog(logData);
     }
 
     /**

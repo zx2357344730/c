@@ -1,5 +1,6 @@
 package com.cresign.login.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.enumeration.SearchEnum;
@@ -12,6 +13,7 @@ import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.mongo.MongoUtils;
+import com.cresign.tools.pojo.es.lBUser;
 import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.Order;
 import com.cresign.tools.pojo.po.Prod;
@@ -19,6 +21,15 @@ import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.uuid.UUID19;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -29,6 +40,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -43,11 +55,18 @@ public class RedirectServiceImpl implements RedirectService {
 
     public static final String SCANCODE_SHAREPROD = "scancode:shareprod-";
     public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T = "https://www.cresign.cn/qrCodeTest?qrType=shareprod&t=";
+    public static final String SCANCODE_JOINCOMP = "scancode:joincomp-";
+    public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_JOIN_COMP_T = "https://www.cresign.cn/qrCodeTest?qrType=joinComp&t=";
+
+
     @Autowired
     private MongoTemplate mongoTemplate;
 
     @Autowired
     private StringRedisTemplate redisTemplate1;
+
+    @Autowired
+    private RestHighLevelClient restHighLevelClient;
 
     @Autowired
     private RetResult retResult;
@@ -329,6 +348,299 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         // 3.
         String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + token;
         return retResult.ok(CodeEnum.OK.getCode(), url);
+    }
+
+
+    @Override
+    public ApiResponse generateJoinCompCode(String id_U, String id_C, String mode, JSONObject data) {
+
+        /*
+          1. 从mongodb获取到token，到redis中查找是否有该token
+          2. 根据模式判断逻辑
+          3. 并返回 url 拼接 key返回给前端
+         */
+        // 1.
+        Query compQ = new Query(new Criteria("_id").is(id_C));
+        Comp comp = mongoTemplate.findOne(compQ, Comp.class);
+        if (ObjectUtils.isEmpty(comp)) {
+            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
+        }
+        if (ObjectUtils.isNotEmpty(comp.getJoinCode())) {
+            if (StringUtils.isNotEmpty(comp.getJoinCode().getString("token"))) {
+                JSONObject qrShareCode = comp.getJoinCode();
+                String code_token = qrShareCode.getString("token");
+                System.out.println("code_token"+ code_token);
+                if (redisTemplate1.hasKey(SCANCODE_JOINCOMP + code_token)) {
+                    System.out.println("code_token2"+ code_token);
+                    String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_JOIN_COMP_T + code_token;
+                    return retResult.ok(CodeEnum.OK.getCode(), url);
+                }
+            }
+        }
+
+        // 存入redis中的初始化数据
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id_C", id_C);
+        jsonObject.put("create_id_U", id_U);
+        jsonObject.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        String token = UUID19.uuid();
+        // 2.
+        if ("frequency".equals(mode)) {
+            jsonObject.put("mode", mode);
+            jsonObject.put("count", data.getString("count"));
+            jsonObject.put("used_count", "0");
+            redisTemplate1.opsForHash().putAll(SCANCODE_JOINCOMP + token, jsonObject);
+        } else if ("time".equals(mode)) {
+            jsonObject.put("mode", mode);
+            jsonObject.put("endTimeSec", data.getString("endTimeSec"));
+            redisTemplate1.opsForHash().putAll(SCANCODE_JOINCOMP + token, jsonObject);
+            redisTemplate1.expire(SCANCODE_JOINCOMP + token, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
+        } else {
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+        }
+
+
+        Update update = new Update();
+        update.set("joinCode.token", token);
+        update.set("joinCode.data", jsonObject);
+        mongoTemplate.updateFirst(compQ, update, Comp.class);
+
+        // 4.
+        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_JOIN_COMP_T + token;
+        return retResult.ok(CodeEnum.OK.getCode(), url);
+    }
+
+
+    @Override
+    @Transactional
+    public ApiResponse scanJoinCompCode(String token, String join_user) throws IOException {
+
+        String keyName = SCANCODE_JOINCOMP + token;
+        Boolean hasKey = redisTemplate1.hasKey(keyName);
+
+        if (!hasKey) {
+            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+                    JOIN_COMP_CODE_OVERDUE.getCode(),null);
+        }
+
+        // 获取到整个hash
+        Map<Object, Object> entries = redisTemplate1.opsForHash().entries(keyName);
+
+
+        /**
+         如果是 frequency 次数模式,则需要拿出已经使用的次数和当前要限制的次数对比
+         如果是 time 时间模式
+         */
+        if ("frequency".equals(entries.get("mode"))) {
+
+            // 限制的次数
+            int count = Integer.parseInt(entries.get("count").toString());
+
+            // 已使用次数
+            int used_count = Integer.parseInt(entries.get("used_count").toString());
+
+            /**
+             * 如果使用的次数 +1 == 限制的次数, 则key，等获取完数据后进行删除key
+             * 如果使用次数 > 限制次数, 则提醒用户二维码已过期并且删除key
+             * 如果使用次数 < 次数，则累加 used_count
+             */
+            if (used_count +1 == count) {
+                System.out.println("进来 used_count +1 == count");
+
+                ApiResponse apiResponse = null;
+                //try {
+                apiResponse = joinAddData(join_user, entries);
+                redisTemplate1.delete(keyName);
+                //} catch (RuntimeException e) {
+                redisTemplate1.opsForHash().putAll(keyName, entries);
+                //throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
+                //}
+                return apiResponse;
+
+            } else if (used_count > count) {
+                System.out.println("进来 used_count > count");
+
+                redisTemplate1.delete(keyName);
+                throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+                        JOIN_COMP_CODE_OVERDUE.getCode(), null);
+            } else {
+                System.out.println("进来 used_count < count");
+                // 累加
+                ApiResponse apiResponse = null;
+                //try {
+                apiResponse = joinAddData(join_user, entries);
+                redisTemplate1.opsForHash().increment(keyName, "used_count", 1);
+                //} catch (RuntimeException e) {
+                redisTemplate1.opsForHash().put(keyName, "used_count", String.valueOf(used_count));
+                //throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
+                //}
+                return apiResponse;
+            }
+        } else if ("time".equals(entries.get("mode"))) {
+            return joinAddData(join_user, entries);
+        } else {
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+        }
+
+    }
+
+    @Override
+    public ApiResponse resetJoinCompCode(String id_U, String id_C) {
+
+        /**
+         * 1. 判断该公司是否存在
+         * 2. 将原来的二维码数据提取出来，再重新设置到redis中
+         * 3. 判断原来的二维码token在redis中是否还存在，存在则删除
+         * 4. 并返回 url 拼接 key返回给前端
+         */
+
+        // 1.
+        Query compQ = new Query(new Criteria("_id").is(id_C));
+        Comp comp = mongoTemplate.findOne(compQ, Comp.class);
+        if (ObjectUtils.isEmpty(comp)) {
+            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
+
+        }
+
+        // 2.
+        JSONObject dataJson = comp.getJoinCode().getJSONObject("data");
+        dataJson.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+
+        String token = UUID19.uuid();
+        String keyName = SCANCODE_JOINCOMP + token;
+
+        String mode = dataJson.getString("mode");
+
+        if ("frequency".equals(mode)) {
+            redisTemplate1.opsForHash().putAll(keyName, dataJson);
+        } else if ("time".equals(mode)) {
+            redisTemplate1.opsForHash().putAll(keyName, dataJson);
+            redisTemplate1.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+        } else {
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+        }
+
+        mongoTemplate.updateFirst(compQ, Update.update("joinCode.token",token), Comp.class);
+
+        // 3.
+        if (StringUtils.isNotEmpty(comp.getJoinCode().getString("token"))) {
+            String code_token = comp.getJoinCode().getString("token");
+            if (redisTemplate1.hasKey(SCANCODE_JOINCOMP + code_token)) {
+                redisTemplate1.delete(SCANCODE_JOINCOMP + code_token);
+            }
+        }
+
+
+        // 4.
+        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_JOIN_COMP_T + token;
+        return retResult.ok(CodeEnum.OK.getCode(), url);
+    }
+
+    private ApiResponse joinAddData(String join_user, Map<Object, Object> entries) throws IOException {
+        /*
+          1. 先检查公司是否存在
+          2. 将用户加入公司
+         */
+        Query compQ = new Query(new Criteria("_id").is(entries.get("id_C")));
+        Comp one = mongoTemplate.findOne(compQ, Comp.class);
+        if (ObjectUtils.isEmpty(one)) {
+            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.COMP_NOT_FOUND.getCode(), null) ;
+        }
+
+        // 判断用户存不存在
+        Query userQ = new Query(new Criteria("_id").is(join_user));
+        User userJson = mongoTemplate.findOne(userQ, User.class);
+        //JSONObject userJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(userQ, User.class));
+
+        // 不存在则返回出去
+        if (null == userJson) {
+            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_IS_NO_FOUND.getCode(), null);
+        }
+
+        Query userQuery = new Query();
+        userQuery.addCriteria(new Criteria("_id").is(join_user)
+                .and("rolex.objComp."+entries.get("id_C")).exists(true));
+
+        User userOne = mongoTemplate.findOne(userQuery, User.class);
+
+        if (null != userOne) {
+            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_JOIN_IS_HAVE.getCode(), null);
+        }
+
+        // objMod
+        //Map<String, Object> objMod = new HashMap<>(1);
+        JSONObject objMod = new JSONObject(5);
+        objMod.put("ref", "a-core");
+        objMod.put("bcdState", 1);
+        objMod.put("bcdLevel", 1);
+        objMod.put("tfin", "-1");
+
+        JSONArray objModArray = new JSONArray();
+        objModArray.add(objMod);
+        // 公司map
+        //Map<String, Object> compMap = new HashMap<>(3);
+        JSONObject rolex = new JSONObject(3);
+        rolex.put("id_C", entries.get("id_C"));
+        rolex.put("grpU", "1009");
+        rolex.put("dep", "1000");
+
+        rolex.put("objMod", objModArray);
+
+
+        Update update = new Update();
+        update.set("rolex.objComp."+entries.get("id_C"), rolex).set("info.def_C", entries.get("id_C"));
+
+        Query upUserQ = new Query(new Criteria("_id").is(join_user));
+
+        mongoTemplate.updateFirst(upUserQ, update, User.class);
+
+
+        /*
+            查询ES这个用户在列表中是否有数据
+         */
+
+        SearchRequest searchRequest = new SearchRequest("lbuser");
+
+        // 查询条件初始化
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        boolQueryBuilder.must(QueryBuilders.termQuery("id_CB", entries.get("id_C")));
+
+        boolQueryBuilder.must(QueryBuilders.termQuery("id_U", join_user));
+
+        searchSourceBuilder.query(boolQueryBuilder);
+
+        SearchResponse search = restHighLevelClient.search(searchRequest.source(searchSourceBuilder), RequestOptions.DEFAULT);
+
+        if (search.getHits().getHits().length <= 0) {
+
+            // 查询要加入公司的数据
+            Query joinCompQ = new Query(new Criteria("_id").is(entries.get("id_C")));
+            joinCompQ.fields().include("info");
+            Comp compOne = mongoTemplate.findOne(joinCompQ, Comp.class);
+            //JSONObject compOne = (JSONObject) JSON.toJSON(mongoTemplate.findOne(joinCompQ, Comp.class));
+
+            lBUser addLBUser = new lBUser(join_user, entries.get("id_C").toString(), userJson.getInfo().getWrdN(),
+                    compOne.getInfo().getWrdN(), userJson.getInfo().getWrdNReal(),userJson.getInfo().getWrddesc(), "1009",
+                    userJson.getInfo().getMbn(), "", userJson.getInfo().getId_WX(), userJson.getInfo().getPic());
+
+            IndexRequest indexRequest = new IndexRequest("lbuser");
+            indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
+            try {
+                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+
+            } catch (IOException e) {
+
+                throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_JOIN_COMP_ERROR.getCode(), null);
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), null);
+
+        }
+        throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+                USER_JOIN_IS_HAVE.getCode(), null);
     }
 
 
