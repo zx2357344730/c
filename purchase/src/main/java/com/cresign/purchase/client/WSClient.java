@@ -20,5 +20,8 @@ public interface WSClient {
     @PostMapping("log/v1/sendWS")
     void sendWS(@RequestBody LogFlow reqJson);
 
+    //发送消息体
+    @PostMapping("log/v1/sendWSPi")
+    void sendWSPi(@RequestBody LogFlow reqJson);
 
 }

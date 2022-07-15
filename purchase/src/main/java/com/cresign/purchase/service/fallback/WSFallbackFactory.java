@@ -34,6 +34,11 @@ public class WSFallbackFactory implements FallbackFactory<WSClient> {
             @Override
             public void sendWS(@RequestBody LogFlow logData){ }
 
+            @Override
+            public void sendWSPi(LogFlow reqJson) {
+
+            }
+
         };
     }
 }

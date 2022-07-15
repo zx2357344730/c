@@ -7,6 +7,14 @@ import com.cresign.tools.apires.ApiResponse;
 import java.io.IOException;
 
 public interface ActionService {
+
+    ApiResponse rpiCode(JSONObject can);
+
+    ApiResponse relieveRpi(JSONObject can);
+
+    ApiResponse requestRpiStatus(JSONObject can);
+
+    ApiResponse bindingRpi(JSONObject can);
     /**
      * 通用日志方法(action,prob,msg) - 注释完成
      * @return java.lang.String  返回结果: 结果

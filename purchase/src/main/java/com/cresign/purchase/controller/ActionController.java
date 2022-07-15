@@ -58,6 +58,38 @@ public class ActionController {
                 tokData.getJSONObject("wrdNU"));
     }
 
+    @PostMapping("/v1/rpiCode")
+    @SecurityParameter
+    public ApiResponse rpiCode(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return actionService.rpiCode(reqJson);
+    }
+
+    @PostMapping("/v1/requestRpiStatus")
+    @SecurityParameter
+    public ApiResponse requestRpiStatus(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return actionService.requestRpiStatus(reqJson);
+    }
+
+    @PostMapping("/v1/bindingRpi")
+    @SecurityParameter
+    public ApiResponse bindingRpi(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return actionService.bindingRpi(reqJson);
+    }
+
+    @PostMapping("/v1/relieveRpi")
+    @SecurityParameter
+    public ApiResponse relieveRpi(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return actionService.relieveRpi(reqJson);
+    }
+
     @SecurityParameter
     @PostMapping("/v1/dgActivateAll")
     public ApiResponse dgActivateAll(@RequestBody JSONObject reqJson) {

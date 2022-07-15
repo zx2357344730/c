@@ -27,16 +27,6 @@ public interface LogService {
 
     void sendPushBatch(JSONArray cidArray, String title, String body);
 
-    ApiResponse rpiCode(JSONObject can);
-
-    ApiResponse requestRpi(JSONObject can);
-
-    ApiResponse requestRpiStatus(JSONObject can);
-
-    ApiResponse bindingRpi(JSONObject can);
-
-    ApiResponse relieveRpi(JSONObject can);
-
     /**
      * 根据can获取单个用户信息
      * Params: uid	用户编号

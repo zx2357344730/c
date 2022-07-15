@@ -3,6 +3,7 @@ package com.cresign.chat.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.config.websocket.WebSocketLoginServer;
+import com.cresign.chat.config.websocket.WebSocketServerPi;
 import com.cresign.chat.config.websocket.WebSocketUserServer;
 import com.cresign.chat.service.LogService;
 import com.cresign.tools.annotation.SecurityParameter;
@@ -63,44 +64,18 @@ public class LogController {
         WebSocketUserServer.sendLog(logData);
     }
 
-    @PostMapping("/v1/rpiCode")
-    @SecurityParameter
-    public ApiResponse rpiCode(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return logService.rpiCode(reqJson);
+    /**
+     * 发送
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2021/6/30 16:13
+     */
+    @PostMapping("/v1/sendWSPi")
+    public void sendLogWSPi(@RequestBody LogFlow logData){
+        WebSocketServerPi.sendInfo(logData);
     }
 
-    @PostMapping("/v1/requestRpiStatus")
-    @SecurityParameter
-    public ApiResponse requestRpiStatus(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return logService.requestRpiStatus(reqJson);
-    }
-
-    @PostMapping("/v1/bindingRpi")
-    @SecurityParameter
-    public ApiResponse bindingRpi(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return logService.bindingRpi(reqJson);
-    }
-
-    @PostMapping("/v1/relieveRpi")
-    @SecurityParameter
-    public ApiResponse relieveRpi(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return logService.relieveRpi(reqJson);
-    }
-
-    @PostMapping("/v1/requestRpi")
-    public ApiResponse requestRpi(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return logService.requestRpi(reqJson);
-    }
 
     /**
      * 根据reqJson获取单个用户信息

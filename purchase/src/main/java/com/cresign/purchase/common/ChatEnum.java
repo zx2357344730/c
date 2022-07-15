@@ -145,6 +145,22 @@ public enum ChatEnum {
      * gpIo已经被解绑
      */
     ERR_IO_ALREADY_UNBIND("01102"),
+    /**
+     * 无assetId
+     */
+    ERR_NO_ASSET_ID("01103"),
+    /**
+     * 无asset
+     */
+    ERR_NO_ASSET("01104"),
+    /**
+     * rpi卡片异常
+     */
+    ERR_RPI_K("01105"),
+    /**
+     * rpi的token数据不存在
+     */
+    ERR_RPI_T_DATA_NO("01106"),
     ;
 
 
