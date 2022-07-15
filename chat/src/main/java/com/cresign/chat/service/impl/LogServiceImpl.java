@@ -16,11 +16,14 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.mongo.MongoUtils;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
+import com.cresign.tools.uuid.UUID19;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 
 /**
@@ -40,8 +43,15 @@ public class LogServiceImpl  implements LogService {
     @Autowired
     private CoupaUtil coupaUtil;
 
+    /**
+     * 注入redis数据库下标1模板
+     */
+    @Resource
+    private StringRedisTemplate redisTemplate1;
+
     public static final String appId = "KVB0qQq0fRArupojoL4WM9";
 
+    public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_RPI_T = "https://www.cresign.cn/qrCodeTest?qrType=rpi&t=";
 
     /**
      * 推送
@@ -143,6 +153,221 @@ public class LogServiceImpl  implements LogService {
 //        log.info(s);
     }
 
+    @Override
+    public ApiResponse requestRpi(JSONObject can) {
+//        String token = can.getString("token");
+//        String s = redisTemplate1.opsForValue().get(token);
+//        JSONObject redJ = JSON.parseObject(s);
+//        boolean isBinding = redJ.getBoolean("isBinding");
+//        String id_U = can.getString("id_U");
+//        if (!isBinding) {
+//            updateRedJ(redJ,id_U, can.getString("id_C"), can.getString("grpU")
+//                    , can.getInteger("oIndex"), can.getJSONObject("wrdNU"), can.getInteger("imp")
+//                    , can.getString("id_O"), can.getInteger("tzone"), can.getString("lang")
+//                    , can.getString("id_P"), can.getString("pic"), can.getInteger("wn2qtynow")
+//                    , can.getString("grpB"), can.getJSONObject("fields"), can.getJSONObject("wrdNP")
+//                    , can.getJSONObject("wrdN"), true);
+//            redisTemplate1.opsForValue().set(token,JSON.toJSONString(redJ));
+//            return retResult.ok(CodeEnum.OK.getCode(), "绑定gpIo成功");
+//        } else {
+//            if (redJ.getString("id_U").equals(id_U)) {
+//                updateRedJ(redJ,"", "", "", 0, new JSONObject(), 0, ""
+//                        , 0, "", "", "", 0, "", new JSONObject()
+//                        , new JSONObject(), new JSONObject(), false);
+//                return retResult.ok(CodeEnum.OK.getCode(), "解除绑定gpIo成功");
+//            } else {
+//                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_IO_ALREADY_BINDED.getCode(), "gpio已经被绑定");
+//            }
+//        }
+        return null;
+    }
+
+    @Override
+    public ApiResponse rpiCode(JSONObject can) {
+        JSONObject redisJ = new JSONObject();
+        String rname = can.getString("rname");
+        String gpio = can.getString("gpio");
+        String id_C = can.getString("id_C");
+//        System.out.println("id_C:"+id_C);
+        redisJ.put("rname",rname);
+        redisJ.put("gpio",gpio);
+        updateRedJ(redisJ,"", "", "", 0, new JSONObject(), 0, ""
+                , 0, "", "", "", 0, "", new JSONObject()
+                , new JSONObject(), new JSONObject(), false);
+//        redisJ.put("id_U",can.getString("id_U"));
+//        redisJ.put("id_C",can.getString("id_C"));
+        String token = "rpi_"+UUID19.uuid();
+        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_RPI_T + token;
+        String assetId = coupaUtil.getAssetId(id_C, "a-core");
+//        System.out.println("assetId:"+assetId);
+        if (null == assetId) {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET_ID.getCode(), "该公司没有assetId");
+        }
+        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("rpi"));
+        if (null == asset) {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET.getCode(), "该公司没有asset");
+        }
+//        System.out.println(JSON.toJSONString(asset));
+        JSONObject rpi = asset.getRpi();
+        if (null == rpi) {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_K.getCode(), "该公司rpi卡片异常");
+        }
+        JSONObject rnames = rpi.getJSONObject("rnames");
+        if (null == rnames) {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_K.getCode(), "该公司rpi卡片异常");
+        }
+        JSONObject r = rnames.getJSONObject(rname);
+        if (null == r) {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_K.getCode(), "该公司rpi卡片异常");
+        }
+        r.put(gpio,token);
+        rnames.put(rname,r);
+        rpi.put("rnames",rnames);
+        // 定义存储flowControl字典
+        JSONObject mapKey = new JSONObject();
+        // 设置字段数据
+        mapKey.put("rpi",rpi);
+        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+        redisTemplate1.opsForValue().set(token,JSON.toJSONString(redisJ));
+        return retResult.ok(CodeEnum.OK.getCode(), url);
+    }
+
+    @Override
+    public ApiResponse requestRpiStatus(JSONObject can) {
+        String token = can.getString("token");
+        String s = redisTemplate1.opsForValue().get(token);
+        if (null == s) {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
+        }
+        JSONObject redJ = JSON.parseObject(s);
+        boolean isBinding = redJ.getBoolean("isBinding");
+        String id_U = can.getString("id_U");
+        if (!isBinding) {
+            return retResult.ok(CodeEnum.OK.getCode(), "1");
+        } else {
+            if (redJ.getString("id_U").equals(id_U)) {
+                return retResult.ok(CodeEnum.OK.getCode(), "2");
+            } else {
+                return retResult.ok(CodeEnum.OK.getCode(), "3");
+            }
+        }
+    }
+
+    @Override
+    public ApiResponse bindingRpi(JSONObject can) {
+        String token = can.getString("token");
+        String s = redisTemplate1.opsForValue().get(token);
+        if (null == s) {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
+        }
+        JSONObject redJ = JSON.parseObject(s);
+        String id_U = can.getString("id_U");
+        String rname = redJ.getString("rname");
+        String gpio = redJ.getString("gpio");
+
+        String id_C = can.getString("id_C");
+        String grpU = can.getString("grpU");
+        Integer oIndex = can.getInteger("oIndex");
+        JSONObject wrdNU = can.getJSONObject("wrdNU");
+        Integer imp = can.getInteger("imp");
+        String id_O = can.getString("id_O");
+        Integer tzone = can.getInteger("tzone");
+        String lang = can.getString("lang");
+        String id_P = can.getString("id_P");
+        String pic = can.getString("pic");
+        Integer wn2qtynow = can.getInteger("wn2qtynow");
+        String grpB = can.getString("grpB");
+        JSONObject fields = can.getJSONObject("fields");
+        JSONObject wrdNP = can.getJSONObject("wrdNP");
+        JSONObject wrdN = can.getJSONObject("wrdN");
+        updateRedJ(redJ,id_U, id_C, grpU, oIndex, wrdNU, imp, id_O, tzone, lang
+                , id_P, pic, wn2qtynow, grpB, fields, wrdNP, wrdN, true);
+        LogFlow logFlow = getLogF(id_C,id_U,rname);
+        logFlow.setLogType("binding");
+        logFlow.setZcndesc("绑定gpIo成功");
+        logFlow.setGrpU(grpU);
+        logFlow.setIndex(oIndex);
+        logFlow.setWrdNU(wrdNU);
+        logFlow.setImp(imp);
+        logFlow.setSubType("binding");
+        logFlow.setId_O(id_O);
+        logFlow.setTzone(tzone);
+        logFlow.setLang(lang);
+        logFlow.setId_P(id_P);
+        JSONObject data = new JSONObject();
+        data.put("gpio",gpio);
+        data.put("rname",rname);
+        data.put("pic",pic);
+        data.put("wn2qtynow",wn2qtynow);
+        data.put("grpB",grpB);
+        data.put("fields",fields);
+        data.put("wrdNP",wrdNP);
+        data.put("wrdN",wrdN);
+        logFlow.setData(data);
+        WebSocketServerPi.sendInfo(logFlow);
+        System.out.println("发送消息:");
+        System.out.println(JSON.toJSONString(logFlow));
+        redisTemplate1.opsForValue().set(token,JSON.toJSONString(redJ));
+        return retResult.ok(CodeEnum.OK.getCode(), "绑定gpIo成功");
+    }
+
+    @Override
+    public ApiResponse relieveRpi(JSONObject can) {
+        String token = can.getString("token");
+        String id_C = can.getString("id_C");
+        String s = redisTemplate1.opsForValue().get(token);
+        if (null == s) {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
+        }
+        JSONObject redJ = JSON.parseObject(s);
+        String rname = redJ.getString("rname");
+        String gpio = redJ.getString("gpio");
+        updateRedJ(redJ,"", "", "", 0, new JSONObject(), 0, ""
+                , 0, "", "", "", 0, "", new JSONObject()
+                , new JSONObject(), new JSONObject(), false);
+        LogFlow logFlow = getLogF(id_C, can.getString("id_U"),rname);
+        JSONObject data = new JSONObject();
+        data.put("gpio",gpio);
+        data.put("rname",rname);
+        logFlow.setLogType("unbound");
+        logFlow.setZcndesc("解绑gpIo成功");
+        logFlow.setData(data);
+        WebSocketServerPi.sendInfo(logFlow);
+        System.out.println("发送消息:");
+        System.out.println(JSON.toJSONString(logFlow));
+        redisTemplate1.opsForValue().set(token,JSON.toJSONString(redJ));
+        return retResult.ok(CodeEnum.OK.getCode(), "解除绑定gpIo成功");
+    }
+
+    private void updateRedJ(JSONObject redJ,String id_U,String id_C,String grpU,Integer oIndex,JSONObject wrdNU
+            ,Integer imp,String id_O,Integer tzone,String lang,String id_P,String pic,Integer wn2qtynow
+            ,String grpB,JSONObject fields,JSONObject wrdNP,JSONObject wrdN,Boolean isBinding){
+        redJ.put("id_U",id_U);
+        redJ.put("id_C",id_C);
+        redJ.put("grpU",grpU);
+        redJ.put("oIndex",oIndex);
+        redJ.put("wrdNU",wrdNU);
+        redJ.put("imp",imp);
+        redJ.put("id_O",id_O);
+        redJ.put("tzone",tzone);
+        redJ.put("lang", lang);
+        redJ.put("id_P", id_P);
+        redJ.put("pic", pic);
+        redJ.put("wn2qtynow", wn2qtynow);
+        redJ.put("grpB", grpB);
+        redJ.put("fields", fields);
+        redJ.put("wrdNP", wrdNP);
+        redJ.put("wrdN", wrdN);
+        redJ.put("isBinding",isBinding);
+    }
+
+    private LogFlow getLogF(String id_C,String id_U,String rname){
+        LogFlow logFlow = LogFlow.getInstance();
+        logFlow.setId_C(id_C);
+        logFlow.setId_U(id_U);
+        logFlow.setId(rname);
+        return logFlow;
+    }
 
     @Override
     public String getToken(){

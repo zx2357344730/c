@@ -19,7 +19,7 @@
         <module>purchase</module>
         <module>chat</module>
         <!-- 目前在用 -->
-        <module>timer</module>
+<!--        <module>timer</module>-->
 
     </modules>
 
