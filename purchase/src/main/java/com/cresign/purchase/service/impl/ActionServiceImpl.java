@@ -300,6 +300,11 @@ public class ActionServiceImpl implements ActionService {
         data.put("fields",fields);
         data.put("wrdNP",wrdNP);
         data.put("wrdN",wrdN);
+        data.put("id_O",id_O);
+        data.put("index",oIndex);
+        data.put("dep",can.getString("dep"));
+        data.put("grpU",grpU);
+        data.put("wrdNU",wrdNU);
         logFlow.setData(data);
         ws.sendWSPi(logFlow);
         System.out.println("发送消息:");

@@ -3,6 +3,7 @@ package com.cresign.chat.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.chat.client.DetailsClient;
 import com.cresign.chat.common.ChatEnum;
 import com.cresign.chat.config.websocket.WebSocketServerPi;
 import com.cresign.chat.service.LogService;
@@ -43,7 +44,16 @@ public class LogServiceImpl  implements LogService {
     @Autowired
     private CoupaUtil coupaUtil;
 
+    @Resource
+    private DetailsClient detailsClient;
+
     public static final String appId = "KVB0qQq0fRArupojoL4WM9";
+
+    @Override
+    public int getDet(JSONObject reqJson) {
+
+        return detailsClient.updateOStockPi(reqJson);
+    }
 
     /**
      * 推送

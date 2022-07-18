@@ -13,6 +13,8 @@ import com.cresign.tools.pojo.po.LogFlow;
  */
 public interface LogService {
 
+    int getDet(JSONObject reqJson);
+
     /**
      * 推送
      * ##param clientId	推送id
