@@ -161,6 +161,22 @@ public enum ChatEnum {
      * rpi的token数据不存在
      */
     ERR_RPI_T_DATA_NO("01106"),
+    /**
+     * 没有rpi卡片
+     */
+    ERR_NO_RPI_K("01107"),
+    /**
+     * rpi卡片没有对应的rname
+     */
+    ERR_NO_RPI_R_NAME_K("01108"),
+    /**
+     * 未知异常
+     */
+    ERR_WZ("01109"),
+    /**
+     * 已经被绑定
+     */
+    ERR_Y_BIND("01110"),
     ;
 
 

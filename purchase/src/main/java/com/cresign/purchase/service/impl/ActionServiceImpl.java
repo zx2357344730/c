@@ -197,40 +197,36 @@ public class ActionServiceImpl implements ActionService {
                 , new JSONObject(), new JSONObject(), false);
 //        redisJ.put("id_U",can.getString("id_U"));
 //        redisJ.put("id_C",can.getString("id_C"));
-        String token = "rpi_"+ UUID19.uuid();
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_RPI_T + token;
-        String assetId = coupaUtil.getAssetId(id_C, "a-core");
-//        System.out.println("assetId:"+assetId);
-        if (null == assetId) {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET_ID.getCode(), "该公司没有assetId");
+        JSONObject rName = getRNames(id_C);
+        Integer sta = rName.getInteger("sta");
+        if (sta == 0) {
+            JSONObject rnames = rName.getJSONObject("rnames");
+            JSONObject rpi = rName.getJSONObject("rpi");
+            String assetId = rName.getString("assetId");
+            JSONObject r = rnames.getJSONObject(rname);
+            if (null == r) {
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_RPI_R_NAME_K.getCode(), "该公司rpi卡片没有对应的rname，请新增");
+            }
+            String gpioStr = r.getString(gpio);
+            if (null == gpioStr || "".equals(gpioStr)) {
+                String token = "rpi_"+ UUID19.uuid();
+                String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_RPI_T + token;
+                r.put(gpio,token);
+                rnames.put(rname,r);
+                rpi.put("rnames",rnames);
+                // 定义存储flowControl字典
+                JSONObject mapKey = new JSONObject();
+                // 设置字段数据
+                mapKey.put("rpi",rpi);
+                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+                redisTemplate1.opsForValue().set(token,JSON.toJSONString(redisJ));
+                return retResult.ok(CodeEnum.OK.getCode(), url);
+            } else {
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_Y_BIND.getCode(), "已经被绑定");
+            }
+        } else {
+            return reSta(sta);
         }
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("rpi"));
-        if (null == asset) {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET.getCode(), "该公司没有asset");
-        }
-//        System.out.println(JSON.toJSONString(asset));
-        JSONObject rpi = asset.getRpi();
-        if (null == rpi) {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_K.getCode(), "该公司rpi卡片异常");
-        }
-        JSONObject rnames = rpi.getJSONObject("rnames");
-        if (null == rnames) {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_K.getCode(), "该公司rpi卡片异常");
-        }
-        JSONObject r = rnames.getJSONObject(rname);
-        if (null == r) {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_K.getCode(), "该公司rpi卡片异常");
-        }
-        r.put(gpio,token);
-        rnames.put(rname,r);
-        rpi.put("rnames",rnames);
-        // 定义存储flowControl字典
-        JSONObject mapKey = new JSONObject();
-        // 设置字段数据
-        mapKey.put("rpi",rpi);
-        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
-        redisTemplate1.opsForValue().set(token,JSON.toJSONString(redisJ));
-        return retResult.ok(CodeEnum.OK.getCode(), url);
     }
 
     @Override
@@ -338,6 +334,52 @@ public class ActionServiceImpl implements ActionService {
         System.out.println(JSON.toJSONString(logFlow));
         redisTemplate1.opsForValue().set(token,JSON.toJSONString(redJ));
         return retResult.ok(CodeEnum.OK.getCode(), "解除绑定gpIo成功");
+    }
+
+    private ApiResponse reSta(int sta){
+        switch (sta) {
+            case 1:
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET_ID.getCode(), "该公司没有assetId");
+            case 2:
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET.getCode(), "该公司没有asset");
+            case 3:
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_RPI_K.getCode(), "该公司没有rpi卡片");
+            case 4:
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_K.getCode(), "该公司rpi卡片异常");
+            default:
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_WZ.getCode(), "接口未知异常");
+        }
+    }
+
+    private JSONObject getRNames(String id_C){
+        JSONObject re = new JSONObject();
+        String assetId = coupaUtil.getAssetId(id_C, "a-core");
+//        System.out.println("assetId:"+assetId);
+        if (null == assetId) {
+            re.put("sta",1);
+            return re;
+        }
+        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("rpi"));
+        if (null == asset) {
+            re.put("sta",2);
+            return re;
+        }
+//        System.out.println(JSON.toJSONString(asset));
+        JSONObject rpi = asset.getRpi();
+        if (null == rpi) {
+            re.put("sta",3);
+            return re;
+        }
+        JSONObject rnames = rpi.getJSONObject("rnames");
+        if (null == rnames) {
+            re.put("sta",4);
+            return re;
+        }
+        re.put("sta",0);
+        re.put("rpi",rpi);
+        re.put("assetId",assetId);
+        re.put("rnames",rnames);
+        return re;
     }
 
     private void updateRedJ(JSONObject redJ,String id_U,String id_C,String grpU,Integer oIndex,JSONObject wrdNU
