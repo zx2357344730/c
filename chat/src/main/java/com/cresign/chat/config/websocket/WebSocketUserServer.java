@@ -3,6 +3,7 @@ package com.cresign.chat.config.websocket;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.chat.config.mq.MqToEs;
 import com.cresign.chat.service.LogService;
 import com.cresign.chat.utils.AesUtil;
 import com.cresign.chat.utils.RsaUtil;
@@ -87,6 +88,9 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * 注入RocketMQ模板
      */
     private static RocketMQTemplate rocketMQTemplate;
+
+    private static MqToEs mqToEs;
+
     /**
      * 用户自身编号
      */
@@ -108,11 +112,14 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      */
     @Autowired
     public void setWebSocketUserServer(DbUtils dbUtils,LogService logService
-            , StringRedisTemplate redisTemplate1,RocketMQTemplate rocketMQTemplate) {
+            , StringRedisTemplate redisTemplate1,RocketMQTemplate rocketMQTemplate, MqToEs mqToEs) {
         WebSocketUserServer.logService = logService;
         WebSocketUserServer.dbUtils = dbUtils;
         WebSocketUserServer.redisTemplate1 = redisTemplate1;
         WebSocketUserServer.rocketMQTemplate = rocketMQTemplate;
+
+        WebSocketUserServer.mqToEs = mqToEs;
+
     }
 
     /**
@@ -320,7 +327,11 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         if (id_CS != null && !id_C.equals(id_CS)) {
             prepareMqUserInfo(id_CS, logContent, id_Us, cidArray);
         }
-        // 调用检测id_U在不在本服务并发送信息方法
+
+        // 127.0.0.1 local test switching
+//        localSending(logContent);
+
+//        // 调用检测id_U在不在本服务并发送信息方法
         sendMsgToMQ(id_Us,stringMap,key);
 
         //4. regular send to ES 1 time
@@ -422,7 +433,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         {
             System.out.println("idU"+id_Us.getString(i));
             if (WebSocketUserServer.webSocketSet.containsKey(id_Us.getString(i))) {
-                log.info("在本服务:"+" - "+json.getString("bz")+" - "+"进入Chat_MQ:当前ws标志-"+ WebSocketUserServer.bz);
                 System.out.println("在本服务:"+" - "+json.getString("bz")+" - "+"进入Chat_MQ:当前ws标志-"+ WebSocketUserServer.bz);
 
                 WebSocketUserServer.webSocketSet.get(id_Us.getString(i)).values()
@@ -776,5 +786,11 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         db2.put("bz", WebSocketUserServer.bz);
         rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", db2);
         System.out.println("发送消息完成");
+    }
+
+    private static void localSending(LogFlow logContent)
+    {
+        mqToEs.sendLogByES(logContent.getLogType(), logContent);
+
     }
 }

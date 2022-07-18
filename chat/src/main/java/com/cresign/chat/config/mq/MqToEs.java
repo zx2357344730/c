@@ -51,7 +51,7 @@ public class MqToEs implements RocketMQListener<String> {
         System.out.println("es:写入完成");
     }
 
-    private void sendLogByES(String logType, LogFlow logFlow){
+    public void sendLogByES(String logType, LogFlow logFlow){
 
         GetIndexRequest request = new GetIndexRequest(logType);
         try {

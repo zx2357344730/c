@@ -73,6 +73,7 @@ public class LogController {
      */
     @PostMapping("/v1/sendWSPi")
     public void sendLogWSPi(@RequestBody LogFlow logData){
+
         WebSocketServerPi.sendInfo(logData);
     }
 

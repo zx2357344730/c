@@ -44,7 +44,7 @@ public class LogServiceImpl  implements LogService {
     @Autowired
     private CoupaUtil coupaUtil;
 
-    @Resource
+    @Autowired
     private DetailsClient detailsClient;
 
     public static final String appId = "KVB0qQq0fRArupojoL4WM9";

@@ -8,6 +8,7 @@ import com.cresign.chat.utils.AesUtil;
 import com.cresign.chat.utils.RsaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
+import io.netty.channel.ChannelHandler.Sharable;
 import com.cresign.tools.pojo.po.LogFlow;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  */
 @ServerEndpoint("/wsU/pi/{id_C}/{name}/{publicKey}")
 @Component
-//@Sharable
+@Sharable
 public class WebSocketServerPi {
 
     private int z = 0;

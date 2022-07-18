@@ -1,8 +1,10 @@
 package com.cresign.chat.service.fallback;
 
+import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.client.DetailsClient;
 import feign.hystrix.FallbackFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * @ClassName DetailsFallbackFactory
@@ -14,9 +16,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class DetailsFallbackFactory implements FallbackFactory<DetailsClient> {
 
-
     @Override
-    public DetailsClient create(Throwable cause) {
-        return reqJson -> null;
+    public DetailsClient create(Throwable cause)
+    {
+        return new DetailsClient()
+        {
+            @Override
+            public Integer updateOStockPi(@RequestBody JSONObject reqJson) { return 400; }
+
+        };
     }
 }
