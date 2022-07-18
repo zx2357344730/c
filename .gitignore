@@ -1,4 +1,12 @@
 *.class
+*.jks
+*.jar
+*.original
+*.xml
+*.lst
+*.iml
+*.yml
+.gitignore
 
 # Default ignored files
 /shelf/
@@ -8,3 +16,4 @@
 /dataSources.local.xml
 # Editor-based HTTP Client requests
 /httpRequests/
+/target
