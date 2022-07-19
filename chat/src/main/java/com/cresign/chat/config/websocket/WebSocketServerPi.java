@@ -389,36 +389,42 @@ public class WebSocketServerPi {
             System.out.println("消息转换之后:");
             System.out.println(JSON.toJSONString(log));
             String type = log.getLogType();
-            if ("piTimer".equals(type)) {
+            if ("piTimer".equals(type) || "piTimerG".equals(type) || "piTimerGK".equals(type)) {
                 System.out.println("pi_type: 2 = pi-数据集-发送pi按键数据");
-                JSONObject jsonObject = piData.get(rname);
-                JSONObject data_all = log.getData();
-                data_all.keySet().forEach(k -> {
-                    JSONArray jsonArray1 = data_all.getJSONArray(k);
-                    JSONObject gpIoObj = jsonObject.getJSONObject(k);
-                    JSONArray li = gpIoObj.getJSONArray("li");
-                    if (null == li) {
-                        li = new JSONArray();
-                    }
-                    JSONObject info = gpIoObj.getJSONObject("info");
-                    JSONObject re = new JSONObject();
-                    re.put("id_O",info.getString("id_O"));
-                    re.put("index",info.getInteger("index"));
-                    re.put("wn2qtynow",jsonArray1.size());
-                    re.put("dep", info.getString("dep"));
-                    re.put("grpU", info.getString("grpU"));
-                    re.put("id_U", info.getString("id_U"));
-                    re.put("wrdNU", info.getJSONObject("wrdNU"));
-                    re.put("arrTime",jsonArray1);
-                    logService.getDet(re);
+                if ("piTimer".equals(type) || "piTimerG".equals(type)) {
+                    JSONObject jsonObject = piData.get(rname);
+                    JSONObject data_all = log.getData();
+                    data_all.keySet().forEach(k -> {
+                        JSONArray jsonArray1 = data_all.getJSONArray(k);
+                        JSONObject gpIoObj = jsonObject.getJSONObject(k);
+                        JSONArray li = gpIoObj.getJSONArray("li");
+                        if (null == li) {
+                            li = new JSONArray();
+                        }
+                        JSONObject info = gpIoObj.getJSONObject("info");
+                        JSONObject re = new JSONObject();
+                        re.put("id_O",info.getString("id_O"));
+                        re.put("index",info.getInteger("index"));
+                        re.put("wn2qtynow",jsonArray1.size());
+                        re.put("dep", info.getString("dep"));
+                        re.put("grpU", info.getString("grpU"));
+                        re.put("id_U", info.getString("id_U"));
+                        re.put("wrdNU", info.getJSONObject("wrdNU"));
+                        re.put("arrTime",jsonArray1);
+                        logService.getDet(re);
 
-                    li.addAll(jsonArray1);
-                    gpIoObj.put("li",li);
-                    jsonObject.put(k,gpIoObj);
-                });
-                piData.put(rname,jsonObject);
-                System.out.println("输出piData:");
-                System.out.println(JSON.toJSONString(piData));
+                        li.addAll(jsonArray1);
+                        gpIoObj.put("li",li);
+                        jsonObject.put(k,gpIoObj);
+                    });
+                    piData.put(rname,jsonObject);
+                    System.out.println("输出piData:");
+                    System.out.println(JSON.toJSONString(piData));
+                }
+                if ("piTimerG".equals(type) || "piTimerGK".equals(type)) {
+                    String gpIo = log.getId();
+                    delBind(rname,gpIo);
+                }
             } else if ("piCallback".equals(type)) {
                 System.out.println("pi_type: 0 = pi-打招呼-成功获取后端公钥");
             } else if ("pi_info_put".equals(type)) {
@@ -437,26 +443,32 @@ public class WebSocketServerPi {
                 piData.put(rname,jsonObject);
                 System.out.println("输出piData:");
                 System.out.println(JSON.toJSONString(piData));
-            } else if ("pi_info_del".equals(type)) {
-                System.out.println("删除gpIo-info信息:");
-                JSONObject jsonObject;
-                jsonObject = piData.get(rname);
-                if (null == jsonObject) {
-                    return;
-                }
-                String gpIo = log.getData().getString("gpio");
-                JSONObject gpIoObj = jsonObject.getJSONObject(gpIo);
-                gpIoObj.put("info",new JSONObject());
-                jsonObject.put(gpIo,gpIoObj);
-                piData.put(rname,jsonObject);
-                System.out.println("输出piData:");
-                System.out.println(JSON.toJSONString(piData));
-            } else if ("gx_tz".equals(type)) {
+            }
+//            else if ("pi_info_del".equals(type)) {
+//                String gpIo = log.getData().getString("gpio");
+//
+//            }
+            else if ("gx_tz".equals(type)) {
                 sendInfo(log);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static void delBind(String rname,String gpIo){
+        System.out.println("删除gpIo-info信息:");
+        JSONObject jsonObject;
+        jsonObject = piData.get(rname);
+        if (null == jsonObject) {
+            return;
+        }
+        JSONObject gpIoObj = jsonObject.getJSONObject(gpIo);
+        gpIoObj.put("info",new JSONObject());
+        jsonObject.put(gpIo,gpIoObj);
+        piData.put(rname,jsonObject);
+        System.out.println("输出piData:");
+        System.out.println(JSON.toJSONString(piData));
     }
 
     /**
