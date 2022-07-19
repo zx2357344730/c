@@ -305,6 +305,7 @@ public class ActionServiceImpl implements ActionService {
         data.put("dep",can.getString("dep"));
         data.put("grpU",grpU);
         data.put("wrdNU",wrdNU);
+        data.put("id_C",id_C);
         logFlow.setData(data);
         ws.sendWSPi(logFlow);
         System.out.println("发送消息:");
