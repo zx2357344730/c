@@ -1,5 +1,6 @@
 package com.cresign.tools.pojo.po;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
@@ -217,6 +218,7 @@ public class LogFlow {
     private String grpB;
     private String grp;
 
+    private JSONArray arrTime;
 
 
     /**
