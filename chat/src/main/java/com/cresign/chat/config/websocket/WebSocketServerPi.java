@@ -404,6 +404,7 @@ public class WebSocketServerPi {
                         JSONObject info = gpIoObj.getJSONObject("info");
                         JSONObject re = new JSONObject();
                         re.put("id_O",info.getString("id_O"));
+                        re.put("id_C",info.getString("id_C"));
                         re.put("index",info.getInteger("index"));
                         re.put("wn2qtynow",jsonArray1.size());
                         re.put("dep", info.getString("dep"));
