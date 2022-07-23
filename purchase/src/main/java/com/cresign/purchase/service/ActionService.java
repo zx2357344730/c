@@ -8,6 +8,8 @@ import java.io.IOException;
 
 public interface ActionService {
 
+    ApiResponse delPi(JSONObject can);
+
     ApiResponse rpiCode(JSONObject can);
 
     ApiResponse relieveRpi(JSONObject can);

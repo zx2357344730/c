@@ -41,6 +41,9 @@ import java.util.*;
 @Slf4j
 public class ActionServiceImpl implements ActionService {
 
+    public static final String PI_GP_T = "pi:gp_";
+    public static final String PI = "pi:p_";
+
     /**
      * getActionData **** 这个很重要，拿了action / oItem 的内容都要转换
      * changeActionStatus -> updateNext -> updateParent
@@ -184,20 +187,86 @@ public class ActionServiceImpl implements ActionService {
     }
 
     @Override
-    public ApiResponse rpiCode(JSONObject can) {
-        JSONObject redisJ = new JSONObject();
+    public ApiResponse delPi(JSONObject can) {
         String rname = can.getString("rname");
-        String gpio = can.getString("gpio");
         String id_C = can.getString("id_C");
-//        System.out.println("id_C:"+id_C);
-        redisJ.put("rname",rname);
-        redisJ.put("gpio",gpio);
-        updateRedJ(redisJ,"", "", "", 0, new JSONObject(), 0, ""
-                , 0, "", "", "", 0, "", new JSONObject()
-                , new JSONObject(), new JSONObject(), false);
-//        redisJ.put("id_U",can.getString("id_U"));
-//        redisJ.put("id_C",can.getString("id_C"));
-        JSONObject rName = getRNames(id_C);
+        int sta = piNameSta(rname, id_C);
+        if (sta == 0) {
+            JSONObject rName = getRNames(id_C,true);
+            Integer staN = rName.getInteger("sta");
+            if (staN == 0) {
+                JSONObject rpi = rName.getJSONObject("rpi");
+                JSONObject rnames = rName.getJSONObject("rnames");
+                JSONObject pinfo = rName.getJSONObject("pinfo");
+                String assetId = rName.getString("assetId");
+                JSONObject r = rnames.getJSONObject(rname);
+                if (null == r) {
+                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_RPI_R_NAME_K.getCode(), "该公司rpi卡片没有对应的rname，请新增");
+                }
+                pinfo.remove(rname);
+                rnames.remove(rname);
+                rpi.put("rnames",rnames);
+                rpi.put("pinfo",pinfo);
+                // 定义存储flowControl字典
+                JSONObject mapKey = new JSONObject();
+                // 设置字段数据
+                mapKey.put("rpi",rpi);
+                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+
+                String s = redisTemplate1.opsForValue().get(PI + rname);
+                JSONObject piDa = JSONObject.parseObject(s);
+                JSONObject piZ = piDa.getJSONObject("piZ");
+                Collection<String> keys = new ArrayList<>();
+                piZ.values().forEach(v -> keys.add(PI_GP_T + v.toString()));
+                redisTemplate1.delete(keys);
+                piDa.put("id_C","");
+                piDa.put("piZ",new JSONObject());
+                redisTemplate1.opsForValue().set(PI + rname,JSON.toJSONString(piDa));
+                return retResult.ok(CodeEnum.OK.getCode(), "删除公司绑定成功");
+            } else {
+                if (staN == 5) {
+                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_X_NO.getCode(), "rpi卡片异常-rpi-基础信息为空");
+                } else {
+                    return reSta(staN);
+                }
+            }
+        } else {
+            return rePiSta(sta);
+        }
+//        String s = redisTemplate1.opsForValue().get(PI + rname);
+//        if (null == s || "".equals(s)) {
+//            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_X_K.getCode(), "机器信息为空，操作失败");
+//        } else {
+//            if (id_C.equals(s)) {
+//                redisTemplate1.opsForValue().set(PI + rname,"");
+//                return retResult.ok(CodeEnum.OK.getCode(), "机器解绑公司成功");
+//            } else {
+//                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_B_NO.getCode(), "该机器不属于你们公司，操作失败");
+//            }
+//        }
+    }
+
+    @Override
+    public ApiResponse rpiCode(JSONObject can) {
+        String rname = can.getString("rname");
+        String s = redisTemplate1.opsForValue().get(PI + rname);
+        String id_C = can.getString("id_C");
+        if (null == s || "".equals(s)) {
+            return rpiCodeZ(id_C,rname);
+        } else {
+            JSONObject piDa = JSONObject.parseObject(s);
+            String id_C_pi = piDa.getString("id_C");
+            if (null == id_C_pi || "".equals(id_C_pi)) {
+                return rpiCodeZ(id_C,rname);
+            } else {
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_B_BIND.getCode(), "机器已经被绑定");
+            }
+        }
+    }
+
+    private ApiResponse rpiCodeZ(String id_C,String rname){
+//        String id_C = can.getString("id_C");
+        JSONObject rName = getRNames(id_C,false);
         Integer sta = rName.getInteger("sta");
         if (sta == 0) {
             JSONObject rnames = rName.getJSONObject("rnames");
@@ -207,23 +276,57 @@ public class ActionServiceImpl implements ActionService {
             if (null == r) {
                 throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_RPI_R_NAME_K.getCode(), "该公司rpi卡片没有对应的rname，请新增");
             }
-            String gpioStr = r.getString(gpio);
-            if (null == gpioStr || "".equals(gpioStr)) {
-                String token = "rpi_"+ UUID19.uuid();
+            JSONArray reArr = new JSONArray();
+
+            JSONObject piDa = new JSONObject();
+            piDa.put("id_C",id_C);
+            JSONObject piDa_z = new JSONObject();
+            List<String> gpList = new ArrayList<>(
+                    Arrays.asList("4","5","6","12","13","17","18","19","20","21","22","23","24","25","26","27"));
+            gpList.forEach(gp -> {
+                JSONObject redisJ = new JSONObject();
+                redisJ.put("rname",rname);
+                redisJ.put("gpio",gp);
+                updateRedJ(redisJ,"", "", "", 0, new JSONObject(), 0, ""
+                        , 0, "", "", "", 0, "", new JSONObject()
+                        , new JSONObject(), new JSONObject(), false);
+                String token = UUID19.uuid();
+                piDa_z.put(gp,token);
                 String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_RPI_T + token;
-                r.put(gpio,token);
-                rnames.put(rname,r);
-                rpi.put("rnames",rnames);
-                // 定义存储flowControl字典
-                JSONObject mapKey = new JSONObject();
-                // 设置字段数据
-                mapKey.put("rpi",rpi);
-                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
-                redisTemplate1.opsForValue().set(token,JSON.toJSONString(redisJ));
-                return retResult.ok(CodeEnum.OK.getCode(), url);
-            } else {
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_Y_BIND.getCode(), "已经被绑定");
-            }
+                JSONObject re = new JSONObject();
+                re.put("gpio",gp);
+                re.put("url",url);
+                reArr.add(re);
+                r.put(gp,token);
+                redisTemplate1.opsForValue().set(PI_GP_T + token,JSON.toJSONString(redisJ));
+            });
+            piDa.put("piZ",piDa_z);
+            redisTemplate1.opsForValue().set(PI + rname,JSON.toJSONString(piDa));
+            rnames.put(rname,r);
+            rpi.put("rnames",rnames);
+            // 定义存储flowControl字典
+            JSONObject mapKey = new JSONObject();
+            // 设置字段数据
+            mapKey.put("rpi",rpi);
+            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+            return retResult.ok(CodeEnum.OK.getCode(), reArr);
+
+//            if (null == gpioStr || "".equals(gpioStr)) {
+//                String token = "rpi_"+ UUID19.uuid();
+//                String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_RPI_T + token;
+//                r.put(gpio,token);
+//                rnames.put(rname,r);
+//                rpi.put("rnames",rnames);
+//                // 定义存储flowControl字典
+//                JSONObject mapKey = new JSONObject();
+//                // 设置字段数据
+//                mapKey.put("rpi",rpi);
+//                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//                redisTemplate1.opsForValue().set(token,JSON.toJSONString(redisJ));
+//                return retResult.ok(CodeEnum.OK.getCode(), url);
+//            } else {
+//                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_Y_BIND.getCode(), "已经生成token");
+//            }
         } else {
             return reSta(sta);
         }
@@ -232,114 +335,157 @@ public class ActionServiceImpl implements ActionService {
     @Override
     public ApiResponse requestRpiStatus(JSONObject can) {
         String token = can.getString("token");
-        String s = redisTemplate1.opsForValue().get(token);
+        String s = redisTemplate1.opsForValue().get(PI_GP_T + token);
         if (null == s) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
+        String id_C = can.getString("id_C");
         JSONObject redJ = JSON.parseObject(s);
-        boolean isBinding = redJ.getBoolean("isBinding");
-        String id_U = can.getString("id_U");
-        if (!isBinding) {
-            return retResult.ok(CodeEnum.OK.getCode(), "1");
-        } else {
-            if (redJ.getString("id_U").equals(id_U)) {
-                return retResult.ok(CodeEnum.OK.getCode(), "2");
+        int sta = piNameSta(redJ.getString("rname"), id_C);
+        if (sta == 0) {
+            boolean isBinding = redJ.getBoolean("isBinding");
+            String id_U = can.getString("id_U");
+            if (!isBinding) {
+                return retResult.ok(CodeEnum.OK.getCode(), "1");
             } else {
-                return retResult.ok(CodeEnum.OK.getCode(), "3");
+                if (redJ.getString("id_U").equals(id_U)) {
+                    return retResult.ok(CodeEnum.OK.getCode(), "2");
+                } else {
+                    return retResult.ok(CodeEnum.OK.getCode(), "3");
+                }
             }
+        } else {
+            return rePiSta(sta);
         }
     }
 
     @Override
     public ApiResponse bindingRpi(JSONObject can) {
         String token = can.getString("token");
-        String s = redisTemplate1.opsForValue().get(token);
+        String s = redisTemplate1.opsForValue().get(PI_GP_T + token);
         if (null == s) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
         JSONObject redJ = JSON.parseObject(s);
-        String id_U = can.getString("id_U");
-        String rname = redJ.getString("rname");
-        String gpio = redJ.getString("gpio");
-
         String id_C = can.getString("id_C");
-        String grpU = can.getString("grpU");
-        Integer oIndex = can.getInteger("oIndex");
-        JSONObject wrdNU = can.getJSONObject("wrdNU");
-        Integer imp = can.getInteger("imp");
-        String id_O = can.getString("id_O");
-        Integer tzone = can.getInteger("tzone");
-        String lang = can.getString("lang");
-        String id_P = can.getString("id_P");
-        String pic = can.getString("pic");
-        Integer wn2qtynow = can.getInteger("wn2qtynow");
-        String grpB = can.getString("grpB");
-        JSONObject fields = can.getJSONObject("fields");
-        JSONObject wrdNP = can.getJSONObject("wrdNP");
-        JSONObject wrdN = can.getJSONObject("wrdN");
-        updateRedJ(redJ,id_U, id_C, grpU, oIndex, wrdNU, imp, id_O, tzone, lang
-                , id_P, pic, wn2qtynow, grpB, fields, wrdNP, wrdN, true);
-        LogFlow logFlow = getLogF(id_C,id_U,rname);
-        logFlow.setLogType("binding");
-        logFlow.setZcndesc("绑定gpIo成功");
-        logFlow.setGrpU(grpU);
-        logFlow.setIndex(oIndex);
-        logFlow.setWrdNU(wrdNU);
-        logFlow.setImp(imp);
-        logFlow.setSubType("binding");
-        logFlow.setId_O(id_O);
-        logFlow.setTzone(tzone);
-        logFlow.setLang(lang);
-        logFlow.setId_P(id_P);
-        JSONObject data = new JSONObject();
-        data.put("gpio",gpio);
-        data.put("rname",rname);
-        data.put("pic",pic);
-        data.put("wn2qtynow",wn2qtynow);
-        data.put("grpB",grpB);
-        data.put("fields",fields);
-        data.put("wrdNP",wrdNP);
-        data.put("wrdN",wrdN);
-        data.put("id_O",id_O);
-        data.put("index",oIndex);
-        data.put("dep",can.getString("dep"));
-        data.put("grpU",grpU);
-        data.put("wrdNU",wrdNU);
-        data.put("id_C",id_C);
-        logFlow.setData(data);
-        ws.sendWSPi(logFlow);
-        System.out.println("发送消息:");
-        System.out.println(JSON.toJSONString(logFlow));
-        redisTemplate1.opsForValue().set(token,JSON.toJSONString(redJ));
-        return retResult.ok(CodeEnum.OK.getCode(), "绑定gpIo成功");
+        String rname = redJ.getString("rname");
+        int sta = piNameSta(rname, id_C);
+        if (sta == 0) {
+            String id_U = can.getString("id_U");
+            String gpio = redJ.getString("gpio");
+
+            String grpU = can.getString("grpU");
+            Integer oIndex = can.getInteger("oIndex");
+            JSONObject wrdNU = can.getJSONObject("wrdNU");
+            Integer imp = can.getInteger("imp");
+            String id_O = can.getString("id_O");
+            Integer tzone = can.getInteger("tzone");
+            String lang = can.getString("lang");
+            String id_P = can.getString("id_P");
+            String pic = can.getString("pic");
+            Integer wn2qtynow = can.getInteger("wn2qtynow");
+            String grpB = can.getString("grpB");
+            JSONObject fields = can.getJSONObject("fields");
+            JSONObject wrdNP = can.getJSONObject("wrdNP");
+            JSONObject wrdN = can.getJSONObject("wrdN");
+            updateRedJ(redJ,id_U, id_C, grpU, oIndex, wrdNU, imp, id_O, tzone, lang
+                    , id_P, pic, wn2qtynow, grpB, fields, wrdNP, wrdN, true);
+            LogFlow logFlow = getLogF(id_C,id_U,rname);
+            logFlow.setLogType("binding");
+            logFlow.setZcndesc("绑定gpIo成功");
+            logFlow.setGrpU(grpU);
+            logFlow.setIndex(oIndex);
+            logFlow.setWrdNU(wrdNU);
+            logFlow.setImp(imp);
+            logFlow.setSubType("binding");
+            logFlow.setId_O(id_O);
+            logFlow.setTzone(tzone);
+            logFlow.setLang(lang);
+            logFlow.setId_P(id_P);
+            JSONObject data = new JSONObject();
+            data.put("gpio",gpio);
+            data.put("rname",rname);
+            data.put("pic",pic);
+            data.put("wn2qtynow",wn2qtynow);
+            data.put("grpB",grpB);
+            data.put("fields",fields);
+            data.put("wrdNP",wrdNP);
+            data.put("wrdN",wrdN);
+            data.put("id_O",id_O);
+            data.put("index",oIndex);
+            data.put("dep",can.getString("dep"));
+            data.put("grpU",grpU);
+            data.put("wrdNU",wrdNU);
+            data.put("id_C",id_C);
+            logFlow.setData(data);
+            ws.sendWSPi(logFlow);
+            System.out.println("发送消息:");
+            System.out.println(JSON.toJSONString(logFlow));
+            redisTemplate1.opsForValue().set(PI_GP_T + token,JSON.toJSONString(redJ));
+            return retResult.ok(CodeEnum.OK.getCode(), "绑定gpIo成功");
+        } else {
+            return rePiSta(sta);
+        }
     }
 
     @Override
     public ApiResponse relieveRpi(JSONObject can) {
         String token = can.getString("token");
         String id_C = can.getString("id_C");
-        String s = redisTemplate1.opsForValue().get(token);
+        String s = redisTemplate1.opsForValue().get(PI_GP_T + token);
         if (null == s) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
         JSONObject redJ = JSON.parseObject(s);
         String rname = redJ.getString("rname");
-        String gpio = redJ.getString("gpio");
-        updateRedJ(redJ,"", "", "", 0, new JSONObject(), 0, ""
-                , 0, "", "", "", 0, "", new JSONObject()
-                , new JSONObject(), new JSONObject(), false);
-        LogFlow logFlow = getLogF(id_C, can.getString("id_U"),rname);
-        JSONObject data = new JSONObject();
-        data.put("gpio",gpio);
-        data.put("rname",rname);
-        logFlow.setLogType("unbound");
-        logFlow.setZcndesc("解绑gpIo成功");
-        logFlow.setData(data);
-        ws.sendWSPi(logFlow);
-        System.out.println("发送消息:");
-        System.out.println(JSON.toJSONString(logFlow));
-        redisTemplate1.opsForValue().set(token,JSON.toJSONString(redJ));
-        return retResult.ok(CodeEnum.OK.getCode(), "解除绑定gpIo成功");
+        int sta = piNameSta(rname, id_C);
+        if (sta == 0) {
+            String gpio = redJ.getString("gpio");
+            updateRedJ(redJ,"", "", "", 0, new JSONObject(), 0, ""
+                    , 0, "", "", "", 0, "", new JSONObject()
+                    , new JSONObject(), new JSONObject(), false);
+            LogFlow logFlow = getLogF(id_C, can.getString("id_U"),rname);
+            JSONObject data = new JSONObject();
+            data.put("gpio",gpio);
+            data.put("rname",rname);
+            logFlow.setLogType("unbound");
+            logFlow.setZcndesc("解绑gpIo成功");
+            logFlow.setData(data);
+            ws.sendWSPi(logFlow);
+            System.out.println("发送消息:");
+            System.out.println(JSON.toJSONString(logFlow));
+            redisTemplate1.opsForValue().set(PI_GP_T + token,JSON.toJSONString(redJ));
+            return retResult.ok(CodeEnum.OK.getCode(), "解除绑定gpIo成功");
+        } else {
+            return rePiSta(sta);
+        }
+    }
+
+    private int piNameSta(String rname,String id_C){
+        String s = redisTemplate1.opsForValue().get(PI + rname);
+        if (null == s || "".equals(s)) {
+            return 1;
+        } else {
+            JSONObject piDa = JSONObject.parseObject(s);
+            String id_C_pi = piDa.getString("id_C");
+            if (null == id_C_pi || "".equals(id_C_pi)) {
+                return 1;
+            } else {
+                if (id_C.equals(id_C_pi)) {
+                    return 0;
+                } else {
+                    return 2;
+                }
+            }
+        }
+    }
+
+    private ApiResponse rePiSta(int sta){
+        if (sta == 1) {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_X_K.getCode(), "机器信息为空，操作失败");
+        } else {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_B_NO.getCode(), "该机器不属于你们公司，操作失败");
+        }
     }
 
     private ApiResponse reSta(int sta){
@@ -357,7 +503,7 @@ public class ActionServiceImpl implements ActionService {
         }
     }
 
-    private JSONObject getRNames(String id_C){
+    private JSONObject getRNames(String id_C,boolean isX){
         JSONObject re = new JSONObject();
         String assetId = coupaUtil.getAssetId(id_C, "a-core");
 //        System.out.println("assetId:"+assetId);
@@ -380,6 +526,14 @@ public class ActionServiceImpl implements ActionService {
         if (null == rnames) {
             re.put("sta",4);
             return re;
+        }
+        if (isX) {
+            JSONObject pinfo = rpi.getJSONObject("pinfo");
+            if (null == pinfo) {
+                re.put("sta",5);
+                return re;
+            }
+            re.put("pinfo",pinfo);
         }
         re.put("sta",0);
         re.put("rpi",rpi);

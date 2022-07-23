@@ -58,6 +58,14 @@ public class ActionController {
                 tokData.getJSONObject("wrdNU"));
     }
 
+    @PostMapping("/v1/delPi")
+    @SecurityParameter
+    public ApiResponse delPi(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return actionService.delPi(reqJson);
+    }
+
     @PostMapping("/v1/rpiCode")
     @SecurityParameter
     public ApiResponse rpiCode(@RequestBody JSONObject reqJson){
