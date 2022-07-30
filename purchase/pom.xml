@@ -147,8 +147,8 @@
             <version>1.0</version>
         </dependency>
 
-
         <!--  腾讯sdk  -->
+        <!--腾讯云-翻译依赖-->
         <!-- https://mvnrepository.com/artifact/com.tencentcloudapi/tencentcloud-sdk-java -->
         <dependency>
             <groupId>com.tencentcloudapi</groupId>

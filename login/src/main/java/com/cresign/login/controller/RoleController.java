@@ -43,7 +43,7 @@ public class RoleController {
     @SecurityParameter
     @PostMapping("/v1/get_role")
     public ApiResponse getRole(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         return roleService.getRole(
                 tokData.getString("id_U"),
@@ -55,7 +55,7 @@ public class RoleController {
     @SecurityParameter
     @PostMapping("/v1/getRoleData")
     public ApiResponse getRoleData(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
 
         return roleService.getRoleData(
@@ -69,7 +69,7 @@ public class RoleController {
     @SecurityParameter
     @PostMapping("/v1/updateRole")
     public ApiResponse updateRole(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         return roleService.updateRole(
                 tokData.getString("id_U"),
@@ -85,7 +85,7 @@ public class RoleController {
     @SecurityParameter
     @PostMapping("/v1/get-type-grp")
     public ApiResponse getListTypeGrp(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         return roleService.getListTypeGrp(
                 tokData.getString("id_U"),
@@ -95,7 +95,7 @@ public class RoleController {
     @SecurityParameter
     @PostMapping("/v1/getRoleDataByGrp")
     public ApiResponse getRoleDataByGrpUAndGrp(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         return roleService.getRoleDataByGrpUAndGrp(
                 tokData.getString("id_U"),
@@ -108,7 +108,7 @@ public class RoleController {
     @SecurityParameter
     @PostMapping("/v1/updateNewestRole")
     public ApiResponse updateNewestRole(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         return roleService.updateNewestRole(
                 tokData.getString("id_U"),
@@ -121,7 +121,7 @@ public class RoleController {
     @SecurityParameter
     @PostMapping("/v1/up_grp_all_auth")
     public ApiResponse upRoleOfAuth(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         return roleService.upRoleOfAuth(
                 tokData.getString("id_U"),
@@ -137,7 +137,7 @@ public class RoleController {
     @PostMapping("/v1/copy_grp_to_othergrp")
     public ApiResponse copyGrpRoleToOtherGrp(@RequestBody JSONObject reqJson) {
 
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         authCheck.getUserUpdateAuth(tokData.getString("id_U"),tokData.getString("id_C"),"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
         return roleService.copyGrpRoleToOtherGrp(
@@ -152,7 +152,7 @@ public class RoleController {
     @SecurityParameter
     @PostMapping("/v1/copyGrpU")
     public ApiResponse copyGrpU(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         authCheck.getUserUpdateAuth(tokData.getString("id_U"),tokData.getString("id_C"),"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
         return roleService.copyGrpU(

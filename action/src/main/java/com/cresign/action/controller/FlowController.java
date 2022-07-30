@@ -41,7 +41,7 @@ public class FlowController {
         public ApiResponse timeHandle(@RequestBody JSONObject reqJson){
             return flowService.timeHandle(
                     reqJson.getString("id_O"),
-                    getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1),
                     reqJson.getString("id_C"),
                     reqJson.getLong("teStart"),
                     reqJson.getInteger("wn0TPrior"));
@@ -86,7 +86,7 @@ public class FlowController {
             System.out.println("进入接口？？？");
             return flowService.getDgResult(
                     reqJson.getString("id_O"),
-                    getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1),
                     reqJson.getString("id_C"),
                     reqJson.getLong("teStart"));
         }
@@ -120,7 +120,7 @@ public class FlowController {
 //    @SecurityParameter
 //    @PostMapping("/v1/dgActivate")
 //    public ApiResponse dgActivate(@RequestBody JSONObject reqJson) {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //
 //        return actionService.dgActivate(
 //                reqJson.getString("id_O"),
@@ -135,7 +135,7 @@ public class FlowController {
 //    @SecurityParameter
 //    @PostMapping("/v1/dgActivateAll")
 //    public ApiResponse dgActivateAll(@RequestBody JSONObject reqJson) {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //
 //        if (tokData.getJSONObject("modAuth").getInteger("a-core").equals(null) || tokData.getJSONObject("modAuth").getInteger("a-core") >= 2)
 //        {
@@ -154,7 +154,7 @@ public class FlowController {
     @SecurityParameter
     @PostMapping("/v1/dgRemove")
     public ApiResponse dgRemove(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         return flowService.dgRemove(
                 reqJson.getString("id_O"),
@@ -174,7 +174,7 @@ public class FlowController {
 //    @SecurityParameter
 //    @PostMapping("/v1/confirmOrder")
 //    public ApiResponse confirmOrder(@RequestBody JSONObject reqJson) throws IOException {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //        return actionService.confirmOrder(
 //                tokData.getString("id_C"),
 //                reqJson.getString("id_O"));
@@ -183,7 +183,7 @@ public class FlowController {
 //    @SecurityParameter
 //    @PostMapping("/v1/cancelOrder")
 //    public ApiResponse cancelOrder(@RequestBody JSONObject reqJson){
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //        return actionService.cancelOrder(
 //                tokData.getString("id_C"),
 //                reqJson.getString("id_O"));
@@ -211,7 +211,7 @@ public class FlowController {
 //    @SecurityParameter
 //    @PostMapping("/v2/statusChange")
 //    public ApiResponse statusChange(@RequestBody JSONObject reqJson){
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //        return actionService.changeActionStatus(
 //                reqJson.getString("logType"),
 //                reqJson.getInteger("status"),
@@ -231,7 +231,7 @@ public class FlowController {
 //    @SecurityParameter
 //    @PostMapping("/v1/createTask")
 //    public ApiResponse createTask(@RequestBody JSONObject reqJson) {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //
 //        return actionService.createTask(
 //                reqJson.getString("logType"),
@@ -248,7 +248,7 @@ public class FlowController {
 //    @SecurityParameter
 //    @PostMapping("/v1/up_FC_action_grpB")
 //    public ApiResponse up_FC_action_grpB(@RequestBody JSONObject reqJson) {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //        return actionService.up_FC_action_grpB(
 //                tokData.getString("id_C"),
 //                reqJson.getString("id_O"),
@@ -265,7 +265,7 @@ public class FlowController {
 //    @SecurityParameter
 //    @PostMapping("/v1/createQuest")
 //    public ApiResponse createQuest(@RequestBody JSONObject reqJson) {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //
 //        return actionService.createQuest(
 //                tokData.getString("id_C"),
@@ -284,7 +284,7 @@ public class FlowController {
 //    @SecurityParameter
 //    @PostMapping("/v1/genAction")
 //    public ApiResponse genAction(@RequestBody JSONObject reqJson) {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //
 //        return actionService.genAction(
 //                tokData.getString("id_C"),
@@ -321,7 +321,7 @@ public class FlowController {
 //        @SecurityParameter
 //        @PostMapping("/v1/changeDepAndFlow")
 //        public ApiResponse changeDepAndFlow(@RequestBody JSONObject reqJson){
-//            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //
 //            return actionService.changeDepAndFlow(
 //                    reqJson.getString("id_O"),
@@ -337,7 +337,7 @@ public class FlowController {
 //    @SecurityParameter
 //    @PostMapping("/v2/dgConfirmOrder")
 //    public ApiResponse dgConfirmOrder(@RequestBody JSONObject reqJson) throws IOException {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //        return actionService.dgConfirmOrder(
 //                tokData.getString("id_C"),
 //                reqJson.getJSONArray("casList"));
@@ -347,7 +347,7 @@ public class FlowController {
 //    @SecurityParameter
 //        @PostMapping("/v2/getFlowList")
 //        public ApiResponse getFlowList(@RequestBody JSONObject reqJson){
-//            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //            return actionService.getFlowList(
 //                    tokData.getString("id_C"),
 //                    reqJson.getString("grpB"));

@@ -90,7 +90,7 @@ public class LogController {
     @PostMapping("/v1/setGpio")
     public ApiResponse setGpio(@RequestBody JSONObject reqJson){
 
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         // 获取用户id
 //        String uid = reqJson.getString(ChatConstants.L_C_REQUEST_UID);
@@ -113,7 +113,7 @@ public class LogController {
     @SecurityParameter
     @PostMapping("/v1/unsetGpio")
     public ApiResponse unsetGpio(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         // 获取用户id
 //        String uid = reqJson.getString(ChatConstants.L_C_REQUEST_UID);

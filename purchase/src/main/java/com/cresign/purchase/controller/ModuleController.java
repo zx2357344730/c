@@ -29,6 +29,84 @@ public class ModuleController {
     @Resource
     private HttpServletRequest request;
 
+    @PostMapping("/v1/testFy")
+    @SecurityParameter
+    public ApiResponse testFy(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return moduleService.testFy(reqJson.getJSONObject("data"));
+    }
+
+    @PostMapping("/v1/testFy2")
+    @SecurityParameter
+    public ApiResponse testFy2(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return moduleService.testFy2(reqJson.getJSONObject("data"));
+    }
+
+    @PostMapping("/v1/lSprod2lBprod")
+    @SecurityParameter
+    public ApiResponse lSprod2lBprod(@RequestBody JSONObject reqJson){
+//        JSONObject tokData = getTokenOfUserId.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"t",1);
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return moduleService.lSprod2lBprod(
+                reqJson.getString("id_P")
+                ,reqJson.getString("id_C")
+                ,reqJson.getBoolean("isMove"));
+    }
+
+    @PostMapping("/v1/modSetUser")
+    @SecurityParameter
+    public ApiResponse modSetUser(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return moduleService.modSetUser(
+                reqJson.getString("id_C")
+                ,reqJson.getJSONObject("objUser"));
+    }
+
+    @PostMapping("/v1/modSetControl")
+    @SecurityParameter
+    public ApiResponse modSetControl(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return moduleService.modSetControl(
+                reqJson.getString("id_C")
+                ,reqJson.getJSONObject("objMod"));
+    }
+
+    @PostMapping("/v1/modGetControl")
+    @SecurityParameter
+    public ApiResponse modGetControl(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return moduleService.modGetControl(reqJson.getString("id_C"));
+    }
+
+    @PostMapping("/v1/modAddLSBComp")
+    @SecurityParameter
+    public ApiResponse modAddLSBComp(@RequestBody JSONObject can){
+        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        can.put("id_U",tokData.getString("id_U"));
+        return moduleService.modAddLSBComp(
+                can.getString("id_C")
+                , can.getString("id_CP")
+                , can.getString("id_CB")
+                , can.getString("id_CBP")
+                , can.getJSONObject("wrdNC")
+                , can.getJSONObject("wrddesc")
+                , can.getJSONObject("wrdNCB")
+                , can.getJSONObject("wrddescB")
+                , can.getString("grp")
+                , can.getString("grpB")
+                , can.getString("refC")
+                , can.getString("refCB")
+                , can.getString("picC")
+                , can.getString("picCB")
+        );
+    }
 
     @SecurityParameter
     @PostMapping("/v1/addModule")

@@ -8,15 +8,18 @@ import java.io.IOException;
 
 public interface ActionService {
 
-    ApiResponse delPi(JSONObject can);
+    ApiResponse delPi(String rname,String id_C);
 
-    ApiResponse rpiCode(JSONObject can);
+    ApiResponse rpiCode(String rname,String id_C);
 
-    ApiResponse relieveRpi(JSONObject can);
+    ApiResponse relieveRpi(String token,String id_C,String id_U);
 
-    ApiResponse requestRpiStatus(JSONObject can);
+    ApiResponse requestRpiStatus(String token,String id_C,String id_U);
 
-    ApiResponse bindingRpi(JSONObject can);
+    ApiResponse bindingRpi(String token,String id_C,String id_U,String grpU,Integer oIndex
+            ,JSONObject wrdNU,Integer imp,String id_O,Integer tzone,String lang,String id_P
+            ,String pic,Integer wn2qtynow,String grpB,JSONObject fields,JSONObject wrdNP
+            ,JSONObject wrdN,String dep);
     /**
      * 通用日志方法(action,prob,msg) - 注释完成
      * @return java.lang.String  返回结果: 结果

@@ -36,6 +36,8 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
     @Value("${encyptKey.private_key}")
     private String server_private_key;
 
+//    private final String server_private_key = RsaUtilF.getPrivateKey();
+
 //    @Value("${aes.private.key}")
 //    private String AES_PRIVATE_KEY;
 

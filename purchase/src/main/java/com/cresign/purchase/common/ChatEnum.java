@@ -146,11 +146,11 @@ public enum ChatEnum {
      */
     ERR_IO_ALREADY_UNBIND("01102"),
     /**
-     * 无assetId
+     * 该公司没有assetId
      */
     ERR_NO_ASSET_ID("01103"),
     /**
-     * 无asset
+     * 该公司没有asset
      */
     ERR_NO_ASSET("01104"),
     /**
@@ -193,6 +193,23 @@ public enum ChatEnum {
      * rpi卡片异常-rpi-基础信息为空
      */
     ERR_PI_X_NO("01114"),
+
+    /**
+     * 该公司没有control卡片
+     */
+    ERR_NO_CONTROL_K("01115"),
+    /**
+     * 该公司control卡片异常
+     */
+    ERR_CONTROL_K("01116"),
+    /**
+     * 该公司没有这个模块功能
+     */
+    ERR_AUTH_NO_MOD("01117"),
+    /**
+     * 当前用户这个模块功能权限不够
+     */
+    ERR_AUTH_NO_LEV("01118"),
     ;
 
 

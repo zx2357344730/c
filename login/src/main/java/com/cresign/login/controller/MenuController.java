@@ -50,7 +50,7 @@ public class MenuController {
     @PostMapping("/v1/get_menus")
     public ApiResponse getMenusAndSubMenus(@RequestBody JSONObject reqJson) {
 
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         JSONArray canUpdate = authCheck.getUserSelectAuth(
                 tokData.getString("id_U"),
                 tokData.getString("id_C"),
@@ -67,7 +67,7 @@ public class MenuController {
     @SecurityParameter
     @PostMapping("/v1/get_grpU_menuData")
     public ApiResponse getGrpUForMenusInRole(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         JSONArray canUpdate = authCheck.getUserSelectAuth(
                 tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
                 "lSAsset", "1003", "card");
@@ -85,7 +85,7 @@ public class MenuController {
     @SecurityParameter
     @PostMapping("/v1/getMenuGrp")
     public ApiResponse getMenuGrp(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         JSONArray canUpdate = authCheck.getUserSelectAuth(
                 tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
                 "lSAsset", "1003", "card");
@@ -104,7 +104,7 @@ public class MenuController {
     @SecurityParameter
     @PostMapping("/v1/get_menuData")
     public ApiResponse getMenuListByGrpU(@RequestBody JSONObject reqJson) throws IOException {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return menuService.getMenuListByGrpU(
                 tokData.getString("id_C"),
                 tokData.getString("grpU")
@@ -114,7 +114,7 @@ public class MenuController {
     @SecurityParameter
     @PostMapping("/v1/ud_grpU_mainMenu")
     public ApiResponse updateMenuData(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         return menuService.updateMenuData(
                 getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
@@ -129,7 +129,7 @@ public class MenuController {
     @PostMapping("/v1/get_subMenu")
     public ApiResponse getSubMenusData(@RequestBody JSONObject reqJson) {
 
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         JSONArray canUpdate = authCheck.getUserSelectAuth(
                 tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
                 "lSAsset", "1003", "card");

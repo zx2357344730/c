@@ -14,6 +14,22 @@ import java.io.IOException;
  */
 public interface ModuleService {
 
+    ApiResponse testFy(JSONObject data);
+
+    ApiResponse testFy2(JSONObject data);
+
+    ApiResponse lSprod2lBprod(String id_P,String id_C,Boolean isMove);
+
+    ApiResponse modSetUser(String id_C,JSONObject objUser);
+
+    ApiResponse modSetControl(String id_C,JSONObject objModQ);
+
+    ApiResponse modGetControl(String id_C);
+
+    ApiResponse modAddLSBComp(String id_C,String id_CP,String id_CB,String id_CBP
+            ,JSONObject wrdNC,JSONObject wrddesc,JSONObject wrdNCB,JSONObject wrddescB
+            ,String grp,String grpB,String refC,String refCB,String picC,String picCB);
+
     /**
      * 添加模块信息
      * ##author: Jevon

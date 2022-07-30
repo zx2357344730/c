@@ -55,9 +55,6 @@ public class ActionServiceImpl implements ActionService {
      * getFlowList / changeDepAndFlow / dgActivateAll
      * sendLogWSU 用 logUtil 和 wsu
      */
-
-
-
         
         @Autowired
         private LogUtil logUtil;
@@ -187,9 +184,9 @@ public class ActionServiceImpl implements ActionService {
     }
 
     @Override
-    public ApiResponse delPi(JSONObject can) {
-        String rname = can.getString("rname");
-        String id_C = can.getString("id_C");
+    public ApiResponse delPi(String rname,String id_C) {
+//        String rname = can.getString("rname");
+//        String id_C = can.getString("id_C");
         int sta = piNameSta(rname, id_C);
         if (sta == 0) {
             JSONObject rName = getRNames(id_C,true);
@@ -247,10 +244,10 @@ public class ActionServiceImpl implements ActionService {
     }
 
     @Override
-    public ApiResponse rpiCode(JSONObject can) {
-        String rname = can.getString("rname");
+    public ApiResponse rpiCode(String rname,String id_C) {
+//        String rname = can.getString("rname");
         String s = redisTemplate1.opsForValue().get(PI + rname);
-        String id_C = can.getString("id_C");
+//        String id_C = can.getString("id_C");
         if (null == s || "".equals(s)) {
             return rpiCodeZ(id_C,rname);
         } else {
@@ -333,18 +330,18 @@ public class ActionServiceImpl implements ActionService {
     }
 
     @Override
-    public ApiResponse requestRpiStatus(JSONObject can) {
-        String token = can.getString("token");
+    public ApiResponse requestRpiStatus(String token,String id_C,String id_U) {
+//        String token = can.getString("token");
         String s = redisTemplate1.opsForValue().get(PI_GP_T + token);
         if (null == s) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
-        String id_C = can.getString("id_C");
+//        String id_C = can.getString("id_C");
         JSONObject redJ = JSON.parseObject(s);
         int sta = piNameSta(redJ.getString("rname"), id_C);
         if (sta == 0) {
             boolean isBinding = redJ.getBoolean("isBinding");
-            String id_U = can.getString("id_U");
+//            String id_U = can.getString("id_U");
             if (!isBinding) {
                 return retResult.ok(CodeEnum.OK.getCode(), "1");
             } else {
@@ -360,34 +357,37 @@ public class ActionServiceImpl implements ActionService {
     }
 
     @Override
-    public ApiResponse bindingRpi(JSONObject can) {
-        String token = can.getString("token");
+    public ApiResponse bindingRpi(String token,String id_C,String id_U,String grpU,Integer oIndex
+            ,JSONObject wrdNU,Integer imp,String id_O,Integer tzone,String lang,String id_P
+            ,String pic,Integer wn2qtynow,String grpB,JSONObject fields,JSONObject wrdNP
+            ,JSONObject wrdN,String dep) {
+//        String token = can.getString("token");
         String s = redisTemplate1.opsForValue().get(PI_GP_T + token);
         if (null == s) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
         JSONObject redJ = JSON.parseObject(s);
-        String id_C = can.getString("id_C");
+//        String id_C = can.getString("id_C");
         String rname = redJ.getString("rname");
         int sta = piNameSta(rname, id_C);
         if (sta == 0) {
-            String id_U = can.getString("id_U");
+//            String id_U = can.getString("id_U");
             String gpio = redJ.getString("gpio");
 
-            String grpU = can.getString("grpU");
-            Integer oIndex = can.getInteger("oIndex");
-            JSONObject wrdNU = can.getJSONObject("wrdNU");
-            Integer imp = can.getInteger("imp");
-            String id_O = can.getString("id_O");
-            Integer tzone = can.getInteger("tzone");
-            String lang = can.getString("lang");
-            String id_P = can.getString("id_P");
-            String pic = can.getString("pic");
-            Integer wn2qtynow = can.getInteger("wn2qtynow");
-            String grpB = can.getString("grpB");
-            JSONObject fields = can.getJSONObject("fields");
-            JSONObject wrdNP = can.getJSONObject("wrdNP");
-            JSONObject wrdN = can.getJSONObject("wrdN");
+//            String grpU = can.getString("grpU");
+//            Integer oIndex = can.getInteger("oIndex");
+//            JSONObject wrdNU = can.getJSONObject("wrdNU");
+//            Integer imp = can.getInteger("imp");
+//            String id_O = can.getString("id_O");
+//            Integer tzone = can.getInteger("tzone");
+//            String lang = can.getString("lang");
+//            String id_P = can.getString("id_P");
+//            String pic = can.getString("pic");
+//            Integer wn2qtynow = can.getInteger("wn2qtynow");
+//            String grpB = can.getString("grpB");
+//            JSONObject fields = can.getJSONObject("fields");
+//            JSONObject wrdNP = can.getJSONObject("wrdNP");
+//            JSONObject wrdN = can.getJSONObject("wrdN");
             updateRedJ(redJ,id_U, id_C, grpU, oIndex, wrdNU, imp, id_O, tzone, lang
                     , id_P, pic, wn2qtynow, grpB, fields, wrdNP, wrdN, true);
             LogFlow logFlow = getLogF(id_C,id_U,rname);
@@ -413,7 +413,8 @@ public class ActionServiceImpl implements ActionService {
             data.put("wrdN",wrdN);
             data.put("id_O",id_O);
             data.put("index",oIndex);
-            data.put("dep",can.getString("dep"));
+//            data.put("dep",can.getString("dep"));
+            data.put("dep",dep);
             data.put("grpU",grpU);
             data.put("wrdNU",wrdNU);
             data.put("id_C",id_C);
@@ -429,9 +430,9 @@ public class ActionServiceImpl implements ActionService {
     }
 
     @Override
-    public ApiResponse relieveRpi(JSONObject can) {
-        String token = can.getString("token");
-        String id_C = can.getString("id_C");
+    public ApiResponse relieveRpi(String token,String id_C,String id_U) {
+//        String token = can.getString("token");
+//        String id_C = can.getString("id_C");
         String s = redisTemplate1.opsForValue().get(PI_GP_T + token);
         if (null == s) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
@@ -444,7 +445,8 @@ public class ActionServiceImpl implements ActionService {
             updateRedJ(redJ,"", "", "", 0, new JSONObject(), 0, ""
                     , 0, "", "", "", 0, "", new JSONObject()
                     , new JSONObject(), new JSONObject(), false);
-            LogFlow logFlow = getLogF(id_C, can.getString("id_U"),rname);
+//            LogFlow logFlow = getLogF(id_C, can.getString("id_U"),rname);
+            LogFlow logFlow = getLogF(id_C, id_U,rname);
             JSONObject data = new JSONObject();
             data.put("gpio",gpio);
             data.put("rname",rname);

@@ -3,10 +3,12 @@ package com.cresign.purchase.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.purchase.common.ChatEnum;
 import com.cresign.purchase.enumeration.PurchaseEnum;
 import com.cresign.purchase.service.ModuleService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.enumeration.CodeEnum;
@@ -14,10 +16,22 @@ import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.mongo.MongoUtils;
+import com.cresign.tools.pojo.es.lBProd;
+import com.cresign.tools.pojo.es.lSBComp;
+import com.cresign.tools.pojo.es.lSProd;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.InitJava;
 import com.cresign.tools.pojo.po.User;
+import com.tencentcloudapi.common.Credential;
+import com.tencentcloudapi.common.exception.TencentCloudSDKException;
+import com.tencentcloudapi.common.profile.ClientProfile;
+import com.tencentcloudapi.common.profile.HttpProfile;
+import com.tencentcloudapi.tmt.v20180321.TmtClient;
+import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchRequest;
+import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchResponse;
+import com.tencentcloudapi.tmt.v20180321.models.TextTranslateRequest;
+import com.tencentcloudapi.tmt.v20180321.models.TextTranslateResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -32,10 +46,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -56,6 +69,357 @@ public class ModuleServicelmpl implements ModuleService {
     @Autowired
     private RetResult retResult;
 
+    @Resource
+    private CoupaUtil coupaUtil;
+
+    private static final String secretId = "AKIDwjMl15uUt53mFUVGk39zaw4ydAWfaS8a";
+    private static final String secretKey = "HLEsHSRChx1sTtELCpFXfZGk14tVw97w";
+
+    @Override
+    public ApiResponse testFy(JSONObject data){
+        try{
+//            JSONObject data = can.getJSONObject("data");
+            String cn = data.getString("cn");
+            // 实例化一个认证对象，入参需要传入腾讯云账户secretId，secretKey,此处还需注意密钥对的保密
+            // 密钥可前往https://console.cloud.tencent.com/cam/capi网站进行获取
+            Credential cred = new Credential(secretId, secretKey);
+            // 实例化一个http选项，可选的，没有特殊需求可以跳过
+            HttpProfile httpProfile = new HttpProfile();
+            httpProfile.setEndpoint("tmt.tencentcloudapi.com");
+            // 实例化一个client选项，可选的，没有特殊需求可以跳过
+            ClientProfile clientProfile = new ClientProfile();
+            clientProfile.setHttpProfile(httpProfile);
+            // 实例化要请求产品的client对象,clientProfile是可选的
+            TmtClient client = new TmtClient(cred, "ap-guangzhou", clientProfile);
+            // 实例化一个请求对象,每个接口都会对应一个request对象
+            TextTranslateRequest req = new TextTranslateRequest();
+            req.setSourceText(cn);
+            req.setSource("zh");
+            req.setTarget("en");
+            req.setProjectId(1270102L);
+            // 返回的resp是一个TextTranslateResponse的实例，与请求对象对应
+            TextTranslateResponse resp = client.TextTranslate(req);
+            // 输出json格式的字符串回包
+            System.out.println(TextTranslateResponse.toJsonString(resp));
+            data.put("en",resp.getTargetText());
+            return retResult.ok(CodeEnum.OK.getCode(), data);
+        } catch (TencentCloudSDKException e) {
+            System.out.println(e.toString());
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+    }
+
+    @Override
+    public ApiResponse testFy2(JSONObject data) {
+        try{
+//            JSONObject data = can.getJSONObject("data");
+            List<String> key = new ArrayList<>(data.keySet());
+            String[] val = new String[key.size()];
+//            key.forEach(k -> val.add(data.getJSONObject(k).getString("cn")));
+            for (int i = 0; i < key.size(); i++) {
+                val[i] = data.getJSONObject(key.get(i)).getString("cn");
+            }
+            // 实例化一个认证对象，入参需要传入腾讯云账户secretId，secretKey,此处还需注意密钥对的保密
+            // 密钥可前往https://console.cloud.tencent.com/cam/capi网站进行获取
+            Credential cred = new Credential(secretId, secretKey);
+            // 实例化一个http选项，可选的，没有特殊需求可以跳过
+            HttpProfile httpProfile = new HttpProfile();
+            httpProfile.setEndpoint("tmt.tencentcloudapi.com");
+            // 实例化一个client选项，可选的，没有特殊需求可以跳过
+            ClientProfile clientProfile = new ClientProfile();
+            clientProfile.setHttpProfile(httpProfile);
+            // 实例化要请求产品的client对象,clientProfile是可选的
+            TmtClient client = new TmtClient(cred, "ap-guangzhou", clientProfile);
+            // 实例化一个请求对象,每个接口都会对应一个request对象
+            TextTranslateBatchRequest req = new TextTranslateBatchRequest();
+            req.setSource("zh");
+            req.setTarget("en");
+            req.setProjectId(1270102L);
+
+//            String[] sourceTextList1 = {"你好", "早上好"};
+//            String[] sourceTextList1 = val;
+            System.out.println(JSON.toJSONString(val));
+            req.setSourceTextList(val);
+
+            // 返回的resp是一个TextTranslateBatchResponse的实例，与请求对象对应
+            TextTranslateBatchResponse resp = client.TextTranslateBatch(req);
+            // 输出json格式的字符串回包
+//            System.out.println(TextTranslateBatchResponse.toJsonString(resp));
+//            System.out.println(JSON.toJSONString(resp));
+            String[] targetTextList = resp.getTargetTextList();
+            for (int i = 0; i < key.size(); i++) {
+                String k = key.get(i);
+                JSONObject daZ = data.getJSONObject(k);
+                daZ.put("en",targetTextList[i]);
+                data.put(k,daZ);
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), data);
+        } catch (TencentCloudSDKException e) {
+            System.out.println(e.toString());
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+    }
+
+    @Override
+    public ApiResponse lSprod2lBprod(String id_P,String id_C,Boolean isMove) {
+//        String id_P = can.getString("id_P");
+//        String id_C = can.getString("id_C");
+//        Boolean isMove = can.getBoolean("isMove");
+
+        JSONArray esQuery = coupaUtil.getEsQuery("lsprod", Collections.singletonList("id_P")
+                , Collections.singletonList(id_P));
+        JSONObject prodRe = esQuery.getJSONObject(0);
+
+        JSONObject lsprod = prodRe.getJSONObject("map");
+        String esId = prodRe.getString("esId");
+        System.out.println(JSON.toJSONString(lsprod));
+        System.out.println(esId);
+        if (isMove) {
+            Integer reI = coupaUtil.delEsById("lsprod", esId);
+            if (reI != 0) {
+                System.out.println("删除lsprod出现异常");
+                return retResult.ok(CodeEnum.OK.getCode(), "错误码：删除lsprod出现异常");
+            }
+//            else {
+//                lsprod.put("id_P","test_id_P");
+//                coupaUtil.updateES_lSProd(JSONObject.parseObject(JSON.toJSONString(lsprod), lSProd.class));
+//            }
+        }
+        lBProd lbprod = new lBProd(
+                getStrIsNull(lsprod.getString("id_P")), id_C
+                , getStrIsNull(lsprod.getString("id_CP")), id_C
+                , lsprod.getJSONObject("wrdN")==null?new JSONObject():lsprod.getJSONObject("wrdN")
+                , lsprod.getJSONObject("wrddesc")==null?new JSONObject():lsprod.getJSONObject("wrddesc")
+                , getStrIsNull(lsprod.getString("grp")), getStrIsNull(lsprod.getString("grpB"))
+                , getStrIsNull(lsprod.getString("grpU")), getStrIsNull(lsprod.getString("grpUB"))
+                , getStrIsNull(lsprod.getString("ref")), getStrIsNull(lsprod.getString("refB"))
+                , getStrIsNull(lsprod.getString("pic"))
+                , lsprod.getInteger("lUT")==null?0:lsprod.getInteger("lUT"));
+        coupaUtil.updateES_lBProd(lbprod);
+
+        return retResult.ok(CodeEnum.OK.getCode(), "请求成功");
+    }
+
+    private String getStrIsNull(String str){
+        if (null == str) {
+            return "";
+        } else {
+            return str;
+        }
+    }
+
+    @Override
+    public ApiResponse modSetUser(String id_C,JSONObject objUser) {
+//        String id_C = can.getString("id_C");
+        JSONObject re = new JSONObject();
+//        JSONArray reAddArr = userT(can.getJSONObject("objUser"), id_C);
+        JSONArray reAddArr = userT(objUser, id_C);
+        if (reAddArr.size() > 0) {
+            re.put("type",1);
+            re.put("reAddArr",reAddArr);
+        } else {
+            re.put("type",0);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), re);
+    }
+
+    @Override
+    public ApiResponse modSetControl(String id_C,JSONObject objModQ) {
+//        String id_C = can.getString("id_C");
+        JSONObject cont = getCont(id_C);
+        Integer sta = cont.getInteger("sta");
+        if (0 == sta) {
+//            boolean isC = false;
+            JSONArray reArr = new JSONArray();
+            JSONObject control = cont.getJSONObject("control");
+            String assetId = cont.getString("assetId");
+//            JSONObject objModQ = can.getJSONObject("objMod");
+            JSONObject objMod = control.getJSONObject("objMod");
+            objModQ.keySet().forEach(k -> {
+                JSONObject js = objModQ.getJSONObject(k);
+                String type = js.getString("type");
+//                String key = js.getString("key");
+                if ("add".equals(type)) {
+                    JSONObject val = js.getJSONObject("val");
+                    objMod.put(k,val);
+                } else if ("del".equals(type)) {
+                    objMod.remove(k);
+                } else {
+                    JSONObject re = new JSONObject();
+                    re.put("key",k);
+                    re.put("err","修改状态为空");
+                    reArr.add(re);
+                }
+            });
+            control.put("objMod",objMod);
+            // 定义存储flowControl字典
+            JSONObject mapKey = new JSONObject();
+            // 设置字段数据
+            mapKey.put("control",control);
+            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+            JSONObject re = new JSONObject();
+            if (reArr.size() > 0) {
+                re.put("type",1);
+                re.put("reArr",reArr);
+            } else {
+                re.put("type",0);
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), re);
+        } else {
+            return reSta(sta);
+        }
+    }
+
+    @Override
+    public ApiResponse modGetControl(String id_C) {
+//        String id_C = can.getString("id_C");
+        JSONObject cont = getCont(id_C);
+        Integer sta = cont.getInteger("sta");
+        if (0 == sta) {
+            JSONObject control = cont.getJSONObject("control");
+            return retResult.ok(CodeEnum.OK.getCode(), control);
+        } else {
+            return reSta(sta);
+        }
+    }
+
+    @Override
+    public ApiResponse modAddLSBComp(String id_C,String id_CP,String id_CB,String id_CBP
+            ,JSONObject wrdNC,JSONObject wrddesc,JSONObject wrdNCB,JSONObject wrddescB
+            ,String grp,String grpB,String refC,String refCB,String picC,String picCB) {
+//        lSBComp comp = new lSBComp(
+//                can.getString("id_C")
+//                , can.getString("id_CP")
+//                , can.getString("id_CB")
+//                , can.getString("id_CBP")
+//                , can.getJSONObject("wrdNC")
+//                , can.getJSONObject("wrddesc")
+//                , can.getJSONObject("wrdNCB")
+//                , can.getJSONObject("wrddescB")
+//                , can.getString("grp")
+//                , can.getString("grpB")
+//                , can.getString("refC")
+//                , can.getString("refCB")
+//                , can.getString("picC")
+//                , can.getString("picCB")
+//                , DateUtils.getDateByT(DateEnum.DATE_TWO.getDate())
+//                , DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        lSBComp comp = new lSBComp(
+                id_C
+                , id_CP
+                , id_CB
+                , id_CBP
+                , wrdNC
+                , wrddesc
+                , wrdNCB
+                , wrddescB
+                , grp
+                , grpB
+                , refC
+                , refCB
+                , picC
+                , picCB
+                , DateUtils.getDateByT(DateEnum.DATE_TWO.getDate())
+                , DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        coupaUtil.updateES_lSBComp(comp);
+        return retResult.ok(CodeEnum.OK.getCode(), "连接关系成功");
+    }
+
+    private ApiResponse reSta(int sta){
+        switch (sta) {
+            case 1:
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET_ID.getCode(), "该公司没有assetId");
+            case 2:
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET.getCode(), "该公司没有asset");
+            case 3:
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_CONTROL_K.getCode(), "该公司没有control卡片");
+            case 4:
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_CONTROL_K.getCode(), "该公司control卡片异常");
+            default:
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_WZ.getCode(), "接口未知异常");
+        }
+    }
+
+    private JSONObject getCont(String id_C){
+        JSONObject re = new JSONObject();
+        String assetId = coupaUtil.getAssetId(id_C, "a-core");
+//        System.out.println("assetId:"+assetId);
+        if (null == assetId) {
+            re.put("sta",1);
+            return re;
+        }
+        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("control"));
+        if (null == asset) {
+            re.put("sta",2);
+            return re;
+        }
+//        System.out.println(JSON.toJSONString(asset));
+        JSONObject control = asset.getControl();
+        if (null == control) {
+            re.put("sta",3);
+            return re;
+        }
+        JSONObject objData = control.getJSONObject("objMod");
+        if (null == objData) {
+            re.put("sta",4);
+            return re;
+        }
+        re.put("sta",0);
+        re.put("control",control);
+        re.put("assetId",assetId);
+        return re;
+    }
+
+    private JSONArray userT(JSONObject users,String id_C){
+        JSONArray reArr = new JSONArray();
+//        JSONObject addUser = can.getJSONObject("addUser");
+        users.keySet().forEach(id_U -> {
+            User user = coupaUtil.getUserById(id_U, Collections.singletonList("rolex"));
+            JSONObject re = new JSONObject();
+            if (null == user) {
+                re.put("id_U",id_U);
+                re.put("desc","用户信息为空");
+                reArr.add(re);
+            } else {
+                JSONObject rolex = user.getRolex();
+                if (null == rolex) {
+                    re.put("id_U",id_U);
+                    re.put("desc","用户权限卡片为空");
+                    reArr.add(re);
+                } else {
+                    JSONObject objComp = rolex.getJSONObject("objComp");
+                    JSONObject c_role = objComp.getJSONObject(id_C);
+                    if (null == c_role) {
+                        re.put("id_U",id_U);
+                        re.put("desc","用户权限卡片内当前公司信息为空");
+                        reArr.add(re);
+                    } else {
+                        JSONObject u_role = users.getJSONObject(id_U);
+                        JSONObject modAuth = c_role.getJSONObject("modAuth");
+                        u_role.keySet().forEach(k -> {
+                            JSONObject mod = u_role.getJSONObject(k);
+                            String type = mod.getString("type");
+                            if ("del".equals(type)) {
+                                modAuth.remove(k);
+                            } else {
+                                modAuth.put(k,mod.getJSONObject("val"));
+                            }
+                        });
+//                        u_role.keySet().forEach(objModX::remove);
+                        c_role.put("modAuth",modAuth);
+                        objComp.put(id_C,c_role);
+                        rolex.put("objComp",objComp);
+                        // 定义存储flowControl字典
+                        JSONObject mapKey = new JSONObject();
+                        // 设置字段数据
+                        mapKey.put("rolex",rolex);
+                        coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKey);
+                    }
+                }
+            }
+        });
+        return reArr;
+    }
 
     @Override
     public ApiResponse addModule(String id_U, String oid, String id_C, String ref, Integer bcdLevel) throws IOException {

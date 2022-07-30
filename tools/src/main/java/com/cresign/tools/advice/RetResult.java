@@ -38,6 +38,9 @@ public class RetResult {
     // 加密的key
     private static String client_Public_Key;
 
+//    // 加密的key
+//    private static final String client_Public_Key = RsaUtilF.getPublicKey();
+
     @Autowired
     private LocalMessage localMessage;
 

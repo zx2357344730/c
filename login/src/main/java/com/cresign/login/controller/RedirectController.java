@@ -44,7 +44,7 @@ public class RedirectController {
                 reqJson.getJSONObject("data")
         );
 
-//                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+//                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1)
     }
 
 
@@ -144,7 +144,7 @@ public class RedirectController {
                 reqJson.getString("id_C"),
                 reqJson.getString("mode"),
                 reqJson.getJSONObject("data"));
-//                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+//                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1)
     }
 
     @SecurityParameter
@@ -165,7 +165,7 @@ public class RedirectController {
                 getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
 //                "5f28bf314f65cc7dc2e60386",
                 reqJson.getString("id_C")
-//                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+//                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1)
         );
     }
 

@@ -60,8 +60,40 @@ public class GetUserIdByToken {
         if(token_is) {
             //            System.out.println(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
             JSONObject result = JSONObject.parseObject(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
-//            return redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr);
             return result;
+//            return redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr);
+//            return result;
+        }
+
+        throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), "");
+    }
+
+    public JSONObject getTokenDataX(String jwtStr, String clientType,String mod,Integer lev) {
+
+
+        boolean token_is = jwtUtil.validJWT(clientType, jwtStr);
+        if(token_is) {
+            //            System.out.println(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
+            JSONObject result = JSONObject.parseObject(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
+            if ("core".equals(mod) && lev == 1) {
+                return result;
+            } else {
+                JSONObject modAuth = result.getJSONObject("modAuth");
+                JSONObject modJ = modAuth.getJSONObject(mod);
+                if (null == modJ) {
+                    throw new ErrorResponseException(HttpStatus.OK, "01117", "该公司没有这个模块功能");
+                } else {
+                    Integer bcdLevel = modJ.getInteger("bcdLevel");
+                    // 1 < 4 4=4
+                    if (lev <= bcdLevel) {
+                        return result;
+                    } else {
+                        throw new ErrorResponseException(HttpStatus.OK, "01118", "当前用户这个模块功能权限不够");
+                    }
+                }
+            }
+//            return redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr);
+//            return result;
         }
 
         throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), "");

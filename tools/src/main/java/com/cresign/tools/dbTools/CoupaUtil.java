@@ -4,14 +4,27 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.common.Constants;
+import com.cresign.tools.pojo.es.lBProd;
+import com.cresign.tools.pojo.es.lSBComp;
 import com.cresign.tools.pojo.es.lSBOrder;
+import com.cresign.tools.pojo.es.lSProd;
 import com.cresign.tools.pojo.po.*;
 import com.mongodb.client.result.DeleteResult;
+import org.elasticsearch.action.DocWriteResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -31,7 +44,7 @@ public class CoupaUtil {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    @Autowired
+    @Resource
     private RestHighLevelClient client;
 
     @Autowired
@@ -344,6 +357,25 @@ public class CoupaUtil {
         return null;
     }
 
+    /**
+     * 根据idU获取用户的指定info信息
+     *
+     * ##Params: idU 用户id
+     * ##return: java.util.Map<java.lang.String, java.lang.Object>  返回结果: 结果
+     * ##Author: tang
+     * ##version: 1.0.0
+     * ##Updated: 2020/8/6 15:11
+     */
+    public User getUserById(String idU, List<String> listKey) {
+        // 创建查询条件
+        Query query = new Query(new Criteria("id").is(idU));
+        // 添加排序条件
+        Field fields = query.fields();
+        listKey.forEach(fields::include);
+        // 返回结果
+        return mongoTemplate.findOne(query, User.class);
+    }
+
 //    /**
 //     * 根据uId获取listKey需要的信息
 //     *
@@ -410,6 +442,115 @@ public class CoupaUtil {
 
     /////////////////////////////PROD//////////////////////////////////////////
 
+    public JSONArray getEsQuery(String index,List<String> key,List<String> val) {
+        SearchRequest request = new SearchRequest(index);
+
+        JSONArray result = new JSONArray();
+
+        // 构建搜索条件
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.size(1000);
+        QueryBuilder queryBuilder;
+//        System.out.println(JSON.toJSONString(key));
+//        System.out.println(JSON.toJSONString(val));
+
+        BoolQueryBuilder bq = QueryBuilders.boolQuery();
+        for (int i = 0; i < key.size(); i++) {
+            String k = key.get(i);
+            String v = val.get(i);
+            bq.must(QueryBuilders.termQuery(k, v));
+        }
+        queryBuilder = bq;
+
+        builder.query(queryBuilder);
+
+        request.source(builder);
+        try {
+            SearchResponse search = client.search(request, RequestOptions.DEFAULT);
+//            System.out.println(JSON.toJSONString(search));
+            for (SearchHit hit : search.getHits().getHits()) {
+                System.out.println(JSON.toJSONString(hit));
+                JSONObject re = new JSONObject();
+                re.put("esId",hit.getId());
+                re.put("map",hit.getSourceAsMap());
+                result.add(re);
+            }
+//            System.out.println("result"+result);
+            return result;
+        } catch (
+                IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Integer delEsById(String index,String id){
+        // 2、定义请求对象
+        DeleteRequest request = new DeleteRequest(index);
+        request.id(id);
+        // 3、发送请求到ES
+        DeleteResponse response;
+        try {
+            response = client.delete(request, RequestOptions.DEFAULT);
+            // 4、处理响应结果
+            System.out.println("删除是否成功:" + response.getResult());
+            return 0;
+        } catch (IOException e) {
+            return 1;
+        }
+    }
+
+    /**
+     *
+     * @return void  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2020/9/8 8:54
+     */
+    public void updateES_lBProd(lBProd lbprod){
+        // 异常捕获
+        try {
+
+            // 获取指定es索引
+            IndexRequest requestI = new IndexRequest("lbprod");
+
+            // 将我们的数据放入请求 json
+            requestI.source(JSON.toJSONString(lbprod), XContentType.JSON);
+            // 写入完成立即刷新
+            requestI.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
+            // 插入数据
+            client.index(requestI, RequestOptions.DEFAULT);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     *
+     * @return void  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2020/9/8 8:54
+     */
+    public void updateES_lSProd(lSProd lsprod){
+        // 异常捕获
+        try {
+
+            // 获取指定es索引
+            IndexRequest requestI = new IndexRequest("lsprod");
+
+            // 将我们的数据放入请求 json
+            requestI.source(JSON.toJSONString(lsprod), XContentType.JSON);
+            // 写入完成立即刷新
+            requestI.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
+            // 插入数据
+            client.index(requestI, RequestOptions.DEFAULT);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 根据pId获取listKey需要的信息
@@ -603,7 +744,31 @@ public class CoupaUtil {
         }
     }
 
+    /**
+     * 新增lsbcomp日志到Es - 注释完成
+     * @return void  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2020/9/8 8:54
+     */
+    public void updateES_lSBComp(lSBComp lsbcomp){
+        // 异常捕获
+        try {
 
+            // 获取指定es索引
+            IndexRequest requestI = new IndexRequest("lsbcomp");
+
+            // 将我们的数据放入请求 json
+            requestI.source(com.alibaba.fastjson.JSON.toJSONString(lsbcomp), XContentType.JSON);
+            // 写入完成立即刷新
+            requestI.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
+            // 插入数据
+            client.index(requestI, RequestOptions.DEFAULT);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 根据key和val获取listKey需要的信息

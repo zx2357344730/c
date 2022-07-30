@@ -3,7 +3,7 @@
 
 ```java
 
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         tokData.getString("id_U"),
         tokData.getString("id_C"),
