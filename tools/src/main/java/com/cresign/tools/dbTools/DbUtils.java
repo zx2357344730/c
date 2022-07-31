@@ -9,6 +9,7 @@ import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
+import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -23,6 +24,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
@@ -43,6 +45,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Service
 public class DbUtils {
@@ -162,6 +165,7 @@ public class DbUtils {
             JSONObject json = (JSONObject) JSON.toJSON(l);
             mapId.put(json.getString("id"), l);
         });
+
         return mapId;
     }
 
@@ -433,6 +437,108 @@ public class DbUtils {
         return bulkResponse;
     }
 
+    public BoolQueryBuilder filterBuilder (JSONArray filterArray, BoolQueryBuilder queryBuilder)
+    {
+        //用正则表达式  判断是否为数字
+        Pattern pattern = Pattern.compile("^[-]?[\\d]*$");
+        //条件数组不为空
+        if (filterArray.size() > 0) {
+            for (int i = 0; i < filterArray.size(); i++) {
+                //拿到每一组筛选条件
+                JSONObject conditionMap =  filterArray.getJSONObject(i);
+                String method = conditionMap.getString("method");
+                if (method.equals("exact")) {
+                    //精确查询，速度快不分词，查keyword类型
+                    queryBuilder.must(QueryBuilders.termQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
+                } else if (method.equals("eq")) {
+                    //模糊查询，必须匹配所有分词
+                    queryBuilder.must(QueryBuilders.matchPhraseQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
+                } else if (method.equals("ma")) {
+                    //模糊查询，匹配任意一个分词
+                    queryBuilder.must(QueryBuilders.matchQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
+                } else if (method.equals("gte")) {
+                    //大于等于
+//                    if (pattern.matcher((CharSequence) conditionMap.get("filtVal")).matches())
+                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).gte(conditionMap.get("filtVal")));
+                } else if (method.equals("gt")) {
+                    //大于
+                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).gt(conditionMap.get("filtVal")));
+                } else if (method.equals("lte")) {
+                    //小于等于
+                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).lte(conditionMap.get("filtVal")));
+                } else if (method.equals("lt")) {
+                    //小于
+                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).lt(conditionMap.get("filtVal")));
+                } else if (method.equals("range")){
+                    //范围查询, 大于等于～小于
+                    JSONArray arrayValue = conditionMap.getJSONArray("filtVal");
+                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).gte(arrayValue.get(0)).lt(arrayValue.get(1)));
+                } else if (method.equals("mixeq")) {
+                    //复杂查询，可一对一，一对多，多对一，多对多
+                    JSONArray arrayKey = conditionMap.getJSONArray("filtKey");
+                    JSONArray arrayValue = conditionMap.getJSONArray("filtVal");
+                    String value = StringUtils.join(arrayValue, " OR ");
+                    System.out.println("value=" + value);
+                    QueryStringQueryBuilder queryStringQueryBuilder = QueryBuilders.queryStringQuery(value);
+                    for (int j = 0; j < arrayKey.size(); j++) {
+                        queryStringQueryBuilder = queryStringQueryBuilder.field(arrayKey.getString(j));
+                    }
+                    queryBuilder.must(queryStringQueryBuilder);
+                } else if (method.equals("nexact")) {
+                    //精确查询，不分词
+                    queryBuilder.mustNot(QueryBuilders.termQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
+                }
+//                else if (method.equals("ne")) {
+//                    //模糊查询，必须匹配所有分词
+//                    queryBuilder.mustNot(QueryBuilders.matchPhraseQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
+//                }
+                else if (method.equals("ne")) {
+                    //模糊查询，匹配任意一个分词
+                    queryBuilder.mustNot(QueryBuilders.matchQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
+                } else if (method.equals("mixne")) {
+                    //复杂查询，可一对一，一对多，多对一，多对多
+                    JSONArray arrayKey = conditionMap.getJSONArray("filtKey");
+                    JSONArray arrayValue = conditionMap.getJSONArray("filtVal");
+                    String value = StringUtils.join(arrayValue, " OR ");
+                    System.out.println("value=" + value);
+                    QueryStringQueryBuilder queryStringQueryBuilder = QueryBuilders.queryStringQuery(value);
+                    for (int j = 0; j < arrayKey.size(); j++) {
+                        queryStringQueryBuilder = queryStringQueryBuilder.field(arrayKey.getString(j));
+                    }
+                    queryBuilder.must(queryStringQueryBuilder);
+                } else if (conditionMap.get("method").equals("contain")) {
+                    //设定条件  OR    contain：包含
+                    String joinStr = org.apache.commons.lang3.StringUtils.join((List<Integer>)conditionMap.get("filtVal"), " OR ");
+
+                    queryBuilder.must(QueryBuilders.queryStringQuery(joinStr).field(conditionMap.getString("filtKey")));
+                } else if (conditionMap.get("method").equals("timeRange")){
+                    JSONArray filtList = conditionMap.getJSONArray("filtVal");
+                    //.from（）是时间格式，.gte（）.lte（）  时间范围
+                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey"))
+                            .from(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()).gte(filtList.get(0))
+                            .lte(filtList.get(1)));
+                }  else if (conditionMap.get("method").equals("sheq")) {
+                    BoolQueryBuilder shouldQueryBuilder = new BoolQueryBuilder();
+                    JSONArray arrayFiltKey = conditionMap.getJSONArray("filtKey");
+                    for (int j = 0; j < arrayFiltKey.size(); j++) {
+                        shouldQueryBuilder.should(QueryBuilders.matchPhraseQuery(arrayFiltKey.getString(j), conditionMap.get("filtVal")));
+                    }
+                    queryBuilder.must(shouldQueryBuilder);
+                } else if (conditionMap.get("method").equals("shne")) {
+                    BoolQueryBuilder shouldQueryBuilder = new BoolQueryBuilder();
+                    JSONArray arrayFiltKey = conditionMap.getJSONArray("filtKey");
+                    for (int j = 0; j < arrayFiltKey.size(); j++) {
+                        shouldQueryBuilder.should(QueryBuilders.matchQuery(arrayFiltKey.getString(j), conditionMap.get("filtVal")));
+                    }
+                    queryBuilder.must(shouldQueryBuilder);
+                }
+            }
+        }
+
+        return queryBuilder;
+    }
+
+
     /**
      * 获取原有日志修改后发日志
      * @Author Rachel
@@ -459,7 +565,10 @@ public class DbUtils {
         searchRequest.source(sourceBuilder);
 
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        System.out.println("result");
+        System.out.println(id_O+" "+index+" "+tokData.getString("id_C"));
 
+        System.out.println(searchResponse.getHits().getHits());
         SearchHit hit = searchResponse.getHits().getHits()[0];
 //        Map<String, Object> newestLog = hit.getSourceAsMap();
         if (hit == null)
@@ -474,6 +583,8 @@ public class DbUtils {
         newestLog.setDep(tokData.getString("dep"));
         newestLog.setGrpU(tokData.getString("grpU"));
         newestLog.setWrdNU(tokData.getJSONObject("wrdNU"));
+
+
 //        
 //        newestLog.put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
 //        newestLog.put("id_U", tokData.getString("id_U"));

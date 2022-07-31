@@ -53,7 +53,7 @@ public class KfController {
         // 获取订单id
         String oId = map.getString(Constants.REQUEST_OID);
         String type = map.getString(Constants.REQUEST_TYPE);
-        String id_U = getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        String id_U = getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"));
         String kf = map.getString("kf");
         Integer indexOnly = map.getInteger(Constants.GET_INDEX_ONLY);
         return kfActionService.getRecoveryKf(oId,type,id_U,kf,indexOnly);
@@ -74,7 +74,7 @@ public class KfController {
         String oId = map.getString(Constants.REQUEST_OID);
         String type = map.getString(Constants.REQUEST_TYPE);
         Integer indexOnly = map.getInteger(Constants.GET_INDEX_ONLY);
-        String id_U = getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        String id_U = getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"));
         String kf = map.getString("kf");
         return kfActionService.getRecoveryKfAndUserInfo(oId,type,indexOnly,id_U,kf);
     }

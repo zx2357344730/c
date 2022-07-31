@@ -69,7 +69,6 @@ public class OrderInfo {
     private String id_CB;
     private String id_CBP;
 
-//    private String id_O;
     private String id_OP;
 
     /**

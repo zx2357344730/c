@@ -160,28 +160,28 @@ public class MenuController {
         );
     }
 
-
-    @SecurityParameter
-    @PostMapping("/v1/check_submenu")
-    public ApiResponse checkSubMenuUse(@RequestBody JSONObject reqJson) {
-        return menuService.checkSubMenuUse(
-                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("id_C"),
-                reqJson.getString("ref")
-
-        );
-    }
-
-    @SecurityParameter
-    @PostMapping("/v1/del_submenu")
-    public ApiResponse delSubMenu(@RequestBody JSONObject reqJson) {
-        return menuService.delSubMenu(
-                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("id_C"),
-                reqJson.getString("ref")
-
-                );
-    }
+//
+//    @SecurityParameter
+//    @PostMapping("/v1/check_submenu")
+//    public ApiResponse checkSubMenuUse(@RequestBody JSONObject reqJson) {
+//        return menuService.checkSubMenuUse(
+//                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+//                reqJson.getString("id_C"),
+//                reqJson.getString("ref")
+//
+//        );
+//    }
+//
+//    @SecurityParameter
+//    @PostMapping("/v1/del_submenu")
+//    public ApiResponse delSubMenu(@RequestBody JSONObject reqJson) {
+//        return menuService.delSubMenu(
+//                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+//                reqJson.getString("id_C"),
+//                reqJson.getString("ref")
+//
+//                );
+//    }
 
 
 }

@@ -10,7 +10,6 @@ import com.cresign.tools.pojo.es.lSBOrder;
 import com.cresign.tools.pojo.es.lSProd;
 import com.cresign.tools.pojo.po.*;
 import com.mongodb.client.result.DeleteResult;
-import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;

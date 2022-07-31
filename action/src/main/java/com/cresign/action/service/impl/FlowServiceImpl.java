@@ -34,6 +34,9 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,17 +49,6 @@ public class FlowServiceImpl implements FlowService {
 //    private static final Map<Long, List<Task>> taskM = new HashMap<>();
 //    private static final Map<Long,Long> zonM = new HashMap<>();
 
-    /**
-        checkAllBmdPt - dgCheck - dgCheckUtil
-
-        dgRemove / setAllBmdpt / getPartIsNull
-
-        getDgResult -> dgProcess   / mergePart -> dgMergQtySet -> updateSalesOrder
-
-
-
-
-     **/
     /**
      * TODO KEV
      * dgCheckUtil need to check tvs / tmk if not newest need to full ES data set into part
@@ -77,6 +69,9 @@ public class FlowServiceImpl implements FlowService {
 
     @Autowired
     private RetResult retResult;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     @Autowired
     private TimeZjServiceImpl timeZjService;
@@ -113,8 +108,10 @@ public class FlowServiceImpl implements FlowService {
                 JSONArray pidList = new JSONArray();
                 JSONObject nextPart = new JSONObject();
 
+                Integer count = 0;
+
                 // ******调用验证方法******
-                this.dgCheckUtil(pidList,id_P, myCompId, nextPart,isRecurred,layer,isEmpty);
+                this.dgCheckUtil(pidList,id_P, myCompId, nextPart,isRecurred,layer,isEmpty, count);
 
                 if (isRecurred.size() > 0)
                 {
@@ -183,6 +180,7 @@ public class FlowServiceImpl implements FlowService {
             //dgType: 1 = firstLayer (sales Items), 2 = regular/subTask or subProd, 3 = depSplit regular
             // T/P - T/P -T/P.... problem is id_P == ""?
 
+
                 this.dgProcess(
                         1, myCompId, id_OParent,
                         objOItem, objAction,
@@ -198,7 +196,6 @@ public class FlowServiceImpl implements FlowService {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
         }
 
-        ////////////////////////////////////// Get Dep.objlBProd for grpP
 
             /////////// setup Dep.objlBProd + objlSProd for grpP
 
@@ -215,7 +212,6 @@ public class FlowServiceImpl implements FlowService {
 
         // 获取递归结果键
         Set<String> actionCollection = objActionCollection.keySet();
-        int i = 1;
         //before getting so many id_A, get myComp id_A first for future use
         String myId_A = dbUtils.getId_A(myCompId, "a-auth");
         Asset myDef = dbUtils.getAssetById(myId_A, Collections.singletonList("def"));
@@ -275,16 +271,15 @@ public class FlowServiceImpl implements FlowService {
                     } else {
                         asset = myDef;
                     }
-                    JSONArray defResultBP = asset.getDef().getJSONArray("objlBProd");
-                    JSONArray defResultBC = asset.getDef().getJSONArray("objlBComp");
+                    JSONObject defResultBP = asset.getDef().getJSONObject("objlBP");
+                    JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
 
 
-                    for (int i1 = 0; i1 < unitOItem.size(); i1++) {
-                        if (grpBGroup.getJSONObject(unitOItem.get(i1).getGrpB()) == null) {
-                            for (int i2 = 0; i2 < defResultBP.size(); i2++) {
-                                if (unitOItem.get(i1).getGrpB().equals(defResultBP.getJSONObject(i2).getString("ref")))
-                                    grpBGroup.put(unitOItem.get(i1).getGrpB(), defResultBP.getJSONObject(i2));
-                            }
+                    for (OrderOItem orderOItem : unitOItem) {
+                        System.out.println(orderOItem.getGrpB());
+                        String grpB = orderOItem.getGrpB().toString();
+                        if (grpBGroup.getJSONObject(grpB) == null) {
+                            grpBGroup.put(grpB, defResultBP.getJSONObject(grpB));
                         }
                     }
                     // get GrpB and grpS of id_CB
@@ -293,15 +288,17 @@ public class FlowServiceImpl implements FlowService {
                         grpOB = "1010";
                     } else {
                         String compGrpB = listData.getString("grpB");
-                        for (int k = 0; k < defResultBC.size(); k++)
-                        {
-                            String grpRef = defResultBC.getJSONObject(k).getString("ref");
-                            if (compGrpB.equals(grpRef))
-                            {
-                                grpOB =  defResultBC.getJSONObject(k).getString("grpO");
-                                break;
-                            }
-                        }
+
+                        grpOB = defResultBC.getJSONObject(compGrpB).getString("grpO");
+//                        for (int k = 0; k < defResultBC.size(); k++)
+//                        {
+//                            String grpRef = defResultBC.getJSONObject(k).getString("ref");
+//                            if (compGrpB.equals(grpRef))
+//                            {
+//                                grpOB =  defResultBC.getJSONObject(k).getString("grpO");
+//                                break;
+//                            }
+//                        }
                     }
                 }
 
@@ -315,7 +312,7 @@ public class FlowServiceImpl implements FlowService {
                     aId2 = myId_A;
                 }
 
-                // if it is a real Company get grpB setting from objlBProd by ref, else do nothing now, later can do extra
+                // if it is a real Company get grpB setting from objlBP by ref, else do nothing now, later can do extra
                 if (!aId2.equals("none")) {
                     Asset asset;
                     if (!prodCompId.equals(myCompId))
@@ -325,15 +322,14 @@ public class FlowServiceImpl implements FlowService {
                     } else {
                         asset = myDef;
                     }
-                    JSONArray defResultSP = asset.getDef().getJSONArray("objlSProd");
-                    JSONArray defResultSC = asset.getDef().getJSONArray("objlSComp");
-                    
-                    for (int i1 = 0; i1 < unitOItem.size(); i1++) {
-                        if (grpGroup.getJSONObject(unitOItem.get(i1).getGrp()) == null) {
-                            for (int i2 = 0; i2 < defResultSP.size(); i2++) {
-                                if (unitOItem.get(i1).getGrp().equals(defResultSP.getJSONObject(i2).getString("ref")))
-                                    grpGroup.put(unitOItem.get(i1).getGrp(), defResultSP.getJSONObject(i2));
-                            }
+                    JSONObject defResultSP = asset.getDef().getJSONObject("objlSP");
+                    JSONObject defResultSC = asset.getDef().getJSONObject("objlSC");
+
+                    for (OrderOItem orderOItem : unitOItem) {
+                        String grp = orderOItem.getGrp().toString();
+
+                        if (grpGroup.getJSONObject(grp) == null) {
+                            grpGroup.put(grp, defResultSP.getJSONObject(grp));
                         }
                     }
                     // get GrpB and grpS of id_CB
@@ -343,15 +339,17 @@ public class FlowServiceImpl implements FlowService {
 //                    } else
 //                    {
                         String compGrpB = listData.getString("grp");
-                        for (int k = 0; k < defResultSC.size(); k++)
-                        {
-                            String grpRef = defResultSC.getJSONObject(k).getString("ref");
-                            if (compGrpB.equals(grpRef))
-                            {
-                                grpOB =  defResultSC.getJSONObject(k).getString("grpO");
-                                break;
-                            }
-                        }
+                        grpOB = defResultSC.getJSONObject(compGrpB).getString("grpO");
+
+//                    for (int k = 0; k < defResultSC.size(); k++)
+//                        {
+//                            String grpRef = defResultSC.getJSONObject(k).getString("ref");
+//                            if (compGrpB.equals(grpRef))
+//                            {
+//                                grpOB =  defResultSC.getJSONObject(k).getString("grpO");
+//                                break;
+//                            }
+//                        }
 //                    }
 
                   }
@@ -379,7 +377,7 @@ public class FlowServiceImpl implements FlowService {
                     System.out.print("got1"+thisOrderId);
 
                 // priority is BY order, get from info and write into ALL oItem
-                OrderInfo newPO_Info = new OrderInfo(prodCompId,targetCompId,unitOItem.get(0).getId_CP(),"", id_OParent,"","",grpO,grpOB,oParent_prior,"",4,0,orderNameCas,null);
+                OrderInfo newPO_Info = new OrderInfo(prodCompId,targetCompId,unitOItem.get(0).getId_CP(),"", id_OParent,"","",grpO,grpOB,oParent_prior,unitOItem.get(0).getPic(),4,0,orderNameCas,null);
 
                 // 设置订单info信息
                 newPO.setInfo(newPO_Info);
@@ -392,22 +390,19 @@ public class FlowServiceImpl implements FlowService {
                 view.add("oStock");
                 newPO.setView(view);
 
-//                    System.out.print("got2 + ");
-
                 Double wn2qty = 0.0;
                 Double wn4price = 0.0;
                 JSONArray arrayId_P = new JSONArray();
 
 
-                for (int k = 0; k < unitOItem.size(); k++)
-                {
-                    wn2qty += unitOItem.get(k).getWn2qtyneed();
-                    wn4price += unitOItem.get(k).getWn4price();
-                    System.out.println("u "+ unitOItem.get(k));
-                    if (!arrayId_P.contains(unitOItem.get(k).getId_P())) {
-                        arrayId_P.add(unitOItem.get(k).getId_P());
+                    for (OrderOItem orderOItem : unitOItem) {
+                        wn2qty += orderOItem.getWn2qtyneed();
+                        wn4price += orderOItem.getWn4price();
+                        System.out.println("u " + orderOItem);
+                        if (!arrayId_P.contains(orderOItem.getId_P())) {
+                            arrayId_P.add(orderOItem.getId_P());
+                        }
                     }
-                }
 
                 // 添加OItem信息
                 JSONObject newPO_OItem = new JSONObject();
@@ -427,8 +422,6 @@ public class FlowServiceImpl implements FlowService {
                 //Create oStock
                 JSONObject newPO_oStock = new JSONObject();
                 newPO_oStock.put("objData", new JSONArray());
-//                System.out.print("got3"+thisOrderId);
-
 
                 for (int k = 0; k < unitOItem.size(); k++) {
                     JSONObject initStock = new JSONObject();
@@ -445,12 +438,10 @@ public class FlowServiceImpl implements FlowService {
                 newPO.setAction(newPO_Action);
                 // 新增订单
                 coupaUtil.saveOrder(newPO);
-//                    System.out.print("got all saved"+newPO.getInfo().getWrdN());
-
 
 //              // 创建lSBOrder订单
                 lSBOrder lsbOrder = new lSBOrder(prodCompId,targetCompId,"","",id_OParent,thisOrderId, arrayId_P,
-                            "","",null,"1000","",4,0,orderNameCas,null,null);
+                            "","",null,"1000",unitOItem.get(0).getPic(),4,0,orderNameCas,null,null);
                     // 新增lsbOrder信息
                 coupaUtil.updateES_lSBOrder(lsbOrder);
             }
@@ -703,6 +694,8 @@ public class FlowServiceImpl implements FlowService {
             //ZJ
 
 
+
+
 //            partInfo.put("fin_O", pidActionCollection.get(id_P).getId_O());
 //            partInfo.put("fin_Ind", pidActionCollection.get(id_P).getIndex());
 
@@ -715,6 +708,7 @@ public class FlowServiceImpl implements FlowService {
 
 
             System.out.println("salesOrder@now");
+            System.out.println(objActionCollection.get(fin_O));
             System.out.println(objActionCollection.get(id_OParent));
             return;
         }
@@ -725,7 +719,7 @@ public class FlowServiceImpl implements FlowService {
         else {
             // Now need to check if prodCompId is in casItemData, if so, get and append 1 more prod in that order
             // 根据公司获取递归订单id
-            Boolean isNew = true;
+            boolean isNew = true;
 
             for (int k = 0; k < casItemData.size(); k++) {
                 System.out.println("casItem"+casItemData.getJSONObject(k));
@@ -797,7 +791,7 @@ public class FlowServiceImpl implements FlowService {
             objOItem = upperOItem;
             objAction = upperAction;
         }
-        else if(id_P.equals(""))
+        else if(id_P.equals("")) //IF i am process
         {
             System.out.println("Upp"+newOrderId);
             System.out.println("upp"+partArray.size()+partArray.getJSONObject(0).getJSONObject("wrdN"));
@@ -821,7 +815,7 @@ public class FlowServiceImpl implements FlowService {
             upPrntsData.put("index", upperOItem.getIndex());
             upPrntsData.put("wrdN", upperOItem.getWrdN());
             upPrntsData.put("wn2qtyneed",1);
-            upPrntsData.put("wn2qtyall",upperOItem.getWn2qtyneed());
+//            upPrntsData.put("wn2qtyall",upperOItem.getWn2qtyneed());
             objAction.getUpPrnts().add(upPrntsData);
 
         } else
@@ -854,8 +848,12 @@ public class FlowServiceImpl implements FlowService {
 
                 upPrntsData.put("id_O", upperOItem.getId_O());
                 upPrntsData.put("index", upperOItem.getIndex());
-                upPrntsData.put("wn2qtyall", upperOItem.getWn2qtyneed());
-                upPrntsData.put("wn2qtyneed", objOItem.getWn2qtyneed());
+//                upPrntsData.put("wn2qtyall", upperOItem.getWn2qtyneed());
+//                upPrntsData.put("wn2qtyneed", objOItem.getWn2qtyneed());
+                upPrntsData.put("wn2qtyneed", objOItem.getWn2qtyneed() * partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"));
+                upPrntsData.put("qtyEach", partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"));
+
+
                 upPrntsData.put("wrdN", upperOItem.getWrdN());
                 objAction.getUpPrnts().add(upPrntsData);
             }
@@ -888,39 +886,38 @@ public class FlowServiceImpl implements FlowService {
         // 循环遍历减一的序号集合
         // NOW I am the last Item in the partArray / subTasks, I can then update ALL the previous Items' wn0prior
         if (partIndex == partArray.size() - 1) {
-            Boolean keepGoing;
+            boolean keepGoing;
 
             for (int i = 0; i < partArray.size(); i++) {
                 String finO = partArray.getJSONObject(i).getString("fin_O");
-                Integer fin_Ind = partArray.getJSONObject(i).getInteger("fin_Ind");
+                int fin_Ind = partArray.getJSONObject(i).getInteger("fin_Ind");
                 // this is myself
                 OrderAction unitAction = objActionCollection.get(finO).get(fin_Ind);
 
-                Integer myPrior = partArray.getJSONObject(i).getInteger("wn0prior");
+                int myPrior = partArray.getJSONObject(i).getInteger("wn0prior");
                 keepGoing = true;
-                Integer checkPrev = i - 1;
+                int checkPrev = i - 1;
 
                 do {
                     // if it's already the first item or prior 2 steps away, stop
                     if (checkPrev < 0 || (myPrior - 2) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
                         keepGoing = false;
-                    } else if (myPrior == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                        // if prior Same, skip
-
-                    } else if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                        // else prior need add PrtPrev
-                        JSONObject idAndIndex = new JSONObject();
-                        idAndIndex.put("id_O", partArray.getJSONObject(checkPrev).getString("fin_O"));
-                        idAndIndex.put("index", partArray.getJSONObject(checkPrev).getInteger("fin_Ind"));
-                        // Here, I put the checking IdIndex into my own list of prtPrev
-                        unitAction.getPrtPrev().add(idAndIndex);
+                    } else if (myPrior != partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
+                        if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
+                            // else prior need add PrtPrev
+                            JSONObject idAndIndex = new JSONObject();
+                            idAndIndex.put("id_O", partArray.getJSONObject(checkPrev).getString("fin_O"));
+                            idAndIndex.put("index", partArray.getJSONObject(checkPrev).getInteger("fin_Ind"));
+                            // Here, I put the checking IdIndex into my own list of prtPrev
+                            unitAction.getPrtPrev().add(idAndIndex);
+                        }
                     }
                     checkPrev--; // move 1 step previous
                 } while (keepGoing);
                 unitAction.setSumPrev(unitAction.getPrtPrev().size());
 
                 keepGoing = true;
-                Integer checkNext = i + 1;
+                int checkNext = i + 1;
 
                 do {
                     if (checkNext == partArray.size()) {
@@ -928,13 +925,16 @@ public class FlowServiceImpl implements FlowService {
                     }
                     else if ((myPrior + 2) == partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
                         keepGoing = false;
-                    } else if (myPrior == partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
-                    } else if ((myPrior + 1) == partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
-                        JSONObject idAndIndex = new JSONObject();
-                        idAndIndex.put("id_O", partArray.getJSONObject(checkNext).getString("fin_O"));
-                        idAndIndex.put("index", partArray.getJSONObject(checkNext).getInteger("fin_Ind"));
-                        // Here, I put the checking IdIndex into my own list of prtPrev
-                        unitAction.getPrtNext().add(idAndIndex);
+                    } else {
+                        if (myPrior != partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
+                            if ((myPrior + 1) == partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
+                                JSONObject idAndIndex = new JSONObject();
+                                idAndIndex.put("id_O", partArray.getJSONObject(checkNext).getString("fin_O"));
+                                idAndIndex.put("index", partArray.getJSONObject(checkNext).getInteger("fin_Ind"));
+                                // Here, I put the checking IdIndex into my own list of prtPrev
+                                unitAction.getPrtNext().add(idAndIndex);
+                            }
+                        }
                     }
                     checkNext++;
                 } while (keepGoing);
@@ -1131,9 +1131,11 @@ public class FlowServiceImpl implements FlowService {
         // qtyNeed = upperOItem.qtyNeed
         Double qtyNeed = upperOItem.getWn2qtyneed();
 
-        Integer checkPrev = partIndex - 1;
+        int checkPrev = partIndex - 1;
         Integer checkNext = partIndex + 1;
         Boolean keepGoing = true;
+
+        // this finO + fin_Ind points to the "repeated" oItem, so you can update
         String finO = pidActionCollection.get(id_P).getId_O();
         Integer fin_Ind = pidActionCollection.get(id_P).getIndex();
         Integer myPrior = partArray.getJSONObject(partIndex).getInteger("wn0prior");
@@ -1182,13 +1184,18 @@ public class FlowServiceImpl implements FlowService {
                         JSONObject upPrntsData = new JSONObject();
                         upPrntsData.put("id_O", upperOItem.getId_O());
                         upPrntsData.put("index", upperOItem.getIndex());
-                        upPrntsData.put("wn2qtyall", upperOItem.getWn2qtyneed());
+//                        upPrntsData.put("wn2qtyall", upperOItem.getWn2qtyneed());
                         //                upPrntsData.put("wn2qtyneed",qtyNeed);
-                        upPrntsData.put("wn2qtyneed", unitOItem.getWn2qtyneed());
+                        upPrntsData.put("wn2qtyneed", upperOItem.getWn2qtyneed());
+                        upPrntsData.put("qtyxxx", partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"));
                         upPrntsData.put("wrdN", upperOItem.getWrdN());
 
                 if (!dgType.equals(1)) {
+                    System.out.println("DGType");
                     unitAction.getUpPrnts().add(upPrntsData);
+                    System.out.println(unitAction);
+                    objActionCollection.get(finO).set(fin_Ind, unitAction);
+
                 } else {
                     for (int i = 0; i < unitAction.getSubParts().size(); i++)
                     {
@@ -1216,6 +1223,7 @@ public class FlowServiceImpl implements FlowService {
                     JSONArray subPart = new JSONArray();
                     subPart.add(subPartData);
                     upperAction.setSubParts(subPart);
+
                 } else {
                     upperAction.getSubParts().add(subPartData);
                 }
@@ -1237,10 +1245,12 @@ public class FlowServiceImpl implements FlowService {
                     {
                         unitAction.getSubParts().getJSONObject(i).put("upIndex", partIndex);
                         System.out.println("now all sub shit");
+
                         OrderAction subAction = objActionCollection.get(unitAction.getSubParts().getJSONObject(i).getString("id_O")).
                                 get(unitAction.getSubParts().getJSONObject(i).getInteger("index"));
+
                         subAction.getUpPrnts().getJSONObject(partIndex).put("wn2qtyneed", qtyNeed);
-                        subAction.getUpPrnts().getJSONObject(partIndex).put("wn2qtyall", subAction.getUpPrnts().getJSONObject(0).getDouble("wn2qtyall"));
+//                        subAction.getUpPrnts().getJSONObject(partIndex).put("wn2qtyall", subAction.getUpPrnts().getJSONObject(0).getDouble("wn2qtyall"));
 
                     }
 
@@ -1292,7 +1302,7 @@ public class FlowServiceImpl implements FlowService {
 
             System.out.println(id_OP+finO);
             JSONObject upPrntsData = unitAction.getUpPrnts().getJSONObject(0); //******
-            upPrntsData.put("wn2qtyall", upPrntsData.getDouble("wn2qtyall") + qtyNeed);
+//            upPrntsData.put("wn2qtyall", upPrntsData.getDouble("wn2qtyall") + qtyNeed);
             upPrntsData.put("wn2qtyneed", unitOItem.getWn2qtyneed());
             System.out.println("*** upPrntsData" + upPrntsData);
         }
@@ -1306,6 +1316,73 @@ public class FlowServiceImpl implements FlowService {
                   unit.getString("id_O") ,unit.getInteger("index"), objActionCollection,objOItemCollection
             ,oDates,mergeJ);
         }
+    }
+
+
+    @Override
+    public ApiResponse prodPart(String id_P) {
+        JSONObject jsonPart = new JSONObject();
+        JSONObject recurCheckList = new JSONObject();
+        recurCheckList.put(id_P, "");
+        Prod prod = (Prod) dbUtils.getMongoOneFields(id_P, Arrays.asList("info", "part"), Prod.class);
+        JSONArray arrayObjItem = prod.getPart().getJSONArray("objItem");
+        int allCount = prod.getPart().getInteger("wn0Count");
+        int count = 0;
+
+        jsonPart.put("name", prod.getInfo().getWrdN().getString("cn"));
+        jsonPart.putAll(JSON.parseObject(JSON.toJSONString(prod.getInfo())));
+
+        jsonPart.put("children", recursionProdPart(arrayObjItem, recurCheckList, count, allCount));
+
+        // if the count is not the same as allCount, need to recheck because it's not up-to date
+        if (allCount > count)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), "产品需要重新检查");
+        }
+//        System.out.println("jsonPart=" + jsonPart);
+        return retResult.ok(CodeEnum.OK.getCode(), jsonPart);
+    }
+
+    public Object recursionProdPart(JSONArray arrayObjItem, JSONObject recurCheckList, Integer count, Integer allCount) {
+        JSONArray arrayChildren = new JSONArray();
+        HashSet<String> setId_P = new HashSet();
+        count++;
+        // Here if it is already loop too much by over the checked wn0Count by our dgCheck
+        // throw error, and ask for redg
+        if (allCount < count)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), "产品需要重新检查");
+        }
+        for (int i = 0; i < arrayObjItem.size(); i++) {
+            String id_P = arrayObjItem.getJSONObject(i).getString("id_P");
+            if (recurCheckList.getString(id_P) != null) {
+                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), null);
+            }
+            if (arrayObjItem.getJSONObject(i).getString("bmdpt").equals(2)) {
+                recurCheckList.put(id_P, "");
+            }
+            setId_P.add(id_P);
+        }
+        Query query = new Query(new Criteria("_id").in(setId_P).and("part").exists(true));
+        query.fields().include("part");
+        List<Prod> prods = mongoTemplate.find(query, Prod.class);
+        JSONObject jsonProdPart = new JSONObject();
+        for (Prod prod : prods) {
+            jsonProdPart.put(prod.getId(), prod.getPart());
+        }
+        for (int i = 0; i < arrayObjItem.size(); i++) {
+            JSONObject jsonObjItem = arrayObjItem.getJSONObject(i);
+            JSONObject jsonChildren = new JSONObject();
+            jsonChildren.put("name", jsonObjItem.getJSONObject("wrdN").getString("cn"));
+            jsonChildren.putAll(jsonObjItem);
+            //有下一层
+            if (jsonProdPart.getJSONObject(jsonObjItem.getString("id_P")) != null) {
+                JSONArray arrayPartObjItem = jsonProdPart.getJSONObject(jsonObjItem.getString("id_P")).getJSONArray("objItem");
+                jsonChildren.put("children", recursionProdPart(arrayPartObjItem, recurCheckList, count, allCount));
+            }
+            arrayChildren.add(jsonChildren);
+        }
+        return arrayChildren;
     }
 
     /**
@@ -1332,12 +1409,23 @@ public class FlowServiceImpl implements FlowService {
             JSONArray pidList = new JSONArray();
             JSONObject nextPart = new JSONObject();
 
+            Integer count = 0;
+
             // ******调用验证方法******
-            this.dgCheckUtil(pidList,id_P, id_C, nextPart,isRecurred,layer,isEmpty);
+            this.dgCheckUtil(pidList,id_P, id_C, nextPart,isRecurred,layer,isEmpty, count);
 
             // 添加到返回结果
             result.put("recurred",isRecurred);
             result.put("isNull",isEmpty);
+            result.put("wn0Count", count);
+
+            // save the "allCount" into id.P .part.wn0Count if this is a correct product
+            if (isRecurred.size() == 0 && isEmpty.size() == 0) {
+                JSONObject probKey = new JSONObject();
+                probKey.put("part.wn0Count", count);
+                coupaUtil.updateProdByListKeyVal(id_P, probKey);
+            }
+
             // 抛出操作成功异常
             return retResult.ok(CodeEnum.OK.getCode(), result);
     }
@@ -1358,12 +1446,13 @@ public class FlowServiceImpl implements FlowService {
 
          */
         private void dgCheckUtil(JSONArray pidList,String id_P,String id_C, JSONObject objectMap
-                ,JSONArray isRecurred,Integer layer,JSONArray isEmpty){
+                ,JSONArray isRecurred,Integer layer,JSONArray isEmpty, Integer count){
 
             // 根据父编号获取父产品信息
             Prod thisItem = coupaUtil.getProdByListKey(id_P, Arrays.asList("part","info"));
             // 层级加一
             layer++;
+            count++;
             boolean isConflict = false;
             JSONArray checkList = new JSONArray();
 
@@ -1416,7 +1505,7 @@ public class FlowServiceImpl implements FlowService {
                                     isEmpty.add(objectMap);
                                 } else {
                                     this.dgCheckUtil(checkList, nextItem.getJSONObject(j).getString("id_P"), id_C, nextItem.getJSONObject(j)
-                                            , isRecurred, layer, isEmpty);
+                                            , isRecurred, layer, isEmpty, count);
                                 }
                         } else {
                             if (null != objectMap) {
@@ -1444,7 +1533,7 @@ public class FlowServiceImpl implements FlowService {
      * KEV Checked
      */
     @Override
-    public ApiResponse setDgAllBmdpt(String id_P,String id_C) {
+    public ApiResponse dgUpdatePartInfo(String id_P,String id_C) {
         Prod prod = coupaUtil.getProdByListKey(
                 id_P,Arrays.asList("info","part"));
         if (null == prod) {
@@ -1464,8 +1553,16 @@ public class FlowServiceImpl implements FlowService {
             // 返回错误信息
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NO_PART.getCode(), "产品无零件");
         }
+
+        Integer count = 0;
+        Integer allCount = prod.getPart().getInteger("wn0Count");
         
-        this.checkAllBmdPt(id_C,partItem,id_P);
+        this.updatePartInfo(id_C,partItem,id_P, count, allCount);
+
+        if (count < allCount)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+        }
 
         return retResult.ok(CodeEnum.OK.getCode(), partItem);
     }
@@ -1479,10 +1576,15 @@ public class FlowServiceImpl implements FlowService {
      * @date 2020/9/17 16:52
      * DONE Check Kev
      */
-    private void checkAllBmdPt(String id_C,JSONArray partItem,String id_P){
+    private void updatePartInfo(String id_C,JSONArray partItem,String id_P, Integer count, Integer allCount){
         for (int item = 0; item < partItem.size(); item++)
         {
             JSONObject thisItem = partItem.getJSONObject(item);
+            count++;
+            if (count > allCount)
+            {
+                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+            }
 
             JSONArray partDataES = dbUtils.getEsKey("id_P",thisItem.getString("id_P"), "id_CB",id_C, "lBProd");
 
@@ -1510,7 +1612,7 @@ public class FlowServiceImpl implements FlowService {
                         if (null == nextPart || nextPart.size() == 0) {
                             bmdptValue = 1;
                         } else {
-                            this.checkAllBmdPt(id_C, nextPart, thisItem.get("id_P").toString());
+                            this.updatePartInfo(id_C, nextPart, thisItem.get("id_P").toString(), count, allCount);
                             bmdptValue = 2;
                         }
                     }

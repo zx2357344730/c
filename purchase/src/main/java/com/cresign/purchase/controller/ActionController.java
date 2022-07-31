@@ -46,12 +46,12 @@ public class ActionController {
     @SecurityParameter
     @PostMapping("/v1/dgActivate")
     public ApiResponse dgActivate(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
 
         return actionService.dgActivate(
                 reqJson.getString("id_O"),
                 reqJson.getInteger("index"),
-                reqJson.getString("id_C"),
+                tokData.getString("id_C"),
                 tokData.getString("id_U"),
                 tokData.getString("grpU"),
                 tokData.getString("dep"),
@@ -129,12 +129,7 @@ public class ActionController {
     @SecurityParameter
     @PostMapping("/v1/dgActivateAll")
     public ApiResponse dgActivateAll(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-
-        if (tokData.getJSONObject("modAuth").getInteger("a-core").equals(null) || tokData.getJSONObject("modAuth").getInteger("a-core") >= 2)
-        {
-            //throw new Exception Not yet purchase
-        }
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
 
         return actionService.dgActivateAll(
                 reqJson.getString("id_O"),
@@ -202,24 +197,32 @@ public class ActionController {
                 reqJson.getString("msg"),
                 reqJson.getInteger("index"),
                 reqJson.getString("id_O"),
+                reqJson.getBoolean("isLink"),
                 reqJson.getString("id_FC"),
                 reqJson.getString("id_FS"),
-                tokData.getString("id_C"),
-                tokData.getString("id_U"),
-                tokData.getString("grpU"),
-                tokData.getString("dep"),
-                tokData.getJSONObject("wrdNU"));
+                tokData);
     }
 
     @SecurityParameter
     @PostMapping("/v1/subStatusChange")
     public ApiResponse subStatusChange(@RequestBody JSONObject reqJson) throws IOException {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         return actionService.subStatusChange(
                 reqJson.getString("id_O"),
                 reqJson.getInteger("index"),
+                reqJson.getBoolean("isLink"),
                 reqJson.getInteger("statusType"),
                 tokData);
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getRefOPList")
+    public ApiResponse getRefOPList(@RequestBody JSONObject reqJson) throws IOException {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        return actionService.getRefOPList(
+                reqJson.getString("id_Flow"),
+                reqJson.getBoolean("isSL"),
+                tokData.getString("id_C"));
     }
 
 

@@ -116,29 +116,29 @@ public interface MenuService {
 
 
 
-    /**
-     * 检查子菜单是否有主菜单在使用
-     * ##author: JackSon
-     * ##Params: id_U
-     * ##Params: id_C
-     * ##Params: ref
-     * ##version: 1.0
-     * ##updated: 2021/5/13 11:21
-     * ##Return: com.cresign.tools.apires.ApiResponse
-     */
-    ApiResponse checkSubMenuUse(String id_U, String id_C, String ref);
-
-    /**
-     * 删除子菜单
-     * ##author: JackSon
-     * ##Params: id_U
-     * ##Params: id_C
-     * ##Params: ref    子菜单的ref
-     * ##version: 1.0
-     * ##updated: 2021/5/7 12:21
-     * ##Return: com.cresign.tools.apires.ApiResponse
-     */
-    ApiResponse delSubMenu(String id_U, String id_C, String ref);
+//    /**
+//     * 检查子菜单是否有主菜单在使用
+//     * ##author: JackSon
+//     * ##Params: id_U
+//     * ##Params: id_C
+//     * ##Params: ref
+//     * ##version: 1.0
+//     * ##updated: 2021/5/13 11:21
+//     * ##Return: com.cresign.tools.apires.ApiResponse
+//     */
+//    ApiResponse checkSubMenuUse(String id_U, String id_C, String ref);
+//
+//    /**
+//     * 删除子菜单
+//     * ##author: JackSon
+//     * ##Params: id_U
+//     * ##Params: id_C
+//     * ##Params: ref    子菜单的ref
+//     * ##version: 1.0
+//     * ##updated: 2021/5/7 12:21
+//     * ##Return: com.cresign.tools.apires.ApiResponse
+//     */
+//    ApiResponse delSubMenu(String id_U, String id_C, String ref);
 
 
 }

@@ -17,14 +17,11 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.mongo.MongoUtils;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
-import com.cresign.tools.uuid.UUID19;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.Collections;
 
 /**

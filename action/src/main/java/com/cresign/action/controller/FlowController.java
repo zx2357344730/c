@@ -41,7 +41,7 @@ public class FlowController {
         public ApiResponse timeHandle(@RequestBody JSONObject reqJson){
             return flowService.timeHandle(
                     reqJson.getString("id_O"),
-                    getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1),
+                    getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
                     reqJson.getString("id_C"),
                     reqJson.getLong("teStart"),
                     reqJson.getInteger("wn0TPrior"));
@@ -65,10 +65,10 @@ public class FlowController {
          */
         @SecurityParameter
         @PostMapping("/v1/setDgAllBmdpt")
-        public ApiResponse setDgAllBmdpt(@RequestBody JSONObject map){
+        public ApiResponse dgUpdatePartInfo(@RequestBody JSONObject map){
             String id_P = map.getString("id_P");
             String id_C = map.getString(Constants.GET_ID_C);
-            return flowService.setDgAllBmdpt(id_P,id_C);
+            return flowService.dgUpdatePartInfo(id_P,id_C);
         }
 
         /**
@@ -86,7 +86,7 @@ public class FlowController {
             System.out.println("进入接口？？？");
             return flowService.getDgResult(
                     reqJson.getString("id_O"),
-                    getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1),
+                    getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
                     reqJson.getString("id_C"),
                     reqJson.getLong("teStart"));
         }

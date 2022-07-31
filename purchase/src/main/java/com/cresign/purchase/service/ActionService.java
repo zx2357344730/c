@@ -27,8 +27,8 @@ public interface ActionService {
      * @version 1.0.0
      * @date 2021/6/16 14:35
      */
-    ApiResponse changeActionStatus(String logType, Integer status, String msg, Integer index, String id_O,
-            String id_FC, String id_FS, String id_C, String id_U, String grpU, String dep, JSONObject wrdNU) throws IOException;
+    ApiResponse changeActionStatus(String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,
+            String id_FC, String id_FS, JSONObject tokData) throws IOException;
 
     /**
      * 根据oId修改grpBGroup字段
@@ -44,6 +44,8 @@ public interface ActionService {
 
     ApiResponse changeDepAndFlowSL(String id_O,String grpB, JSONObject grpBOld,JSONObject grpBNew,String id_C,String id_U, String grpU, JSONObject wrdNU);
 
+
+    ApiResponse getRefOPList(String id_Flow, Boolean isSL, String id_C) throws IOException;
 
     ApiResponse up_FC_action_grpB(String id_C, String id_O, String dep, String depMain, String logType,
                                   String id_Flow, JSONObject wrdFC, JSONArray grpB, JSONArray wrdGrpB);
@@ -68,7 +70,7 @@ public interface ActionService {
 
     ApiResponse getFlowList(String id_C, String grpB);
 
-    ApiResponse subStatusChange(String id_O, Integer index, Integer statusType, JSONObject tokData) throws IOException;
+    ApiResponse subStatusChange(String id_O, Integer index, Boolean isLink, Integer statusType,  JSONObject tokData) throws IOException;
 
     ApiResponse dgConfirmOrder(String id_C, JSONArray casList) throws IOException;
 

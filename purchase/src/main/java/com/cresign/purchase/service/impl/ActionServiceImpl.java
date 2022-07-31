@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.purchase.client.WSClient;
 import com.cresign.purchase.common.ChatEnum;
 import com.cresign.purchase.service.ActionService;
-import com.cresign.purchase.service.fallback.WSFallbackFactory;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.CoupaUtil;
@@ -25,8 +24,16 @@ import com.cresign.tools.pojo.po.orderCard.OrderOItem;
 import com.cresign.tools.uuid.UUID19;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -74,6 +81,9 @@ public class ActionServiceImpl implements ActionService {
         @Autowired
         private DbUtils dbUtils;
 
+        @Autowired
+        private RestHighLevelClient restHighLevelClient;
+
     /**
      * 注入redis数据库下标1模板
      */
@@ -112,16 +122,20 @@ public class ActionServiceImpl implements ActionService {
                 OrderOItem oItem = ut.jsonTo(objItem.getJSONObject(i), OrderOItem.class);
 
                 //4. Send Log to stop old Flow
-                LogFlow logStop = new LogFlow(grpBOld.getString("logType"),grpBOld.getString("id_FC"),"","stateChg",
+                LogFlow logStop = new LogFlow("action", // grpBOld.getString("logType"),
+                        grpBOld.getString("id_FC"),"","stateChg",
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),grpBOld.getString("grpB"), "",
+                        objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
                         i,id_C,order.getInfo().getId_C(),objItem.getJSONObject(i).getString("pic"),grpBOld.getString("dep"),
                         "转换另一队伍执行",3,objItem.getJSONObject(i).getJSONObject("wrdN"), wrdNU);
                 logStop.setLogData_action(oAction, oItem);
                 logStop.getData().put("bcdStatus", 9);
 
-                LogFlow logStart = new LogFlow(grpBOld.getString("logType"),grpBNew.getString("id_FC"),"","stateChg",
+                LogFlow logStart = new LogFlow("action", //grpBOld.getString("logType"),
+                        grpBNew.getString("id_FC"),"","stateChg",
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),grpBNew.getString("grpB"), "",
+                        objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
                         i,id_C,order.getInfo().getId_C(),objItem.getJSONObject(i).getString("pic"),grpBNew.getString("dep"),
                         "转换队伍，开始执行",3,objItem.getJSONObject(i).getJSONObject("wrdN"), wrdNU);
@@ -158,16 +172,18 @@ public class ActionServiceImpl implements ActionService {
                 OrderOItem oItem = ut.jsonTo(objItem.getJSONObject(i), OrderOItem.class);
 
                 //4. Send Log to stop old Flow
-                LogFlow logStop = new LogFlow(grpBOld.getString("logType"),"",grpBOld.getString("id_FC"),"stateChg",
+                LogFlow logStop = new LogFlow("action","",grpBOld.getString("id_FC"),"stateChg",
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),"", grpBOld.getString("grpB"),
+                        objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
                         i,order.getInfo().getId_CB(),id_C,objItem.getJSONObject(i).getString("pic"),grpBOld.getString("dep"),
                         "转换另一队伍执行",3,objItem.getJSONObject(i).getJSONObject("wrdN"), wrdNU);
                 logStop.setLogData_action(oAction, oItem);
                 logStop.getData().put("bcdStatus", 9);
 
-                LogFlow logStart = new LogFlow(grpBOld.getString("logType"),"",grpBNew.getString("id_FC"),"stateChg",
+                LogFlow logStart = new LogFlow("action","",grpBNew.getString("id_FC"),"stateChg",
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),"", grpBNew.getString("grpB"),
+                        objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
                         i,order.getInfo().getId_CB(),id_C,objItem.getJSONObject(i).getString("pic"),grpBNew.getString("dep"),
                         "转换另一队伍执行",3,objItem.getJSONObject(i).getJSONObject("wrdN"), wrdNU);
@@ -603,15 +619,15 @@ public class ActionServiceImpl implements ActionService {
             @Override
             @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
             public ApiResponse changeActionStatus(String logType, Integer status, String msg,
-                                                  Integer index, String id_O,
-                                                  String id_FC, String id_FS, String id_C, String id_U,
-                                                  String grpU, String dep, JSONObject wrdNU) throws IOException {
+                                                  Integer index, String id_O, Boolean isLink,
+                                                  String id_FC, String id_FS, JSONObject tokData) throws IOException {
 
                 JSONObject actData = this.getActionData(id_O, index);
 
-//                OrderOItem orderOItem = JSONObject.parseObject(JSON.toJSONString(actData.get("orderOItem")),OrderOItem.class);
                 OrderOItem orderOItem = ut.jsonTo(actData.get("orderOItem"), OrderOItem.class);
                 OrderAction orderAction = ut.jsonTo(actData.get("orderAction"),OrderAction.class);
+
+                String taskName = orderOItem.getWrdN().getString("cn");
 
                 // 根据下标获取递归信息
 
@@ -625,11 +641,14 @@ public class ActionServiceImpl implements ActionService {
 
             // 备注
             String message = "";
-//            String result = "";
             JSONObject res = new JSONObject();
             JSONObject mapKey = new JSONObject();
             JSONObject listCol = new JSONObject();
 
+                /***
+                 * logStatus = 2@推送 3@开始 1@停 -1@再开 -6@取消 5@完成
+                 */
+            Integer logStatus = 2;
             // 判断属于什么操作
             switch (status){
                 case 1:
@@ -640,11 +659,12 @@ public class ActionServiceImpl implements ActionService {
                     }
                     // 设置备注信息
                     // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
-                    message = "[开始运行]"+ msg;
+                    message = taskName + "[开始运行]"+ msg;
+                    logStatus = 3;
                     JSONArray id_Us = orderAction.getId_Us() == null? new JSONArray() : orderAction.getId_Us();
 
                     //Adding myself to the id_Us of action to indicate
-                        id_Us.add(id_U);
+                        id_Us.add(tokData.getString("id_U"));
                         orderAction.setId_Us(id_Us);
                     res.put("isJoin", 1);
                     res.put("id_Us", orderAction.getId_Us());
@@ -660,10 +680,11 @@ public class ActionServiceImpl implements ActionService {
                     {
                         throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
                     }
-                    if (orderAction.getSumChild() > 0 && orderAction.getBmdpt() == 2)
+                    if (orderAction.getSumChild() > 0 && orderAction.getBmdpt() == 2 && isLink)
                     {
-                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "还有子工序没完成，不能完成");
+                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
                     }
+                    logStatus = 5;
 
                     Double progress = Double.valueOf((actData.getInteger("progress") + 1) / actData.getJSONArray("actionArray").size() * 100);
                     //update actions' total progress
@@ -675,30 +696,33 @@ public class ActionServiceImpl implements ActionService {
                     }
                     mapKey.put("action.wn2progress", progress );
 
-                    message = "[已完成]" + msg;
+                    message = taskName + "[已完成]" + msg;
                     break;
                 case 3: // resume OItem
                     if (orderAction.getBcdStatus() != 8)
                     {
                         throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
                     }
-                    message = "[已恢复执行]"  + msg;
+                    message = taskName + "[已恢复执行]"  + msg;
+                    logStatus = -1;
+
                     break;
                 case 5:
                     if (orderAction.getId_Us() == null) {
                         orderAction.setId_Us(new JSONArray());
                     }
-                    if ( !orderAction.getId_Us().contains(id_U))
+                    if ( !orderAction.getId_Us().contains(tokData.getString("id_U")))
                     {
-                        orderAction.getId_Us().add(id_U);
+                        orderAction.getId_Us().add(tokData.getString("id_U"));
                     }
-                    message = "[加入成功]"  + msg;
+                    message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功]"  + msg;
 //                    result = "[加入成功]"  + msg;
                     status = orderAction.getBcdStatus();
                     if (status == 0)
                     {
                         status = 1;
-                        message = "[加入成功，开始执行]"  + msg;
+                        logStatus = 3;
+                        message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功，开始执行]"  + msg;
                     }
                     res.put("isJoin", 1);
                     res.put("id_Us", orderAction.getId_Us());
@@ -710,7 +734,7 @@ public class ActionServiceImpl implements ActionService {
                         throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能操作");
                     }
                     orderAction.setBisactivate(4);
-                    message = "[继续下一个]"+msg;
+                    message = taskName + "[继续下一个]"+msg;
                     break;
                 case 8: // pause
                     if (orderAction.getBcdStatus() != 1
@@ -718,32 +742,40 @@ public class ActionServiceImpl implements ActionService {
                     {
                         throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
                     }                    // 设置备注信息
-                    message = "[已暂停]" + msg;
+                    message = taskName + "[已暂停]" + msg;
+                    logStatus = 1;
                     break;
                 case 9: // cancel
                     // pause but it's nothing special
                     // 设置备注信息
-                    message = "[已取消]" + msg;
+                    message = taskName + "[已取消]" + msg;
+                    logStatus = -6;
                     break;
                 default:
-                    message = "[无法操作]";
+                    message = taskName + "[无法操作]";
                     break;
             }
 
             // 设置产品状态
             orderAction.setBcdStatus(status);
+            String compId;
 
             if (logType.endsWith("SL"))
             {
-                id_C = actData.getJSONObject("info").getString("id_CB");
+                compId = actData.getJSONObject("info").getString("id_CB");
+            } else
+            {
+                compId = tokData.getString("id_C");
             }
 
             // Start making log with data
-            LogFlow logL = new LogFlow(logType,id_FC,
-                    id_FS,"stateChg", id_U,grpU,orderOItem.getId_P(),orderOItem.getGrpB(),orderOItem.getGrp(),
-                    id_O,index,id_C,orderOItem.getId_C(), "",dep,message,3,orderOItem.getWrdN(),wrdNU);
+            LogFlow logL = new LogFlow("action",id_FC,
+                    id_FS,"stateChg", tokData.getString("id_U"),tokData.getString("grpU"),orderOItem.getId_P(),orderOItem.getGrpB(),orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O,index,compId,orderOItem.getId_C(), "",tokData.getString("dep"),message,3,orderOItem.getWrdN(),tokData.getJSONObject("wrdNU"));
 
+//            LogFlow logL = dbUtils.getRecentLog(id_O, index, tokData);
             logL.setLogData_action(orderAction,orderOItem);
+            logL.getData().put("wn0prog", logStatus);
 
 
             try {
@@ -752,7 +784,7 @@ public class ActionServiceImpl implements ActionService {
                 mapKey.put("action.objAction."+index,orderAction);
                 coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
 
-                if( listCol != null) {
+                if(null != listCol.getInteger("lST")) {
                     QueryBuilder queryBuilder = QueryBuilders.boolQuery()
                             .must(QueryBuilders.termQuery("id_O", id_O));
                     dbUtils.updateListCol(queryBuilder, "lsborder", listCol);
@@ -786,7 +818,7 @@ public class ActionServiceImpl implements ActionService {
                 // activate = 4 means Skip = already pushed Next
 
 //                Boolean childrenAllDone =
-                this.updateParent(orderAction, id_C, id_U,grpU,dep,wrdNU, logType);
+                this.updateParent(orderAction, tokData, logType);
 //                // 判断父产品不为空
 //                if (!childrenAllDone) {
 //                    this.updateNext(orderAction, id_C, id_U,grpU, dep, wrdNU, logType);
@@ -798,7 +830,7 @@ public class ActionServiceImpl implements ActionService {
             return retResult.ok(CodeEnum.OK.getCode(), res);
         }
 
-    private void updateNext(OrderAction orderAction, String id_C, String id_U, String grpU, String dep, JSONObject wrdNU, String logType)
+    private void updateNext(OrderAction orderAction, JSONObject tokData, String logType)
     {
         for (Integer i = 0; i < orderAction.getPrtNext().size(); i++ )
         {
@@ -824,11 +856,13 @@ public class ActionServiceImpl implements ActionService {
                                 orderAction1.setBisPush(1);
 
                                 // Start making log with data
-                                LogFlow logL = new LogFlow(logType, actData.getString("id_FC"),
+                                LogFlow logL = new LogFlow("action", actData.getString("id_FC"),
                                         actData.getString("id_FS"), "stateChg",
-                                        id_U, grpU, orderOItem1.getId_P(),orderOItem1.getGrpB(), orderOItem1.getGrp(),  nextId, nextIndex, id_C, orderOItem1.getId_C(),
-                                        "", dep, orderOItem1.getWrdN().get("cn") + "准备开始", 3, orderOItem1.getWrdN(), wrdNU);
+                                        tokData.getString("id_U"), tokData.getString("grpU"), orderOItem1.getId_P(),orderOItem1.getGrpB(), orderOItem1.getGrp(),
+                                        orderAction1.getId_OP(), nextId, nextIndex, tokData.getString("id_C"), orderOItem1.getId_C(),
+                                        "", tokData.getString("dep"), orderOItem1.getWrdN().get("cn") + "准备开始", 3, orderOItem1.getWrdN(), tokData.getJSONObject("wrdNU"));
                                 logL.setLogData_action(orderAction1, orderOItem1);
+                                logL.getData().put("wn0prog", 2);
 
                                 // 调用发送日志方法
                                 ws.sendWS(logL);
@@ -856,14 +890,17 @@ public class ActionServiceImpl implements ActionService {
                                         mapKey.put("action.objAction." + subAction.getSubParts().getJSONObject(k).getInteger("index"), orderAction);
                                         coupaUtil.updateOrderByListKeyVal(subAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey);
 
-                                        LogFlow logLP = new LogFlow(logType, subOrderData.getString("id_FC"),
+                                        LogFlow logLP = new LogFlow("action", subOrderData.getString("id_FC"),
                                                 subOrderData.getString("id_FS"), "stateChg",
-                                                id_U, grpU, subOItem.getId_P(),subOItem.getGrpB(),subOItem.getGrp(),
+                                                tokData.getString("id_U"), tokData.getString("grpU"), subOItem.getId_P(),subOItem.getGrpB(),subOItem.getGrp(),
+                                                subAction.getSubParts().getJSONObject(k).getString("id_OP"),
                                                 subAction.getSubParts().getJSONObject(k).getString("id_O"),
                                                 subAction.getSubParts().getJSONObject(k).getInteger("index"),
-                                                id_C, subOItem.getId_C(),
-                                                "", dep, "准备开始", 3, subOItem.getWrdN(), wrdNU);
+                                                tokData.getString("id_C"), subOItem.getId_C(),
+                                                "", tokData.getString("dep"), "准备开始", 3, subOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
                                         logLP.setLogData_action(subAction, subOItem);
+                                        logLP.getData().put("wn0prog", 2);
+
 
                                         ws.sendWS(logLP);
                                     }
@@ -889,7 +926,7 @@ public class ActionServiceImpl implements ActionService {
          * @version 1.0.0
          * @date 2020/8/6 9:21
          */
-        private void updateParent(OrderAction orderAction,String id_C,String id_U, String grpU, String dep, JSONObject wrdNU,String logType) {
+        private void updateParent(OrderAction orderAction,JSONObject tokData,String logType) {
 
             for (Integer i = 0; i < orderAction.getUpPrnts().size(); i++) {
 
@@ -915,11 +952,11 @@ public class ActionServiceImpl implements ActionService {
                         unitActionPrnt.setBisPush(1);
 
                         // Start making log with data
-                        LogFlow logL = new LogFlow(logType, actData.getString("id_FC"),
+                        LogFlow logL = new LogFlow("action", actData.getString("id_FC"),
                                 actData.getString("id_FS"), "stateChg",
-                                id_U, grpU, unitOItemPrnt.getId_P(), unitOItemPrnt.getGrpB(), unitOItemPrnt.getGrp(),
-                                idPrnt, indexPrnt, id_C, unitOItemPrnt.getId_C(),
-                                "", dep, "准备开始", 3, unitOItemPrnt.getWrdN(), wrdNU);
+                                tokData.getString("id_U"), tokData.getString("grpU"), unitOItemPrnt.getId_P(), unitOItemPrnt.getGrpB(), unitOItemPrnt.getGrp(),
+                                unitActionPrnt.getId_OP(), idPrnt, indexPrnt, tokData.getString("id_C"), unitOItemPrnt.getId_C(),
+                                "", tokData.getString("dep"), "准备开始", 3, unitOItemPrnt.getWrdN(), tokData.getJSONObject("wrdNU"));
 
                         System.out.println(" sending log here"+ logL);
 
@@ -942,11 +979,153 @@ public class ActionServiceImpl implements ActionService {
 
                     if (unitActionPrnt.getSumChild() != 0)
                     {
-                        this.updateNext(orderAction, id_C, id_U,grpU, dep, wrdNU, logType);
+                        this.updateNext(orderAction, tokData, logType);
                     }
                 }
             }
         }
+
+
+        @Override
+        public ApiResponse getRefOPList(String id_Flow, Boolean isSL, String id_C) throws IOException {
+
+                Integer rows = 5000;
+                String idF = "id";
+                String idC = "id_C";
+                //set to SL's search checking keys if the chatroom is for Sales
+                if (isSL)
+                {
+                    idF = "id_FS";
+                    idC = "id_CS";
+                }
+                // Type = 1: msgList regular with stateChg filter,
+                // 2: progress with no filter but only those in id_O+index
+                //构建搜索条件
+                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+                SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
+
+            //组合查询条件
+                BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+
+                    boolQueryBuilder.must(QueryBuilders.matchQuery(idF , id_Flow));
+                    boolQueryBuilder.must(QueryBuilders.termQuery(idC, id_C));
+                    boolQueryBuilder.must(QueryBuilders.termQuery("data.bcdStatus", 0));
+
+                BoolQueryBuilder boolQueryBuilder2 = new BoolQueryBuilder();
+
+                boolQueryBuilder2.must(QueryBuilders.matchQuery(idF, id_Flow));
+                boolQueryBuilder2.must(QueryBuilders.termQuery(idC, id_C));
+
+                boolQueryBuilder2.must(QueryBuilders.queryStringQuery("2 OR 9").field("data.bcdStatus"));
+                //构建查询库
+                SearchRequest searchRequest = new SearchRequest();
+
+                searchRequest.indices("action");
+
+                //把查询条件放入构建搜索对象中
+                searchSourceBuilder.query(boolQueryBuilder);
+                //分页
+                searchSourceBuilder.size(rows);
+                // 获取排序的类型DESC还是ASC
+
+                searchSourceBuilder.sort("tmd", SortOrder.DESC);
+
+                //把构建对象放入，指定查那个对象，把查询条件放进去
+                searchRequest.source(searchSourceBuilder);
+                //执行请求
+                SearchResponse search = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+                JSONArray result = new JSONArray();
+                for (SearchHit hit : search.getHits().getHits()) {
+
+                    result.add(hit.getSourceAsMap());
+                }
+
+                //------------
+            //构建查询库
+            SearchRequest searchRequest2 = new SearchRequest();
+            searchRequest2.indices("action");
+
+            //把查询条件放入构建搜索对象中
+            searchSourceBuilder2.query(boolQueryBuilder2);
+            //分页
+            searchSourceBuilder2.size(rows);
+            // 获取排序的类型DESC还是ASC
+            searchSourceBuilder2.sort("tmd", SortOrder.DESC);
+            //把构建对象放入，指定查那个对象，把查询条件放进去
+            searchRequest2.source(searchSourceBuilder2);
+            //执行请求
+            SearchResponse search2 = restHighLevelClient.search(searchRequest2, RequestOptions.DEFAULT);
+            JSONArray result2 = new JSONArray();
+            for (SearchHit hit : search2.getHits().getHits()) {
+                result2.add(hit.getSourceAsMap());
+            }
+            JSONObject refOPList = new JSONObject();
+                // contentMap方法意义：比如lSProd 的id_P替换id，这样的意义，前端可以拿这个id去查Prod表
+
+                for (int i = 0; i < result.size(); i++) {
+                    System.out.println("result"+result.getJSONObject(i).getJSONObject("data").getString("refOP"));
+
+                    String refOP = result.getJSONObject(i).getJSONObject("data").getString("refOP");
+                    if (refOP != null && ! refOP.equals("") && refOPList.getInteger(refOP) == null)
+                    {
+                        refOPList.put(refOP, 1);
+                    } else if (refOP != null && ! refOP.equals(""))
+                    {
+                        refOPList.put(refOP, refOPList.getInteger(refOP) + 1);
+                    }
+                }
+                for (int i = 0; i < result2.size(); i++) {
+                    System.out.println("result222"+result2.getJSONObject(i).getJSONObject("data").getString("refOP"));
+
+                    String refOP = result2.getJSONObject(i).getJSONObject("data").getString("refOP");
+                    if (refOP != null && ! refOP.equals("") && refOPList.getInteger(refOP) != null)
+                    {
+                        refOPList.put(refOP, refOPList.getInteger(refOP) - 1);
+                        if (refOPList.getInteger(refOP).equals(0))
+                        {
+                            refOPList.remove(refOP);
+                        }
+                    }
+                }
+                System.out.println(refOPList);
+
+                return retResult.ok(CodeEnum.OK.getCode(), refOPList);
+
+            }
+            //遍历获取最新数据
+//            for (SearchHit hit : hits) {
+////            for (SearchHit hit : searchStart.getHits().getHits()) {
+//                JSONObject jsonHit = JSON.parseObject(hit.getSourceAsString());
+//                System.out.println(jsonHit);
+//
+//                orderList.add( JSONObject.parseObject(JSON.toJSONString(hit.getSourceAsMap())));
+//            }
+//
+//            JSONObject refOPList = new JSONObject();
+//            System.out.println("what is in"+ orderList);
+//
+//            for (int i = 0; i < orderList.size(); i++)
+//            {
+//                String refOP = orderList.getJSONObject(i).getJSONObject("data").getString("refOP");
+//                if (refOPList.getInteger(refOP).equals(null))
+//                {
+//                    refOPList.put(refOP, 1);
+//                } else
+//                {
+//                    refOPList.put(refOP, refOPList.getInteger(refOP) + 1);
+//                }
+//            }
+//
+//            System.out.println("what is in"+ refOPList);
+
+            // getfrom lBOrder, filter lST = making + id_C = myself
+            // getfrom assetflow where mixeq [refOP] contains [refOP above]
+
+            // return refOPList
+
+//            return retResult.ok(CodeEnum.OK.getCode(), refOPList);
+
+//        }
 
         // 用在 flowControl 卡片 改 grpB 的
         @Override
@@ -1125,7 +1304,7 @@ public class ActionServiceImpl implements ActionService {
                     LogFlow logLP = new LogFlow(logType,actData.getString("id_FC"),
                         actData.getString("id_FS"),"stateChg",
                         id_U,grpU, unitOItem.getId_P(),unitOItem.getGrpB(),unitOItem.getGrp(),
-                            id_O,unitAction.getIndex(), myCompId,unitOItem.getId_C(),
+                            "",id_O,unitAction.getIndex(), myCompId,unitOItem.getId_C(),
                         "",dep,"准备开始",3,unitOItem.getWrdN(),wrdNU);
                 logLP.setLogData_action(unitAction,unitOItem);
 
@@ -1208,7 +1387,7 @@ public class ActionServiceImpl implements ActionService {
                                 LogFlow logLP = new LogFlow(logType,subOrderData.getString("id_FC"),
                                         subOrderData.getString("id_FS"),"stateChg",
                                         id_U,grpU, subOItem.getId_P(),subOItem.getGrpB(),subOItem.getGrp(),
-                                        unitAction.getSubParts().getJSONObject(k).getString("id_O"),
+                                        id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
                                         unitAction.getSubParts().getJSONObject(k).getInteger("index"),
                                         myCompId,subOItem.getId_C(),
                                         "",dep,"准备开始",3,subOItem.getWrdN(),wrdNU);
@@ -1252,7 +1431,7 @@ public class ActionServiceImpl implements ActionService {
                         LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
                                 id_FC,
                                 id_FS, "stateChg", id_U, grpU,
-                                unitOItem.getId_P(), unitOItem.getGrpB(),unitOItem.getGrp(),unitAction.getId_O(), unitAction.getIndex(),
+                                unitOItem.getId_P(), unitOItem.getGrpB(),unitOItem.getGrp(),id_O, unitAction.getId_O(), unitAction.getIndex(),
                                 myCompId, unitOItem.getId_C(), "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
                         logLP.setLogData_action(unitAction, unitOItem);
                         ws.sendWS(logLP);
@@ -1328,7 +1507,7 @@ public class ActionServiceImpl implements ActionService {
 
         // Send a log
         LogFlow logLP = new LogFlow(logType,id_FC,
-                id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,index, myCompId,myCompId,
+                id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "","",id_O,index, myCompId,myCompId,
                 oItemData.getString("pic"),dep,"准备开始",3,oItemData.getJSONObject("wrdN"),wrdNU);
 
         logLP.setLogData_action(unitAction,unitOItem);
@@ -1427,7 +1606,7 @@ public class ActionServiceImpl implements ActionService {
                 probData.getJSONObject("wrdNP"),probData.getJSONObject("wrdN"));
 
         LogFlow logProb = new LogFlow(logTypeProb,id_FC,
-                id_FQ,"stateChg", id_U,grpU,orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(), id_Prob,indexProb, myCompId,myCompId,
+                id_FQ,"stateChg", id_U,grpU,orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),id_O, id_Prob,indexProb, myCompId,myCompId,
                 probData.getString("pic"),dep,"准备解决",3,probData.getJSONObject("wrdN"),wrdNU);
 
                logProb.setLogData_action(unitAction,unitOItem);
@@ -1447,7 +1626,7 @@ public class ActionServiceImpl implements ActionService {
     }
 
     @Override
-    public ApiResponse subStatusChange(String id_O, Integer index, Integer statusType, JSONObject tokData) throws IOException {
+    public ApiResponse subStatusChange(String id_O, Integer index, Boolean isLink, Integer statusType, JSONObject tokData) throws IOException {
 
 //        //1. Save the new
 //        JSONObject mapKey = new JSONObject();
@@ -1495,10 +1674,8 @@ public class ActionServiceImpl implements ActionService {
             {
                 if (subStatus.equals(1) || subStatus.equals(3) || subStatus.equals(7) || subStatus.equals(8))
                 {
-                    this.changeActionStatus("action", 2, "全单完成", subPartIndex, subPartId_O,
-                            subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), tokData.getString("id_C"),
-                            tokData.getString("id_U"), tokData.getString("grpU"), tokData.getString("dep"), tokData.getJSONObject("wrdNU"));
-
+                    this.changeActionStatus("action", 2, "全单完成", subPartIndex, subPartId_O, isLink,
+                            subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), tokData);
                 }
             }
 
@@ -1515,7 +1692,7 @@ public class ActionServiceImpl implements ActionService {
                     LogFlow logLP = new LogFlow("action", subOrderData.getString("id_FC"),
                             subOrderData.getString("id_FS"), "stateChg",
                             tokData.getString("id_U"), tokData.getString("grpU"), subOItem.getId_P(),subOItem.getGrpB(),subOItem.getGrp(),
-                            subPartId_O, subPartIndex,
+                            subAction.getId_OP(),subPartId_O, subPartIndex,
                             tokData.getString("id_C"), subOItem.getId_C(),
                             "", tokData.getString("dep"), newMsg, 3, subOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
                     logLP.setLogData_action(subAction, subOItem);
@@ -1599,8 +1776,8 @@ public class ActionServiceImpl implements ActionService {
         if (order.getInfo().getId_C().equals(id_C) && order.getInfo().getId_C().equals(order.getInfo().getId_CB())) { //Check C== CB
             order.getInfo().setLST(7);
             queryBuilder = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.matchPhraseQuery("id_O", id_O))
-                    .must(QueryBuilders.matchPhraseQuery("id_CB", id_C));
+                    .must(QueryBuilders.termQuery("id_O", id_O))
+                    .must(QueryBuilders.termQuery("id_CB", id_C));
         } // I am id_CB Buyer
         else if (id_C.equals(order.getInfo().getId_CB())) { //if Seller is REAL
             if (dbUtils.judgeComp(id_C, order.getInfo().getId_C()) == 1) {
@@ -1614,8 +1791,8 @@ public class ActionServiceImpl implements ActionService {
                 order.getInfo().setLST(7);
             }
             queryBuilder = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.matchPhraseQuery("id_O", id_O))
-                    .must(QueryBuilders.matchPhraseQuery("id_CB", id_C));
+                    .must(QueryBuilders.termQuery("id_O", id_O))
+                    .must(QueryBuilders.termQuery("id_CB", id_C));
         } else // I am Seller
         { //if Buyer is REAL
             if (dbUtils.judgeComp(id_C, order.getInfo().getId_CB()) == 1) {
@@ -1629,8 +1806,8 @@ public class ActionServiceImpl implements ActionService {
                 order.getInfo().setLST(7);
             }
             queryBuilder = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.matchPhraseQuery("id_O", id_O))
-                    .must(QueryBuilders.matchPhraseQuery("id_C", id_C));
+                    .must(QueryBuilders.termQuery("id_O", id_O))
+                    .must(QueryBuilders.termQuery("id_C", id_C));
         }
         JSONObject mapKey = new JSONObject();
         mapKey.put("info.lST", order.getInfo().getLST());

@@ -28,6 +28,8 @@ public class Init {
 
     private JSONObject logType;
 
+    private JSONObject listType;
+
     private JSONObject list;
 
     private Integer tvs = 1;

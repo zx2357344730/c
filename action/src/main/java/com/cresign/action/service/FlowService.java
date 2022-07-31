@@ -19,6 +19,8 @@ public interface FlowService {
     ApiResponse getDgResult(String id_OParent, String id_U, String id_C, Long teStart);
 
 
+    ApiResponse prodPart(String id_P);
+
     /**
          * 递归验证 - 注释完成
          * ##param id_P 产品编号
@@ -39,7 +41,7 @@ public interface FlowService {
      * @version 1.0.0
      * @date 2020/8/6 9:08
      */
-    ApiResponse setDgAllBmdpt(String id_P, String id_C);
+    ApiResponse dgUpdatePartInfo(String id_P, String id_C);
 
 
     /**

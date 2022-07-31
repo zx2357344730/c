@@ -18,7 +18,6 @@ import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.mongo.MongoUtils;
 import com.cresign.tools.pojo.es.lBProd;
 import com.cresign.tools.pojo.es.lSBComp;
-import com.cresign.tools.pojo.es.lSProd;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.InitJava;
@@ -48,7 +47,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 
 @Service

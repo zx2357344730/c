@@ -1,6 +1,5 @@
 package com.cresign.chat.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.config.websocket.WebSocketLoginServer;
 import com.cresign.chat.config.websocket.WebSocketServerPi;

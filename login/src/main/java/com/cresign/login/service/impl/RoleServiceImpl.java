@@ -243,7 +243,7 @@ public class RoleServiceImpl implements RoleService {
             listTypeGrpData.put("key", listTypeKey);
 
             // 动态获取每个列表类型的组别列表
-            listTypeGrpData.put("grpList", asset.getDef().getJSONArray("obj" + listTypeKey));
+            listTypeGrpData.put("grpList", asset.getDef().getJSONObject("obj" + listTypeKey.substring(0,3)));
             resultArray.add(listTypeGrpData);
         }
 

@@ -95,9 +95,9 @@ public class esListOperate {
 
         QueryBuilder queryBuilder = QueryBuilders.boolQuery()
                 //条件1：
-                .must(QueryBuilders.matchPhraseQuery("id_CB", id_CB))
+                .must(QueryBuilders.termQuery("id_CB", id_CB))
                 //条件2
-                .must(QueryBuilders.matchPhraseQuery("id_U", id_U));
+                .must(QueryBuilders.termQuery("id_U", id_U));
         sourceBuilder.query(queryBuilder);
         searchRequest.source(sourceBuilder);
 

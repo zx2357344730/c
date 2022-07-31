@@ -1,6 +1,5 @@
 package com.cresign.tools.encrypt;
 
-import com.cresign.tools.advice.AesUtil;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;

@@ -775,9 +775,9 @@ public class Ut {
 //
 //                QueryBuilder queryBuilder = QueryBuilders.boolQuery()
 //                        //条件1：当前公司id
-//                        .must(QueryBuilders.matchPhraseQuery("id_CB", logL.getId_C()))
+//                        .must(QueryBuilders.termQuery("id_CB", logL.getId_C()))
 //                        //条件2：grpU
-//                        .must(QueryBuilders.matchPhraseQuery("grpU", grpUarry.get(j)));
+//                        .must(QueryBuilders.termQuery("grpU", grpUarry.get(j)));
 //                searchSourceBuilder.query(queryBuilder);
 //                searchSourceBuilder.from(0);
 //                searchSourceBuilder.size(10000);

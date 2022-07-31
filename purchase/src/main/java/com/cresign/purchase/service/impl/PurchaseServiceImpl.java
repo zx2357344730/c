@@ -423,7 +423,6 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         if (null == orderById) {
             // 返回处理结果
-//            return RetResult.errorJsonResult(HttpStatus.OK, PurchaseEnum.PR_FAILF.getCode(), "失败:订单已过期，请重新购买！！！");
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, PurchaseEnum.ERR_ORDER_BE_OVERDUE.getCode(), "失败:订单已过期，请重新购买！！！");
         }
 

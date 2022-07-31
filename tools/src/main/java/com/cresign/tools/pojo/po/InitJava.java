@@ -39,8 +39,6 @@ public class InitJava {
     private JSONObject newMoneyOrder;
 
 
-
-
     private JSONObject cardInit;
 
     private JSONObject batchInit;

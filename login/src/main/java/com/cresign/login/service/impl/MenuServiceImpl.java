@@ -19,7 +19,6 @@ import com.cresign.tools.pojo.po.assetCard.MainMenuBO;
 import com.cresign.tools.pojo.po.assetCard.SubMenuBO;
 import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.lang3.ObjectUtils;
-import org.bson.Document;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -300,120 +299,120 @@ public class MenuServiceImpl implements MenuService {
 
 
     }
-
-    @Override
-    public ApiResponse checkSubMenuUse(String id_U, String id_C, String ref) {
-
-        Query query = new Query(Criteria.where("info.id_C").is(id_C).and("info.ref").is("a-auth"));
-        query.fields().include("menu");
-        Asset asset = mongoTemplate.findOne(query, Asset.class);
-
-        //JSONObject mainMenusJson = (JSONObject) JSONObject.toJSON(asset.getMenu().get("mainMenus"));
-        JSONObject mainMenusJson = asset.getMenu().getJSONObject("mainMenus");
-        for (String grpU : mainMenusJson.keySet()) {
-
-            JSONArray grpUMainMenus = mainMenusJson.getJSONArray(grpU);
-
-            for (Object grpUMainMenu : grpUMainMenus) {
-
-
-                JSONObject grpUMain = (JSONObject) grpUMainMenu;
-                JSONArray subMenus1 = grpUMain.getJSONArray("subMenus");
-
-
-                for (int i = 0; i < subMenus1.size(); i++) {
-
-                    // 判断出主菜单有该子菜单
-                    if (subMenus1.get(i).equals(ref)) {
-
-                        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-MAINMENU_USE_SUBMENU.getCode(), null);
-
-                    }
-                }
-            }
-        }
-
-        return retResult.ok(CodeEnum.OK.getCode(), null);
-
-    }
-
-    @Override
-    @Transactional
-    public ApiResponse delSubMenu(String id_U, String id_C, String ref) {
-
-        /**
-         * 1.  判断前端ref不可是listUser/listControl。这两个不可删除
-         * 2. 先循环删除每个职位的主菜单里面的子菜单
-         * 3. 再删除子菜单
-         */
-
-        if (ref.equals("listUser") || ref.equals("listControl")){
-
-            throw new ErrorResponseException(HttpStatus.REQUEST_TIMEOUT, LoginEnum.REF_DEL_ERROR.getCode(), null);
-
-        }
-
-
-        try {
-            Query query = new Query(Criteria.where("info.id_C").is(id_C).and("info.ref").is("a-auth"));
-            query.fields().include("menu");
-            Asset asset = mongoTemplate.findOne(query, Asset.class);
-            JSONObject mainMenusJson = asset.getMenu().getJSONObject("mainMenus");
-            //JSONObject mainMenusJson = (JSONObject) JSONObject.toJSON(asset.getMenu().get("mainMenus"));
-
-
-
-            for (String grpU : mainMenusJson.keySet()) {
-
-                JSONArray grpUMainMenus = mainMenusJson.getJSONArray(grpU);
-                JSONArray newGrpUMainMenus = new JSONArray();
-
-                for (Object grpUMainMenu : grpUMainMenus) {
-
-
-                    JSONObject grpUMain = (JSONObject) grpUMainMenu;
-                    JSONArray subMenus1 = grpUMain.getJSONArray("subMenus");
-
-                    JSONObject newSubMenuObj = new JSONObject(grpUMain);
-
-                    for (int i = 0; i < subMenus1.size(); i++) {
-                        if (subMenus1.get(i).equals(ref)) {
-                            subMenus1.remove(i);
-                        }
-                    }
-
-                    newSubMenuObj.put("subMenus", subMenus1);
-
-                    newGrpUMainMenus.add(newSubMenuObj);
-
-                    mainMenusJson.put(grpU, newGrpUMainMenus);
-
-                }
-
-            }
-
-
-            // 删除主菜单里面的子菜单
-            mongoTemplate.updateFirst(query, Update.update("menu.mainMenus", mainMenusJson), Asset.class);
-
-
-            // 删除子菜单
-            Query subMenuQ = new Query(Criteria.where("menu.subMenus.ref").is(ref).and("info.id_C").is(id_C).and("info.ref").is("a-auth"));
-            Update update = new Update();
-            Document doc = new Document();
-            doc.put("ref", ref);
-            update.pull("menu.subMenus", doc);
-
-            mongoTemplate.updateFirst(subMenuQ, update, Asset.class);
-        } catch (RuntimeException e) {
-
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.MENU_DEL_ERROR.getCode(), null);
-
-        }
-
-
-        return retResult.ok(CodeEnum.OK.getCode(), null);
-
-    }
+//
+//    @Override
+//    public ApiResponse checkSubMenuUse(String id_U, String id_C, String ref) {
+//
+//        Query query = new Query(Criteria.where("info.id_C").is(id_C).and("info.ref").is("a-auth"));
+//        query.fields().include("menu");
+//        Asset asset = mongoTemplate.findOne(query, Asset.class);
+//
+//        //JSONObject mainMenusJson = (JSONObject) JSONObject.toJSON(asset.getMenu().get("mainMenus"));
+//        JSONObject mainMenusJson = asset.getMenu().getJSONObject("mainMenus");
+//        for (String grpU : mainMenusJson.keySet()) {
+//
+//            JSONArray grpUMainMenus = mainMenusJson.getJSONArray(grpU);
+//
+//            for (Object grpUMainMenu : grpUMainMenus) {
+//
+//
+//                JSONObject grpUMain = (JSONObject) grpUMainMenu;
+//                JSONArray subMenus1 = grpUMain.getJSONArray("subMenus");
+//
+//
+//                for (int i = 0; i < subMenus1.size(); i++) {
+//
+//                    // 判断出主菜单有该子菜单
+//                    if (subMenus1.get(i).equals(ref)) {
+//
+//                        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//MAINMENU_USE_SUBMENU.getCode(), null);
+//
+//                    }
+//                }
+//            }
+//        }
+//
+//        return retResult.ok(CodeEnum.OK.getCode(), null);
+//
+//    }
+////
+//    @Override
+//    @Transactional
+//    public ApiResponse delSubMenu(String id_U, String id_C, String ref) {
+//
+//        /**
+//         * 1.  判断前端ref不可是listUser/listControl。这两个不可删除
+//         * 2. 先循环删除每个职位的主菜单里面的子菜单
+//         * 3. 再删除子菜单
+//         */
+//
+//        if (ref.equals("listUser") || ref.equals("listControl")){
+//
+//            throw new ErrorResponseException(HttpStatus.REQUEST_TIMEOUT, LoginEnum.REF_DEL_ERROR.getCode(), null);
+//
+//        }
+//
+//
+//        try {
+//            Query query = new Query(Criteria.where("info.id_C").is(id_C).and("info.ref").is("a-auth"));
+//            query.fields().include("menu");
+//            Asset asset = mongoTemplate.findOne(query, Asset.class);
+//            JSONObject mainMenusJson = asset.getMenu().getJSONObject("mainMenus");
+//            //JSONObject mainMenusJson = (JSONObject) JSONObject.toJSON(asset.getMenu().get("mainMenus"));
+//
+//
+//
+//            for (String grpU : mainMenusJson.keySet()) {
+//
+//                JSONArray grpUMainMenus = mainMenusJson.getJSONArray(grpU);
+//                JSONArray newGrpUMainMenus = new JSONArray();
+//
+//                for (Object grpUMainMenu : grpUMainMenus) {
+//
+//
+//                    JSONObject grpUMain = (JSONObject) grpUMainMenu;
+//                    JSONArray subMenus1 = grpUMain.getJSONArray("subMenus");
+//
+//                    JSONObject newSubMenuObj = new JSONObject(grpUMain);
+//
+//                    for (int i = 0; i < subMenus1.size(); i++) {
+//                        if (subMenus1.get(i).equals(ref)) {
+//                            subMenus1.remove(i);
+//                        }
+//                    }
+//
+//                    newSubMenuObj.put("subMenus", subMenus1);
+//
+//                    newGrpUMainMenus.add(newSubMenuObj);
+//
+//                    mainMenusJson.put(grpU, newGrpUMainMenus);
+//
+//                }
+//
+//            }
+//
+//
+//            // 删除主菜单里面的子菜单
+//            mongoTemplate.updateFirst(query, Update.update("menu.mainMenus", mainMenusJson), Asset.class);
+//
+//
+//            // 删除子菜单
+//            Query subMenuQ = new Query(Criteria.where("menu.subMenus.ref").is(ref).and("info.id_C").is(id_C).and("info.ref").is("a-auth"));
+//            Update update = new Update();
+//            Document doc = new Document();
+//            doc.put("ref", ref);
+//            update.pull("menu.subMenus", doc);
+//
+//            mongoTemplate.updateFirst(subMenuQ, update, Asset.class);
+//        } catch (RuntimeException e) {
+//
+//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.MENU_DEL_ERROR.getCode(), null);
+//
+//        }
+//
+//
+//        return retResult.ok(CodeEnum.OK.getCode(), null);
+//
+//    }
 }

@@ -235,7 +235,7 @@ public class PurchaseController {
 //    @PostMapping("/v1/upModuleMoney")
 //    public String upModuleMoney(@RequestBody JSONObject reqJson) {
 //        return purchaseService.upModuleMoney(
-//                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1),
+//                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
 //                reqJson);
 //    }
 

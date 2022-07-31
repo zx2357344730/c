@@ -1,6 +1,5 @@
 package com.cresign.tools.pojo.po;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
@@ -40,6 +39,7 @@ public class LogFlow {
         this.id_U = tokData.getString("id_U");
         this.id_P = oItem.getString("id_P");
         this.id_O = id_O;
+        this.id_OP = action.getJSONArray("objAction").getJSONObject(index).getString("id_OP");
         this.index = index;
         this.id_C = logType.endsWith("SL") ? id_CB : tokData.getString("id_C");
         this.id_CS = oItem.getString("id_C");
@@ -54,7 +54,7 @@ public class LogFlow {
     }
 
     public LogFlow(String logType, String id_FC, String id_FS,  String subType,
-                   String id_U, String grpU, String id_P, String grpPB, String grpPS, String id_O, Integer index, String id_C, String id_CS,
+                   String id_U, String grpU, String id_P, String grpPB, String grpPS, String id_OP, String id_O, Integer index, String id_C, String id_CS,
                    String pic,String dep, String zcndesc, Integer imp,
                    JSONObject wrdN, JSONObject wrdNU) {
         this.id = id_FC == null ? "" : id_FC;
@@ -68,6 +68,7 @@ public class LogFlow {
         this.id_U = id_U;
         this.id_P = id_P;
         this.id_O = id_O;
+        this.id_OP = id_OP;
         this.index = index;
         this.id_C = id_C;
         this.id_CS = id_CS;
@@ -134,6 +135,10 @@ public class LogFlow {
         data.put("ex_wrdNP",orderAction.getWrdNP());
         data.put("ex_wrdN",orderAction.getWrdN());
 
+
+        this.id_OP = orderAction.getId_OP();
+        this.setLogType("action");
+
         this.data = data;
     }
 
@@ -145,13 +150,14 @@ public class LogFlow {
 
         this.data = data;
     }
-    public void setLogData_assetflow (Double qtynow, Double price, String id_A, Integer bcdStatus) {
+    public void setLogData_assetflow (Double qtynow, Double price, String id_A) {
         JSONObject data = new JSONObject();
         data.put("wn2qtynow",qtynow);
         data.put("wn4price", price);
-        data.put("bcdStatus",bcdStatus);
+//        data.put("bcdStatus",bcdStatus);
         data.put("id_A", id_A);
 
+        this.setLogType("assetflow");
         this.data = data;
     }
     public void setLogData_usage (OrderAction orderAction, OrderOItem orderOItem) {
@@ -186,9 +192,6 @@ public class LogFlow {
     private String id_C;
     private String id_CS;
 
-//    private String grpC;
-//    private String grpCS;
-
     /**
      * 发送日志的用户id+grp
      * dep = 部门
@@ -205,10 +208,9 @@ public class LogFlow {
      * 有可能为空
      */
     private String id_O;
-    private Integer index;
-//    private String grpO;
-//    private String grpOS;
+    private String id_OP;
 
+    private Integer index;
 
     /**
      * oItem内对应的id_P
@@ -217,9 +219,6 @@ public class LogFlow {
     private String id_P;
     private String grpB;
     private String grp;
-
-    private JSONArray arrTime;
-
 
     /**
      * 日志副类别 ： msg / statusChg / dataChg / manageChg / file(pic/video/voice/file) / link(COUPA) / addOItem(新任务)
