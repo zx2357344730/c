@@ -60,6 +60,25 @@ public class RSAUtils {
 	 */
 	private static final int INITIALIZE_LENGTH = 2048;
 
+	private static String publicKey;
+	private static String privateKey;
+	public static String getPublicKey(){
+		return publicKey;
+	}
+	public static String getPrivateKey(){
+		return privateKey;
+	}
+
+	static {
+		try {
+			Map<String, Object> keyMap = genKeyPair();
+			publicKey = getPublicKey(keyMap);
+			privateKey = getPrivateKey(keyMap);
+		} catch (Exception e) {
+			System.out.println("获取加密出现错误!");
+		}
+	}
+
 	/** */
 	/**
 	 * <p>
@@ -349,6 +368,8 @@ public class RSAUtils {
 	 * java端私钥解密
 	 */
 	public static String decryptDataOnJava(String data, String PRIVATEKEY) {
+		System.out.println("PRIVATEKEY:");
+		System.out.println(PRIVATEKEY);
 		String temp = "";
 		try {
 			byte[] rs = Base64.decodeBase64(data);

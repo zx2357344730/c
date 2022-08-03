@@ -9,7 +9,7 @@
     <version>1.0</version>
     <modules>
         <module>tools</module>
-<!--        <module>gateway</module>-->
+        <module>gateway</module>
         <!-- 目前在用 -->
         <module>login</module>
 <!--        <module>details</module>-->

@@ -7,6 +7,7 @@ import com.cresign.tools.encrypt.RSAUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdvice;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -33,10 +37,14 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
 //    private static final Logger logger = LoggerFactory.getLogger(DecodeRequestBodyAdvice.class);
 
 
-    @Value("${encyptKey.private_key}")
-    private String server_private_key;
+//    @Value("${encyptKey.private_key}")
+//    private String server_private_key;
 
 //    private final String server_private_key = RsaUtilF.getPrivateKey();
+
+//    private final String server_private_key = RSAUtils.getPrivateKey();
+//    private final String server_private_key = RsaTest.getPrivateKey();
+    private final String server_private_key = RsaUtilF.getPrivateKey();
 
 //    @Value("${aes.private.key}")
 //    private String AES_PRIVATE_KEY;
@@ -120,18 +128,52 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                     throw new RuntimeException("参数【requestData】缺失异常！");
                 }else{
                     String content = null ;
-                    String aseKey = null;
+                    String aesKey = null;
+//                    try {
+////                        aseKey = RSAUtils.decryptDataOnJava(encrypted,server_private_key);
+//                        System.out.println("私钥:");
+//                        System.out.println(server_private_key);
+//                        byte[] plaintext = RsaUtilF.decryptByPrivateKey(Base64.decodeBase64(encrypted)
+//                                , server_private_key);
+//                        aesKey = new String(plaintext);
+//                    }catch (Exception e){
+//                        throw  new RuntimeException("参数【aseKey】解析异常！");
+//                    }
+
+                    System.out.println("私钥:");
+                    System.out.println(server_private_key);
+                    byte[] plaintext = new byte[0];
                     try {
-                        aseKey = RSAUtils.decryptDataOnJava(encrypted,server_private_key);
-                    }catch (Exception e){
-                        throw  new RuntimeException("参数【aseKey】解析异常！");
+                        plaintext = RsaUtilF.decryptByPrivateKey(Base64.decodeBase64(encrypted)
+                                , server_private_key);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
+
+                    aesKey = new String(plaintext);
+                    aesKey = aesKey.replace("\"", "");
+//                    aesKey = Arrays.toString(plaintext);
+                    System.out.println("aes:");
+                    System.out.println(aesKey);
+                    System.out.println(aesKey.getBytes().length);
+
+//                    try {
+////                        content  = AesEncryptUtils.decrypt(data, aesKey);
+////                        content  = AesEncryptUtils.decrypt(data, aesKey);
+//                        //AES解密得到明文data数据
+//                        content = AesUtil.decrypt(data, aesKey);
+//                    }catch (Exception e){
+//                        throw  new RuntimeException("参数【content】解析异常！");
+//                    }
+
+                    //AES解密得到明文data数据
                     try {
-                        content  = AesEncryptUtils.decrypt(data, aseKey);
-                    }catch (Exception e){
-                        throw  new RuntimeException("参数【content】解析异常！");
+                        content = AesUtil.decrypt(data, aesKey);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    if (StringUtils.isEmpty(content) || StringUtils.isEmpty(aseKey)){
+
+                    if (StringUtils.isEmpty(content) || StringUtils.isEmpty(aesKey)){
                         throw  new RuntimeException("参数【requestData】解析参数空指针异常!");
                     }
                     return content;

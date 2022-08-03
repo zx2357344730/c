@@ -11,6 +11,9 @@ import com.cresign.tools.apires.ApiResponse;
 public interface AccountLoginService {
 
 
+    ApiResponse getKey(String qdKey);
+
+    String getHdAndQdKey(String qdKey);
     /**
      * 账户密码登录API
 

@@ -7,6 +7,7 @@ import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.AccountLoginService;
 import com.cresign.login.utils.LoginResult;
 import com.cresign.tools.advice.RetResult;
+import com.cresign.tools.advice.RsaUtilF;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.CodeEnum;
@@ -56,6 +57,18 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 
     public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_LOGIN_COMP_T = "https://www.cresign.cn/qrCodeTest?qrType=logincomp&t=";
 
+
+    @Override
+    public ApiResponse getKey(String qdKey) {
+        RetResult.setClient_Public_Key(qdKey);
+        return retResult.ok(CodeEnum.OK.getCode(), RsaUtilF.getPublicKey());
+    }
+
+    @Override
+    public String getHdAndQdKey(String qdKey) {
+        RetResult.setClient_Public_Key(qdKey);
+        return RsaUtilF.getPublicKey();
+    }
 
     /**
      * 账号登录方法

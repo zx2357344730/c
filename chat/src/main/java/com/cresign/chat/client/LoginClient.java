@@ -2,6 +2,7 @@ package com.cresign.chat.client;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.service.fallback.DetailsFallbackFactory;
+import com.cresign.chat.service.fallback.LoginFallbackFactory;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -13,13 +14,13 @@ import org.springframework.web.bind.annotation.PostMapping;
  * @Version 1.0.0
  */
 @FeignClient(
-        value = "cresign-details",
-        fallbackFactory = DetailsFallbackFactory.class,
-        contextId = "DetailsClient"
+        value = "cresign-login",
+        fallbackFactory = LoginFallbackFactory.class,
+        contextId = "LoginClient"
 )
-public interface DetailsClient {
+public interface LoginClient {
 
-    @PostMapping("/account/v1/updateOStockPi")
-    Integer updateOStockPi(JSONObject reqJson);
+    @PostMapping("/account/v1/getHdKey")
+    String getHdKey(JSONObject reqJson);
 
 }

@@ -44,6 +44,22 @@ public class AccountLoginController {
     }
 
     @SecurityParameter
+    @PostMapping("/v1/key")
+    public ApiResponse getKey(@RequestBody JSONObject reqJson) {
+        return accountLoginService.getKey(reqJson.getString("qdKey"));
+    }
+
+    @PostMapping("/v1/getHdKey")
+    public String getHdKey(@RequestBody JSONObject reqJson) {
+        return accountLoginService.getHdAndQdKey(reqJson.getString("qdKey"));
+    }
+
+    @PostMapping("/v1/setQdKey")
+    public ApiResponse setQdKey(@RequestBody JSONObject reqJson) {
+        return accountLoginService.getKey(reqJson.getString("qdKey"));
+    }
+
+    @SecurityParameter
     @PostMapping("/v1/generateLoginCode")
     public ApiResponse generateLoginCode(@RequestBody JSONObject reqJson) {
 

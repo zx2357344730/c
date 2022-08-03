@@ -1,5 +1,6 @@
 package com.cresign.tools.advice;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.apires.LocalMessage;
@@ -10,6 +11,7 @@ import com.cresign.tools.exception.ResponseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -30,16 +32,22 @@ import java.util.Random;
 public class RetResult {
 
 
-    @Value("${encyptKey.public_key}")
-    public void setClient_Public_Key(String client_Public_Key) {
-       RetResult.client_Public_Key = client_Public_Key;
-    }
+//    @Value("${encyptKey.public_key}")
+//    public void setClient_Public_Key(String client_Public_Key) {
+//       RetResult.client_Public_Key = client_Public_Key;
+//    }
+//
+//    // 加密的key
+//    private static String client_Public_Key;
 
     // 加密的key
-    private static String client_Public_Key;
-
-//    // 加密的key
 //    private static final String client_Public_Key = RsaUtilF.getPublicKey();
+
+//    private static final String client_Public_Key = RSAUtils.getPublicKey();
+    private static String client_Public_Key;
+    public static void setClient_Public_Key(String key){
+        client_Public_Key = key;
+    }
 
     @Autowired
     private LocalMessage localMessage;
@@ -153,11 +161,16 @@ public class RetResult {
         try {
             String result = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(body);
             // 生成aes秘钥
-            String aseKey = getRandomString(16);
+//            String aseKey = getRandomString(16);
+            String aseKey = AesUtil.getKey();
             // rsa加密
-            String encrypted = RSAUtils.encryptedDataOnJava(aseKey, client_Public_Key);
+//            String encrypted = RSAUtils.encryptedDataOnJava(aseKey, client_Public_Key);
+//            String encrypted = RsaTest.publicEncrypt(aseKey,RsaTest.getPublicKey(client_Public_Key));
+            String encrypted = Base64.encodeBase64String(RsaUtilF.
+                    encryptByPublicKey(aseKey.getBytes(), client_Public_Key));
             // aes加密
-            String requestData = AesEncryptUtils.encrypt(result, aseKey);
+//            String requestData = AesEncryptUtils.encrypt(result, aseKey);
+            String requestData = AesUtil.encrypt(result, aseKey);
             Map<String, String> map = new HashMap<>();
             map.put("encrypted", encrypted);
             map.put("requestData", requestData);
