@@ -1,23 +1,30 @@
 package com.cresign.tools.advice;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.encrypt.AesEncryptUtils;
 import com.cresign.tools.encrypt.RSAUtils;
+import com.cresign.tools.token.GetUserIdByToken;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.MethodParameter;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdvice;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
@@ -25,6 +32,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * ##Author: jackson
@@ -36,15 +44,18 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
 
 //    private static final Logger logger = LoggerFactory.getLogger(DecodeRequestBodyAdvice.class);
 
+    /**
+     * 注入redis数据库下标1模板
+     */
+    @Resource
+    private StringRedisTemplate redisTemplate1;
+
+    public static final String RED_KEY = "key:k_";
 
 //    @Value("${encyptKey.private_key}")
 //    private String server_private_key;
 
-//    private final String server_private_key = RsaUtilF.getPrivateKey();
-
-//    private final String server_private_key = RSAUtils.getPrivateKey();
-//    private final String server_private_key = RsaTest.getPrivateKey();
-    private final String server_private_key = RsaUtilF.getPrivateKey();
+//    private static String server_private_key = "RsaUtilF.getPrivateKeyX()";
 
 //    @Value("${aes.private.key}")
 //    private String AES_PRIVATE_KEY;
@@ -68,6 +79,8 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                 SecurityParameter serializedField = methodParameter.getMethodAnnotation(SecurityParameter.class);
                 //入参是否需要解密
                 if(serializedField.inDecode()){
+//                    System.out.println("inputMessage:");
+//                    System.out.println(JSON.toJSONString(inputMessage));
 //                    log.info("注解SecurityParameter,对方法method :【" + methodParameter.getMethod().getName() + "】返回数据进行解密");
                     return new MyHttpInputMessage(inputMessage);
                 }
@@ -114,6 +127,18 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
          */
         public String easpString(String requestData) {
 
+//            System.out.println("easpString:");
+//            System.out.println(requestData);
+
+//            System.out.println("headers:");
+            String uuId = Objects.requireNonNull(this.getHeaders().get("uuId")).get(0);
+//            System.out.println("uuId:");
+//            System.out.println(uuId);
+
+//            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//            System.out.println("tokData:");
+//            System.out.println(tokData);
+
             //String server_private_key = (String) ServiceApp.ac.getBean(StringRedisTemplate.class).opsForHash().get("serverEncyptKey", "private_key");
 //            String server_private_key = (String) redisTemplate0.opsForHash().get("serverEncyptKey", "private_key");
 
@@ -127,8 +152,15 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                 if(StringUtils.isEmpty(data) || StringUtils.isEmpty(encrypted)){
                     throw new RuntimeException("参数【requestData】缺失异常！");
                 }else{
-                    String content = null ;
-                    String aesKey = null;
+//                    System.out.println(JSON.toJSONString(requestMap));
+                    String content ;
+                    String aesKey;
+                    JSONObject re = JSONObject.parseObject(redisTemplate1.opsForValue().get(RED_KEY+uuId));
+                    if (null == re) {
+                        throw  new RuntimeException("id对应秘钥为空!");
+                    }
+//                    System.out.println(JSON.toJSONString(re));
+                    String server_private_key = re.getString("privateKey");
 //                    try {
 ////                        aseKey = RSAUtils.decryptDataOnJava(encrypted,server_private_key);
 //                        System.out.println("私钥:");
@@ -140,22 +172,26 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
 //                        throw  new RuntimeException("参数【aseKey】解析异常！");
 //                    }
 
-                    System.out.println("私钥:");
-                    System.out.println(server_private_key);
-                    byte[] plaintext = new byte[0];
+//                    System.out.println("私钥:");
+//                    System.out.println(server_private_key);
+//                    System.out.println("公钥:");
+//                    System.out.println(re.getString("publicKey"));
+                    byte[] plaintext ;
                     try {
-                        plaintext = RsaUtilF.decryptByPrivateKey(Base64.decodeBase64(encrypted)
-                                , server_private_key);
+                        plaintext = RsaUtilF.decryptByPrivateKey(Base64.decodeBase64(encrypted), server_private_key);
+                        System.out.println("这里成功");
                     } catch (Exception e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
+                        throw  new RuntimeException("参数【aseKey】解析异常！");
                     }
-
+//                    System.out.println("pla:");
+//                    System.out.println(plaintext);
                     aesKey = new String(plaintext);
                     aesKey = aesKey.replace("\"", "");
 //                    aesKey = Arrays.toString(plaintext);
-                    System.out.println("aes:");
-                    System.out.println(aesKey);
-                    System.out.println(aesKey.getBytes().length);
+//                    System.out.println("aes:");
+//                    System.out.println(aesKey);
+//                    System.out.println(aesKey.getBytes().length);
 
 //                    try {
 ////                        content  = AesEncryptUtils.decrypt(data, aesKey);
@@ -170,12 +206,14 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                     try {
                         content = AesUtil.decrypt(data, aesKey);
                     } catch (Exception e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
+                        throw  new RuntimeException("参数【content】解析异常！");
                     }
 
                     if (StringUtils.isEmpty(content) || StringUtils.isEmpty(aesKey)){
                         throw  new RuntimeException("参数【requestData】解析参数空指针异常!");
                     }
+//                    System.out.println(content);
                     return content;
                 }
             }

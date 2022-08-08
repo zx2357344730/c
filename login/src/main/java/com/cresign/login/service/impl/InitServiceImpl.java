@@ -1,9 +1,11 @@
 package com.cresign.login.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.service.InitService;
 import com.cresign.tools.advice.RetResult;
+import com.cresign.tools.advice.RsaUtilF;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -16,8 +18,14 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 @Component
 public class InitServiceImpl implements InitService {
+
+    public static final String RED_KEY = "key:k_";
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -29,8 +37,8 @@ public class InitServiceImpl implements InitService {
     private RetResult retResult;
 
     @Override
-    public ApiResponse getInitById(String lang, Integer ver) {
-
+    public ApiResponse getInitById(String lang, Integer ver,String qdKey,String uuId) {
+        System.out.println("uuId:"+uuId);
         Query query = new Query(new Criteria("_id").is(lang));
 
         query.fields().include("ver");
@@ -42,6 +50,24 @@ public class InitServiceImpl implements InitService {
             throw new ErrorResponseException(HttpStatus.OK, CodeEnum.ALREADY_LOCAL.getCode(), "");
         }
 
+        JSONObject re = new JSONObject();
+        re.put("qdKey",qdKey);
+        Map<String, String> stringMap = RsaUtilF.genKeyPairX();
+        assert stringMap != null;
+        re.put("privateKey",stringMap.get("privateKey"));
+        re.put("publicKey",stringMap.get("publicKey"));
+        /*
+        TimeUnit.SECONDS:秒
+        TimeUnit.MINUTES：分
+        TimeUnit.HOURS：时
+        TimeUnit.DAYS：日
+        TimeUnit.MILLISECONDS：毫秒
+        TimeUnit.MILLISECONDS：微秒
+        TimeUnit.NANOSECONDS：纳秒
+        */
+        redisTemplate1.opsForValue().set((RED_KEY + uuId),JSON.toJSONString(re),3, TimeUnit.DAYS);//过期时间2天
+//        redisTemplate1.opsForValue().set(RED_KEY + uuId,JSON.toJSONString(re));
+//        redisTemplate1.expire((RED_KEY + uuId),1000 , TimeUnit.MILLISECONDS);//设置过期时间
         // 判断 redis 中是否有这个键
         if (redisTemplate1.opsForHash().hasKey("initData", lang)) {
 
@@ -57,6 +83,9 @@ public class InitServiceImpl implements InitService {
 //
 //                redisTemplate1.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
 
+            init.put("hdKey", re.getString("publicKey"));
+            System.out.println("这里返回-1:");
+            System.out.println(JSON.toJSONString(init));
             return retResult.ok(CodeEnum.OK.getCode(), init);
 //            }
 //
@@ -68,6 +97,10 @@ public class InitServiceImpl implements InitService {
 
             redisTemplate1.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
 
+            assert init != null;
+            init.setHdKey(re.getString("publicKey"));
+            System.out.println("这里返回-2:");
+            System.out.println(JSON.toJSONString(init));
             return retResult.ok(CodeEnum.OK.getCode(), init);
         }
 

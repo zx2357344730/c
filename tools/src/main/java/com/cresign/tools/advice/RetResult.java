@@ -14,9 +14,12 @@ import net.logstash.logback.encoder.org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -31,6 +34,26 @@ import java.util.Random;
 @Component
 public class RetResult {
 
+//    @Autowired
+//    private HttpServletRequest request;
+//    /**
+//     * 注入redis数据库下标1模板
+//     */
+//    @Resource
+//    private StringRedisTemplate redisTemplate1;
+
+    /**
+     * 注入RocketMQ模板
+     */
+    public static HttpServletRequest request;
+
+    public static StringRedisTemplate redisTemplate1;
+
+    @Autowired
+    public void setRetResult(HttpServletRequest request,StringRedisTemplate redisTemplate1){
+        RetResult.request = request;
+        RetResult.redisTemplate1 = redisTemplate1;
+    }
 
 //    @Value("${encyptKey.public_key}")
 //    public void setClient_Public_Key(String client_Public_Key) {
@@ -44,15 +67,41 @@ public class RetResult {
 //    private static final String client_Public_Key = RsaUtilF.getPublicKey();
 
 //    private static final String client_Public_Key = RSAUtils.getPublicKey();
-    private static String client_Public_Key;
-    public static void setClient_Public_Key(String key){
-        client_Public_Key = key;
-    }
+
+//    private static String client_Public_Key;
+//    public synchronized static String getSetPublicKey(String key,boolean isG){
+//        System.out.println("client_Public_Key:"+isG);
+//        System.out.println(client_Public_Key);
+//        if (isG) {
+//            client_Public_Key = key;
+//            System.out.println("set_client_Public_Key:");
+//            System.out.println(client_Public_Key);
+//            return null;
+//        } else {
+//            System.out.println("get_client_Public_Key:");
+//            System.out.println(client_Public_Key);
+//            return client_Public_Key;
+//        }
+//    }
+//    public static void setClient_Public_Key(String key){
+//        log.info("赋值");
+//        System.out.println("赋值");
+//        client_Public_Key = key;
+//        System.out.println("赋值成功");
+//        log.info("赋值成功");
+//    }
+//    public static String getClient_Public_Key(){
+//        log.info("获取赋值");
+//        System.out.println("获取赋值");
+//        return client_Public_Key;
+//    }
 
     @Autowired
     private LocalMessage localMessage;
 
+    private static final String QD_Key = "qdKey";
 
+    public static final String RED_KEY = "key:k_";
 
     /**
      * 返回加密數據給前端
@@ -63,7 +112,9 @@ public class RetResult {
      * ##updated: 2020/7/29 9:53
      * ##Return: java.lang.String
      */
-    public static String jsonResultEncrypt(HttpStatus httpStatus, String code, Object message){
+    public static String jsonResultEncrypt(HttpStatus httpStatus, String code, Object message
+//            ,String qdKey
+    ){
 
         if (ObjectUtils.isNotEmpty(message)) {
             // 根据异常信息抛出信息
@@ -126,11 +177,32 @@ public class RetResult {
     public ApiResponse ok(String code, Object message){
 
         if (ObjectUtils.isNotEmpty(message)) {
-            return new ApiResponse(code, JSONObject.toJSONString(encodeAesRsa(message)), localMessage.getLocaleMessage(code, "", null));
+            System.out.println("code:"+code);
+            System.out.println("message:"+message);
+//            JSONObject re = JSONObject.parseObject(redisTemplate1.opsForValue().get(RED_KEY+"e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb"));
+//            System.out.println(JSON.toJSONString(re));
+            return new ApiResponse(code, JSONObject.toJSONString(encodeAesRsa(message
+//                    ,re.getString("qdKey")
+            )), localMessage.getLocaleMessage(code, "", null));
         } else {
             return new ApiResponse(code, "", localMessage.getLocaleMessage(code, "", null));
         }
     }
+
+//    public ApiResponse ok(String code, Object message,String uuId){
+//
+//        if (ObjectUtils.isNotEmpty(message)) {
+//            System.out.println("code:"+code);
+//            System.out.println("message:"+message);
+////            JSONObject re = JSONObject.parseObject(redisTemplate1.opsForValue().get(RED_KEY+"e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb"));
+////            System.out.println(JSON.toJSONString(re));
+//            return new ApiResponse(code, JSONObject.toJSONString(encodeAesRsa(message,uuId
+////                    ,re.getString("qdKey")
+//            )), localMessage.getLocaleMessage(code, "", null));
+//        } else {
+//            return new ApiResponse(code, "", localMessage.getLocaleMessage(code, "", null));
+//        }
+//    }
 
     public ApiResponse okNoEncode(String code, Object message){
 
@@ -151,34 +223,61 @@ public class RetResult {
      * ##updated:     2020/7/29 9:56
      * ##Return:         java.lang.Object
      */
-    private static Object encodeAesRsa(Object body){
-
-
+    private static Object encodeAesRsa(Object body
+//            ,String qdKey
+    ){
         ObjectMapper objectMapper = new ObjectMapper();
-
-//        String client_Public_Key = (String) redisTemplate0.opsForHash().get("serverEncyptKey", "public_key");
-
         try {
+//            System.out.println("request:");
+//            System.out.println(JSON.toJSONString(request.getParts()));
             String result = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(body);
-            // 生成aes秘钥
-//            String aseKey = getRandomString(16);
-            String aseKey = AesUtil.getKey();
-            // rsa加密
-//            String encrypted = RSAUtils.encryptedDataOnJava(aseKey, client_Public_Key);
-//            String encrypted = RsaTest.publicEncrypt(aseKey,RsaTest.getPublicKey(client_Public_Key));
-            String encrypted = Base64.encodeBase64String(RsaUtilF.
-                    encryptByPublicKey(aseKey.getBytes(), client_Public_Key));
-            // aes加密
-//            String requestData = AesEncryptUtils.encrypt(result, aseKey);
-            String requestData = AesUtil.encrypt(result, aseKey);
-            Map<String, String> map = new HashMap<>();
-            map.put("encrypted", encrypted);
-            map.put("requestData", requestData);
-            return map;
+            String uuId = request.getHeader("uuId");
+//            System.out.println("加密的=uuId:");
+//            System.out.println(uuId);
+//            uuId = "e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb";
+            String s = redisTemplate1.opsForValue().get(RED_KEY + uuId);
+//            System.out.println("s:");
+//            System.out.println(s);
+            JSONObject re = JSONObject.parseObject(s);
+//            System.out.println("re:");
+//            System.out.println(JSON.toJSONString(re));
+            if (null != re) {
+                String qdKey = re.getString("qdKey");
+//                System.out.println("前端公钥:");
+//                System.out.println(qdKey);
+                // 生成aes秘钥
+//                String aseKey = getRandomString(16);
+                String aseKey = AesUtil.getKey();
+                // rsa加密
+//                String encrypted = RSAUtils.encryptedDataOnJava(aseKey, client_Public_Key);
+//                String encrypted = RsaTest.publicEncrypt(aseKey,RsaTest.getPublicKey(client_Public_Key));
+                String encrypted = Base64.encodeBase64String(RsaUtilF.
+                        encryptByPublicKey(aseKey.getBytes(), qdKey));
+                // aes加密
+//                String requestData = AesEncryptUtils.encrypt(result, aseKey);
+                String requestData = AesUtil.encrypt(result, aseKey);
+                Map<String, String> map = new HashMap<>();
+                map.put("encrypted", encrypted);
+                map.put("requestData", requestData);
+                map.put("err","0");
+                return map;
+            } else {
+                log.error("id对应秘钥信息为空");
+                Map<String, String> map = new HashMap<>();
+                map.put("err","1");
+                map.put("desc","id对应秘钥信息为空");
+                return map;
+            }
         } catch (Exception e) {
             log.error("对方法method :【" +"】返回数据进行解密出现异常：" + e.getMessage());
+            Map<String, String> map = new HashMap<>();
+            map.put("err","1");
+            map.put("desc","对方法method :【" +"】返回数据进行解密出现异常：" + e.getMessage());
+            return map;
+//            e.printStackTrace();
+//            throw  new RuntimeException("id对应秘钥为空!");
         }
-        return body;
+//        return body;
     }
 
     /**

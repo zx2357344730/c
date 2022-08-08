@@ -21,10 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.Map;
 
@@ -43,6 +45,14 @@ public class RegisterUserUtils {
 
     @Autowired
     private RestHighLevelClient restHighLevelClient;
+
+    /**
+     * 注入redis数据库下标1模板
+     */
+    @Resource
+    private StringRedisTemplate redisTemplate1;
+
+    private static final String QD_Key = "qdKey";
 
     @Transactional(noRollbackFor = ResponseException.class)
     public String registerUser(Map<String, Object> info)  {
@@ -90,7 +100,6 @@ public class RegisterUserUtils {
             } catch (IOException e) {
 
             }
-
             return RetResult.jsonResultEncrypt(HttpStatus.OK, CodeEnum.OK.getCode(), null);
 
 

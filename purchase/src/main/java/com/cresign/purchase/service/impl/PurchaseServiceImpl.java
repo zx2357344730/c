@@ -81,6 +81,8 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Autowired
     private RetResult retResult;
 
+    private static final String QD_Key = "qdKey";
+
     /**
      * 新增stripe的产品和价格
      *
@@ -1091,6 +1093,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
 
         } else if (resultNum == 1) {
+
 
             return RetResult.jsonResultEncrypt(HttpStatus.OK, PurchaseEnum.NO_CHARGE_USER.getCode(), null);
 

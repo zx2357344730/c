@@ -414,7 +414,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 LogFlow logData =  RsaUtil.encryptionSend(map, WebSocketUserServer.keyJava.get(this.session.getId())
                         .getString("privateKeyJava"));
 
-                this.sendLog(logData);
+                sendLog(logData);
 
             }
         }

@@ -5,12 +5,16 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.client.LoginClient;
 import com.cresign.chat.utils.AesUtil;
 import com.cresign.chat.utils.RsaUtil;
+import com.cresign.tools.advice.QdKey;
+import com.cresign.tools.advice.RetResult;
+import com.cresign.tools.advice.RsaUtilF;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.LogFlow;
 import io.netty.channel.ChannelHandler.Sharable;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
@@ -46,6 +50,8 @@ public class WebSocketServerJh {
 
     private static final Map<String,WebSocketServerJh> webSs = new HashMap<>(16);
 
+    private static final String QD_Key = "qdKey";
+
 //    /**
 //     * 用户的前端公钥Map集合
 //     */
@@ -59,17 +65,16 @@ public class WebSocketServerJh {
 //    private static final Map<String, JSONObject> piData = new HashMap<>(16);
 
     /**
-     * Details
+     * 注入redis数据库下标1模板
      */
-//    private static LogService logService;
-    private static LoginClient loginClient;
+    private static StringRedisTemplate redisTemplate1;
 
     @Autowired
-    public void setWebSocketServerPi(
+    public void setWebSocketServerJh(
 //            LogService logService,
-            LoginClient loginClient){
+            StringRedisTemplate redisTemplate1){
 //        WebSocketServerJh.logService = logService;
-        WebSocketServerJh.loginClient = loginClient;
+        WebSocketServerJh.redisTemplate1 = redisTemplate1;
     }
 
     /**
@@ -83,6 +88,18 @@ public class WebSocketServerJh {
     @OnOpen
     public void onOpen(Session session,@PathParam("publicKey") String publicKey){
         System.out.println("进入ws打开:");
+        String s = getZh(publicKey);
+//        try {
+//            Map<String, Object> objectMap = RsaUtilF.genKeyPair();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+//        redisTemplate1.opsForValue().set(QD_Key,s);
+        QdKey.getSetPublicKey(s,true);
+
+//        RetResult.getSetPublicKey(s,true);
+
 //        // 判断是否有prodID的连接
 //        if (webSocketSet==null) {
 //            System.out.println("进入新建:");
@@ -95,13 +112,22 @@ public class WebSocketServerJh {
 //        webSocketSet.add(this);
         this.z = 1;
 
-        String s = getZh(publicKey);
-
         webSs.put(s,this);
 
-        JSONObject obj = new JSONObject();
-        obj.put("qdKey",s);
-        String hdKey = loginClient.getHdKey(obj);
+//        JSONObject obj = new JSONObject();
+//        obj.put("qdKey",s);
+//        String hdKey = loginClient.getHdKey(obj);
+
+//        String hdKey = RsaUtilF.getPublicKeyX();
+//        System.out.println("test key");
+//        System.out.println(hdKey);
+//        System.out.println("key j");
+//        System.out.println(RsaUtilF.getPublicKey());
+//        System.out.println(RsaUtilF.getPublicKey());
+//        System.out.println("key x");
+//        System.out.println(RsaUtilF.getPublicKeyX());
+//        System.out.println("qd key");
+//        System.out.println(RetResult.getSetPublicKey("",false));
 
         // 创建回应前端日志
         LogFlow log1 = LogFlow.getInstance();
@@ -115,7 +141,7 @@ public class WebSocketServerJh {
         JSONObject data = new JSONObject();
 
         // 携带后端公钥
-        data.put("hdKey",hdKey);
+//        data.put("hdKey",hdKey);
         log1.setData(data);
 
         WebSocketServerJh.sendInfo(s,log1);

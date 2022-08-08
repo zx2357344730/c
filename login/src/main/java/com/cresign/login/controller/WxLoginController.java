@@ -85,7 +85,9 @@ public class WxLoginController {
     @SecurityParameter
     @PostMapping("/v1/wxAsLogin")
     public ApiResponse wXLoginByIdWx(@RequestBody JSONObject reqJson) {
-
+        String uuId = request.getHeader("uuId");
+        System.out.println("uuId:");
+        System.out.println(uuId);
         return wxLoginService.wXLoginByIdWx(
                 reqJson.getString("id_WX"),
                 request.getHeader("clientType"));

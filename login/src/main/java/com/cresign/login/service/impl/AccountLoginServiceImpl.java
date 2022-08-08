@@ -6,6 +6,7 @@ import com.cresign.login.client.WSFilterClient;
 import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.AccountLoginService;
 import com.cresign.login.utils.LoginResult;
+import com.cresign.tools.advice.QdKey;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.advice.RsaUtilF;
 import com.cresign.tools.apires.ApiResponse;
@@ -60,14 +61,21 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 
     @Override
     public ApiResponse getKey(String qdKey) {
-        RetResult.setClient_Public_Key(qdKey);
-        return retResult.ok(CodeEnum.OK.getCode(), RsaUtilF.getPublicKey());
+        QdKey.setClient_Public_Key(qdKey);
+//        return retResult.ok(CodeEnum.OK.getCode(), RsaUtilF.getPublicKey());
+        return retResult.ok(CodeEnum.OK.getCode(), "RsaUtilF.getPublicKey()");
     }
 
     @Override
     public String getHdAndQdKey(String qdKey) {
-        RetResult.setClient_Public_Key(qdKey);
-        return RsaUtilF.getPublicKey();
+        QdKey.setClient_Public_Key(qdKey);
+        System.out.println("前端公钥:");
+        System.out.println(QdKey.getClient_Public_Key());
+//        String publicKey = RsaUtilF.getPublicKey();
+        String publicKey = "RsaUtilF.getPublicKey()";
+        System.out.println("后端公钥:");
+        System.out.println(publicKey);
+        return publicKey;
     }
 
     /**

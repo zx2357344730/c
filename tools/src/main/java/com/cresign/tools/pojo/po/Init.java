@@ -34,6 +34,6 @@ public class Init {
 
     private Integer tvs = 1;
 
-
+    private String hdKey;
 
 }
