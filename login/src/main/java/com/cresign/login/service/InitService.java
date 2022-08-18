@@ -18,7 +18,7 @@ public interface InitService {
      * ##updated: 2020/8/8 11:07
      * ##Return: java.lang.String
      */
-    ApiResponse getInitById(String lang, Integer ver,String qdKey,String uuId);
+    ApiResponse getInitById(String lang, Integer ver,String qdKey,String uuId,String isDecrypt);
 
 
     /**

@@ -11,6 +11,7 @@ import com.cresign.login.utils.wxlogin.applets.WXAesCbcUtil;
 import com.cresign.login.utils.wxlogin.web.WxAuthUtil;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
@@ -40,8 +41,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -112,6 +116,18 @@ public class WxLoginServiceImpl implements WxLoginService {
 
     @Autowired
     private RestHighLevelClient restHighLevelClient;
+
+    @Resource
+    private CoupaUtil coupaUtil;
+
+    @Override
+    public ApiResponse verificationAUN(String id_APP) {
+        User user = coupaUtil.getUserByKeyAndVal("info.id_APP", id_APP, Collections.singletonList("info"));
+        if (null != user) {
+            return retResult.ok(CodeEnum.OK.getCode(),user.getInfo().getId_AUN());
+        }
+        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(),"1");
+    }
 
     /**
      * 微信登录方法

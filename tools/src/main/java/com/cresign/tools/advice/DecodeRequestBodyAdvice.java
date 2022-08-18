@@ -60,6 +60,8 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
 //    @Value("${aes.private.key}")
 //    private String AES_PRIVATE_KEY;
 
+    private static String private_key = "MIICeQIBADANBgkqhkiG9w0BAQEFAASCAmMwggJfAgEAAoGBAJUXjT0F2nUpEsE//pQ+N49MUR3xsVrLN9GjqEevFRGWQtK9PYwxV44Pwn0Mxty38OmO7i5YhQFkLvmbARFEP6rwb2vi6ZFQ+iQN8vb1ZIbENmevXeLw2gjuYmX8P7ld54dq5b36ViEz3wBO0sk4RniEoW5UFCbmsc043cv10/PvAgMBAAECgYEAkEH9kzH6sqpPT1VQSrf4olrBkiut46AGHn4v8UxjImU1uxsIVoHXqclt8flO4XnJTPPTWlykNThui22DluVmg9Ayv/32aAWCuJbRVT2LczTUWjX4CCWXsxGlOAgNUtU0ie2H/XflW/zJLBj5l6QEavmCUtGRr+xHqbAaolp71wECQQDU4L1ZKvZLVbZXRBT7l44mzYHzsELFg3vWjn2QlJz3EB9rDfwJse3P1ijP/WEP5BouEvZlS0xsHkqUTeLLdVKhAkEAs0sNOqwn9x0lL2JnYcb1/2p72uZtU+Mi2PooFqRNA6UCvaSWY2mdbauhPpKM1yAdp/iopx25JAGqoIo3duNMjwJBAMGjhNl9aPhyCSEsPuH0pEvLmC/w32wHBDjQ+IrxhC6ArfOVjvPKtAXgStOXKhloZiAPA650ZhnbG//3MRvdpsECQQCOkukDNjFVtayDQLo7K68lG/U/vitEIQPuDQdh8ed4NXi3e7FHfo38zxWbH4i17UkH8JmUwvMd6eFYZnDyro+LAkEAyG5UQMupIIiZolYESFb2xIsQiqwC/mWQljr4Sjd01RIKtTjtJS2v5v8MRQLHyBTGtOcBz/nsPiKYrvY31MNFXw==";
+
     @Override
     public boolean supports(MethodParameter methodParameter, Type type, Class<? extends HttpMessageConverter<?>> aClass) {
         return true;
@@ -132,6 +134,7 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
 
 //            System.out.println("headers:");
             String uuId = Objects.requireNonNull(this.getHeaders().get("uuId")).get(0);
+            String isDecrypt = Objects.requireNonNull(this.getHeaders().get("isDecrypt")).get(0);
 //            System.out.println("uuId:");
 //            System.out.println(uuId);
 
@@ -159,8 +162,16 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                     if (null == re) {
                         throw  new RuntimeException("id对应秘钥为空!");
                     }
+
 //                    System.out.println(JSON.toJSONString(re));
-                    String server_private_key = re.getString("privateKey");
+
+                    String server_private_key;
+                    if (isDecrypt.equals("false")) {
+                        server_private_key = private_key;
+                    } else {
+                        server_private_key = re.getString("privateKey");
+                    }
+
 //                    try {
 ////                        aseKey = RSAUtils.decryptDataOnJava(encrypted,server_private_key);
 //                        System.out.println("私钥:");

@@ -99,7 +99,16 @@ public class RetResult {
     @Autowired
     private LocalMessage localMessage;
 
-    private static final String QD_Key = "qdKey";
+    private static String QD_Key = "\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCmZ22+NactiEwYmw06yU/Tiy1L\npenHWgbPtcjdSGIqCzZdZF9pP7X/q1XLknm6yt3lh0KQTka7MoHlK/5rauZ4Y6Jw\ny6bqXwdjRO+EmvFY/UN/fj2bczWf4XJ2WtvBZTnOzk5buk4Gp3sTkbRLpOPwvNAz\n4DrAFD1biUZF62/vyQIDAQAB\n";
+
+    static {
+        // 字符串转换
+        String s = QD_Key.replaceAll(",", "/");
+        s = s.replaceAll("%0A","\n");
+        s = s.replaceAll("%2C","/");
+        s = s.replaceAll("%2B","+");
+        QD_Key = s.replaceAll("%3D","=");
+    }
 
     public static final String RED_KEY = "key:k_";
 
@@ -232,6 +241,7 @@ public class RetResult {
 //            System.out.println(JSON.toJSONString(request.getParts()));
             String result = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(body);
             String uuId = request.getHeader("uuId");
+            String isDecrypt = request.getHeader("isDecrypt");
 //            System.out.println("加密的=uuId:");
 //            System.out.println(uuId);
 //            uuId = "e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb";
@@ -251,8 +261,16 @@ public class RetResult {
                 // rsa加密
 //                String encrypted = RSAUtils.encryptedDataOnJava(aseKey, client_Public_Key);
 //                String encrypted = RsaTest.publicEncrypt(aseKey,RsaTest.getPublicKey(client_Public_Key));
-                String encrypted = Base64.encodeBase64String(RsaUtilF.
-                        encryptByPublicKey(aseKey.getBytes(), qdKey));
+
+                String encrypted;
+                if (isDecrypt.equals("false")) {
+                    encrypted = Base64.encodeBase64String(RsaUtilF.
+                            encryptByPublicKey(aseKey.getBytes(), QD_Key));
+                } else {
+                    encrypted = Base64.encodeBase64String(RsaUtilF.
+                            encryptByPublicKey(aseKey.getBytes(), qdKey));
+                }
+
                 // aes加密
 //                String requestData = AesEncryptUtils.encrypt(result, aseKey);
                 String requestData = AesUtil.encrypt(result, aseKey);

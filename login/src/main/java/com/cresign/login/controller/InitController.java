@@ -55,7 +55,7 @@ public class InitController {
         System.out.println(uuId);
         System.out.println(request.getHeader("uuId"));
 //        RetResult.setClient_Public_Key(s);
-        return initService.getInitById(lang, ver,s,request.getHeader("uuId"));
+        return initService.getInitById(lang, ver,s,request.getHeader("uuId"),request.getHeader("isDecrypt"));
     }
 
     @GetMapping("/v1/getPhoneType")

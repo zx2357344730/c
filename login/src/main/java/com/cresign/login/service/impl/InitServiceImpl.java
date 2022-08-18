@@ -27,6 +27,8 @@ public class InitServiceImpl implements InitService {
 
     public static final String RED_KEY = "key:k_";
 
+    private static final String HD_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCVF409Bdp1KRLBP/6UPjePTFEd8bFayzfRo6hHrxURlkLSvT2MMVeOD8J9DMbct/Dpju4uWIUBZC75mwERRD+q8G9r4umRUPokDfL29WSGxDZnr13i8NoI7mJl/D+5XeeHauW9+lYhM98ATtLJOEZ4hKFuVBQm5rHNON3L9dPz7wIDAQAB";
+
     @Autowired
     private MongoTemplate mongoTemplate;
 
@@ -37,7 +39,7 @@ public class InitServiceImpl implements InitService {
     private RetResult retResult;
 
     @Override
-    public ApiResponse getInitById(String lang, Integer ver,String qdKey,String uuId) {
+    public ApiResponse getInitById(String lang, Integer ver,String qdKey,String uuId,String isDecrypt) {
         System.out.println("uuId:"+uuId);
         Query query = new Query(new Criteria("_id").is(lang));
 
@@ -53,6 +55,8 @@ public class InitServiceImpl implements InitService {
         JSONObject re = new JSONObject();
         re.put("qdKey",qdKey);
         Map<String, String> stringMap = RsaUtilF.genKeyPairX();
+        System.out.println("输出加密:");
+        System.out.println(JSON.toJSONString(stringMap));
         assert stringMap != null;
         re.put("privateKey",stringMap.get("privateKey"));
         re.put("publicKey",stringMap.get("publicKey"));
@@ -83,7 +87,11 @@ public class InitServiceImpl implements InitService {
 //
 //                redisTemplate1.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
 
-            init.put("hdKey", re.getString("publicKey"));
+            if (isDecrypt.equals("false")) {
+                init.put("hdKey", HD_KEY);
+            } else {
+                init.put("hdKey", re.getString("publicKey"));
+            }
             System.out.println("这里返回-1:");
             System.out.println(JSON.toJSONString(init));
             return retResult.ok(CodeEnum.OK.getCode(), init);
@@ -98,7 +106,11 @@ public class InitServiceImpl implements InitService {
             redisTemplate1.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
 
             assert init != null;
-            init.setHdKey(re.getString("publicKey"));
+            if (isDecrypt.equals("false")) {
+                init.setHdKey(HD_KEY);
+            } else {
+                init.setHdKey(re.getString("publicKey"));
+            }
             System.out.println("这里返回-2:");
             System.out.println(JSON.toJSONString(init));
             return retResult.ok(CodeEnum.OK.getCode(), init);

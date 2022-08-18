@@ -318,6 +318,24 @@ public class CoupaUtil {
 
     /////////////////////////////USER//////////////////////////////////////////
 
+    /**
+     * 根据idU获取用户的指定info信息
+     *
+     * ##Params: idU 用户id
+     * ##return: java.util.Map<java.lang.String, java.lang.Object>  返回结果: 结果
+     * ##Author: tang
+     * ##version: 1.0.0
+     * ##Updated: 2020/8/6 15:11
+     */
+    public User getUserByKeyAndVal(String key,String val, List<String> listKey) {
+        // 创建查询条件
+        Query query = new Query(new Criteria(key).is(val));
+        // 添加排序条件
+        Field fields = query.fields();
+        listKey.forEach(fields::include);
+        // 返回结果
+        return mongoTemplate.findOne(query, User.class);
+    }
 
     /**
      * 根据idU获取用户的指定info信息

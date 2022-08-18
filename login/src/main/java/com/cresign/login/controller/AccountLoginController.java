@@ -33,6 +33,13 @@ public class AccountLoginController {
     private HttpServletRequest request;
 
     @SecurityParameter
+    @PostMapping("/v1/setAppId")
+    public ApiResponse setAppId(@RequestBody JSONObject reqJson) {
+        return accountLoginService.setAppId(reqJson.getString("appId")
+                ,reqJson.getString("id_U"));
+    }
+
+    @SecurityParameter
     @PostMapping("/v1/login")
     public ApiResponse doNumberLogin(@RequestBody JSONObject reqJson) {
 

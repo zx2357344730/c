@@ -13,6 +13,7 @@ import java.io.IOException;
  */
 public interface WxLoginService {
 
+    ApiResponse verificationAUN(String id_APP);
 
     /**
      * 微信登录接口 (web端)

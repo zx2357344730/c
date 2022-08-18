@@ -119,6 +119,14 @@ public class WxLoginController {
 
     }
 
+    @SecurityParameter
+    @PostMapping("/v1/verificationAUN")
+    public ApiResponse verificationAUN(@RequestBody JSONObject reqJson) {
+
+        return wxLoginService.verificationAUN(reqJson.getString("id_APP"));
+
+    }
+
 
     @SecurityParameter
     @PostMapping("/v1/wechatRegister")

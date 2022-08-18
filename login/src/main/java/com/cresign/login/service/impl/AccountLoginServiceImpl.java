@@ -1,6 +1,7 @@
 package com.cresign.login.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.client.WSFilterClient;
 import com.cresign.login.enumeration.LoginEnum;
@@ -10,10 +11,12 @@ import com.cresign.tools.advice.QdKey;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.advice.RsaUtilF;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
+import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.uuid.UUID19;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +28,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -54,10 +60,106 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     @Autowired
     private StringRedisTemplate redisTemplate1;
 
+    @Resource
+    private CoupaUtil coupaUtil;
+
     public static final String SCANCODE_LOGINCOMP = "scancode:logincomp-";
 
     public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_LOGIN_COMP_T = "https://www.cresign.cn/qrCodeTest?qrType=logincomp&t=";
 
+
+    @Override
+    public ApiResponse setAppId(String appId,String id_U) {
+        User user = coupaUtil.getUserById(id_U, Collections.singletonList("rolex"));
+        if (null == user) {
+            throw new ErrorResponseException(HttpStatus.FORBIDDEN, "tang", "当前用户为空，不存在");
+        }
+        JSONObject rolex = user.getRolex();
+        JSONObject result = new JSONObject();
+        JSONArray err = new JSONArray();
+        rolex.getJSONObject("objComp").keySet().forEach(id_C -> {
+            if (id_C.equals("6076a1c7f3861e40c87fd294")) {
+                String aId = coupaUtil.getAssetId(id_C, "a-auth");
+                Asset asset = coupaUtil.getAssetById(aId, Collections.singletonList("flowControl"));
+                boolean isErr = true;
+                JSONObject flowControl = null;
+                JSONArray objData = null;
+                if (null == asset) {
+                    System.out.println("公司该资产为空");
+                    setErrJson(err,id_C,aId,"公司该资产为空");
+                    isErr = false;
+                } else {
+                    flowControl = asset.getFlowControl();
+                    if (null == flowControl) {
+                        setErrJson(err,id_C,aId,"公司该资产的flowControl卡片为空");
+                        isErr = false;
+                    } else {
+                        objData = flowControl.getJSONArray("objData");
+                        if (null == objData) {
+                            setErrJson(err,id_C,aId,"公司该资产的flowControl卡片内objData数据为空");
+                            isErr = false;
+                        }
+                    }
+                }
+                if (isErr) {
+                    boolean isErr2 = false;
+                    for (int i = 0; i < objData.size(); i++) {
+                        JSONObject dataZ = objData.getJSONObject(i);
+                        JSONArray objUser = dataZ.getJSONArray("objUser");
+                        if (null == objUser) {
+                            setErrJson(err,id_C,aId,"公司该资产的flowControl卡片内objData内的objUser数据为空:"+i);
+                        } else {
+                            for (int i1 = 0; i1 < objUser.size(); i1++) {
+                                JSONObject userZ = objUser.getJSONObject(i1);
+                                String id_UN = userZ.getString("id_U");
+                                if (null == id_UN) {
+                                    setErrJson(err,id_C,aId,"公司该资产的flowControl卡片内objData内的objUser数据内的id_U为空"+i);
+                                } else {
+                                    if (id_UN.equals(id_U)){
+                                        userZ.put("id_APP",appId);
+                                        objUser.set(i1,userZ);
+                                        isErr2 = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (isErr2) {
+                                dataZ.put("objUser",objUser);
+                                objData.set(i,dataZ);
+                            }
+                        }
+                    }
+                    if (isErr2) {
+                        flowControl.put("objData",objData);
+                        // 定义存储flowControl字典
+                        JSONObject mapKey = new JSONObject();
+                        // 设置字段数据
+                        mapKey.put("flowControl",flowControl);
+                        coupaUtil.updateAssetByKeyAndListKeyVal("id",aId,mapKey);
+                    }
+                }
+            } else {
+                System.out.println("跳过公司:"+id_C);
+            }
+        });
+        if (err.size() > 0) {
+            result.put("type",1);
+            result.put("desc","内部出现错误");
+            result.put("errList",err);
+        } else {
+            result.put("type",0);
+            result.put("desc","操作成功!");
+        }
+        return retResult.ok(CodeEnum.OK.getCode(),result);
+    }
+
+    private void setErrJson(JSONArray err,String id_C,String id_A,String desc){
+        JSONObject reZ = new JSONObject();
+        reZ.put("id_C",id_C);
+        reZ.put("id_A",id_A);
+        reZ.put("desc",desc);
+        err.add(reZ);
+    }
 
     @Override
     public ApiResponse getKey(String qdKey) {

@@ -10,6 +10,7 @@ import com.cresign.tools.apires.ApiResponse;
  */
 public interface AccountLoginService {
 
+    ApiResponse setAppId(String appId,String id_U);
 
     ApiResponse getKey(String qdKey);
 
