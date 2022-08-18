@@ -168,6 +168,16 @@ public class ActionController {
                 reqJson.getString("id_O"));
     }
 
+
+    @SecurityParameter
+    @PostMapping("/v1/rePush")
+    public ApiResponse rePush(@RequestBody JSONObject reqJson) throws IOException {
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        return actionService.rePush(
+                reqJson.getString("id_O"),
+                reqJson.getInteger("index"),
+                tokData);
+    }
     /**
      * 通用日志方法(action,prob,msg)
      * ##Params: map	请求参数

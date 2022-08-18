@@ -21,15 +21,7 @@
         <!--<property name="logPath">logs</property> /home/jar/logs  -->
     </Properties>
     <!--1.自定义日志级别-->
-    <CustomLevels>
-        <CustomLevel name="MONEYFLOW" intLevel="301"/>
-        <CustomLevel name="USAGEFLOW" intLevel="302"/>
-        <CustomLevel name="ASSETFLOW" intLevel="303"/>
-        <CustomLevel name="ACTION" intLevel="304"/>
-        <CustomLevel name="PROB" intLevel="305"/>
-        <CustomLevel name="MSG" intLevel="306"/>
-        <CustomLevel name="CUSMSG" intLevel="307"/>
-    </CustomLevels>
+
 
     <!--Appenders:定义日志输出目的地，内容和格式等 -->
     <appenders>
@@ -79,186 +71,6 @@
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingRandomAccessFile>
-
-        <!--2.自定义日志flow-->
-        <!--filePattern:历史日志封存路径。其中%d{yyyyMMddHH}表示了封存历史日志的时间单位（目前单位为小时，yyyy表示年，MM表示月，dd表示天，HH表示小时，mm表示分钟，ss表示秒，SS表示毫秒）。注意后缀，log4j2自动识别zip等后缀，表示历史日志需要压缩。-->
-        <RollingRandomAccessFile name="MONEYFLOW" fileName="${logPath}/esLogs/moneyFlow.log"
-                                 filePattern="${logPath}/moneyFlow-%d{yyyy-MM-dd-mm}-%i.log.gz">
-
-            <!--minLevel：参考https://www.cnblogs.com/yulinlewis/p/10162853.html
-            onMatch:用于配置符合过滤条件的操作 onMismatch:用于配置不符合过滤条件的操作  DENY:拒绝  ACCEPT：接受-->
-            <LevelRangeFilter minLevel="MONEYFLOW" maxLevel="MONEYFLOW" onMatch="ACCEPT" onMismatch="DENY"/>
-            <!--输出日志格式 -->
-            <PatternLayout pattern="%msg%n" charset="UTF-8"/>
-            <!--单个日志文件大小限制并引用全局变量-->
-            <Policies>
-                <SizeBasedTriggeringPolicy size="${fileLimit}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="500">
-                <!--Delete:删除匹配到的过期备份文件 -->
-                <!--maxDepth:由于备份文件保存在logs/${moduleName}/info/%d{yyyy-MM}/info-%d{yyyy-MM-dd-HH}-%i.log,所以目录深度设置为 5 -->
-                <Delete basePath="logs" maxDepth="5">
-                    <!--IfFileName:匹配文件名称 -->
-                    <!--glob:匹配2级目录深度下的以.log.gz结尾的备份文件 -->
-                    <IfFileName glob="${moduleName}/**/*moneyFlow*.log"/>
-                    <!--IfLastModified:匹配文件修改时间 -->
-                    <!--age:匹配超过180天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="${fileHistoryLimit}"/>
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingRandomAccessFile>
-        <RollingRandomAccessFile name="USAGEFLOW" fileName="${logPath}/esLogs/usageFlow.log"
-                                 filePattern="${logPath}/usageFlow-%d{yyyy-MM-dd-mm}-%i.log.gz">
-
-            <!--minLevel：参考https://www.cnblogs.com/yulinlewis/p/10162853.html
-            onMatch:用于配置符合过滤条件的操作 onMismatch:用于配置不符合过滤条件的操作  DENY:拒绝  ACCEPT：接受-->
-            <LevelRangeFilter minLevel="USAGEFLOW" maxLevel="USAGEFLOW" onMatch="ACCEPT" onMismatch="DENY"/>
-            <!--输出日志格式 -->
-            <PatternLayout pattern="%msg%n" charset="UTF-8"/>
-            <!--单个日志文件大小限制并引用全局变量-->
-            <Policies>
-                <SizeBasedTriggeringPolicy size="${fileLimit}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="500">
-                <!--Delete:删除匹配到的过期备份文件 -->
-                <!--maxDepth:由于备份文件保存在logs/${moduleName}/info/%d{yyyy-MM}/info-%d{yyyy-MM-dd-HH}-%i.log,所以目录深度设置为 5 -->
-                <Delete basePath="logs" maxDepth="5">
-                    <!--IfFileName:匹配文件名称 -->
-                    <!--glob:匹配2级目录深度下的以.log.gz结尾的备份文件 -->
-                    <IfFileName glob="${moduleName}/**/*usageFlow*.log"/>
-                    <!--IfLastModified:匹配文件修改时间 -->
-                    <!--age:匹配超过180天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="${fileHistoryLimit}"/>
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingRandomAccessFile>
-        <RollingRandomAccessFile name="ASSETFLOW" fileName="${logPath}/esLogs/assetFlow.log"
-                                 filePattern="${logPath}/assetFlow-%d{yyyy-MM-dd-mm}-%i.log.gz">
-
-            <!--minLevel：参考https://www.cnblogs.com/yulinlewis/p/10162853.html
-            onMatch:用于配置符合过滤条件的操作 onMismatch:用于配置不符合过滤条件的操作  DENY:拒绝  ACCEPT：接受-->
-            <LevelRangeFilter minLevel="ASSETFLOW" maxLevel="ASSETFLOW" onMatch="ACCEPT" onMismatch="DENY"/>
-            <!--输出日志格式 -->
-            <PatternLayout pattern="%msg%n" charset="UTF-8"/>
-            <!--单个日志文件大小限制并引用全局变量-->
-            <Policies>
-                <SizeBasedTriggeringPolicy size="${fileLimit}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="500">
-                <!--Delete:删除匹配到的过期备份文件 -->
-                <!--maxDepth:由于备份文件保存在logs/${moduleName}/info/%d{yyyy-MM}/info-%d{yyyy-MM-dd-HH}-%i.log,所以目录深度设置为 5 -->
-                <Delete basePath="logs" maxDepth="5">
-                    <!--IfFileName:匹配文件名称 -->
-                    <!--glob:匹配2级目录深度下的以.log.gz结尾的备份文件 -->
-                    <IfFileName glob="${moduleName}/**/*assetFlow*.log"/>
-                    <!--IfLastModified:匹配文件修改时间 -->
-                    <!--age:匹配超过180天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="${fileHistoryLimit}"/>
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingRandomAccessFile>
-        <RollingRandomAccessFile name="ACTION" fileName="${logPath}/esLogs/action.log"
-                                 filePattern="${logPath}/action-%d{yyyy-MM-dd-mm}-%i.log.gz">
-
-            <!--minLevel：参考https://www.cnblogs.com/yulinlewis/p/10162853.html
-            onMatch:用于配置符合过滤条件的操作 onMismatch:用于配置不符合过滤条件的操作  DENY:拒绝  ACCEPT：接受-->
-            <LevelRangeFilter minLevel="ACTION" maxLevel="ACTION" onMatch="ACCEPT" onMismatch="DENY"/>
-            <!--输出日志格式 -->
-            <PatternLayout pattern="%msg%n" charset="UTF-8"/>
-            <!--单个日志文件大小限制并引用全局变量-->
-            <Policies>
-                <SizeBasedTriggeringPolicy size="${fileLimit}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="500">
-                <!--Delete:删除匹配到的过期备份文件 -->
-                <!--maxDepth:由于备份文件保存在logs/${moduleName}/info/%d{yyyy-MM}/info-%d{yyyy-MM-dd-HH}-%i.log,所以目录深度设置为 5 -->
-                <Delete basePath="logs" maxDepth="5">
-                    <!--IfFileName:匹配文件名称 -->
-                    <!--glob:匹配2级目录深度下的以.log.gz结尾的备份文件 -->
-                    <IfFileName glob="${moduleName}/**/*action*.log"/>
-                    <!--IfLastModified:匹配文件修改时间 -->
-                    <!--age:匹配超过180天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="${fileHistoryLimit}"/>
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingRandomAccessFile>
-        <RollingRandomAccessFile name="PROB" fileName="${logPath}/esLogs/prob.log"
-                                 filePattern="${logPath}/prob-%d{yyyy-MM-dd-mm}-%i.log.gz">
-
-            <!--minLevel：参考https://www.cnblogs.com/yulinlewis/p/10162853.html
-            onMatch:用于配置符合过滤条件的操作 onMismatch:用于配置不符合过滤条件的操作  DENY:拒绝  ACCEPT：接受-->
-            <LevelRangeFilter minLevel="PROB" maxLevel="PROB" onMatch="ACCEPT" onMismatch="DENY"/>
-            <!--输出日志格式 -->
-            <PatternLayout pattern="%msg%n" charset="UTF-8"/>
-            <!--单个日志文件大小限制并引用全局变量-->
-            <Policies>
-                <SizeBasedTriggeringPolicy size="${fileLimit}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="500">
-                <!--Delete:删除匹配到的过期备份文件 -->
-                <!--maxDepth:由于备份文件保存在logs/${moduleName}/info/%d{yyyy-MM}/info-%d{yyyy-MM-dd-HH}-%i.log,所以目录深度设置为 5 -->
-                <Delete basePath="logs" maxDepth="5">
-                    <!--IfFileName:匹配文件名称 -->
-                    <!--glob:匹配2级目录深度下的以.log.gz结尾的备份文件 -->
-                    <IfFileName glob="${moduleName}/**/*prob*.log"/>
-                    <!--IfLastModified:匹配文件修改时间 -->
-                    <!--age:匹配超过180天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="${fileHistoryLimit}"/>
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingRandomAccessFile>
-        <RollingRandomAccessFile name="MSG" fileName="${logPath}/esLogs/msg.log"
-                                 filePattern="${logPath}/msg-%d{yyyy-MM-dd-mm}-%i.log.gz">
-
-            <!--minLevel：参考https://www.cnblogs.com/yulinlewis/p/10162853.html
-            onMatch:用于配置符合过滤条件的操作 onMismatch:用于配置不符合过滤条件的操作  DENY:拒绝  ACCEPT：接受-->
-            <LevelRangeFilter minLevel="MSG" maxLevel="MSG" onMatch="ACCEPT" onMismatch="DENY"/>
-            <!--输出日志格式 -->
-            <PatternLayout pattern="%msg%n" charset="UTF-8"/>
-            <!--单个日志文件大小限制并引用全局变量-->
-            <Policies>
-                <SizeBasedTriggeringPolicy size="${fileLimit}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="500">
-                <!--Delete:删除匹配到的过期备份文件 -->
-                <!--maxDepth:由于备份文件保存在logs/${moduleName}/info/%d{yyyy-MM}/info-%d{yyyy-MM-dd-HH}-%i.log,所以目录深度设置为 5 -->
-                <Delete basePath="logs" maxDepth="5">
-                    <!--IfFileName:匹配文件名称 -->
-                    <!--glob:匹配2级目录深度下的以.log.gz结尾的备份文件 -->
-                    <IfFileName glob="${moduleName}/**/*msg*.log"/>
-                    <!--IfLastModified:匹配文件修改时间 -->
-                    <!--age:匹配超过180天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="${fileHistoryLimit}"/>
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingRandomAccessFile>
-        <RollingRandomAccessFile name="CUSMSG" fileName="${logPath}/esLogs/cusmsg.log"
-                                 filePattern="${logPath}/cusmsg-%d{yyyy-MM-dd-mm}-%i.log.gz">
-
-            <!--minLevel：参考https://www.cnblogs.com/yulinlewis/p/10162853.html
-            onMatch:用于配置符合过滤条件的操作 onMismatch:用于配置不符合过滤条件的操作  DENY:拒绝  ACCEPT：接受-->
-            <LevelRangeFilter minLevel="CUSMSG" maxLevel="CUSMSG" onMatch="ACCEPT" onMismatch="DENY"/>
-            <!--输出日志格式 -->
-            <PatternLayout pattern="%msg%n" charset="UTF-8"/>
-            <!--单个日志文件大小限制并引用全局变量-->
-            <Policies>
-                <SizeBasedTriggeringPolicy size="${fileLimit}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="500">
-                <!--Delete:删除匹配到的过期备份文件 -->
-                <!--maxDepth:由于备份文件保存在logs/${moduleName}/info/%d{yyyy-MM}/info-%d{yyyy-MM-dd-HH}-%i.log,所以目录深度设置为 5 -->
-                <Delete basePath="logs" maxDepth="5">
-                    <!--IfFileName:匹配文件名称 -->
-                    <!--glob:匹配2级目录深度下的以.log.gz结尾的备份文件 -->
-                    <IfFileName glob="${moduleName}/**/*cusmsg*.log"/>
-                    <!--IfLastModified:匹配文件修改时间 -->
-                    <!--age:匹配超过180天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="${fileHistoryLimit}"/>
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingRandomAccessFile>
-
-
 
         <!-- debug-->
         <!--<RollingRandomAccessFile name="FILE-DEBUG" fileName="${logPath}/${moduleName}/debug.log"-->
@@ -319,13 +131,7 @@
             <AppenderRef ref="FILE-ERROR"/>
             <AppenderRef ref="STDOUT"/>
             <!-- 3.添加自定义级别 -->
-            <appender-ref ref="MONEYFLOW"/>
-            <appender-ref ref="USAGEFLOW"/>
-            <appender-ref ref="ASSETFLOW"/>
-            <appender-ref ref="ACTION"/>
-            <appender-ref ref="PROB"/>
-            <appender-ref ref="MSG"/>
-            <appender-ref ref="CUSMSG"/>
+
         </AsyncRoot>
         <!-- additivity=true：接着log上次位置继续打印，false：直接清空log重新打印       -->
         <!-- 自定义 - 只开启本项目的debug级别日志 -->
@@ -333,13 +139,7 @@
             <appender-ref ref="FILE-INFO"/>
             <appender-ref ref="STDOUT"/>
             <!-- 4.添加自定义级别 -->
-            <appender-ref ref="MONEYFLOW"/>
-            <appender-ref ref="USAGEFLOW"/>
-            <appender-ref ref="ASSETFLOW"/>
-            <appender-ref ref="ACTION"/>
-            <appender-ref ref="PROB"/>
-            <appender-ref ref="MSG"/>
-            <appender-ref ref="CUSMSG"/>
+
         </AsyncLogger>
     </loggers>
 </configuration>

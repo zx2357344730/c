@@ -1094,7 +1094,6 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         } else if (resultNum == 1) {
 
-
             return RetResult.jsonResultEncrypt(HttpStatus.OK, PurchaseEnum.NO_CHARGE_USER.getCode(), null);
 
 

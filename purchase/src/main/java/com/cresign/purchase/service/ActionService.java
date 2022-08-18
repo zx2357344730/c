@@ -79,5 +79,6 @@ public interface ActionService {
 
     ApiResponse actionChart(String id_O);
 
+    ApiResponse rePush(String id_O, Integer index, JSONObject tokData) throws IOException;
 
 }
