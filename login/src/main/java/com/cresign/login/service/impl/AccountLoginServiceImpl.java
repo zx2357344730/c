@@ -9,7 +9,7 @@ import com.cresign.login.service.AccountLoginService;
 import com.cresign.login.utils.LoginResult;
 import com.cresign.tools.advice.QdKey;
 import com.cresign.tools.advice.RetResult;
-import com.cresign.tools.advice.RsaUtilF;
+//import com.cresign.tools.advice.RsaUtilF;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
@@ -172,7 +172,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     public String getHdAndQdKey(String qdKey) {
         QdKey.setClient_Public_Key(qdKey);
         System.out.println("前端公钥:");
-        System.out.println(QdKey.getClient_Public_Key());
+//        System.out.println(QdKey.getClient_Public_Key());
 //        String publicKey = RsaUtilF.getPublicKey();
         String publicKey = "RsaUtilF.getPublicKey()";
         System.out.println("后端公钥:");

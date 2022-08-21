@@ -22,7 +22,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @NoArgsConstructor//注解在类上，为类提供一个无参的构造方法
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class OrderInfo {
+public class OrderInfo implements Cloneable{
 
     public OrderInfo(String id_C, String id_CB, String id_CP, String id_CBP, String id_OP,
                      String ref, String refB, String grp, String grpB, Double priority,
@@ -59,7 +59,12 @@ public class OrderInfo {
         return OrderInfo.Hod.instance;
     }
 
-//    private String id;
+    @Override
+    public OrderInfo clone() throws CloneNotSupportedException {
+        return (OrderInfo) super.clone();
+    }
+
+    //    private String id;
 
     /**
      * id

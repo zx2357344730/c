@@ -39,18 +39,17 @@ public class InitServiceImpl implements InitService {
     private RetResult retResult;
 
     @Override
-    public ApiResponse getInitById(String lang, Integer ver,String qdKey,String uuId,String isDecrypt) {
+    public ApiResponse getInitById(String lang, Integer ver,String qdKey,String uuId) {
         System.out.println("uuId:"+uuId);
         Query query = new Query(new Criteria("_id").is(lang));
 
         query.fields().include("ver");
         //结果
         Init initVerCheck = mongoTemplate.findOne(query, Init.class);
+        System.out.println(ver);
 
-        if (ver.equals(initVerCheck.getVer()))
-        {
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.ALREADY_LOCAL.getCode(), "");
-        }
+
+
 
         JSONObject re = new JSONObject();
         re.put("qdKey",qdKey);
@@ -60,18 +59,13 @@ public class InitServiceImpl implements InitService {
         assert stringMap != null;
         re.put("privateKey",stringMap.get("privateKey"));
         re.put("publicKey",stringMap.get("publicKey"));
-        /*
-        TimeUnit.SECONDS:秒
-        TimeUnit.MINUTES：分
-        TimeUnit.HOURS：时
-        TimeUnit.DAYS：日
-        TimeUnit.MILLISECONDS：毫秒
-        TimeUnit.MILLISECONDS：微秒
-        TimeUnit.NANOSECONDS：纳秒
-        */
-        redisTemplate1.opsForValue().set((RED_KEY + uuId),JSON.toJSONString(re),3, TimeUnit.DAYS);//过期时间2天
-//        redisTemplate1.opsForValue().set(RED_KEY + uuId,JSON.toJSONString(re));
-//        redisTemplate1.expire((RED_KEY + uuId),1000 , TimeUnit.MILLISECONDS);//设置过期时间
+        redisTemplate1.opsForValue().set((RED_KEY + uuId),JSON.toJSONString(re),3, TimeUnit.DAYS);//过期时间3天
+
+        if (ver.equals(initVerCheck.getVer()))
+        {
+            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.ALREADY_LOCAL.getCode(), stringMap.get("publicKey"));
+        }
+
         // 判断 redis 中是否有这个键
         if (redisTemplate1.opsForHash().hasKey("initData", lang)) {
 
@@ -87,12 +81,12 @@ public class InitServiceImpl implements InitService {
 //
 //                redisTemplate1.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
 
-            if (isDecrypt.equals("false")) {
-                init.put("hdKey", HD_KEY);
-            } else {
+//            if (isDecrypt.equals("false")) {
+//                init.put("hdKey", HD_KEY);
+//            } else {
                 init.put("hdKey", re.getString("publicKey"));
-            }
-            System.out.println("这里返回-1:");
+//            }
+            System.out.println("这里返回-1:"+init.getString("hdKey"));
             System.out.println(JSON.toJSONString(init));
             return retResult.ok(CodeEnum.OK.getCode(), init);
 //            }
@@ -106,11 +100,11 @@ public class InitServiceImpl implements InitService {
             redisTemplate1.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
 
             assert init != null;
-            if (isDecrypt.equals("false")) {
-                init.setHdKey(HD_KEY);
-            } else {
+//            if (isDecrypt.equals("false")) {
+//                init.setHdKey(HD_KEY);
+//            } else {
                 init.setHdKey(re.getString("publicKey"));
-            }
+//            }
             System.out.println("这里返回-2:");
             System.out.println(JSON.toJSONString(init));
             return retResult.ok(CodeEnum.OK.getCode(), init);

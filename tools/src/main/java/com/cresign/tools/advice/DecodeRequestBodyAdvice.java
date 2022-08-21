@@ -129,14 +129,14 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
          */
         public String easpString(String requestData) {
 
-//            System.out.println("easpString:");
-//            System.out.println(requestData);
+            System.out.println("easpString:");
+            System.out.println(requestData);
 
-//            System.out.println("headers:");
+            System.out.println("headers:");
             String uuId = Objects.requireNonNull(this.getHeaders().get("uuId")).get(0);
-            String isDecrypt = Objects.requireNonNull(this.getHeaders().get("isDecrypt")).get(0);
-//            System.out.println("uuId:");
-//            System.out.println(uuId);
+//            String isDecrypt = Objects.requireNonNull(this.getHeaders().get("isDecrypt")).get(0);
+            System.out.println("uuId:");
+            System.out.println(uuId);
 
 //            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
 //            System.out.println("tokData:");
@@ -155,7 +155,7 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                 if(StringUtils.isEmpty(data) || StringUtils.isEmpty(encrypted)){
                     throw new RuntimeException("参数【requestData】缺失异常！");
                 }else{
-//                    System.out.println(JSON.toJSONString(requestMap));
+                    System.out.println(JSON.toJSONString(requestMap));
                     String content ;
                     String aesKey;
                     JSONObject re = JSONObject.parseObject(redisTemplate1.opsForValue().get(RED_KEY+uuId));
@@ -163,14 +163,22 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                         throw  new RuntimeException("id对应秘钥为空!");
                     }
 
+//                    System.out.println("***********************************" + encodedData.length);
+//                    String encodeData = bytesToString(encodedData);
+//                    System.out.println("加密后文字：\r\n" + encodeData);
+//                    byte[] dataq = stringToBytes(encodeData));
+//                    System.out.println("***********************************" + dataq.length);
+//                    byte[] decodedData = RSAUtil.decryptByPrivateKey(encodedData, privateKey);
+//                    String target = new String(decodedData);
+//                    System.out.println("解密后文字: \r\n" + target);
 //                    System.out.println(JSON.toJSONString(re));
 
                     String server_private_key;
-                    if (isDecrypt.equals("false")) {
-                        server_private_key = private_key;
-                    } else {
+//                    if (isDecrypt.equals("false")) {
+//                        server_private_key = private_key;
+//                    } else {
                         server_private_key = re.getString("privateKey");
-                    }
+//                    }
 
 //                    try {
 ////                        aseKey = RSAUtils.decryptDataOnJava(encrypted,server_private_key);
@@ -183,16 +191,21 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
 //                        throw  new RuntimeException("参数【aseKey】解析异常！");
 //                    }
 
-//                    System.out.println("私钥:");
-//                    System.out.println(server_private_key);
-//                    System.out.println("公钥:");
-//                    System.out.println(re.getString("publicKey"));
+                    System.out.println("私钥:");
+                    System.out.println(server_private_key);
+                    System.out.println("公钥:");
+                    System.out.println(re.getString("publicKey"));
+                    System.out.println("encryped");
+                    System.out.println(Base64.decodeBase64(encrypted));
                     byte[] plaintext ;
                     try {
+
+//                        plaintext = RSAUtils.decryptByPrivateKey(Base64.decodeBase64(encrypted), server_private_key);
+
                         plaintext = RsaUtilF.decryptByPrivateKey(Base64.decodeBase64(encrypted), server_private_key);
                         System.out.println("这里成功");
                     } catch (Exception e) {
-//                        e.printStackTrace();
+                        e.printStackTrace();
                         throw  new RuntimeException("参数【aseKey】解析异常！");
                     }
 //                    System.out.println("pla:");

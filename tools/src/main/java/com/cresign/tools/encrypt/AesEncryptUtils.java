@@ -1,6 +1,5 @@
 package com.cresign.tools.encrypt;
 
-import com.cresign.tools.advice.AesUtil;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;
@@ -15,8 +14,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class AesEncryptUtils {
 
     //可配置到Constant中，并读取配置文件注入
-//    private static final String KEY = "abcdef0123456789";
-    private static final String KEY = AesUtil.getKey();
+    private static final String KEY = "abcdef0123456789";
 
     //参数分别代表 算法名称/加密模式/数据填充方式
     private static final String ALGORITHMSTR = "AES/ECB/PKCS5Padding";

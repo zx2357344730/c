@@ -334,6 +334,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //        JSONObject stringMap = aes(logContent,key);
 //        stringMap.put("en",true);
 
+
         if ("link".equals(logContent.getSubType())) {
             //每次响应之前随机获取AES的key，加密data数据
             String key = AesUtil.getKey();
@@ -384,7 +385,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                     }
                 }
             }
-//            sendMsgToMQ(null,logContent);
         } else {
             JSONArray id_Us = new JSONArray();
             JSONArray cidArray = new JSONArray();
@@ -398,20 +398,16 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             if (id_CS != null && !id_C.equals(id_CS)) {
                 prepareMqUserInfo(id_CS, logContent, id_Us, cidArray);
             }
-            // 127.0.0.1 local test switching
+//            // 127.0.0.1 local test switching
             localSending(id_Us, logContent);
             // 调用检测id_U在不在本服务并发送信息方法
-            sendMsgToMQ(id_Us,logContent);
+//            sendMsgToMQ(id_Us,logContent);
+//            //4. regular send to ES 1 time
+//              sendMsgToEs(logContent);
+//            //5. regular send to PUSH to everybody who registered id_APP - batch push
+//            sendMsgToPush(cidArray,logContent);
         }
 
-//        // 调用检测id_U在不在本服务并发送信息方法
-//        sendMsgToMQ(id_Us,logContent);
-//
-//        //4. regular send to ES 1 time
-//        sendMsgToEs(logContent);
-//
-//        //5. regular send to PUSH to everybody who registered id_APP - batch push
-//        sendMsgToPush(cidArray,logContent);
 
     }
 

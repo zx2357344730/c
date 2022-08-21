@@ -1,4 +1,4 @@
-package com.cresign.tools.advice;
+package com.cresign.chat.utils;
 
 
 import com.alibaba.fastjson.JSONObject;
@@ -58,74 +58,33 @@ public class RsaUtilF {
      */
     private static final int INITIALIZE_LENGTH = 1024;
 
-//    /**
-//     * 后端RSA的密钥对(公钥和私钥)Map，由静态代码块赋值
-//     */
-//    private static final Map<String, Object> genKeyPair = new HashMap<>();
+    /**
+     * 后端RSA的密钥对(公钥和私钥)Map，由静态代码块赋值
+     */
+    private static final Map<String, Object> genKeyPair = new HashMap<>();
 
-//    private static String publicKey;
-//    private static String privateKey;
-//    public static String getPublicKeyX(){
-//        return publicKey;
-//    }
-//    public static String getPrivateKeyX(){
-//        return privateKey;
-//    }
-
-//    static {
-//        try {
-//            System.out.println("进入生成钥匙对:");
-//            genKeyPair.putAll(genKeyPair());
-//            publicKey = getPublicKey();
-//            privateKey = getPrivateKey();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-//    /**
-//     * 生成密钥对(公钥和私钥)
-//     */
-//    public static Map<String, Object> genKeyPair(){
-//        KeyPairGenerator keyPairGen;
-//        try {
-//            keyPairGen = KeyPairGenerator.getInstance(KEY_ALGORITHM);
-//        } catch (NoSuchAlgorithmException e) {
-////            e.printStackTrace();
-//            return null;
-//        }
-//        keyPairGen.initialize(INITIALIZE_LENGTH);
-//        KeyPair keyPair = keyPairGen.generateKeyPair();
-//        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-//        RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-//        Map<String, Object> keyMap = new HashMap<>(2);
-//        //公钥
-//        keyMap.put(PUBLIC_KEY, publicKey);
-//        //私钥
-//        keyMap.put(PRIVATE_KEY, privateKey);
-//        return keyMap;
-//    }
+    static {
+        try {
+            genKeyPair.putAll(genKeyPair());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 生成密钥对(公钥和私钥)
      */
-    public static Map<String, String> genKeyPairX(){
-        KeyPairGenerator keyPairGen;
-        try {
-            keyPairGen = KeyPairGenerator.getInstance(KEY_ALGORITHM);
-        } catch (NoSuchAlgorithmException e) {
-//            e.printStackTrace();
-            return null;
-        }
+    private static Map<String, Object> genKeyPair() throws Exception {
+        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(KEY_ALGORITHM);
         keyPairGen.initialize(INITIALIZE_LENGTH);
         KeyPair keyPair = keyPairGen.generateKeyPair();
         RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
         RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-        Map<String, String> keyMap = new HashMap<>(2);
+        Map<String, Object> keyMap = new HashMap<>(2);
         //公钥
-        keyMap.put(PUBLIC_KEY, getPublicKeyX(publicKey));
+        keyMap.put(PUBLIC_KEY, publicKey);
         //私钥
-        keyMap.put(PRIVATE_KEY, getPublicKeyX(privateKey));
+        keyMap.put(PRIVATE_KEY, privateKey);
         return keyMap;
     }
 
@@ -140,8 +99,6 @@ public class RsaUtilF {
         byte[] keyBytes = Base64.decodeBase64(privateKey);
         PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
-        System.out.println("all working");
-
         Key privateK = keyFactory.generatePrivate(pkcs8KeySpec);
 
         //设置加密、填充方式
@@ -155,11 +112,8 @@ public class RsaUtilF {
             并改成
             Cipher cipher = Cipher.getInstance(ALGORITHMS ,new BouncyCastleProvider());
          */
-        System.out.println("all working");
-
         Cipher cipher = Cipher.getInstance(ALGORITHMS);
         cipher.init(Cipher.DECRYPT_MODE, privateK);
-        System.out.println("all working"+cipher);
 
         //分段进行解密操作
         return encryptAndDecryptOfSubsection(encryptedData, cipher, MAX_DECRYPT_BLOCK);
@@ -196,35 +150,19 @@ public class RsaUtilF {
         return encryptAndDecryptOfSubsection(data, cipher, MAX_ENCRYPT_BLOCK);
     }
 
-//    /**
-//     * 获取私钥
-//     */
-//    public static String getPrivateKey() {
-//        Key key = (Key) genKeyPair.get(PRIVATE_KEY);
-//        return Base64.encodeBase64String(key.getEncoded());
-//    }
-//
-//    /**
-//     * 获取公钥
-//     */
-//    public static String getPublicKey() {
-//        Key key = (Key) genKeyPair.get(PUBLIC_KEY);
-//        return Base64.encodeBase64String(key.getEncoded());
-//    }
-
     /**
      * 获取私钥
      */
-    public static String getPrivateKeyX(Key key) {
-//        Key key = (Key) genKeyPair.get(PRIVATE_KEY);
+    public static String getPrivateKey() {
+        Key key = (Key) genKeyPair.get(PRIVATE_KEY);
         return Base64.encodeBase64String(key.getEncoded());
     }
 
     /**
      * 获取公钥
      */
-    public static String getPublicKeyX(Key key) {
-//        Key key = (Key) genKeyPair.get(PUBLIC_KEY);
+    public static String getPublicKey() {
+        Key key = (Key) genKeyPair.get(PUBLIC_KEY);
         return Base64.encodeBase64String(key.getEncoded());
     }
 
@@ -236,8 +174,6 @@ public class RsaUtilF {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         int offSet = 0;
         byte[] cache;
-        System.out.println("all working");
-
         int i = 0;
         // 对数据分段加密
         while (inputLen - offSet > 0) {
@@ -250,58 +186,54 @@ public class RsaUtilF {
             i++;
             offSet = i * encryptBlock;
         }
-        System.out.println("all working"+out);
-
         byte[] toByteArray = out.toByteArray();
         out.close();
-        System.out.println("all working"+toByteArray);
-
         return toByteArray;
     }
 
-//    /***
-//     * 利用Apache的工具类实现SHA-256加密
-//     * ##param str 加密后的报文
-//     * @return 加密结果
-//     */
-//    public static String getSHA256Str(String str){
-//        MessageDigest messageDigest;
-//        String encdeStr = "";
-//        try {
-//            messageDigest = MessageDigest.getInstance("SHA-256");
-//            byte[] hash = messageDigest.digest(str.getBytes(StandardCharsets.UTF_8));
-//            encdeStr = Hex.encodeHexString(hash);
-//        } catch (NoSuchAlgorithmException e) {
-//            e.printStackTrace();
-//        }
-//        return encdeStr;
-//    }
+    /***
+     * 利用Apache的工具类实现SHA-256加密
+     * ##param str 加密后的报文
+     * @return 加密结果
+     */
+    public static String getSHA256Str(String str){
+        MessageDigest messageDigest;
+        String encdeStr = "";
+        try {
+            messageDigest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = messageDigest.digest(str.getBytes(StandardCharsets.UTF_8));
+            encdeStr = Hex.encodeHexString(hash);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return encdeStr;
+    }
+
+    public static LogFlow encryptionSend(JSONObject map, String privateKeyJava){
+        // AES加密后的数据
+        String data = map.getString("data");
+        // 后端RSA公钥加密后的AES的key
+        String aesKey = map.getString("aesKey");
+        String decrypt = "";
+        // 后端私钥解密的到AES的key
+        try {
+            byte[] plaintext = RsaUtilF.decryptByPrivateKey(Base64.decodeBase64(aesKey)
+                    , privateKeyJava);
+            aesKey = new String(plaintext);
+            //RSA解密出来字符串多一对双引号
+            aesKey = aesKey.substring(1, aesKey.length() - 1);
+            //AES解密得到明文data数据
+            decrypt = AesUtil.decrypt(data, aesKey);
+
+//            LogFlow log1 = JSONObject.parseObject(decrypt,LogFlow.class);
 //
-//    public static LogFlow encryptionSend(JSONObject map, String privateKeyJava){
-//        // AES加密后的数据
-//        String data = map.getString("data");
-//        // 后端RSA公钥加密后的AES的key
-//        String aesKey = map.getString("aesKey");
-//        String decrypt = "";
-//        // 后端私钥解密的到AES的key
-//        try {
-//            byte[] plaintext = RsaUtilF.decryptByPrivateKey(Base64.decodeBase64(aesKey)
-//                    , privateKeyJava);
-//            aesKey = new String(plaintext);
-//            //RSA解密出来字符串多一对双引号
-//            aesKey = aesKey.substring(1, aesKey.length() - 1);
-//            //AES解密得到明文data数据
-//            decrypt = AesUtil.decrypt(data, aesKey);
-//
-////            LogFlow log1 = JSONObject.parseObject(decrypt,LogFlow.class);
-////
-////            logService.sendLogWSU(log1);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        return JSONObject.parseObject(decrypt,LogFlow.class);
-//
-//    }
+//            logService.sendLogWSU(log1);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return JSONObject.parseObject(decrypt,LogFlow.class);
+
+    }
 }

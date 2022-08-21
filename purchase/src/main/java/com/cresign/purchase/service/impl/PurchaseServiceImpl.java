@@ -81,8 +81,6 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Autowired
     private RetResult retResult;
 
-    private static final String QD_Key = "qdKey";
-
     /**
      * 新增stripe的产品和价格
      *

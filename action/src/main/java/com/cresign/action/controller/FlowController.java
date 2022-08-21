@@ -71,6 +71,12 @@ public class FlowController {
             return flowService.dgUpdatePartInfo(id_P,id_C);
         }
 
+        @SecurityParameter
+        @PostMapping("/v1/prodPart")
+        public ApiResponse prodPart(@RequestBody JSONObject json) {
+            return flowService.prodPart(json.getString("id_P"));
+        }
+
         /**
          * 根据prodID进行递归,Es数据库2
          * ##Params: map	请求参数

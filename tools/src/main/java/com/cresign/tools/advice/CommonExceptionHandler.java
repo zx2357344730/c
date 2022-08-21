@@ -32,6 +32,7 @@ public class CommonExceptionHandler {
     private LocalMessage localMessage;
 
 
+
     /**
      * 捕获自定义异常返回出去给前端
      * ##Params: reEx
@@ -60,13 +61,14 @@ public class CommonExceptionHandler {
                     .body(JSON.toJSONString(map));
         }
 
+        // code == 500
         map.put("code", CodeEnum.INTERNAL_SERVER_ERROR.getCode());
 
         map.put("message", "");
 
-        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
-
-        log.error(JSON.toJSONString(map));
+//        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
+        map.put("des", JSON.toJSONString(map));
+//        log.error(JSON.toJSONString(map));
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(JSON.toJSONString(map));
 
@@ -95,8 +97,8 @@ public class CommonExceptionHandler {
 
             map.put("tid",reEx.getTid());
 
-            map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
-
+//            map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
+            map.put("des", reEx.getDes());
             return ResponseEntity.status(reEx.getStatus())
                     .body(JSON.toJSONString(map));
         }
@@ -105,9 +107,10 @@ public class CommonExceptionHandler {
 
         map.put("message", "");
 
-        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
+//        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
+        map.put("des", JSON.toJSONString(map));
 
-        log.error(JSON.toJSONString(map));
+//        log.error(JSON.toJSONString(map));
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(JSON.toJSONString(map));
 
@@ -130,19 +133,23 @@ public class CommonExceptionHandler {
 
             map.put("message", jsonObject.getString("message"));
 
-            map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
+//            map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
+            map.put("des", "");
+
 
             return ResponseEntity.status(e.status())
                     .body(JSON.toJSONString(map));
         }
 
-        map.put("code", CodeEnum.INTERNAL_SERVER_ERROR.getCode());
+        map.put("code", CodeEnum.OK.getCode());
 
-        map.put("message", "");
+        map.put("message", "feignException");
 
-        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
+//        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
+        map.put("des", JSON.toJSONString(e));
 
-        log.error(JSON.toJSONString(map));
+
+//        log.error(JSON.toJSONString(map));
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(JSON.toJSONString(map));
 

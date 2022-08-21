@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 )
 public interface DetailsClient {
 
-    @PostMapping("/account/v1/updateOStockPi")
+    @PostMapping("/storage/v1/updateOStockPi")
     Integer updateOStockPi(JSONObject reqJson);
 
 }

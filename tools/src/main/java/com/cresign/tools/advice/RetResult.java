@@ -241,7 +241,7 @@ public class RetResult {
 //            System.out.println(JSON.toJSONString(request.getParts()));
             String result = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(body);
             String uuId = request.getHeader("uuId");
-            String isDecrypt = request.getHeader("isDecrypt");
+//            String isDecrypt = request.getHeader("isDecrypt");
 //            System.out.println("加密的=uuId:");
 //            System.out.println(uuId);
 //            uuId = "e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb";
@@ -263,13 +263,13 @@ public class RetResult {
 //                String encrypted = RsaTest.publicEncrypt(aseKey,RsaTest.getPublicKey(client_Public_Key));
 
                 String encrypted;
-                if (isDecrypt.equals("false")) {
-                    encrypted = Base64.encodeBase64String(RsaUtilF.
-                            encryptByPublicKey(aseKey.getBytes(), QD_Key));
-                } else {
+//                if (isDecrypt.equals("false")) {
+//                    encrypted = Base64.encodeBase64String(RsaUtilF.
+//                            encryptByPublicKey(aseKey.getBytes(), QD_Key));
+//                } else {
                     encrypted = Base64.encodeBase64String(RsaUtilF.
                             encryptByPublicKey(aseKey.getBytes(), qdKey));
-                }
+//                }
 
                 // aes加密
 //                String requestData = AesEncryptUtils.encrypt(result, aseKey);

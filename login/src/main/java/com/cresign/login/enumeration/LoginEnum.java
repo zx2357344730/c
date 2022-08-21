@@ -77,8 +77,6 @@ public enum LoginEnum {
     // 短信发送成功
     SMS_SEND_SUCCESS("045004"),
 
-
-
     ;
     /**
      * 异常状态码

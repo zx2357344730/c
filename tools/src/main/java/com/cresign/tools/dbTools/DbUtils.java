@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.LogFlow;
@@ -38,6 +39,7 @@ import org.springframework.data.mongodb.core.query.Field;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -908,5 +910,44 @@ public class DbUtils {
 
     }
 
-
+    public Boolean checkOrder(JSONObject jsonObj, String objKey, List<Integer> arrayIndex, List<String> arrayKey) {
+        if (jsonObj == null || jsonObj.getJSONArray(objKey) == null) {
+            return false;
+        }
+        JSONArray array = jsonObj.getJSONArray(objKey);
+        //遍历array
+        if (arrayIndex == null) {
+            for (int i = 0; i < array.size(); i++) {
+                JSONObject json = array.getJSONObject(i);
+                if (json == null) {
+                    return false;
+                } else {
+                    for (int j = 0; j < arrayKey.size(); j++) {
+                        String key = arrayKey.get(j);
+                        if (json.get(key) == null) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        } else {
+            int size = arrayIndex.size();
+            for (int i = 0; i < size; i++) {
+                Integer index = arrayIndex.get(i);
+                if (index >= size || array.getJSONObject(index) == null) {
+                    return false;
+                } else {
+                    JSONObject json = array.getJSONObject(index);
+                    for (int j = 0; j < arrayKey.size(); j++) {
+                        String key = arrayKey.get(j);
+                        if (json.get(key) == null) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+    }
 }
