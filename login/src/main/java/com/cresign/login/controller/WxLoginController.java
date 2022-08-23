@@ -119,6 +119,13 @@ public class WxLoginController {
 
     }
 
+    /**
+     * 验证appId，并且返回AUN—ID
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @SecurityParameter
     @PostMapping("/v1/verificationAUN")
     public ApiResponse verificationAUN(@RequestBody JSONObject reqJson) {

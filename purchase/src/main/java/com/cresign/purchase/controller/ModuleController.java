@@ -29,34 +29,62 @@ public class ModuleController {
     @Resource
     private HttpServletRequest request;
 
-    @PostMapping("/v1/testFy")
+    /**
+     * 单翻译 - 只能翻译一个字段
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
+    @PostMapping("/v1/singleTranslate")
     @SecurityParameter
-    public ApiResponse testFy(@RequestBody JSONObject reqJson){
+    public ApiResponse singleTranslate(@RequestBody JSONObject reqJson){
         JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.testFy(reqJson.getJSONObject("data"));
+        return moduleService.singleTranslate(reqJson.getJSONObject("data"));
     }
 
-    @PostMapping("/v1/testFy2")
+    /**
+     * 多翻译 - 按照指定格式请求，可以翻译所有的字段
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
+    @PostMapping("/v1/manyTranslate")
     @SecurityParameter
-    public ApiResponse testFy2(@RequestBody JSONObject reqJson){
+    public ApiResponse manyTranslate(@RequestBody JSONObject reqJson){
         JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.testFy2(reqJson.getJSONObject("data"));
+        return moduleService.manyTranslate(reqJson.getJSONObject("data"));
     }
 
-    @PostMapping("/v1/lSprod2lBprod")
+    /**
+     * es的lsprod转lbprod
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
+    @PostMapping("/v1/lSProdTurnLBProd")
     @SecurityParameter
-    public ApiResponse lSprod2lBprod(@RequestBody JSONObject reqJson){
+    public ApiResponse lSProdTurnLBProd(@RequestBody JSONObject reqJson){
 //        JSONObject tokData = getTokenOfUserId.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"t",1);
         reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.lSprod2lBprod(
+        return moduleService.lSProdTurnLBProd(
                 reqJson.getString("id_P")
                 ,reqJson.getString("id_C")
                 ,reqJson.getBoolean("isMove"));
     }
 
+    /**
+     * 新增或删除用户的模块使用权
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @PostMapping("/v1/modSetUser")
     @SecurityParameter
     public ApiResponse modSetUser(@RequestBody JSONObject reqJson){
@@ -67,6 +95,13 @@ public class ModuleController {
                 ,reqJson.getJSONObject("objUser"));
     }
 
+    /**
+     * 根据公司编号操作公司资产的模块信息
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @PostMapping("/v1/modSetControl")
     @SecurityParameter
     public ApiResponse modSetControl(@RequestBody JSONObject reqJson){
@@ -77,6 +112,13 @@ public class ModuleController {
                 ,reqJson.getJSONObject("objMod"));
     }
 
+    /**
+     * 根据id_C获取模块信息
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @PostMapping("/v1/modGetControl")
     @SecurityParameter
     public ApiResponse modGetControl(@RequestBody JSONObject reqJson){
@@ -85,6 +127,13 @@ public class ModuleController {
         return moduleService.modGetControl(reqJson.getString("id_C"));
     }
 
+    /**
+     * 建立连接关系
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @PostMapping("/v1/modAddLSBComp")
     @SecurityParameter
     public ApiResponse modAddLSBComp(@RequestBody JSONObject can){

@@ -13,6 +13,14 @@ import java.io.IOException;
  */
 public interface WxLoginService {
 
+    /**
+     * 验证appId，并且返回AUN—ID
+     * @param id_APP	应用编号
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     ApiResponse verificationAUN(String id_APP);
 
     /**

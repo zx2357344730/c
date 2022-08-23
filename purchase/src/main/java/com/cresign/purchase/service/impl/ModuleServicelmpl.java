@@ -77,8 +77,16 @@ public class ModuleServicelmpl implements ModuleService {
     private static final String secretId = "AKIDwjMl15uUt53mFUVGk39zaw4ydAWfaS8a";
     private static final String secretKey = "HLEsHSRChx1sTtELCpFXfZGk14tVw97w";
 
+    /**
+     * 单翻译 - 只能翻译一个字段
+     * @param data	需要翻译的数据
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @Override
-    public ApiResponse testFy(JSONObject data){
+    public ApiResponse singleTranslate(JSONObject data){
         try{
 //            JSONObject data = can.getJSONObject("data");
             String cn = data.getString("cn");
@@ -111,8 +119,16 @@ public class ModuleServicelmpl implements ModuleService {
         return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
     }
 
+    /**
+     * 多翻译 - 按照指定格式请求，可以翻译所有的字段
+     * @param data	需要翻译的数据
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @Override
-    public ApiResponse testFy2(JSONObject data) {
+    public ApiResponse manyTranslate(JSONObject data) {
         try{
 //            JSONObject data = can.getJSONObject("data");
             List<String> key = new ArrayList<>(data.keySet());
@@ -162,21 +178,36 @@ public class ModuleServicelmpl implements ModuleService {
         return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
     }
 
+    /**
+     * es的lsprod转lbprod
+     * @param id_P	产品编号
+     * @param id_C	公司编号
+     * @param isMove	是否删除lsprod
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @Override
-    public ApiResponse lSprod2lBprod(String id_P,String id_C,Boolean isMove) {
+    public ApiResponse lSProdTurnLBProd(String id_P,String id_C,Boolean isMove) {
 //        String id_P = can.getString("id_P");
 //        String id_C = can.getString("id_C");
 //        Boolean isMove = can.getBoolean("isMove");
 
+        // 获取es的lsprod信息
         JSONArray esQuery = coupaUtil.getEsQuery("lsprod", Collections.singletonList("id_P")
                 , Collections.singletonList(id_P));
+        // 获取查询es的第一个信息
         JSONObject prodRe = esQuery.getJSONObject(0);
-
+        // 获取lsprod具体信息
         JSONObject lsprod = prodRe.getJSONObject("map");
+        // 获取lsprod对应es的编号
         String esId = prodRe.getString("esId");
         System.out.println(JSON.toJSONString(lsprod));
         System.out.println(esId);
+        // 判断是否删除lsprod
         if (isMove) {
+            // 放入es编号，获取删除结果
             Integer reI = coupaUtil.delEsById("lsprod", esId);
             if (reI != 0) {
                 System.out.println("删除lsprod出现异常");
@@ -187,6 +218,7 @@ public class ModuleServicelmpl implements ModuleService {
 //                coupaUtil.updateES_lSProd(JSONObject.parseObject(JSON.toJSONString(lsprod), lSProd.class));
 //            }
         }
+        // 根据lsprod创建lbprod
         lBProd lbprod = new lBProd(
                 getStrIsNull(lsprod.getString("id_P")), id_C
                 , getStrIsNull(lsprod.getString("id_CP")), id_C
@@ -197,11 +229,20 @@ public class ModuleServicelmpl implements ModuleService {
                 , getStrIsNull(lsprod.getString("ref")), getStrIsNull(lsprod.getString("refB"))
                 , getStrIsNull(lsprod.getString("pic"))
                 , lsprod.getInteger("lUT")==null?0:lsprod.getInteger("lUT"));
+        // 写入lbprod信息
         coupaUtil.updateES_lBProd(lbprod);
 
         return retResult.ok(CodeEnum.OK.getCode(), "请求成功");
     }
 
+    /**
+     * 判断str为null方法
+     * @param str	字符串
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     private String getStrIsNull(String str){
         if (null == str) {
             return "";
@@ -210,47 +251,74 @@ public class ModuleServicelmpl implements ModuleService {
         }
     }
 
+    /**
+     * 新增或删除用户的模块使用权
+     * @param id_C	公司编号
+     * @param objUser	用户信息集合
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @Override
     public ApiResponse modSetUser(String id_C,JSONObject objUser) {
 //        String id_C = can.getString("id_C");
-        JSONObject re = new JSONObject();
+        JSONObject result = new JSONObject();
 //        JSONArray reAddArr = userT(can.getJSONObject("objUser"), id_C);
-        JSONArray reAddArr = userT(objUser, id_C);
+        // 调用核心方法，获取返回结果
+        JSONArray reAddArr = addOrDelUserModCore(objUser, id_C);
         if (reAddArr.size() > 0) {
-            re.put("type",1);
-            re.put("reAddArr",reAddArr);
+            result.put("type",1);
+            result.put("reAddArr",reAddArr);
         } else {
-            re.put("type",0);
+            result.put("type",0);
         }
-        return retResult.ok(CodeEnum.OK.getCode(), re);
+        return retResult.ok(CodeEnum.OK.getCode(), result);
     }
 
+    /**
+     * 根据公司编号操作公司资产的模块信息
+     * @param id_C  公司编号
+     * @param objModQ   操作的模块信息
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @Override
     public ApiResponse modSetControl(String id_C,JSONObject objModQ) {
 //        String id_C = can.getString("id_C");
-        JSONObject cont = getCont(id_C);
-        Integer sta = cont.getInteger("sta");
-        if (0 == sta) {
+        // 调用方法获取公司模块信息
+        JSONObject compAssetMod = getCompAssetMod(id_C);
+        // 获取错误状态，为0是没有错误
+        Integer status = compAssetMod.getInteger("status");
+        if (0 == status) {
 //            boolean isC = false;
-            JSONArray reArr = new JSONArray();
-            JSONObject control = cont.getJSONObject("control");
-            String assetId = cont.getString("assetId");
+            // 定义存储错误信息json集合
+            JSONArray errList = new JSONArray();
+            JSONObject control = compAssetMod.getJSONObject("control");
+            String assetId = compAssetMod.getString("assetId");
 //            JSONObject objModQ = can.getJSONObject("objMod");
             JSONObject objMod = control.getJSONObject("objMod");
+            // 遍历公司模块信息
             objModQ.keySet().forEach(k -> {
-                JSONObject js = objModQ.getJSONObject(k);
-                String type = js.getString("type");
+                // 根据模块键获取模块信息
+                JSONObject mod = objModQ.getJSONObject(k);
+                // 获取操作状态
+                String type = mod.getString("type");
 //                String key = js.getString("key");
                 if ("add".equals(type)) {
-                    JSONObject val = js.getJSONObject("val");
+                    // 新增模块信息
+                    JSONObject val = mod.getJSONObject("val");
                     objMod.put(k,val);
                 } else if ("del".equals(type)) {
+                    // 删除模块信息
                     objMod.remove(k);
                 } else {
                     JSONObject re = new JSONObject();
                     re.put("key",k);
                     re.put("err","修改状态为空");
-                    reArr.add(re);
+                    errList.add(re);
                 }
             });
             control.put("objMod",objMod);
@@ -259,32 +327,63 @@ public class ModuleServicelmpl implements ModuleService {
             // 设置字段数据
             mapKey.put("control",control);
             coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
-            JSONObject re = new JSONObject();
-            if (reArr.size() > 0) {
-                re.put("type",1);
-                re.put("reArr",reArr);
+            JSONObject result = new JSONObject();
+            if (errList.size() > 0) {
+                result.put("type",1);
+                result.put("errList",errList);
             } else {
-                re.put("type",0);
+                result.put("type",0);
             }
-            return retResult.ok(CodeEnum.OK.getCode(), re);
+            return retResult.ok(CodeEnum.OK.getCode(), result);
         } else {
-            return reSta(sta);
+            return errResult(status);
         }
     }
 
+    /**
+     * 根据id_C获取模块信息
+     * @param id_C	公司编号
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @Override
     public ApiResponse modGetControl(String id_C) {
 //        String id_C = can.getString("id_C");
-        JSONObject cont = getCont(id_C);
-        Integer sta = cont.getInteger("sta");
-        if (0 == sta) {
-            JSONObject control = cont.getJSONObject("control");
+        // 调用方法获取公司模块信息
+        JSONObject compAssetMod = getCompAssetMod(id_C);
+        // 获取错误状态，为0是没有错误
+        Integer status = compAssetMod.getInteger("status");
+        if (0 == status) {
+            JSONObject control = compAssetMod.getJSONObject("control");
             return retResult.ok(CodeEnum.OK.getCode(), control);
         } else {
-            return reSta(sta);
+            return errResult(status);
         }
     }
 
+    /**
+     * 建立连接关系
+     * @param id_C  公司编号
+     * @param id_CP 公司编号？
+     * @param id_CB 供应商编号
+     * @param id_CBP 供应商编号？
+     * @param wrdNC 公司名称
+     * @param wrddesc 公司描述
+     * @param wrdNCB 供应商名称
+     * @param wrddescB 供应商描述
+     * @param grp 公司组别
+     * @param grpB 供应商组别
+     * @param refC 公司编号
+     * @param refCB 供应商编号
+     * @param picC 公司图片
+     * @param picCB 供应商图片
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
     @Override
     public ApiResponse modAddLSBComp(String id_C,String id_CP,String id_CB,String id_CBP
             ,JSONObject wrdNC,JSONObject wrddesc,JSONObject wrdNCB,JSONObject wrddescB
@@ -327,8 +426,16 @@ public class ModuleServicelmpl implements ModuleService {
         return retResult.ok(CodeEnum.OK.getCode(), "连接关系成功");
     }
 
-    private ApiResponse reSta(int sta){
-        switch (sta) {
+    /**
+     *  错误返回方法
+     * @param status	错误状态
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/23
+     */
+    private ApiResponse errResult(int status){
+        switch (status) {
             case 1:
                 throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET_ID.getCode(), "该公司没有assetId");
             case 2:
@@ -342,68 +449,94 @@ public class ModuleServicelmpl implements ModuleService {
         }
     }
 
-    private JSONObject getCont(String id_C){
-        JSONObject re = new JSONObject();
+    /**
+     * 根据公司编号获取公司资产的模块信息
+     * @param id_C	公司编号
+     * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
+    private JSONObject getCompAssetMod(String id_C){
+        JSONObject result = new JSONObject();
         String assetId = coupaUtil.getAssetId(id_C, "a-core");
 //        System.out.println("assetId:"+assetId);
         if (null == assetId) {
-            re.put("sta",1);
-            return re;
+            result.put("status",1);
+            return result;
         }
         Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("control"));
         if (null == asset) {
-            re.put("sta",2);
-            return re;
+            result.put("status",2);
+            return result;
         }
 //        System.out.println(JSON.toJSONString(asset));
         JSONObject control = asset.getControl();
         if (null == control) {
-            re.put("sta",3);
-            return re;
+            result.put("status",3);
+            return result;
         }
         JSONObject objData = control.getJSONObject("objMod");
         if (null == objData) {
-            re.put("sta",4);
-            return re;
+            result.put("status",4);
+            return result;
         }
-        re.put("sta",0);
-        re.put("control",control);
-        re.put("assetId",assetId);
-        return re;
+        result.put("status",0);
+        result.put("control",control);
+        result.put("assetId",assetId);
+        return result;
     }
 
-    private JSONArray userT(JSONObject users,String id_C){
-        JSONArray reArr = new JSONArray();
+    /**
+     * 新增或删除用户的模块使用权-核心方法
+     * @param users	用户集合数据
+     * @param id_C	公司编号
+     * @return com.alibaba.fastjson.JSONArray  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
+    private JSONArray addOrDelUserModCore(JSONObject users,String id_C){
+        JSONArray resultArr = new JSONArray();
 //        JSONObject addUser = can.getJSONObject("addUser");
         users.keySet().forEach(id_U -> {
             User user = coupaUtil.getUserById(id_U, Collections.singletonList("rolex"));
-            JSONObject re = new JSONObject();
+            JSONObject result = new JSONObject();
             if (null == user) {
-                re.put("id_U",id_U);
-                re.put("desc","用户信息为空");
-                reArr.add(re);
+                result.put("id_U",id_U);
+                result.put("desc","用户信息为空");
+                resultArr.add(result);
             } else {
                 JSONObject rolex = user.getRolex();
                 if (null == rolex) {
-                    re.put("id_U",id_U);
-                    re.put("desc","用户权限卡片为空");
-                    reArr.add(re);
+                    result.put("id_U",id_U);
+                    result.put("desc","用户权限卡片为空");
+                    resultArr.add(result);
                 } else {
+                    // 获取公司权限信息集合
                     JSONObject objComp = rolex.getJSONObject("objComp");
+                    // 获取当前处理公司权限信息
                     JSONObject c_role = objComp.getJSONObject(id_C);
                     if (null == c_role) {
-                        re.put("id_U",id_U);
-                        re.put("desc","用户权限卡片内当前公司信息为空");
-                        reArr.add(re);
+                        result.put("id_U",id_U);
+                        result.put("desc","用户权限卡片内当前公司信息为空");
+                        resultArr.add(result);
                     } else {
+                        // 获取修改当前用户的模块信息
                         JSONObject u_role = users.getJSONObject(id_U);
+                        // 获取当前公司的模块信息
                         JSONObject modAuth = c_role.getJSONObject("modAuth");
+                        // 遍历修改当前用户的模块信息
                         u_role.keySet().forEach(k -> {
+                            // 根据键获取修改的模块信息
                             JSONObject mod = u_role.getJSONObject(k);
+                            // 判断操作类型
                             String type = mod.getString("type");
                             if ("del".equals(type)) {
+                                // 删除当前模块
                                 modAuth.remove(k);
                             } else {
+                                // 修改当前模块
                                 modAuth.put(k,mod.getJSONObject("val"));
                             }
                         });
@@ -415,12 +548,13 @@ public class ModuleServicelmpl implements ModuleService {
                         JSONObject mapKey = new JSONObject();
                         // 设置字段数据
                         mapKey.put("rolex",rolex);
+                        // 更新数据库
                         coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKey);
                     }
                 }
             }
         });
-        return reArr;
+        return resultArr;
     }
 
     @Override

@@ -33,13 +33,6 @@ public class AccountLoginController {
     private HttpServletRequest request;
 
     @SecurityParameter
-    @PostMapping("/v1/setAppId")
-    public ApiResponse setAppId(@RequestBody JSONObject reqJson) {
-        return accountLoginService.setAppId(reqJson.getString("appId")
-                ,reqJson.getString("id_U"));
-    }
-
-    @SecurityParameter
     @PostMapping("/v1/login")
     public ApiResponse doNumberLogin(@RequestBody JSONObject reqJson) {
 
@@ -50,21 +43,28 @@ public class AccountLoginController {
 
     }
 
-    @SecurityParameter
-    @PostMapping("/v1/key")
-    public ApiResponse getKey(@RequestBody JSONObject reqJson) {
-        return accountLoginService.getKey(reqJson.getString("qdKey"));
-    }
-
-    @PostMapping("/v1/getHdKey")
-    public String getHdKey(@RequestBody JSONObject reqJson) {
-        return accountLoginService.getHdAndQdKey(reqJson.getString("qdKey"));
-    }
-
-    @PostMapping("/v1/setQdKey")
-    public ApiResponse setQdKey(@RequestBody JSONObject reqJson) {
-        return accountLoginService.getKey(reqJson.getString("qdKey"));
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/setAppId")
+//    public ApiResponse setAppId(@RequestBody JSONObject reqJson) {
+//        return accountLoginService.setAppId(reqJson.getString("appId")
+//                ,reqJson.getString("id_U"));
+//    }
+//
+//    @SecurityParameter
+//    @PostMapping("/v1/key")
+//    public ApiResponse getKey(@RequestBody JSONObject reqJson) {
+//        return accountLoginService.getKey(reqJson.getString("qdKey"));
+//    }
+//
+//    @PostMapping("/v1/getHdKey")
+//    public String getHdKey(@RequestBody JSONObject reqJson) {
+//        return accountLoginService.getHdAndQdKey(reqJson.getString("qdKey"));
+//    }
+//
+//    @PostMapping("/v1/setQdKey")
+//    public ApiResponse setQdKey(@RequestBody JSONObject reqJson) {
+//        return accountLoginService.getKey(reqJson.getString("qdKey"));
+//    }
 
     @SecurityParameter
     @PostMapping("/v1/generateLoginCode")
