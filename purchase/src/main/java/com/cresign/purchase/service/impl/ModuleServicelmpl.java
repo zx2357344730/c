@@ -208,8 +208,8 @@ public class ModuleServicelmpl implements ModuleService {
         // 判断是否删除lsprod
         if (isMove) {
             // 放入es编号，获取删除结果
-            Integer reI = coupaUtil.delEsById("lsprod", esId);
-            if (reI != 0) {
+            Integer resultStatus = coupaUtil.delEsById("lsprod", esId);
+            if (resultStatus != 0) {
                 System.out.println("删除lsprod出现异常");
                 return retResult.ok(CodeEnum.OK.getCode(), "错误码：删除lsprod出现异常");
             }
@@ -269,7 +269,7 @@ public class ModuleServicelmpl implements ModuleService {
         JSONArray reAddArr = addOrDelUserModCore(objUser, id_C);
         if (reAddArr.size() > 0) {
             result.put("type",1);
-            result.put("reAddArr",reAddArr);
+            result.put("resultAddArr",reAddArr);
         } else {
             result.put("type",0);
         }

@@ -110,17 +110,17 @@ public class RpiServiceImpl implements RpiService {
                 String rnameRedisDataStr = redisTemplate1.opsForValue().get(PI + rname);
                 // 将字符串转换成json对象
                 JSONObject rnameRedisData = JSONObject.parseObject(rnameRedisDataStr);
-                // 获取piZ字段信息,piZ = 所有gpio信息记录
-                JSONObject piZ = rnameRedisData.getJSONObject("piZ");
+                // 获取piSon字段信息,piSon = 所有gpio信息记录
+                JSONObject piSon = rnameRedisData.getJSONObject("piSon");
                 // 定义存储值集合
                 Collection<String> keys = new ArrayList<>();
                 // 遍历所有gpio信息记录的值信息
-                piZ.values().forEach(v -> keys.add(PI_GP_T + v.toString()));
+                piSon.values().forEach(v -> keys.add(PI_GP_T + v.toString()));
                 // 根据值信息删除redis对应的gpio信息
                 redisTemplate1.delete(keys);
                 // 情况rname的redis信息
                 rnameRedisData.put("id_C","");
-                rnameRedisData.put("piZ",new JSONObject());
+                rnameRedisData.put("piSon",new JSONObject());
                 redisTemplate1.opsForValue().set(PI + rname, JSON.toJSONString(rnameRedisData));
                 return retResult.ok(CodeEnum.OK.getCode(), "删除公司绑定成功");
             } else {
@@ -128,12 +128,12 @@ public class RpiServiceImpl implements RpiService {
                 if (statusInside == 5) {
                     throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_X_NO.getCode(), "rpi卡片异常-rpi-基础信息为空");
                 } else {
-                    return reSta(statusInside);
+                    return errResult(statusInside);
                 }
             }
         } else {
             // 为异常状态则，调用异常状态判断输出方法
-            return rePiSta(status);
+            return errResultPi(status);
         }
 //        String s = redisTemplate1.opsForValue().get(PI + rname);
 //        if (null == s || "".equals(s)) {
@@ -166,13 +166,13 @@ public class RpiServiceImpl implements RpiService {
         // 判断信息为空
         if (null == rpiData || "".equals(rpiData)) {
             // 调用方法
-            return rpiCodeZ(id_C,rname);
+            return rpiCodeCore(id_C,rname);
         } else {
             JSONObject piDa = JSONObject.parseObject(rpiData);
             String id_C_pi = piDa.getString("id_C");
             if (null == id_C_pi || "".equals(id_C_pi)) {
                 // 调用方法
-                return rpiCodeZ(id_C,rname);
+                return rpiCodeCore(id_C,rname);
             } else {
                 throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_B_BIND.getCode(), "机器已经被绑定");
             }
@@ -188,12 +188,12 @@ public class RpiServiceImpl implements RpiService {
      * @version 1.0.0
      * @date 2022/8/18
      */
-    private ApiResponse rpiCodeZ(String id_C,String rname){
+    private ApiResponse rpiCodeCore(String id_C,String rname){
 //        String id_C = can.getString("id_C");
         // 获取公司的资产的树莓派信息
         JSONObject rpiNameData = getRNames(id_C,false);
         // 获取内部状态信息
-        Integer statusInside = rpiNameData.getInteger("sta");
+        Integer statusInside = rpiNameData.getInteger("status");
         if (statusInside == 0) {
             JSONObject rnames = rpiNameData.getJSONObject("rnames");
             JSONObject rpi = rpiNameData.getJSONObject("rpi");
@@ -205,12 +205,12 @@ public class RpiServiceImpl implements RpiService {
                 throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_RPI_R_NAME_K.getCode(), "该公司rpi卡片没有对应的rname，请新增");
             }
             // 定义存储树莓派的所有gpio信息
-            JSONArray reArr = new JSONArray();
+            JSONArray resultArr = new JSONArray();
             // 定义存储树莓派信息
-            JSONObject piDa = new JSONObject();
-            piDa.put("id_C",id_C);
+            JSONObject piData = new JSONObject();
+            piData.put("id_C",id_C);
             // 定义存储gpio和对应的token
-            JSONObject piDa_z = new JSONObject();
+            JSONObject piDataSon = new JSONObject();
             // 设置所有gpio口
             List<String> gpList = new ArrayList<>(
                     Arrays.asList("4","5","6","12","13","17","18","19","20","21","22","23","24","25","26","27"));
@@ -228,7 +228,7 @@ public class RpiServiceImpl implements RpiService {
                 // 获取token
                 String token = UUID19.uuid();
                 // 添加gpio以及对应的token
-                piDa_z.put(gp,token);
+                piDataSon.put(gp,token);
                 // 生成二维码数据信息
                 String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_RPI_T + token;
                 // 定义存储结果
@@ -236,14 +236,14 @@ public class RpiServiceImpl implements RpiService {
                 // 添加gpio信息
                 result.put("gpio",gp);
                 result.put("url",url);
-                reArr.add(result);
+                resultArr.add(result);
                 rnameData.put(gp,token);
                 // 设置树莓派gpio信息
                 redisTemplate1.opsForValue().set(PI_GP_T + token,JSON.toJSONString(redisJ));
             });
-            piDa.put("piZ",piDa_z);
+            piData.put("piSon",piDataSon);
             // 设置树莓派信息
-            redisTemplate1.opsForValue().set(PI + rname,JSON.toJSONString(piDa));
+            redisTemplate1.opsForValue().set(PI + rname,JSON.toJSONString(piData));
             rnames.put(rname,rnameData);
             rpi.put("rnames",rnames);
             // 定义存储flowControl字典
@@ -251,7 +251,7 @@ public class RpiServiceImpl implements RpiService {
             // 设置字段数据
             mapKey.put("rpi",rpi);
             coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
-            return retResult.ok(CodeEnum.OK.getCode(), reArr);
+            return retResult.ok(CodeEnum.OK.getCode(), resultArr);
 
 //            if (null == gpioStr || "".equals(gpioStr)) {
 //                String token = "rpi_"+ UUID19.uuid();
@@ -270,7 +270,7 @@ public class RpiServiceImpl implements RpiService {
 //                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_Y_BIND.getCode(), "已经生成token");
 //            }
         } else {
-            return reSta(statusInside);
+            return errResult(statusInside);
         }
     }
 
@@ -313,7 +313,7 @@ public class RpiServiceImpl implements RpiService {
             }
         } else {
             // 调用异常状态判断输出方法
-            return rePiSta(status);
+            return errResultPi(status);
         }
     }
 
@@ -402,7 +402,7 @@ public class RpiServiceImpl implements RpiService {
             redisTemplate1.opsForValue().set(PI_GP_T + token,JSON.toJSONString(gpioData));
             return retResult.ok(CodeEnum.OK.getCode(), "绑定gpIo成功");
         } else {
-            return rePiSta(status);
+            return errResultPi(status);
         }
     }
 
@@ -452,7 +452,7 @@ public class RpiServiceImpl implements RpiService {
             redisTemplate1.opsForValue().set(PI_GP_T + token,JSON.toJSONString(gpioData));
             return retResult.ok(CodeEnum.OK.getCode(), "解除绑定gpIo成功");
         } else {
-            return rePiSta(status);
+            return errResultPi(status);
         }
     }
 
@@ -499,7 +499,7 @@ public class RpiServiceImpl implements RpiService {
      * @version 1.0.0
      * @date 2022/8/18
      */
-    private ApiResponse rePiSta(int status){
+    private ApiResponse errResultPi(int status){
         // 判断状态，并输出对应错误信息
         if (status == 1) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_X_K.getCode(), "机器信息为空，操作失败");
@@ -516,7 +516,7 @@ public class RpiServiceImpl implements RpiService {
      * @version 1.0.0
      * @date 2022/8/18
      */
-    private ApiResponse reSta(int status){
+    private ApiResponse errResult(int status){
         // 判断状态并返回对应的错误信息
         switch (status) {
             case 1:
