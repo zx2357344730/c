@@ -67,6 +67,7 @@ public class SmsLoginController {
     @SecurityParameter
     @PostMapping("/v1/smsRegister")
     public ApiResponse smsRegister(@RequestBody JSONObject reqJson) {
+        System.out.println("进入注册接口:");
 
         String id_APP = "";
         if (reqJson.containsKey("id_APP")) {

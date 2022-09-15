@@ -29,6 +29,22 @@ public class ModuleController {
     @Resource
     private HttpServletRequest request;
 
+    @PostMapping("/v1/addOrUpdateInitMod")
+    @SecurityParameter
+    public ApiResponse addOrUpdateInitMod(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return moduleService.addOrUpdateInitMod(reqJson.getJSONObject("objLogMod"));
+    }
+
+    @PostMapping("/v1/updateLogAuth")
+    @SecurityParameter
+    public ApiResponse updateLogAuth(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return moduleService.updateLogAuth(reqJson.getString("id_C"));
+    }
+
     /**
      * 单翻译 - 只能翻译一个字段
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果

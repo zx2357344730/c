@@ -49,6 +49,27 @@ public class CoupaUtil {
     @Autowired
     private DbUtils dbUtils;
 
+    public Init getInit(){
+        Query query = new Query(new Criteria("_id").is("cn_java"));
+        Field fields = query.fields();
+        fields.include("logInit");
+        return mongoTemplate.findOne(query, Init.class);
+    }
+
+    public void updateInitLog(JSONObject logInit){
+        // 创建查询条件，并且添加查询条件
+        Query query = new Query(new Criteria("_id").is("cn_java"));
+
+        // 创建修改对象
+        Update update = new Update();
+
+        // 循环添加修改的键和值
+        update.set("logInit",logInit);
+
+        // 调用数据库进行修改
+        mongoTemplate.updateFirst(query,update, Init.class);
+    }
+
 
     /////////////////////////////COMP//////////////////////////////////////////
 

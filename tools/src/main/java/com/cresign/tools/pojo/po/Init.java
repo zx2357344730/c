@@ -36,6 +36,6 @@ public class Init {
 
     private String hdKey;
 
-
+    private JSONObject logInit;
 
 }

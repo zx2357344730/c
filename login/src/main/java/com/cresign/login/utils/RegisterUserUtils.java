@@ -72,8 +72,15 @@ public class RegisterUserUtils {
             addUser.setRolex(initJava.getNewUser().getJSONObject("rolex"));
 
             UserInfo infoJson =  JSONObject.parseObject(JSON.toJSONString(initJava.getNewUser().getJSONObject("info")), UserInfo.class);
+            infoJson.setMbn(info.get("mbn").toString());
+            if (null != info.get("id_APP")) {
+                infoJson.setId_APP(info.get("id_APP").toString());
+            }
+            System.out.println(JSON.toJSONString(infoJson));
             addUser.setInfo(infoJson);
             addUser.setView(initJava.getNewUser().getJSONArray("view"));
+            System.out.println("新增注册:");
+            System.out.println(JSON.toJSONString(addUser));
             mongoTemplate.insert(addUser);
 
             // 查询公司

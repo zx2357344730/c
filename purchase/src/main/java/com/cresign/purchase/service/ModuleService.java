@@ -14,6 +14,10 @@ import java.io.IOException;
  */
 public interface ModuleService {
 
+    ApiResponse addOrUpdateInitMod(JSONObject objLogMod);
+
+    ApiResponse updateLogAuth(String id_C);
+
     /**
      * 单翻译 - 只能翻译一个字段
      * @param data	需要翻译的数据

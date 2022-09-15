@@ -104,6 +104,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
 
         <!-- redisson -->
         <dependency>
@@ -130,12 +134,12 @@
 <!--            </exclusions>-->
 <!--        </dependency>-->
 
-        <!-- https://mvnrepository.com/artifact/io.lettuce/lettuce-core -->
-        <dependency>
-            <groupId>io.lettuce</groupId>
-            <artifactId>lettuce-core</artifactId>
-            <version>6.1.2.RELEASE</version>
-        </dependency>
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/io.lettuce/lettuce-core &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>io.lettuce</groupId>-->
+<!--            <artifactId>lettuce-core</artifactId>-->
+<!--            <version>6.1.2.RELEASE</version>-->
+<!--        </dependency>-->
 
         <!-- biosan tracer -->
 <!--        <dependency>-->

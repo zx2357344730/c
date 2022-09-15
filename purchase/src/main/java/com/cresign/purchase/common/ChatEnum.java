@@ -210,6 +210,14 @@ public enum ChatEnum {
      * 当前用户这个模块功能权限不够
      */
     ERR_AUTH_NO_LEV("01118"),
+    /**
+     * 该公司没有role卡片
+     */
+    ERR_NO_ROLE_K("01119"),
+    /**
+     * 该公司role卡片异常
+     */
+    ERR_ROLE_K("01120"),
     ;
 
 

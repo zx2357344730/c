@@ -9,6 +9,9 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +34,9 @@ public class TestServiceImpl implements TestService {
     @Autowired
     private RetResult retResult;
 
+    @Resource
+    RedisTemplate<String,Object> redisTemplate;
+
     /**
      * 验证appId，并且返回AUN—ID
      * @param id_APP	应用编号
@@ -41,11 +47,23 @@ public class TestServiceImpl implements TestService {
      */
     @Override
     public ApiResponse verificationAUN(String id_APP) {
-        User user = coupaUtil.getUserByKeyAndVal("info.id_APP", id_APP, Collections.singletonList("info"));
-        if (null != user) {
-            return retResult.ok(CodeEnum.OK.getCode(),user.getInfo().getId_AUN());
-        }
-        throw new ErrorResponseException(HttpStatus.OK, "userIsNull","1");
+//        JedisCluster jedis = RedisClusterUtils.getJRedis();
+//        if (jedis!=null){
+//            System.out.println("正常");
+//            jedis.set("user","张三");
+//            System.out.println("user = " + jedis.get("user"));
+//        }
+//        return retResult.ok(CodeEnum.OK.getCode(),"测试成功");
+
+        redisTemplate.opsForValue().set("test","test");
+        System.out.println("test = " + redisTemplate.opsForValue().get("test"));
+        return retResult.ok(CodeEnum.OK.getCode(),"测试成功");
+
+//        User user = coupaUtil.getUserByKeyAndVal("info.id_APP", id_APP, Collections.singletonList("info"));
+//        if (null != user) {
+//            return retResult.ok(CodeEnum.OK.getCode(),user.getInfo().getId_AUN());
+//        }
+//        throw new ErrorResponseException(HttpStatus.OK, "userIsNull","1");
     }
 
 }
