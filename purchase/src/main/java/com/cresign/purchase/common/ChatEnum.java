@@ -218,6 +218,10 @@ public enum ChatEnum {
      * 该公司role卡片异常
      */
     ERR_ROLE_K("01120"),
+    /**
+     * 无匹配的modRef
+     */
+    ERR_NO_MATCHING_MOD_REF("01121"),
     ;
 
 

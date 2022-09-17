@@ -14,9 +14,13 @@ import java.io.IOException;
  */
 public interface ModuleService {
 
+    ApiResponse modifyLogAuthAll(String id_C,String grpU,String listType,String grp,Integer auth);
+
+    ApiResponse modifyLogAuth(String id_C,String grpU,String listType,String grp,Integer auth,String modRef);
+
     ApiResponse addOrUpdateInitMod(JSONObject objLogMod);
 
-    ApiResponse updateLogAuth(String id_C);
+    ApiResponse updateLogAuth(String id_C,String grpU,String listType,String grp);
 
     /**
      * 单翻译 - 只能翻译一个字段

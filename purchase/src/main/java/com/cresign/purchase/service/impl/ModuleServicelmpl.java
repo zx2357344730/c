@@ -75,6 +75,106 @@ public class ModuleServicelmpl implements ModuleService {
     private static final String secretKey = "HLEsHSRChx1sTtELCpFXfZGk14tVw97w";
 
     @Override
+    public ApiResponse modifyLogAuthAll(String id_C, String grpU, String listType, String grp, Integer auth) {
+        JSONObject compAssetRole = getCompAssetRole(id_C);
+        JSONObject result = new JSONObject();
+        // 获取错误状态，为0是没有错误
+        Integer statusRole = compAssetRole.getInteger("status");
+        if (0 == statusRole) {
+            JSONObject role = compAssetRole.getJSONObject("role");
+            String assetIdRole = compAssetRole.getString("assetId");
+
+            JSONArray errRole = new JSONArray();
+            JSONObject objAuth = role.getJSONObject("objAuth");
+            boolean isOk = getLogAuth(objAuth,errRole,grpU,listType,grp);
+            result.put("errRole",errRole);
+            result.put("type",0);
+            if (isOk) {
+                JSONObject authGrpU = objAuth.getJSONObject(grpU);
+                JSONObject authListType = authGrpU.getJSONObject(listType);
+                JSONObject listTypeGrp = authListType.getJSONObject(grp);
+                JSONArray logAuthList = listTypeGrp.getJSONArray("log");
+
+                for (int i = 0; i < logAuthList.size(); i++) {
+                    JSONObject jsonObject = logAuthList.getJSONObject(i);
+                    jsonObject.put("auth",auth);
+                    logAuthList.set(i,jsonObject);
+                }
+
+                listTypeGrp.put("log",logAuthList);
+                authListType.put(grp,listTypeGrp);
+                authGrpU.put(listType,authListType);
+                objAuth.put(grpU,authGrpU);
+
+                role.put("objAuth",objAuth);
+                // 定义存储flowControl字典
+                JSONObject mapKey = new JSONObject();
+                // 设置字段数据
+                mapKey.put("role",role);
+                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+                result.put("type",1);
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        } else {
+            return errResult(statusRole,1);
+        }
+    }
+
+    @Override
+    public ApiResponse modifyLogAuth(String id_C, String grpU, String listType, String grp, Integer auth, String modRef) {
+        JSONObject compAssetRole = getCompAssetRole(id_C);
+        JSONObject result = new JSONObject();
+        // 获取错误状态，为0是没有错误
+        Integer statusRole = compAssetRole.getInteger("status");
+        if (0 == statusRole) {
+            JSONObject role = compAssetRole.getJSONObject("role");
+            String assetIdRole = compAssetRole.getString("assetId");
+
+            JSONArray errRole = new JSONArray();
+            JSONObject objAuth = role.getJSONObject("objAuth");
+            boolean isOk = getLogAuth(objAuth,errRole,grpU,listType,grp);
+            result.put("errRole",errRole);
+            result.put("type",0);
+            if (isOk) {
+                JSONObject authGrpU = objAuth.getJSONObject(grpU);
+                JSONObject authListType = authGrpU.getJSONObject(listType);
+                JSONObject listTypeGrp = authListType.getJSONObject(grp);
+                JSONArray logAuthList = listTypeGrp.getJSONArray("log");
+                int updateInd = -1;
+                for (int i = 0; i < logAuthList.size(); i++) {
+                    JSONObject jsonObject = logAuthList.getJSONObject(i);
+                    String modRefLog = jsonObject.getString("modRef");
+                    if (modRefLog.equals(modRef)) {
+                        updateInd = i;
+                    }
+                }
+                if (updateInd != -1) {
+                    JSONObject jsonObject = logAuthList.getJSONObject(updateInd);
+                    jsonObject.put("auth",auth);
+                    logAuthList.set(updateInd,jsonObject);
+                    listTypeGrp.put("log",logAuthList);
+                    authListType.put(grp,listTypeGrp);
+                    authGrpU.put(listType,authListType);
+                    objAuth.put(grpU,authGrpU);
+
+                    role.put("objAuth",objAuth);
+                    // 定义存储flowControl字典
+                    JSONObject mapKey = new JSONObject();
+                    // 设置字段数据
+                    mapKey.put("role",role);
+                    coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+                    result.put("type",1);
+                } else {
+                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_MATCHING_MOD_REF.getCode(), "无匹配的modRef");
+                }
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        } else {
+            return errResult(statusRole,1);
+        }
+    }
+
+    @Override
     public ApiResponse addOrUpdateInitMod(JSONObject objLogMod) {
         Init init = coupaUtil.getInit();
         JSONObject logInit = init.getLogInit();
@@ -87,7 +187,7 @@ public class ModuleServicelmpl implements ModuleService {
     }
 
     @Override
-    public ApiResponse updateLogAuth(String id_C) {
+    public ApiResponse updateLogAuth(String id_C,String grpU,String listType,String grp) {
         // 调用方法获取公司模块信息
         JSONObject compAssetMod = getCompAssetMod(id_C);
         // 获取错误状态，为0是没有错误
@@ -108,21 +208,24 @@ public class ModuleServicelmpl implements ModuleService {
                 System.out.println("init:");
                 System.out.println(JSON.toJSONString(init));
                 JSONObject modList = new JSONObject();
-                JSONObject modListNew = new JSONObject();
+//                JSONObject modListNew = new JSONObject();
+                JSONArray modListNew = new JSONArray();
                 JSONArray errMod = new JSONArray();
                 objMod.keySet().forEach(k -> {
                     JSONObject jsonObject = logInit.getJSONObject(k);
                     if (null != jsonObject) {
-                        Integer auth = jsonObject.getInteger("auth");
-                        if (auth == 0) {
-                            JSONObject errSon = new JSONObject();
-                            errSon.put("modKey",k);
-                            errSon.put("desc","init内该mod已被禁用");
-                            errMod.add(errSon);
-                        } else {
-                            modList.put(k,objMod.getJSONObject(k));
-                            modListNew.put(k,jsonObject);
-                        }
+//                        Integer auth = jsonObject.getInteger("auth");
+//                        if (auth == 0) {
+//                            JSONObject errSon = new JSONObject();
+//                            errSon.put("modKey",k);
+//                            errSon.put("desc","init内该mod已被禁用");
+//                            errMod.add(errSon);
+//                        } else {
+//                            modList.put(k,objMod.getJSONObject(k));
+//                            modListNew.put(k,jsonObject);
+//                        }
+                        modList.put(k,objMod.getJSONObject(k));
+                        modListNew.add(jsonObject);
                     } else {
                         JSONObject errSon = new JSONObject();
                         errSon.put("modKey",k);
@@ -138,35 +241,48 @@ public class ModuleServicelmpl implements ModuleService {
                     System.out.println("前:");
                     System.out.println(JSON.toJSONString(role));
                     JSONObject objAuth = role.getJSONObject("objAuth");
-                    objAuth.keySet().forEach(k -> {
-                        JSONObject objAuthSon = objAuth.getJSONObject(k);
-                        JSONObject lSProd = objAuthSon.getJSONObject("lSProd");
-                        if (null == lSProd) {
-                            JSONObject errRoleSon = new JSONObject();
-                            errRoleSon.put("key",k);
-                            errRoleSon.put("desc","该键的lSProd为空");
-                            errRole.add(errRoleSon);
-                        } else {
-//                            System.out.println("lSProd:");
-//                            System.out.println(JSON.toJSONString(lSProd));
-                            lSProd.keySet().forEach(sonKey -> {
-                                JSONObject lSProdSon = lSProd.getJSONObject(sonKey);
-//                                lSProdSon.put("log",modList);
-                                lSProdSon.put("log",modListNew);
-                                lSProd.put(sonKey,lSProdSon);
-                            });
-                            objAuthSon.put("lSProd",lSProd);
-                            objAuth.put(k,objAuthSon);
-                        }
-                    });
-                    System.out.println("后:");
-                    role.put("objAuth",objAuth);
-                    System.out.println(JSON.toJSONString(role));
-                    // 定义存储flowControl字典
-                    JSONObject mapKey = new JSONObject();
-                    // 设置字段数据
-                    mapKey.put("role",role);
-                    coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+                    boolean isOk = getLogAuth(objAuth,errRole,grpU,listType,grp);
+                    if (isOk) {
+                        JSONObject authGrpU = objAuth.getJSONObject(grpU);
+                        JSONObject authListType = authGrpU.getJSONObject(listType);
+                        JSONObject listTypeGrp = authListType.getJSONObject(grp);
+                        listTypeGrp.put("log",modListNew);
+                        authListType.put(grp,listTypeGrp);
+                        authGrpU.put(listType,authListType);
+                        objAuth.put(grpU,authGrpU);
+
+                        System.out.println("后:");
+                        role.put("objAuth",objAuth);
+                        System.out.println(JSON.toJSONString(role));
+                        // 定义存储flowControl字典
+                        JSONObject mapKey = new JSONObject();
+                        // 设置字段数据
+                        mapKey.put("role",role);
+                        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+                    }
+
+//                    objAuth.keySet().forEach(k -> {
+//                        JSONObject objAuthSon = objAuth.getJSONObject(k);
+//                        JSONObject lSProd = objAuthSon.getJSONObject("lSProd");
+//                        if (null == lSProd) {
+//                            JSONObject errRoleSon = new JSONObject();
+//                            errRoleSon.put("key",k);
+//                            errRoleSon.put("desc","该键的lSProd为空");
+//                            errRole.add(errRoleSon);
+//                        } else {
+////                            System.out.println("lSProd:");
+////                            System.out.println(JSON.toJSONString(lSProd));
+//                            lSProd.keySet().forEach(sonKey -> {
+//                                JSONObject lSProdSon = lSProd.getJSONObject(sonKey);
+////                                lSProdSon.put("log",modList);
+//                                lSProdSon.put("log",modListNew);
+//                                lSProd.put(sonKey,lSProdSon);
+//                            });
+//                            objAuthSon.put("lSProd",lSProd);
+//                            objAuth.put(k,objAuthSon);
+//                        }
+//                    });
+
                     System.out.println("role异常:");
                     System.out.println(JSON.toJSONString(errRole));
                     result.put("errRole",errRole);
@@ -175,7 +291,7 @@ public class ModuleServicelmpl implements ModuleService {
                 System.out.println(JSON.toJSONString(errMod));
                 result.put("errMod",errMod);
             } else {
-                return errResult(status,1);
+                return errResult(statusRole,1);
             }
         } else {
             return errResult(status,0);
@@ -558,6 +674,42 @@ public class ModuleServicelmpl implements ModuleService {
         return retResult.ok(CodeEnum.OK.getCode(), "连接关系成功");
     }
 
+    private boolean getLogAuth(JSONObject objAuth,JSONArray errRole,String grpU,String listType,String grp){
+        if (null == objAuth) {
+            JSONObject errRoleSon = new JSONObject();
+            errRoleSon.put("key","objAuth");
+            errRoleSon.put("desc","公司objAuth为空");
+            errRole.add(errRoleSon);
+        } else {
+            JSONObject authGrpU = objAuth.getJSONObject(grpU);
+            if (null == authGrpU) {
+                JSONObject errRoleSon = new JSONObject();
+                errRoleSon.put("key",grpU);
+                errRoleSon.put("desc","公司objAuth内当前key的grpU为空");
+                errRole.add(errRoleSon);
+            } else {
+                JSONObject authListType = authGrpU.getJSONObject(listType);
+                if (null == authListType) {
+                    JSONObject errRoleSon = new JSONObject();
+                    errRoleSon.put("key",listType);
+                    errRoleSon.put("desc","公司objAuth内当前key的listType为空");
+                    errRole.add(errRoleSon);
+                } else {
+                    JSONObject listTypeGrp = authListType.getJSONObject(grp);
+                    if (null == listTypeGrp) {
+                        JSONObject errRoleSon = new JSONObject();
+                        errRoleSon.put("key",grp);
+                        errRoleSon.put("desc","公司objAuth内当前key的grp为空");
+                        errRole.add(errRoleSon);
+                    } else {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      *  错误返回方法
      * @param status	错误状态
@@ -713,32 +865,24 @@ public class ModuleServicelmpl implements ModuleService {
                             JSONObject u_role = users.getJSONObject(id_U);
                             // 获取当前公司的模块信息
                             JSONObject modAuth = getModAuth(c_role.getJSONObject("modAuth"));
-//                            System.out.println("modAuth:"+id_U);
-//                            System.out.println(JSON.toJSONString(modAuth));
-//                            System.out.println(JSON.toJSONString(users));
-//                            System.out.println(JSON.toJSONString(u_role));
-//                            JSONObject modUser = new JSONObject();
                             // 遍历修改当前用户的模块信息
                             u_role.keySet().forEach(k -> {
                                 // 根据键获取修改的模块信息
                                 JSONObject mod = u_role.getJSONObject(k);
                                 // 判断操作类型
                                 String type = mod.getString("type");
-//                                System.out.println("循环输出:");
-//                                System.out.println(k);
-//                                System.out.println(JSON.toJSONString(mod));
-//                                System.out.println(JSON.toJSONString(modAuth));
+                                boolean isNull = false;
+                                JSONObject jsonObject = objMod.getJSONObject(k);
+                                JSONArray jsonArray = null;
+                                if (null != jsonObject) {
+                                    isNull = true;
+                                    jsonArray = jsonObject.getJSONArray("id_U");
+                                }
                                 if ("del".equals(type) && modAuth.containsKey(k)) {
                                     // 删除当前模块
                                     modAuth.remove(k);
-                                    JSONObject jsonObject = objMod.getJSONObject(k);
-                                    if (null != jsonObject) {
-                                        JSONArray jsonArray = jsonObject.getJSONArray("id_U");
-//                                    if (null == jsonArray) {
-//                                        jsonArray = jsonObject.getJSONArray("id_U");
-////                                        modUser.put(k,jsonArray);
-//                                    }
-//                                    JSONArray id_u = jsonObject.getJSONArray("id_U");
+                                    if (isNull) {
+//                                        JSONArray jsonArray = jsonObject.getJSONArray("id_U");
                                         int currentUser = -1;
                                         for (int i = 0; i < jsonArray.size(); i++) {
                                             String string = jsonArray.getString(i);
@@ -748,22 +892,17 @@ public class ModuleServicelmpl implements ModuleService {
                                         }
                                         if (currentUser != -1) {
                                             jsonArray.remove(currentUser);
-//                                        modUser.put(k,jsonArray);
                                             jsonObject.put("id_U",jsonArray);
                                             objMod.put(k,jsonObject);
                                         }
                                     }
                                 } else {
+                                    boolean isModAuth = modAuth.containsKey(k);
                                     // 修改当前模块
                                     modAuth.put(k,mod.getJSONObject("val"));
-                                    JSONObject jsonObject = objMod.getJSONObject(k);
-                                    if (null != jsonObject) {
-                                        JSONArray jsonArray = jsonObject.getJSONArray("id_U");
-//                                    if (null == jsonArray) {
-//                                        jsonArray = jsonObject.getJSONArray("id_U");
-////                                        modUser.put(k,jsonArray);
-//                                    }
-//                                    JSONArray id_u = jsonObject.getJSONArray("id_U");
+//                                    JSONObject jsonObject = objMod.getJSONObject(k);
+                                    if (!isModAuth && isNull) {
+//                                        JSONArray jsonArray = jsonObject.getJSONArray("id_U");
                                         boolean isExistence = false;
                                         for (int i = 0; i < jsonArray.size(); i++) {
                                             String string = jsonArray.getString(i);
@@ -774,7 +913,6 @@ public class ModuleServicelmpl implements ModuleService {
                                         }
                                         if (!isExistence) {
                                             jsonArray.add(id_U);
-//                                        modUser.put(k,jsonArray);
                                             jsonObject.put("id_U",jsonArray);
                                             objMod.put(k,jsonObject);
                                         }

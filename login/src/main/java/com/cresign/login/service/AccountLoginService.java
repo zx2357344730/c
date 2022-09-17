@@ -10,8 +10,8 @@ import com.cresign.tools.apires.ApiResponse;
  */
 public interface AccountLoginService {
 
-//    ApiResponse setAppId(String appId,String id_U);
-//
+    ApiResponse setAppId(String appId,String id_U);
+
 //    ApiResponse getKey(String qdKey);
 //
 //    String getHdAndQdKey(String qdKey);

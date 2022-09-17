@@ -29,6 +29,25 @@ public class ModuleController {
     @Resource
     private HttpServletRequest request;
 
+    @PostMapping("/v1/modifyLogAuthAll")
+    @SecurityParameter
+    public ApiResponse modifyLogAuthAll(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return moduleService.modifyLogAuthAll(reqJson.getString("id_C"),reqJson.getString("grpU")
+                ,reqJson.getString("listType"),reqJson.getString("grp"),reqJson.getInteger("auth"));
+    }
+
+    @PostMapping("/v1/modifyLogAuth")
+    @SecurityParameter
+    public ApiResponse modifyLogAuth(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        reqJson.put("id_U",tokData.getString("id_U"));
+        return moduleService.modifyLogAuth(reqJson.getString("id_C"),reqJson.getString("grpU")
+                ,reqJson.getString("listType"),reqJson.getString("grp"),reqJson.getInteger("auth")
+                ,reqJson.getString("modRef"));
+    }
+
     @PostMapping("/v1/addOrUpdateInitMod")
     @SecurityParameter
     public ApiResponse addOrUpdateInitMod(@RequestBody JSONObject reqJson){
@@ -42,7 +61,9 @@ public class ModuleController {
     public ApiResponse updateLogAuth(@RequestBody JSONObject reqJson){
         JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.updateLogAuth(reqJson.getString("id_C"));
+        return moduleService.updateLogAuth(reqJson.getString("id_C")
+                ,reqJson.getString("grpU"),reqJson.getString("listType")
+                ,reqJson.getString("grp"));
     }
 
     /**

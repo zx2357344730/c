@@ -43,13 +43,18 @@ public class AccountLoginController {
 
     }
 
-//    @SecurityParameter
-//    @PostMapping("/v1/setAppId")
-//    public ApiResponse setAppId(@RequestBody JSONObject reqJson) {
-//        return accountLoginService.setAppId(reqJson.getString("appId")
-//                ,reqJson.getString("id_U"));
-//    }
-//
+    @SecurityParameter
+    @PostMapping("/v1/setAppId")
+    public ApiResponse setAppId(@RequestBody JSONObject reqJson) {
+        System.out.println("进入接口:");
+        String id_U = reqJson.getString("id_U");
+        if (null == id_U) {
+            id_U = getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"));
+        }
+        return accountLoginService.setAppId(reqJson.getString("appId")
+                ,id_U);
+    }
+
 //    @SecurityParameter
 //    @PostMapping("/v1/key")
 //    public ApiResponse getKey(@RequestBody JSONObject reqJson) {
