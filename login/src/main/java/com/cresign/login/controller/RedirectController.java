@@ -16,9 +16,9 @@ import java.io.IOException;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2021-05-03 13:57
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2021-05-03 13:57
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("redirect")

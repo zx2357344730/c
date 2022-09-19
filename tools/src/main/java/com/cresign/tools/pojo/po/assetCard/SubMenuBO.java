@@ -8,9 +8,9 @@ import java.util.Map;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020-12-29 8:55
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020-12-29 8:55
+ * @ver 1.0
  */
 @Data
 public class SubMenuBO {

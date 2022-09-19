@@ -18,9 +18,9 @@ import java.time.Duration;
 
 /**
  * ##description: redis切换库1
- * ##author:  JackSon
- * ##updated:  2020/8/5 9:04
- * ##version: 1.0
+ * @author  JackSon
+ * @updated  2020/8/5 9:04
+ * @ver 1.0
  */
 @Configuration
 public class RedisTemplateConfiguration1 {
@@ -28,11 +28,11 @@ public class RedisTemplateConfiguration1 {
     private final RedisProperties1 redisProperties1;
     /**
      * 注入 redisProperties1
-     * ##Params: redisProperties1 redisProperties1配置类
-     * ##author: JackSon
-     * ##version: 1.0
-     * ##updated: 2020/8/5 9:04
-     * ##Return: RedisTemplateConfiguration1
+     * @param redisProperties1 redisProperties1配置类
+     * @author JackSon
+     * @ver 1.0
+     * @updated 2020/8/5 9:04
+     * @return RedisTemplateConfiguration1
      */
     @Autowired
     public RedisTemplateConfiguration1(RedisProperties1 redisProperties1) {
@@ -41,19 +41,19 @@ public class RedisTemplateConfiguration1 {
 
     /**
      * ##description: redis切换库1 Config
-     * ##author:  JackSon
-     * ##updated:  2020/8/5 9:04
-     * ##version: 1.0
+     * @author  JackSon
+     * @updated  2020/8/5 9:04
+     * @ver 1.0
      */
     @Configuration
     public class RedisConfig {
         /**
          * redisConnectionFactory1 工厂制造器，用来将 redisProperties1配置写入
-         * ##Params:
-         * ##author: JackSon
-         * ##version: 1.0
-         * ##updated: 2020/8/5 9:05
-         * ##Return: org.springframework.data.redis.connection.RedisConnectionFactory
+         * @param
+         * @author JackSon
+         * @ver 1.0
+         * @updated 2020/8/5 9:05
+         * @return org.springframework.data.redis.connection.RedisConnectionFactory
          */
         @Bean(name = "redisConnectionFactory1")
         @Primary
@@ -75,11 +75,11 @@ public class RedisTemplateConfiguration1 {
         }
         /**
          * 重新注入 redisTemplate1
-         * ##Params:
-         * ##author: JackSon
-         * ##version: 1.0
-         * ##updated: 2020/8/5 9:06
-         * ##Return: org.springframework.data.redis.core.StringRedisTemplate
+         * @param
+         * @author JackSon
+         * @ver 1.0
+         * @updated 2020/8/5 9:06
+         * @return org.springframework.data.redis.core.StringRedisTemplate
          */
         @Bean(name = "redisTemplate1")
         public StringRedisTemplate redisTemplate1() {

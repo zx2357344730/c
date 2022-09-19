@@ -16,9 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @ClassName RpiController
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2022/8/18
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 @RestController
 @RequestMapping("/rpi")

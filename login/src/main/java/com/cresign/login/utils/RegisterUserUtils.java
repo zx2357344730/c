@@ -52,10 +52,10 @@ public class RegisterUserUtils {
     @Resource
     private StringRedisTemplate redisTemplate1;
 
-    private static final String QD_Key = "qdKey";
+//    private static final String QD_Key = "qdKey";
 
     @Transactional(noRollbackFor = ResponseException.class)
-    public String registerUser(Map<String, Object> info)  {
+    public String registerUser(Map<String, Object> info) throws IOException {
 
         //try {
 
@@ -94,8 +94,8 @@ public class RegisterUserUtils {
             addLBUser.setId_U(addID);
             addLBUser.setGrpU("1000");
             addLBUser.setPic(info.get("pic").toString());
-            addLBUser.setTmd(DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-            addLBUser.setTmk(DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+            addLBUser.setTmd(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+            addLBUser.setTmk(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
             addLBUser.setWrdN(infoJson.getWrdN());
             addLBUser.setWrdNCB(comp.getInfo().getWrdN());
 
@@ -185,8 +185,8 @@ public class RegisterUserUtils {
 //            addLBUser.setGrpU("1000");
 //            addLBUser.setPic(info.get("pic").toString());
 //            addLBUser.setRefC(comp.getInfo().getString("ref"));
-//            addLBUser.setTmd(DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-//            addLBUser.setTmk(DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+//            addLBUser.setTmd(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+//            addLBUser.setTmk(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
 //            addLBUser.setWrdN(info.getJSONObject("wrdN"));
 //            addLBUser.setWrdNC(comp.getInfo().getJSONObject("wrdN"));
 //

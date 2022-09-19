@@ -11,9 +11,9 @@
 ///**
 // * ##ClassName: ProdOItem
 // * ##description: prod的oitem类
-// * ##Author: tang
+// * @author tang
 // * ##Updated: 2020/10/17 16:49
-// * ##version: 1.0.0
+// * @ver 1.0.0
 // */
 //@Document(collection = "Prod")
 //@Data

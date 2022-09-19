@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 /**
  * @ClassName Mod
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2022/7/25
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 @Data
 //生成全参数构造函数

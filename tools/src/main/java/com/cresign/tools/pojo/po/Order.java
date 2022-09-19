@@ -9,9 +9,9 @@ import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * ##author: tangzejin
- * ##updated: 2019/6/12
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/6/12
+ * @ver 1.0.0
  * ##description: 订单实体类
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -41,10 +41,6 @@ public class Order {
 
     private JSONObject picroll00s;
 
-//    private JSONObject task00s;
-
-    //private JSONObject saleCyclex;
-
     private JSONObject link00s;
 
     @JsonProperty("oPdf")
@@ -52,10 +48,7 @@ public class Order {
 
     private JSONObject shipping;
 
-
     private JSONObject action;
-
-    private JSONObject merge;
 
     private JSONObject cusmsg;
 
@@ -79,18 +72,6 @@ public class Order {
 
     private JSONObject tempa;
 
-
-
-
     private Integer tvs = 1;
-
-
-
-    /**
-     * 项目
-     */
-//
-//    private JSONObject storage;
-//    private JSONObject quality;
 
 }

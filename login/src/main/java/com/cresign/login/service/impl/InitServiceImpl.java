@@ -18,7 +18,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -125,22 +124,22 @@ public class InitServiceImpl implements InitService {
         return retResult.ok(CodeEnum.OK.getCode(), phoneType);
     }
 
-
-    public ApiResponse getInitInclude(String lang,Integer ver, String include) {
-
-        Query query = new Query(new Criteria("_id").is(lang));
-
-        query.fields().include(include).include("ver");
-        //结果
-        Init init = mongoTemplate.findOne(query, Init.class);
-
-        if (null != ver && !ver.equals(init.getVer())) {
-
-            return retResult.ok(CodeEnum.OK.getCode(), init);
-        }
-        throw new ErrorResponseException(HttpStatus.OK, CodeEnum.ALREADY_LOCAL.getCode(), "");
-
-
-    }
+//
+//    public ApiResponse getInitInclude(String lang,Integer ver, String include) {
+//
+//        Query query = new Query(new Criteria("_id").is(lang));
+//
+//        query.fields().include(include).include("ver");
+//        //结果
+//        Init init = mongoTemplate.findOne(query, Init.class);
+//
+//        if (null != ver && !ver.equals(init.getVer())) {
+//
+//            return retResult.ok(CodeEnum.OK.getCode(), init);
+//        }
+//        throw new ErrorResponseException(HttpStatus.OK, CodeEnum.ALREADY_LOCAL.getCode(), "");
+//
+//
+//    }
 
 }

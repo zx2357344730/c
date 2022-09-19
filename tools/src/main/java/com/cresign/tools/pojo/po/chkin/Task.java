@@ -6,9 +6,9 @@ import lombok.Data;
 /**
  * @ClassName Task
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2021/9/23 10:54
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 @Data
 public class Task {

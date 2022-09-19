@@ -17,9 +17,9 @@ import java.io.IOException;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/8/6 10:05
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/8/6 10:05
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("/action")
@@ -37,10 +37,10 @@ public class ActionController {
 
     /**
      * 递归发日志 改isPush
-     * ##Params: map	请求参数
-     * ##return: java.lang.String  返回结果: 递归结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param map	请求参数
+     * @return java.lang.String  返回结果: 递归结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 9:03
      */
     @SecurityParameter
@@ -144,10 +144,10 @@ public class ActionController {
 
     /**
      * 双方确认订单
-     * ##Params: map	请求参数
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param map	请求参数
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/10/27 9:03
      */
     @SecurityParameter
@@ -180,10 +180,10 @@ public class ActionController {
     }
     /**
      * 通用日志方法(action,prob,msg)
-     * ##Params: map	请求参数
-     * ##return: java.lang.String  返回结果: 日志结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param map	请求参数
+     * @return java.lang.String  返回结果: 日志结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 9:08
      * 100 = cannot start
      * 0 = ready to go
@@ -291,10 +291,10 @@ public class ActionController {
 
         /**
          * 更新Order的grpBGroup字段
-         * ##param map	请求参数
+         * @param map	请求参数
          * @return java.lang.String  返回结果: 结果
          * @author tang
-         * @version 1.0.0
+         * @ver 1.0.0
          * @date 2021/1/19 10:05
          */
         @SecurityParameter

@@ -5,9 +5,9 @@ import org.apache.skywalking.apm.toolkit.trace.TraceContext;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2021-04-23 13:08
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2021-04-23 13:08
+ * @ver 1.0
  */
 @Data
 public class ApiResponse {

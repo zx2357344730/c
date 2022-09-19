@@ -36,7 +36,7 @@ public class CosUpload {
     /**
      * 简单文件上传, 最大支持 5 GB, 适用于小文件上传, 建议 20 M 以下的文件使用该接口 大文件上传请参照 API 文档高级 API 上传
      *
-     * ##Params: localFile
+     * @param localFile
      */
     public static String uploadPE(File localFile, String path, String name, int nameIS, Date expiration) throws CosClientException{
 
@@ -97,12 +97,12 @@ public class CosUpload {
 
 //    /**
 //     * 图片上传
-//     * ##Params: localFile
-//     * ##Params: filePath
-//     * ##Params: expiration
-//     * ##Params: type              是大图片还是小图片
-//     * ##Params: name              图片名称
-//     * ##return:
+//     * @param localFile
+//     * @param filePath
+//     * @param expiration
+//     * @param type              是大图片还是小图片
+//     * @param name              图片名称
+//     * @return
 //     * @throws CosClientException
 //     */
 //    public static String upload2(File localFile, String filePath, Date expiration, String type, String name) throws CosClientException{
@@ -168,7 +168,7 @@ public class CosUpload {
 //
 //    /**
 //     * 删除临时文件
-//     * ##Params: files
+//     * @param files
 //     */
 //    public static void deleteFile(File... files) {
 //        for (File file : files) {

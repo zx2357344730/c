@@ -3,10 +3,10 @@ package com.cresign.tools.ip;
 
 /**
 *##description:      通过 ip 获取 国家省份城市
-*##Params:
-*##Return:
-*##author:           JackSon
-*##updated:             2020/5/26 11:45
+*@param
+*@return
+*@author           JackSon
+*@updated             2020/5/26 11:45
 */
 public class GenIpUtils {
 //

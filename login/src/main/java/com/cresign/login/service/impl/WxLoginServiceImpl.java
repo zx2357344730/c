@@ -52,9 +52,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/7/29 9:28
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/7/29 9:28
+ * @ver 1.0
  */
 @Service
 @RefreshScope
@@ -139,11 +139,11 @@ public class WxLoginServiceImpl implements WxLoginService {
 
     /**
      * 微信登录方法
-     * ##author: JackSon
-     * ##Params: code  前端传入的code凭证
-     * ##version: 1.0
-     * ##updated: 2020/8/8 10:03
-     * ##Return: java.lang.String
+     * @author JackSon
+     * @param code  前端传入的code凭证
+     * @ver 1.0
+     * @updated 2020/8/8 10:03
+     * @return java.lang.String
      */
     @Override
     public ApiResponse wxWebLogin(String code) throws IOException {
@@ -208,11 +208,11 @@ WX_NOT_BIND.getCode(),unionid);
 
     /**
      * 解密用户敏感数据
-     * ##author: tangzejin
-     * ##Params: reqJson 前端请求参数
-     * ##version: 1.0
-     * ##updated: 2020/8/8 10:03
-     * ##Return: java.lang.String
+     * @author tangzejin
+     * @param reqJson 前端请求参数
+     * @ver 1.0
+     * @updated 2020/8/8 10:03
+     * @return java.lang.String
      */
     @Override
     public ApiResponse decodeUserInfo(JSONObject reqJson) {
@@ -350,7 +350,7 @@ WX_NOT_BIND.getCode(), null);
 
 
     @Override
-    public ApiResponse wxRegisterUser(JSONObject reqJson) {
+    public ApiResponse wxRegisterUser(JSONObject reqJson) throws IOException {
 
         boolean register_Is = false;
 
@@ -408,7 +408,7 @@ REGISTER_USER_IS_HAVE.getCode(), null);
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class,noRollbackFor = ResponseException.class)
-    public ApiResponse wechatRegister(String phone, Integer phoneType, String smsNum, String wcnN, String clientType, String clientID, String pic, String id_WX) {
+    public ApiResponse wechatRegister(String phone, Integer phoneType, String smsNum, String wcnN, String clientType, String clientID, String pic, String id_WX) throws IOException {
 
 
         // 判断是否存在这个 key
@@ -438,11 +438,11 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                     // 设置info信息
 //                    JSONObject infoJson = new JSONObject();
 //                    infoJson.put("id_WX", id_WX);
-//                    infoJson.put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+//                    infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
 //
                     Update update = new Update();
                     update.set("info.id_WX", id_WX);
-                    update.set("info.tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
 
                     mongoTemplate.updateFirst(mbnQue, update, User.class);
 
@@ -462,8 +462,8 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                 infoJson.put("mbn", phone);
                 infoJson.put("id_WX", id_WX);
                 infoJson.put("phoneType", phoneType);
-                infoJson.put("tmk", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-                infoJson.put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                infoJson.put("tmk", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
 
                 // 判断
                 if (ClientEnum.APP_CLIENT.getClientType().equals(clientType)) {
@@ -572,7 +572,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
 
         String id_U = MongoUtils.GetObjectId();
         user.setId(id_U);
-        UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,null, null, "5f2a2502425e1b07946f52e9","cn","",
+        UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,null, null, null, "5f2a2502425e1b07946f52e9","cn","",
                 avatarUrl,"China","",phoneNumber,countryCode);
         user.setInfo(userInfo);
         user.setView(viewArray);

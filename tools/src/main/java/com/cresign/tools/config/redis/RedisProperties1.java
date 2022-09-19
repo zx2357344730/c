@@ -6,9 +6,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * ##description: redis切换库1
- * ##author:  JackSon
- * ##updated:  2020/8/5 9:04
- * ##version: 1.0
+ * @author  JackSon
+ * @updated  2020/8/5 9:04
+ * @ver 1.0
  */
 @Component
 @Data

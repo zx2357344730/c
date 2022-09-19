@@ -30,7 +30,7 @@ public class JwtUtil {
     /**
      * 生成JWT
      *
-     * ##return:
+     * @return
      */
     public String createJWT(String uuid, String audience) {
 
@@ -54,8 +54,8 @@ public class JwtUtil {
 
     /**
      * 解析JWT
-     * ##Params: jwtStr
-     * ##return:
+     * @param jwtStr
+     * @return
      */
     public Claims parseJWT(String jwtStr){
         return  Jwts.parser()
@@ -66,10 +66,10 @@ public class JwtUtil {
 
     /**
     *##description:      校验jwt是否正确
-    *##Params:            
-    *##Return:           
-    *##author:           JackSon
-    *##updated:             2020/5/15 16:45 
+    *@param            
+    *@return           
+    *@author           JackSon
+    *@updated             2020/5/15 16:45 
     */
     public boolean validJWT(String clientType, String jwtStr) {
 

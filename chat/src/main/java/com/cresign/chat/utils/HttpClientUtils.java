@@ -19,9 +19,9 @@ import java.util.Set;
 /**
  * ##ClassName: HttpClientUtils
  * ##description: HttpClient工具类
- * ##Author: tang
+ * @author tang
  * ##Updated: 2020/6/19 19:14
- * ##version: 1.0
+ * @ver 1.0
  */
 public class HttpClientUtils {
 
@@ -35,11 +35,11 @@ public class HttpClientUtils {
 
     /**
      * 根据xml格式进行post请求
-     * ##Params: url	请求地址
-     * ##Params: reDataXml	请求的xml数据
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param url	请求地址
+     * @param reDataXml	请求的xml数据
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:35
      */
     public static String doPostByXml(String url,String reDataXml){
@@ -81,11 +81,11 @@ public class HttpClientUtils {
 
     /**
      * post请求传输json参数
-     * ##Params: url	url地址
-     * ##Params: jsonParam	json数据
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param url	url地址
+     * @param jsonParam	json数据
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:35
      */
     public static String httpPost(String url, JSONObject jsonParam)
@@ -135,11 +135,11 @@ public class HttpClientUtils {
     /**
      * post请求传输String参数 例如：name=Jack&sex=1&type=2
      * Content-type:application/x-www-form-urlencoded
-     * ##Params: url	url地址
-     * ##Params: strParam	参数
-     * ##return: com.alibaba.fastjson.JSONObject  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param url	url地址
+     * @param strParam	参数
+     * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:36
      */
     public static JSONObject httpPost(String url, String strParam)
@@ -190,10 +190,10 @@ public class HttpClientUtils {
 
     /**
      * 发送get请求
-     * ##Params: url	路径
-     * ##return: com.alibaba.fastjson.JSONObject  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param url	路径
+     * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:36
      */
     public static JSONObject httpGet(String url)
@@ -235,11 +235,11 @@ public class HttpClientUtils {
 
     /**
      * post请求传输json参数
-     * ##Params: url	url地址
-     * ##Params: jsonParam	json数据
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param url	url地址
+     * @param jsonParam	json数据
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:35
      */
     public static String httpPostAndHead(String url, JSONObject jsonParam,JSONObject heads)

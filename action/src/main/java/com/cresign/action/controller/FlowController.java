@@ -18,9 +18,9 @@ import java.io.IOException;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/8/6 10:05
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/8/6 10:05
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("/flow")
@@ -57,10 +57,10 @@ public class FlowController {
 
         /**
          * 根据请求参数，获取更新后的订单oitem
-         * ##Params: map	请求参数
-         * ##return: java.lang.String  返回结果: 日志结果
-         * ##Author: tang
-         * ##version: 1.0.0
+         * @param map	请求参数
+         * @return java.lang.String  返回结果: 日志结果
+         * @author tang
+         * @ver 1.0.0
          * ##Updated: 2020/8/6 9:08
          */
         @SecurityParameter
@@ -79,10 +79,10 @@ public class FlowController {
 
         /**
          * 根据prodID进行递归,Es数据库2
-         * ##Params: map	请求参数
-         * ##return: java.lang.String  返回结果: 递归结果
-         * ##Author: tang
-         * ##version: 1.0.0
+         * @param map	请求参数
+         * @return java.lang.String  返回结果: 递归结果
+         * @author tang
+         * @ver 1.0.0
          * ##Updated: 2020/8/6 9:03
          * getDg
          */
@@ -100,10 +100,10 @@ public class FlowController {
 
         /**
          * 递归验证
-         * ##Params: map	请求参数
-         * ##return: java.lang.String  返回结果: 递归结果
-         * ##Author: tang
-         * ##version: 1.0.0
+         * @param map	请求参数
+         * @return java.lang.String  返回结果: 递归结果
+         * @author tang
+         * @ver 1.0.0
          * ##Updated: 2020/8/6 9:03
          */
         @SecurityParameter
@@ -117,10 +117,10 @@ public class FlowController {
 
     /**
      * 递归发日志 改isPush
-     * ##Params: map	请求参数
-     * ##return: java.lang.String  返回结果: 递归结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param map	请求参数
+     * @return java.lang.String  返回结果: 递归结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 9:03
      */
 //    @SecurityParameter
@@ -171,10 +171,10 @@ public class FlowController {
 
     /**
      * 双方确认订单
-     * ##Params: map	请求参数
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param map	请求参数
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/10/27 9:03
      */
 //    @SecurityParameter
@@ -197,10 +197,10 @@ public class FlowController {
 
     /**
      * 通用日志方法(action,prob,msg)
-     * ##Params: map	请求参数
-     * ##return: java.lang.String  返回结果: 日志结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param map	请求参数
+     * @return java.lang.String  返回结果: 日志结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 9:08
      * 100 = cannot start
      * 0 = ready to go
@@ -306,7 +306,7 @@ public class FlowController {
          * 检查part是否为空
          * @return java.lang.String  返回结果: 结果
          * @author tang
-         * @version 1.0.0
+         * @ver 1.0.0
          * @date 2021/1/19 10:00
          */
         @SecurityParameter
@@ -318,10 +318,10 @@ public class FlowController {
 
         /**
          * 更新Order的grpBGroup字段
-         * ##param map	请求参数
+         * @param map	请求参数
          * @return java.lang.String  返回结果: 结果
          * @author tang
-         * @version 1.0.0
+         * @ver 1.0.0
          * @date 2021/1/19 10:05
          */
 //        @SecurityParameter

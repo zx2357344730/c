@@ -10,6 +10,7 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
 import com.cresign.tools.dbTools.DbUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
@@ -34,9 +35,9 @@ import java.util.List;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020-12-26 11:37
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020-12-26 11:37
+ * @ver 1.0
  */
 @Service
 public class MenuServiceImpl implements MenuService {
@@ -51,38 +52,30 @@ public class MenuServiceImpl implements MenuService {
     private AuthCheck authCheck;
 
     @Autowired
-    private DbUtils dbUtils;
-
-    @Autowired
-    private StringRedisTemplate redisTemplate0;
-
-    @Autowired
     private RetResult retResult;
 
     @Autowired
-    private RestHighLevelClient restHighLevelClient;
+    private Qt qt;
+
 
     @Override
     public ApiResponse getMenusAndSubMenus(String id_C) {
         //之前是调用login服务的权限API，现在是移到login服务了，直接调用
-            Query menuQuery = new Query(
-                    new Criteria("info.id_C").is(id_C)
-                            .and("info.ref").is("a-auth"));
-            menuQuery.fields().include("menu");
-            Asset asset = mongoTemplate.findOne(menuQuery, Asset.class);
-        System.out.println(asset);
+
+        Asset asset =  qt.getConfig(id_C, "a-auth", "menu");
 
         return retResult.ok(CodeEnum.OK.getCode(), asset.getMenu());
     }
 
     @Override
     public ApiResponse getGrpUForMenusInRole(String id_C, String grpU) {
-            Query menuQuery = new Query(
-                    new Criteria("info.id_C").is(id_C)
-                            .and("info.ref").is("a-auth"));
-            menuQuery.fields().include("menu");
-            Asset asset = mongoTemplate.findOne(menuQuery, Asset.class);
+//            Query menuQuery = new Query(
+//                    new Criteria("info.id_C").is(id_C)
+//                            .and("info.ref").is("a-auth"));
+//            menuQuery.fields().include("menu");
+//            Asset asset = mongoTemplate.findOne(menuQuery, Asset.class);
             //JSONObject menuJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(menuQuery, Asset.class));
+            Asset asset =  qt.getConfig(id_C, "a-auth", "menu");
 
             // 当前职位的主菜单数组
             //JSONArray grpUMainMenus = menuJson.getJSONObject("menu").getJSONObject("mainMenus").getJSONArray(grpU);
@@ -121,23 +114,13 @@ public class MenuServiceImpl implements MenuService {
         JSONArray result = new JSONArray();
 
         // redis cache 先查redis缓存有没有改公司菜单
-        if (redisTemplate0.hasKey("details:get_menus:compId-" + id_C)) {
-            if (redisTemplate0.opsForHash().hasKey("details:get_menus:compId-" + id_C, grpU)) {
-                String val = redisTemplate0.opsForHash().get("details:get_menus:compId-" + id_C, grpU).toString();
+        if (qt.hasRDHashItem("details:get_menus", "compId-"+ id_C, grpU)) {
+            String val = qt.getRDHashStr("details:get_menus","compId-" + id_C, grpU);
                 return retResult.ok(CodeEnum.OK.getCode(), JSONArray.parse(val));
-            }
         }
-
-
         // 查询该公司的菜单
 
-        String id_A = dbUtils.getId_A(id_C, "a-auth");
-        Query menuQuery = new Query(new Criteria("_id").is(id_A));
-
-        menuQuery.fields().include("menu");
-
-        Asset asset = mongoTemplate.findOne(menuQuery, Asset.class);
-        //JSONObject menuJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(menuQuery, Asset.class));
+        Asset asset = qt.getConfig(id_C, "a-auth","menu");
 
         // 当前职位的主菜单数组
         JSONArray grpUMainMenus = asset.getMenu().getJSONObject("mainMenus").getJSONArray(grpU);
@@ -174,13 +157,11 @@ public class MenuServiceImpl implements MenuService {
             }
 
             mainMenuJson.put("subMenus", subMenusArray);
-
             result.add(mainMenuJson);
-
         }
 
         // 获取成功后并缓存到redis中，下次拿redis缓存
-        redisTemplate0.opsForHash().put("details:get_menus:compId-" + id_C, grpU, result.toJSONString());
+        qt.putRDHash("details:get_menus","compId-"+ id_C, grpU,result.toJSONString());
         return retResult.ok(CodeEnum.OK.getCode(), result);
 
     }
@@ -222,18 +203,14 @@ public class MenuServiceImpl implements MenuService {
             }
         }
 
-        String id_A = dbUtils.getId_A(id_C, "a-auth");
-        Query menuQuery = new Query(new Criteria("_id").is(id_A));
-        menuQuery.fields().include("menu");
-        Update mainMenuUd = new Update();
-        mainMenuUd.set("menu.mainMenus." + grpU, mainMenusData);
-        UpdateResult updateResult = mongoTemplate.updateFirst(menuQuery, mainMenuUd, Asset.class);
+        Asset asset = qt.getConfig(id_C, "a-auth","menu");
 
-        if (updateResult.getMatchedCount() != 1) {
-            throw new ErrorResponseException(HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND.getCode(), null);
-        }
+//        Update mainMenuUd = new Update();
+//        mainMenuUd.set("menu.mainMenus." + grpU, mainMenusData);
+//        UpdateResult updateResult = mongoTemplate.updateFirst(menuQuery, mainMenuUd, Asset.class);
+        qt.setMDContent(asset.getId(),qt.setJson("menu.mainMenus." + grpU, mainMenusData), Asset.class);
 
-        redisTemplate0.delete("details:get_menus:compId-" + id_C);
+        qt.delRD("details:get_menus", "compId-" + id_C);
 
         return retResult.ok(CodeEnum.OK.getCode(), null);
 
@@ -242,16 +219,10 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public ApiResponse getSubMenusData(String id_C) {
 
-
-        String id_A = dbUtils.getId_A(id_C, "a-auth");
-        Query menuQuery = new Query(new Criteria("_id").is(id_A));
-        menuQuery.fields().include("menu");
-        Asset asset = mongoTemplate.findOne(menuQuery, Asset.class);
-        //JSONObject menuJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(menuQuery, Asset.class));
+        Asset asset =  qt.getConfig(id_C, "a-auth", "menu");
 
         return retResult.ok(CodeEnum.OK.getCode(), asset.getMenu().getJSONArray("subMenus"));
-
-}
+    }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
@@ -272,15 +243,20 @@ public class MenuServiceImpl implements MenuService {
 //        authFilterService.getUserSelectAuth(id_U,id_C,"lSAsset","1003","card");
 
 
-        String id_A = dbUtils.getId_A(id_C, "a-auth");
-        Query menuQuery = new Query(new Criteria("_id").is(id_A));
-        menuQuery.fields().include("menu");
-        Update mainMenuUd = new Update();
-        mainMenuUd.set("menu.subMenus", subMenuBOS);
-        mongoTemplate.updateFirst(menuQuery, mainMenuUd, Asset.class);
+//        String id_A = dbUtils.getId_A(id_C, "a-auth");
+//        Query menuQuery = new Query(new Criteria("_id").is(id_A));
+//        menuQuery.fields().include("menu");
+        Asset asset =  qt.getConfig(id_C, "a-auth", "menu");
+
+//        Update mainMenuUd = new Update();
+//        mainMenuUd.set("menu.subMenus", subMenuBOS);
+//        mongoTemplate.updateFirst(menuQuery, mainMenuUd, Asset.class);
+        qt.setMDContent(asset.getId(),qt.setJson("menu.subMenus", subMenuBOS), Asset.class);
+
+
 
         // 删除key重新设置缓存
-        redisTemplate0.delete("details:get_menus:compId-" + id_C);
+        qt.delRD("details:get_menus","compId-" + id_C);
         return retResult.ok(CodeEnum.OK.getCode(), null);
 
     }
@@ -288,12 +264,7 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public ApiResponse getDefListType(String id_C) {
 
-        String id_A = dbUtils.getId_A(id_C, "a-auth");
-        Query query = new Query(new Criteria("_id").is(id_A));
-
-        query.fields().include("def");
-
-        Asset asset = mongoTemplate.findOne(query, Asset.class);
+        Asset asset = qt.getConfig(id_C, "a-auth", "def");
 
         return retResult.ok(CodeEnum.OK.getCode(), asset.getDef());
 

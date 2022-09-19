@@ -1,9 +1,9 @@
 package com.cresign.tools.enumeration;
 
 /**
- * ##author: tangzejin
- * ##updated: 2019/8/20
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/8/20
+ * @ver 1.0.0
  * ##description: Log异常枚举类
  */
 public enum LogEnum {
@@ -61,8 +61,8 @@ public enum LogEnum {
 
     /**
      * 带参构造方法
-     * ##Params: type  日志类型
-     * ##Params: introduce 日志描述
+     * @param type  日志类型
+     * @param introduce 日志描述
      */
     LogEnum(String type,String introduce){
         this.type = type;

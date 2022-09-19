@@ -2,7 +2,6 @@ package com.cresign.login.controller;
 
 
 import com.cresign.login.service.InitService;
-import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 
 
 /**
- * ##Author: JackSon
- * ##version: 1.0
+ * @author JackSon
+ * @ver 1.0
  * ##description: Init 信息
- * ##updated: 2020-03-23 11:43
+ * @updated 2020-03-23 11:43
  */
 @RestController
 @RequestMapping("init")
@@ -31,12 +30,12 @@ public class InitController {
 
     /**
      * 根据id(语言)获取init的数据
-     * ##author: JackSon
-     * ##Params: language      语言
-     * ##Params: ver           版本号
-     * ##version: 1.0
-     * ##updated: 2020/8/8 11:07
-     * ##Return: java.lang.String
+     * @author JackSon
+     * @param language      语言
+     * @param ver           版本号
+     * @ver 1.0
+     * @updated 2020/8/8 11:07
+     * @return java.lang.String
      */
     @GetMapping("/v1/getInit")
     public ApiResponse getInit(
@@ -64,12 +63,12 @@ public class InitController {
     }
 
 
-    @GetMapping("/v2/getInitInclude")
-    public ApiResponse getInitInclude(
-            @RequestParam("lang") String lang,
-            @RequestParam(value = "ver", required = false) Integer ver,
-            @RequestParam("include") String include){
-        return initService.getInitInclude(lang, ver,include);
-    }
+//    @GetMapping("/v2/getInitInclude")
+//    public ApiResponse getInitInclude(
+//            @RequestParam("lang") String lang,
+//            @RequestParam(value = "ver", required = false) Integer ver,
+//            @RequestParam("include") String include){
+//        return initService.getInitInclude(lang, ver,include);
+//    }
 
 }

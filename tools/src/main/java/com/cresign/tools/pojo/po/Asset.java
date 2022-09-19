@@ -33,8 +33,6 @@ public class Asset {
 
     private JSONObject chkin00s;
 
-    private JSONObject sumChkin;
-
     private JSONObject menu;
 
     private JSONObject role;
@@ -56,10 +54,6 @@ public class Asset {
     private JSONObject cTrigger;
 
     private JSONObject powerup;    //限量卡
-
-    private JSONObject excelControl;//Excel
-
-    private JSONObject statCheck;
 
     private JSONObject qtySafe;
 
@@ -88,8 +82,6 @@ public class Asset {
     private JSONObject chgSupp;
 
     private JSONObject tempa;
-
-
 
 
     private Integer tvs = 1;

@@ -8,9 +8,9 @@ import java.util.Map;
 /**
  * 前端传入的主菜单json
  * ##description:
- * ##author: JackSon
- * ##updated: 2020-12-28 10:51
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020-12-28 10:51
+ * @ver 1.0
  */
 @Data
 public class MainMenuBO {

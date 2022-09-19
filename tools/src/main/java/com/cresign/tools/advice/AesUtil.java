@@ -77,8 +77,8 @@ public class AesUtil {
     /**
      * 加密
      *
-     * ##Params: content    加密的字符串
-     * ##Params: encryptKey key值
+     * @param content    加密的字符串
+     * @param encryptKey key值
      */
     public static String encrypt(String content, String encryptKey) throws Exception {
         //设置Cipher对象
@@ -96,8 +96,8 @@ public class AesUtil {
     /**
      * 解密
      *
-     * ##Params: encryptStr 解密的字符串
-     * ##Params: decryptKey 解密的key值
+     * @param encryptStr 解密的字符串
+     * @param decryptKey 解密的key值
      */
     public static String decrypt(String encryptStr, String decryptKey) throws Exception {
         //base64格式的key字符串转byte

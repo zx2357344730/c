@@ -4,8 +4,8 @@ import com.cresign.tools.apires.ApiResponse;
 
 /**
  * 
- * ##Author: JackSon
- * ##version: 1.0
+ * @author JackSon
+ * @ver 1.0
  * ##Updated: 2020/7/25 9:33
  */
 public interface AccountLoginService {
@@ -18,10 +18,10 @@ public interface AccountLoginService {
     /**
      * 账户密码登录API
 
-     * ##Params: clientType 客户端类型
-     * ##author: JackSon
-     * ##updated: 2020/7/25 10:10
-     * ##Return: java.lang.String
+     * @param clientType 客户端类型
+     * @author JackSon
+     * @updated 2020/7/25 10:10
+     * @return java.lang.String
      */
 //    ApiResponse doNumberLogin(String usn, String pwd, String clientType);
     ApiResponse doNumberLogin(String clientType);

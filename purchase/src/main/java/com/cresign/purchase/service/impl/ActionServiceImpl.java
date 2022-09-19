@@ -10,18 +10,17 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DbUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ut;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
-import com.cresign.tools.logger.LogUtil;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.Order;
 import com.cresign.tools.pojo.po.orderCard.OrderAction;
 import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.pojo.po.orderCard.OrderOItem;
-import com.cresign.tools.uuid.UUID19;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
@@ -35,12 +34,10 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
 
@@ -60,11 +57,9 @@ public class ActionServiceImpl implements ActionService {
      * 这些是OK 的
      * createQuest / createTask / dgConfirmOrder
      * getFlowList / changeDepAndFlow / dgActivateAll
-     * sendLogWSU 用 logUtil 和 wsu
      */
         
-        @Autowired
-        private LogUtil logUtil;
+
 
         @Autowired
         private RetResult retResult;
@@ -77,6 +72,9 @@ public class ActionServiceImpl implements ActionService {
 
         @Autowired
         private Ut ut;
+
+        @Autowired
+        private Qt qt;
 
         @Autowired
         private DbUtils dbUtils;
@@ -93,9 +91,7 @@ public class ActionServiceImpl implements ActionService {
 
     /**
      * 根据oId修改grpBGroup字段
-     * ##param id_O	   订单编号
-     * ##param grpBGroup	旧grpB分组信息
-     * ##param grpBGroupX 新的grpB分组信息
+     * @param id_O	   订单编号
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
      * @date 2021/9/10 17:32
@@ -104,12 +100,15 @@ public class ActionServiceImpl implements ActionService {
     public ApiResponse changeDepAndFlow(String id_O, String grpB, JSONObject grpBOld,JSONObject grpBNew
             ,String id_C,String id_U,String grpU, JSONObject wrdNU) {
 
-        //1. Save the new
-        JSONObject mapKey = new JSONObject();
-        mapKey.put("action.grpBGroup."+grpB,grpBNew);
-        coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+//        //1. Save the new
+//        JSONObject mapKey = new JSONObject();
+//        mapKey.put("action.grpBGroup."+grpB,grpBNew);
+//        coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+        qt.setMDContent(id_O, qt.setJson("action.grpBGroup.", grpBNew), Order.class);
         //2. get Order's oItem+action
-        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info","oItem", "action"));
+//        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info","oItem", "action"));
+        Order order = qt.getMDContent(id_O, "action, oItem, info", Order.class);
+
         JSONArray objItem = order.getOItem().getJSONArray("objItem");
         JSONArray objAction = order.getAction().getJSONArray("objAction");
         //3. Loop check grpB==oItem(i).grpB and objAction(i).isPUshed == 1
@@ -199,181 +198,7 @@ public class ActionServiceImpl implements ActionService {
 
     }
 
-//    @Override
-//    public ApiResponse delPi(String rname,String id_C) {
-////        String rname = can.getString("rname");
-////        String id_C = can.getString("id_C");
-//        int sta = piNameSta(rname, id_C);
-//        if (sta == 0) {
-//            JSONObject rName = getRNames(id_C,true);
-//            Integer staN = rName.getInteger("sta");
-//            if (staN == 0) {
-//                JSONObject rpi = rName.getJSONObject("rpi");
-//                JSONObject rnames = rName.getJSONObject("rnames");
-//                JSONObject pinfo = rName.getJSONObject("pinfo");
-//                String assetId = rName.getString("assetId");
-//                JSONObject r = rnames.getJSONObject(rname);
-//                if (null == r) {
-//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_RPI_R_NAME_K.getCode(), "该公司rpi卡片没有对应的rname，请新增");
-//                }
-//                pinfo.remove(rname);
-//                rnames.remove(rname);
-//                rpi.put("rnames",rnames);
-//                rpi.put("pinfo",pinfo);
-//                // 定义存储flowControl字典
-//                JSONObject mapKey = new JSONObject();
-//                // 设置字段数据
-//                mapKey.put("rpi",rpi);
-//                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
-//
-//                String s = redisTemplate1.opsForValue().get(PI + rname);
-//                JSONObject piDa = JSONObject.parseObject(s);
-//                JSONObject piZ = piDa.getJSONObject("piZ");
-//                Collection<String> keys = new ArrayList<>();
-//                piZ.values().forEach(v -> keys.add(PI_GP_T + v.toString()));
-//                redisTemplate1.delete(keys);
-//                piDa.put("id_C","");
-//                piDa.put("piZ",new JSONObject());
-//                redisTemplate1.opsForValue().set(PI + rname,JSON.toJSONString(piDa));
-//                return retResult.ok(CodeEnum.OK.getCode(), "删除公司绑定成功");
-//            } else {
-//                if (staN == 5) {
-//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_X_NO.getCode(), "rpi卡片异常-rpi-基础信息为空");
-//                } else {
-//                    return reSta(staN);
-//                }
-//            }
-//        } else {
-//            return rePiSta(sta);
-//        }
-////        String s = redisTemplate1.opsForValue().get(PI + rname);
-////        if (null == s || "".equals(s)) {
-////            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_X_K.getCode(), "机器信息为空，操作失败");
-////        } else {
-////            if (id_C.equals(s)) {
-////                redisTemplate1.opsForValue().set(PI + rname,"");
-////                return retResult.ok(CodeEnum.OK.getCode(), "机器解绑公司成功");
-////            } else {
-////                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_B_NO.getCode(), "该机器不属于你们公司，操作失败");
-////            }
-////        }
-//    }
-//
-//    @Override
-//    public ApiResponse rpiCode(String rname,String id_C) {
-////        String rname = can.getString("rname");
-//        String s = redisTemplate1.opsForValue().get(PI + rname);
-////        String id_C = can.getString("id_C");
-//        if (null == s || "".equals(s)) {
-//            return rpiCodeZ(id_C,rname);
-//        } else {
-//            JSONObject piDa = JSONObject.parseObject(s);
-//            String id_C_pi = piDa.getString("id_C");
-//            if (null == id_C_pi || "".equals(id_C_pi)) {
-//                return rpiCodeZ(id_C,rname);
-//            } else {
-//                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_B_BIND.getCode(), "机器已经被绑定");
-//            }
-//        }
-//    }
-//
-//    private ApiResponse rpiCodeZ(String id_C,String rname){
-////        String id_C = can.getString("id_C");
-//        JSONObject rName = getRNames(id_C,false);
-//        Integer sta = rName.getInteger("sta");
-//        if (sta == 0) {
-//            JSONObject rnames = rName.getJSONObject("rnames");
-//            JSONObject rpi = rName.getJSONObject("rpi");
-//            String assetId = rName.getString("assetId");
-//            JSONObject r = rnames.getJSONObject(rname);
-//            if (null == r) {
-//                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_RPI_R_NAME_K.getCode(), "该公司rpi卡片没有对应的rname，请新增");
-//            }
-//            JSONArray reArr = new JSONArray();
-//
-//            JSONObject piDa = new JSONObject();
-//            piDa.put("id_C",id_C);
-//            JSONObject piDa_z = new JSONObject();
-//            List<String> gpList = new ArrayList<>(
-//                    Arrays.asList("4","5","6","12","13","17","18","19","20","21","22","23","24","25","26","27"));
-//            gpList.forEach(gp -> {
-//                JSONObject redisJ = new JSONObject();
-//                redisJ.put("rname",rname);
-//                redisJ.put("gpio",gp);
-//                updateRedJ(redisJ,"", "", "", 0, new JSONObject(), 0, ""
-//                        , 0, "", "", "", 0, "", new JSONObject()
-//                        , new JSONObject(), new JSONObject(), false);
-//                String token = UUID19.uuid();
-//                piDa_z.put(gp,token);
-//                String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_RPI_T + token;
-//                JSONObject re = new JSONObject();
-//                re.put("gpio",gp);
-//                re.put("url",url);
-//                reArr.add(re);
-//                r.put(gp,token);
-//                redisTemplate1.opsForValue().set(PI_GP_T + token,JSON.toJSONString(redisJ));
-//            });
-//            piDa.put("piZ",piDa_z);
-//            redisTemplate1.opsForValue().set(PI + rname,JSON.toJSONString(piDa));
-//            rnames.put(rname,r);
-//            rpi.put("rnames",rnames);
-//            // 定义存储flowControl字典
-//            JSONObject mapKey = new JSONObject();
-//            // 设置字段数据
-//            mapKey.put("rpi",rpi);
-//            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
-//            return retResult.ok(CodeEnum.OK.getCode(), reArr);
-//
-////            if (null == gpioStr || "".equals(gpioStr)) {
-////                String token = "rpi_"+ UUID19.uuid();
-////                String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_RPI_T + token;
-////                r.put(gpio,token);
-////                rnames.put(rname,r);
-////                rpi.put("rnames",rnames);
-////                // 定义存储flowControl字典
-////                JSONObject mapKey = new JSONObject();
-////                // 设置字段数据
-////                mapKey.put("rpi",rpi);
-////                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
-////                redisTemplate1.opsForValue().set(token,JSON.toJSONString(redisJ));
-////                return retResult.ok(CodeEnum.OK.getCode(), url);
-////            } else {
-////                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_Y_BIND.getCode(), "已经生成token");
-////            }
-//        } else {
-//            return reSta(sta);
-//        }
-//    }
-//
-//    @Override
-//    public ApiResponse requestRpiStatus(String token,String id_C,String id_U) {
-////        String token = can.getString("token");
-//        String s = redisTemplate1.opsForValue().get(PI_GP_T + token);
-//        if (null == s) {
-//            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
-//        }
-////        String id_C = can.getString("id_C");
-//        JSONObject redJ = JSON.parseObject(s);
-//        int sta = piNameSta(redJ.getString("rname"), id_C);
-//        if (sta == 0) {
-//            boolean isBinding = redJ.getBoolean("isBinding");
-////            String id_U = can.getString("id_U");
-//            if (!isBinding) {
-//                return retResult.ok(CodeEnum.OK.getCode(), "1");
-//            } else {
-//                if (redJ.getString("id_U").equals(id_U)) {
-//                    return retResult.ok(CodeEnum.OK.getCode(), "2");
-//                } else {
-//                    return retResult.ok(CodeEnum.OK.getCode(), "3");
-//                }
-//            }
-//        } else {
-//            return rePiSta(sta);
-//        }
-//    }
-//
-//    @Override
-//    @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
+    @Override
     public ApiResponse rePush(String id_O, Integer index, JSONObject tokData) throws IOException {
 
         JSONObject actData = this.getActionData(id_O, index);
@@ -387,7 +212,6 @@ public class ActionServiceImpl implements ActionService {
         {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "这任务没有关闭");
         }
-
 
         // 备注
         String message = taskName + "[已恢复执行]";
@@ -408,7 +232,6 @@ public class ActionServiceImpl implements ActionService {
         logL.setLogData_action(orderAction,orderOItem);
         logL.getData().put("wn0prog", 0);
 
-
         try {
             ws.sendWS(logL);
 
@@ -420,28 +243,17 @@ public class ActionServiceImpl implements ActionService {
                         .must(QueryBuilders.termQuery("id_O", id_O));
                 dbUtils.updateListCol(queryBuilder, "lsborder", listCol);
             }
+            return retResult.ok(CodeEnum.OK.getCode(), res);
+
         } catch (RuntimeException e) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始,"+e);
         }
-
-        // if Quest, send log + update OItem of myself = task = DG = above
-        // get upPrnt data, and find the prob, set that status of Prob to status
-
-
-        // 抛出操作成功异常
-        return retResult.ok(CodeEnum.OK.getCode(), res);
-
-
-        // 根据下标获取递归信息
-
     }
     /**
          * 操作开始，暂停，恢复功能 - 注释完成
-         * ##param id_C	当前公司id
-         * ##param id_U	用户id
          * @return java.lang.String  返回结果: 结果
          * @author tang
-         * @version 1.0.0
+         * @ver 1.0.0
          * @date 2020/8/6 9:22
          */
 
@@ -612,12 +424,14 @@ public class ActionServiceImpl implements ActionService {
                 ws.sendWS(logL);
 
                 mapKey.put("action.objAction."+index,orderAction);
-                coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+//                coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+                qt.setMDContent(id_O, mapKey, Order.class);
 
                 if(null != listCol.getInteger("lST")) {
-                    QueryBuilder queryBuilder = QueryBuilders.boolQuery()
-                            .must(QueryBuilders.termQuery("id_O", id_O));
-                    dbUtils.updateListCol(queryBuilder, "lsborder", listCol);
+//                    QueryBuilder queryBuilder = QueryBuilders.boolQuery()
+//                            .must(QueryBuilders.termQuery("id_O", id_O));
+//                    dbUtils.updateListCol(queryBuilder, "lsborder", listCol);
+                    qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
                 }
             } catch (RuntimeException e) {
                 throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始,"+e);
@@ -638,9 +452,12 @@ public class ActionServiceImpl implements ActionService {
                     JSONObject probData = objAction.getProb().getJSONObject(upPrnt.getInteger("probIndex"));
                     probData.put("bcdStatus", status);
 
-                    JSONObject probKey = new JSONObject();
-                    probKey.put("action.objAction."+upPrnt.getInteger("index"),objAction);
-                    coupaUtil.updateOrderByListKeyVal(upPrnt.getString("id_O"),probKey);
+//                    JSONObject probKey = new JSONObject();
+//                    probKey.put("action.objAction."+upPrnt.getInteger("index"),objAction);
+//                    coupaUtil.updateOrderByListKeyVal(upPrnt.getString("id_O"),probKey);
+                    qt.setMDContent(upPrnt.getString("id_O"),
+                            qt.setJson("action.objAction."+upPrnt.getInteger("index"),objAction),
+                            Order.class);
                 } catch (RuntimeException e) {
                     throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始,"+e);
                 }
@@ -771,12 +588,10 @@ public class ActionServiceImpl implements ActionService {
 
         /**
          * 操作父产品 - 注释完成
-         * ##param orderAction	子产品递归信息
-         * ##param id_C	公司id
-         * ##param id_U	用户id
+         * @param orderAction	子产品递归信息
          * @return java.lang.String  返回结果: 结果
          * @author tang
-         * @version 1.0.0
+         * @ver 1.0.0
          * @date 2020/8/6 9:21
          */
         private void updateParent(OrderAction orderAction,JSONObject tokData,String logType) {
@@ -916,7 +731,6 @@ public class ActionServiceImpl implements ActionService {
                 // contentMap方法意义：比如lSProd 的id_P替换id，这样的意义，前端可以拿这个id去查Prod表
 
                 for (int i = 0; i < result.size(); i++) {
-                    System.out.println("result"+result.getJSONObject(i).getJSONObject("data").getString("refOP"));
 
                     String refOP = result.getJSONObject(i).getJSONObject("data").getString("refOP");
                     if (refOP != null && ! refOP.equals("") && refOPList.getInteger(refOP) == null)
@@ -1032,29 +846,6 @@ public class ActionServiceImpl implements ActionService {
 
         }
 
-//    let params2 ={
-//            "dep": row.dep,
-//            "depMain": row.depMain,
-//            "logType": row.logType,
-//            "id_Flow": row.id_Flow,
-//            "id_O": row.id_O,
-//            "wrdNList": grpB_wrdNList,
-//            "grpB": row.grpB,
-//            "wrdFC": row.wrdFC,
-//}
-//            this._http({
-//                    method: "post",
-//                    url: "/chat/flow/v1/up_FC_action_grpB",
-
-//    private void sendLogWSU(LogFlow logData) {
-//
-////        logUtil.sendLog(logData.getLogType(),logData);
-//
-//        ws.sendWS(logData);
-//
-//
-//    }
-
 
     private JSONObject getActionData(String oid, Integer index) {
         // 创建卡片信息存储集合
@@ -1123,7 +914,7 @@ public class ActionServiceImpl implements ActionService {
      * 递归验证 - 注释完成
      * @return java.lang.String  返回结果: 递归结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2020/8/6 9:03
      */
     @Override
@@ -1302,7 +1093,7 @@ public class ActionServiceImpl implements ActionService {
      * Create task OItem + Action + Log
      * @return java.lang.String  返回结果: 递归结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2020/8/6 9:03
      */
     @Override
@@ -1613,11 +1404,11 @@ public class ActionServiceImpl implements ActionService {
 
     /**
      * 双方确认订单
-     * ##param id_C	公司编号
-     * ##param id_O	订单编号
+     * @param id_C	公司编号
+     * @param id_O	订单编号
      * @return java.lang.String  返回结果: 结果
      * @author Kevin
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2021/6/16 14:49
      */
     @Override
@@ -1716,11 +1507,6 @@ public class ActionServiceImpl implements ActionService {
 
     @Override
     public ApiResponse dgConfirmOrder(String id_C, JSONArray casList) throws IOException {
-        //KEV
-        //get casItemx
-        //loop each order, pick the id_O
-        //orderService.confirmOrder(id_C, id_O)
-        //return if any order that's not BOTH confirmed
 
         // loop casItemx orders
         JSONObject result = new JSONObject();
@@ -1731,7 +1517,7 @@ public class ActionServiceImpl implements ActionService {
             result.put("final",new JSONArray());
             result.put("await", new JSONArray());
             String subOrderId = casList.getJSONObject(i).getString("id_O");
-
+            //confirm it by confirmOrder function
             this.confirmOrder(id_C, subOrderId);
         }
 

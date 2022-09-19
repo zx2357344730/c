@@ -12,6 +12,7 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -36,9 +37,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/7/25 10:14
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/7/25 10:14
+ * @ver 1.0
  */
 @Service
 @Slf4j
@@ -63,6 +64,9 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     @Resource
     private CoupaUtil coupaUtil;
 
+    @Autowired
+    private Qt qt;
+
     public static final String SCANCODE_LOGINCOMP = "scancode:logincomp-";
 
     public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_LOGIN_COMP_T = "https://www.cresign.cn/qrCodeTest?qrType=logincomp&t=";
@@ -71,7 +75,8 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     @Override
     public ApiResponse setAppId(String appId,String id_U) {
         System.out.println("id_U:"+id_U);
-        User user = coupaUtil.getUserById(id_U, Arrays.asList("rolex","info"));
+//        User user = coupaUtil.getUserById(id_U, Arrays.asList("rolex","info"));
+        User user = qt.getMDContent(id_U, "rolex, info", User.class);
         if (null == user) {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, "tang", "当前用户为空，不存在");
         }
@@ -92,7 +97,8 @@ public class AccountLoginServiceImpl implements AccountLoginService {
             // 设置字段数据
             mapKeyUser.put("info",info);
             // 更新数据库
-            coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKeyUser);
+//            coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKeyUser);
+            qt.setMDContent(id_U, mapKeyUser, User.class);
             JSONObject rolex = user.getRolex();
             JSONObject result = new JSONObject();
             JSONArray err = new JSONArray();
@@ -238,7 +244,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
         JSONObject qrObject = new JSONObject();
 
         qrObject.put("id", id);
-        qrObject.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        qrObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
         String keyName = SCANCODE_LOGINCOMP + token;
 

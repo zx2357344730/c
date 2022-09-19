@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  *##description: Gateway 服务启动类
- *##Params:
- *##Return:
- *##author:           JackSon
- *##updated:             2020/7/24 10:41
+ *@param
+ *@return
+ *@author           JackSon
+ *@updated             2020/7/24 10:41
  */
 @SpringBootApplication
 public class GatewayApp {

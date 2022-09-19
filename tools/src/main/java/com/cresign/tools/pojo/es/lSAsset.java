@@ -34,8 +34,8 @@ public class lSAsset {
         this.pic = pic == null ? "" : pic;
         this.lAT = lAT == null ? 0 : lAT;
         this.wn2qty = wn2qty == 0 ? 0 : wn2qty;
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmk = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
     }
 
 

@@ -17,9 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020-12-26 11:28
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020-12-26 11:28
+ * @ver 1.0
  */
 @RequestMapping("role")
 @RestController
@@ -82,15 +82,15 @@ public class RoleController {
                 reqJson.getString("grpU"));
     }
 
-    @SecurityParameter
-    @PostMapping("/v1/get-type-grp")
-    public ApiResponse getListTypeGrp(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-
-        return roleService.getListTypeGrp(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"));
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/get-type-grp")
+//    public ApiResponse getListTypeGrp(@RequestBody JSONObject reqJson) {
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+//
+//        return roleService.getListTypeGrp(
+//                tokData.getString("id_U"),
+//                tokData.getString("id_C"));
+//    }
 
     @SecurityParameter
     @PostMapping("/v1/getRoleDataByGrp")

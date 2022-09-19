@@ -12,9 +12,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * ##ClassName: ProdOItem
  * ##description: prod的oitem类
- * ##Author: tang
+ * @author tang
  * ##Updated: 2020/10/17 16:49
- * ##version: 1.0.0
+ * @ver 1.0.0
  */
 @Document(collection = "Order")
 @Data
@@ -24,7 +24,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class OrderOItem {
 
 
-    //TODO KEV this is not ok, must use the original one (inventory is wrong)
     public OrderOItem(String id_P, String id_C, String id_CP, String id_CB, JSONObject wrdN,
                       JSONObject wrddesc, JSONObject wrdprep, String grp, String grpB, String ref,
                       String refB, String pic, Integer lCR, Integer lUT, Double wn2qtyneed,

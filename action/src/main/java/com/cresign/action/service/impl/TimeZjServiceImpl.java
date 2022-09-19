@@ -15,6 +15,7 @@ import com.cresign.tools.pojo.po.Order;
 import com.cresign.tools.pojo.po.chkin.Task;
 import com.cresign.tools.pojo.po.orderCard.OrderAction;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -24,9 +25,9 @@ import java.util.*;
 /**
  * @ClassName TimeServiceImpl
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2021/12/20 11:10
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 @Service
 public class TimeZjServiceImpl implements TimeZjService {
@@ -64,7 +65,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param wn0TPrior 优先级
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9 1:26
      */
     public void getAtFirst(String id_O,Long teStart,String id_C,Integer wn0TPrior){
@@ -598,7 +599,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param id_C	公司编号
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     public void removeTime(String id_O,String id_C){
@@ -761,7 +762,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param objOrderList  订单编号列表
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9 2:55
      */
     public void setZui(JSONObject teDaF,String id_C,String randomAll,JSONObject objTaskAll,JSONObject teDateFAllJ
@@ -1010,7 +1011,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param objTaskAll	全局任务信息
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     public JSONObject getTasksAndZon(Long teStart,String grpB,String dep,String id_C
@@ -1100,7 +1101,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param objTaskAll	全局任务信息
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     public static void setTasksAndZon(List<Task> tasks, String grpB, String dep, Long teStart
@@ -1139,7 +1140,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param id_C	公司编号
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9 2:07
      */
     public void setTaskAndZonKai(String id_C){
@@ -1171,7 +1172,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param tasksFAllJ	全局镜像任务列表信息
      * @return java.util.List<com.cresign.tools.pojo.po.chkin.Task>  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private List<Task> getTasksF(Long teS,String grpBNext,String depNext
@@ -1240,7 +1241,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param zonFAllJ	全局镜像任务余剩时间信息
      * @return java.lang.Long  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private Long getZonF(Long teS,String grpBNext,String depNext,JSONObject zonFAllJ){
@@ -1283,7 +1284,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param storageResetJ	统一id_O和index存储记录状态信息
      * @return java.lang.Integer  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private Integer getStorage(String id_O,Integer index,JSONObject storageResetJ){
@@ -1322,7 +1323,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param teDateFAllJ	存储任务所在日期
      * @return java.util.List<java.lang.String>  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private List<String> getTeDateF(String id_O,Integer index,JSONObject teDateFAllJ){
@@ -1353,7 +1354,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param grpUNumAll    全局职位人数信息
      * @return java.lang.Integer  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     public Integer getObjGrpUNum(String grpB,String dep,String id_C,JSONObject grpUNumAll){
@@ -1382,6 +1383,7 @@ public class TimeZjServiceImpl implements TimeZjService {
         String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
         // 根据asset编号获取asset的打卡卡片信息
         Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("chkin00s"));
+
         // 打卡卡片信息
         JSONObject chkin00s = asset.getChkin00s();
         // 获取职位人数信息
@@ -1444,7 +1446,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param xbAndSbAll	全局上班下班信息
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private JSONObject getXbAndSb(String grpB,String dep,String id_C,JSONObject xbAndSbAll){
@@ -1596,7 +1598,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param tasksFAllJ	全局镜像任务列表信息
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private void setTasksF(List<Task> tasks,String grpBNext,String depNext,Long teS
@@ -1634,7 +1636,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param zonFAllJ	全局镜像任务余剩总时间信息
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private void setZonF(Long zon,String grpBNext,String depNext,Long teS,JSONObject zonFAllJ){
@@ -1664,7 +1666,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param storageResetJ	统一id_O和index存储记录状态信息
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private void setStorage(Integer num,String id_O,Integer index,JSONObject storageResetJ){
@@ -1688,7 +1690,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param teDateFAllJ	存储任务所在日期
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private void setTeDateF(String id_O, Integer index, Long teS,JSONObject teDateFAllJ){
@@ -1714,7 +1716,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param onlyStartMapAndDepJ	根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
      * @return java.lang.Long  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     public Long getTeS(String random,String grpB,String dep,JSONObject onlyStartMapJ,JSONObject onlyStartMapAndDepJ){
@@ -1760,7 +1762,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param onlyStartMapAndDepJ	根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private void setTeS(String random,String grpB,String dep,Long teS,JSONObject onlyStartMapAndDepJ){
@@ -1807,7 +1809,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param onlyStartMapAndDepJ	根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
      * @return java.util.Map<java.lang.String,java.lang.Object>  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private Map<String,Object> getJumpDay(String random,String grpB,String dep,int is,Long teS
@@ -2033,7 +2035,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param onlyStartMapAndDepJ	根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
      * @return java.util.Map<java.lang.String,java.lang.Object>  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private Map<String,Object> getChkInJumpDay1(String random,String grpB,String dep,String id_C
@@ -2094,7 +2096,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param xbAndSbAll	全局上班下班信息
      * @return java.util.Map<java.lang.String,java.lang.Object>  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private Map<String,Object> getChkInJumpDay2(Long teS,String grpB,String dep,String id_C,JSONObject xbAndSbAll){
@@ -2162,7 +2164,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param jiLJN	定义存储进入未操作到的地方记录
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private JSONObject getBcCtH(String id_oNext,Integer indONext,JSONObject teDaF,Integer isC,Integer isR
@@ -2719,7 +2721,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param jiLJN	定义存储进入未操作到的地方记录
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private JSONObject getBqCt(int i,List<Task> tasks,List<Task> conflict,Long zon
@@ -3000,7 +3002,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param jiLJN	定义存储进入未操作到的地方记录
      * @return int  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     @SuppressWarnings("unchecked")
@@ -3228,7 +3230,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param jiLJN	定义存储进入未操作到的地方记录
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private JSONObject getBqCt2(int conflictInd,List<Task> tasks,List<Task> conflict,Task taskX,Long zon
@@ -3363,7 +3365,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param teDurTotal	任务总时间
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private void addOrUpdateTeDate(Long teS,JSONObject teDate,Long teDurTotal){
@@ -3408,7 +3410,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param jiLJN	定义存储进入未操作到的地方记录
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     @SuppressWarnings("unchecked")
@@ -3545,7 +3547,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param onlyIsDsJ	存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     @SuppressWarnings("unchecked")
@@ -3648,7 +3650,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param teDateFAllJ	存储任务所在日期
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private void putTeDate(String id_O,Integer index,Long teS,Integer zOk,JSONObject teDateFAllJ){
@@ -3691,7 +3693,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param jiLJN	定义存储进入未操作到的地方记录
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     @SuppressWarnings("unchecked")
@@ -3768,7 +3770,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param jiLJN	定义存储进入未操作到的地方记录
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private JSONObject chkInJi2(Long zon,Long hTeStart,List<Task> tasks,String grpB,String dep
@@ -4392,7 +4394,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param jiLJN	定义存储进入未操作到的地方记录
      * @return long  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private long getIsT(int isR,int isC,List<Task> tasks,String grpB,String dep,String random
@@ -4488,7 +4490,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param onlyIsDsJ	存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private JSONObject conflictHandle(Task task,Task task1,Task task2,Long zon,List<Task> tasks,int i
@@ -5372,7 +5374,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param teSq	teSq == 0 设置状态为不是被第一个处理时间的产品、teSq == 1 设置状态为被获取产品状态的状态
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private void addSho(JSONObject sho,String taId_O,String taIndex,String ta2Id_O,String ta2Index,Integer teSq){
@@ -5537,7 +5539,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param jiLJN	定义存储进入未操作到的地方记录
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private JSONObject konChaConflict(Task taskX,Task task1X,Task task2X,List<Task> tasks,int i1
@@ -5915,7 +5917,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param onlyStartMapAndDepJ	根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9
      */
     private JSONObject ji(Task task, Task task1, Task task2, List<Task> tasks, Integer i, Long zon
@@ -6021,7 +6023,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * @param jiLJN	存储记录字典
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/9 1:55
      */
     private void addJiLJ(String randomAll,String text,JSONObject jiLJN){

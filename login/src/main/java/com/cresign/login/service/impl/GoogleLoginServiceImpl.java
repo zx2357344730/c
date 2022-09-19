@@ -15,9 +15,9 @@ import org.springframework.stereotype.Service;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/9/21 16:32
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/9/21 16:32
+ * @ver 1.0
  */
 @Service
 public class GoogleLoginServiceImpl implements GoogleLoginService {

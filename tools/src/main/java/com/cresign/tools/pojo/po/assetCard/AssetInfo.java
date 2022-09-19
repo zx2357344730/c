@@ -32,8 +32,8 @@ public class AssetInfo {
         this.ref = ref == null ? "": ref;
         this.pic = pic == null ? "": pic;
         this.lAT = lAT == null ? 0: lAT;
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmk = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
     }
 
     private String id_C;

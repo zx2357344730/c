@@ -31,9 +31,9 @@ import java.util.regex.Pattern;
 import static sun.net.www.protocol.http.HttpURLConnection.userAgent;
 
 /**
- * ##author: tangzejin
- * ##updated: 2019/6/27
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/6/27
+ * @ver 1.0.0
  * ##description: 通用工具类
  */
 @Service
@@ -53,10 +53,10 @@ public class Ut {
 
     /**
      * 判断数字integer是否为空
-     * ##Params: integer	数字
-     * ##return: int  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param integer	数字
+     * @return int  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/9/15 10:59
      */
     public static int isNull(Integer integer){
@@ -65,53 +65,40 @@ public class Ut {
 
     /**
      * 判断字符串是否为空，是返回true
-     * ##Params: name	判断的字符串
-     * ##return: boolean  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param name	判断的字符串
+     * @return boolean  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:29
      */
     public static boolean isNull(String name) {
         return null == name || Constants.STRING_EMPTY.equals(name) || name.length() == 0;
     }
 
+    private String nullFix(String str){
+        if (null == str) {
+            return "";
+        } else {
+            return str;
+        }
+    }
+
+
     /**
      * 平均半径,单位：m；不是赤道半径。赤道为6378左右
      */
     private static final double EARTH_RADIUS = 6371393;
 
-//    /**
-//     * 调用权限方法
-//     * ##Params: id_U    用户id
-//     * ##Params: id_C    公司id
-//     * ##Params: logType    日志类型
-//     * ##return: java.lang.Boolean  返回结果: 结果
-//     * ##Author: tang
-//     * ##version: 1.0.0
-//     * ##Updated: 2020/8/7 13:24
-//     */
-//    public static Boolean getAuthFilter(String id_U, String id_C, List<String> logType, AuthFilterClient authFilterClient){
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("id_U",id_U);
-//        jsonObject.put("id_C",id_C);
-//        jsonObject.put("roleSpec", Constants.STRING_BMD_LOG_TYPE);
-//        jsonObject.put("specName", Constants.STRING_NULL);
-//        jsonObject.put("specData",logType);
-//        jsonObject.put("is_Word", Constants.STRING_NULL);
-//        JSONObject resultObj = JSONObject.parseObject(authFilterClient.authSelect(jsonObject));
-//        return resultObj.getString("code").equals("200");
-//    }
-
 
     /**
      * 反余弦计算两个经纬度的差
-     * ##Params: lat1	精度1
-     * ##Params: lng1	纬度1
-     * ##Params: lat2	精度2
-     * ##Params: lng2	纬度2
-     * ##return: double  返回结果: 结果米数
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param lat1	精度1
+     * @param lng1	纬度1
+     * @param lat2	精度2
+     * @param lng2	纬度2
+     * @return double  返回结果: 结果米数
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:18
      */
     public static double getDistance(Double lat1,Double lng1,Double lat2,Double lng2) {
@@ -134,30 +121,30 @@ public class Ut {
         return EARTH_RADIUS * acos;
     }
 
-        /**
-     *将字符串格式yyyy/MM/dd的字符串转为日期，格式"yyyy-MM"
-     * ##Params: date 日期字符串
-     * ##return: 返回格式化的日期
-     * @throws ParseException 分析时意外地出现了错误异常
-     * Jevon
-     */
-    public static String strOndToDateFormat(String date) throws ParseException {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
-        formatter.setLenient(false);
-        Date newDate= formatter.parse(date);
-        formatter = new SimpleDateFormat("yyyy-MM");
-        return formatter.format(newDate);
-    }
+//        /**
+//     *将字符串格式yyyy/MM/dd的字符串转为日期，格式"yyyy-MM"
+//     * @param date 日期字符串
+//     * @return 返回格式化的日期
+//     * @throws ParseException 分析时意外地出现了错误异常
+//     * Jevon
+//     */
+//    public static String strOndToDateFormat(String date) throws ParseException {
+//        SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+//        formatter.setLenient(false);
+//        Date newDate= formatter.parse(date);
+//        formatter = new SimpleDateFormat("yyyy-MM");
+//        return formatter.format(newDate);
+//    }
 
     /**
      * 获取文件大小
-     * ##author: Jevon
-     * ##Params: size
-     * ##version: 1.0
-     * ##updated: 2020/9/22 9:50
-     * ##Return: java.lang.String
+     * @author Jevon
+     * @param size
+     * @ver 1.0
+     * @updated 2020/9/22 9:50
+     * @return java.lang.String
      */
-    public static String getNetFileSizeDescription(long size) {
+    public static String fileSizeString(long size) {
         StringBuffer bytes = new StringBuffer();
         DecimalFormat format = new DecimalFormat("###.0");
         if (size >= 1024 * 1024 * 1024) {
@@ -188,71 +175,76 @@ public class Ut {
         return JSONObject.parseObject(JSON.toJSONString(data), classType);
     }
 
+    public static JSONObject toJson(Object data){
+
+        return JSONObject.parseObject(JSON.toJSONString(data));
+    }
+
 
     /**
      * 转换
-     * ##author: Jevon
-     * ##Params: strUrl 请求地址
-     * ##Params: params 请求参数
-     * ##Params: method 请求方法
-     * ##return:  网络请求字符串
+     * @author Jevon
+     * @param strUrl 请求地址
+     * @param params 请求参数
+     * @param method 请求方法
+     * @return  网络请求字符串
      * ##exception:
      */
-    public static String net(String strUrl, Map params,String method) throws Exception {
-        HttpURLConnection conn = null;
-        BufferedReader reader = null;
-        String rs = null;
-        try {
-            StringBuffer sb = new StringBuffer();
-            if(method==null || method.equals("GET")){
-                strUrl = strUrl+"?"+urlencode(params);
-            }
-            URL url = new URL(strUrl);
-            conn = (HttpURLConnection) url.openConnection();
-            if(method==null || method.equals("GET")){
-                conn.setRequestMethod("GET");
-            }else{
-                conn.setRequestMethod("POST");
-                conn.setDoOutput(true);
-            }
-            conn.setRequestProperty("User-agent", userAgent);
-            conn.setUseCaches(false);
-            conn.setConnectTimeout(DEF_CONN_TIMEOUT);
-            conn.setReadTimeout(DEF_READ_TIMEOUT);
-            conn.setInstanceFollowRedirects(false);
-            conn.connect();
-            if (params!= null && method.equals("POST")) {
-                try (DataOutputStream out = new DataOutputStream(conn.getOutputStream())) {
-                    out.writeBytes(urlencode(params));
-                }
-            }
-            InputStream is = conn.getInputStream();
-            reader = new BufferedReader(new InputStreamReader(is, DEF_CHATSET));
-            String strRead = null;
-            while ((strRead = reader.readLine()) != null) {
-                sb.append(strRead);
-            }
-            rs = sb.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (reader != null) {
-                reader.close();
-            }
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-        return rs;
-    }
+//    public static String net(String strUrl, Map params,String method) throws Exception {
+//        HttpURLConnection conn = null;
+//        BufferedReader reader = null;
+//        String rs = null;
+//        try {
+//            StringBuffer sb = new StringBuffer();
+//            if(method==null || method.equals("GET")){
+//                strUrl = strUrl+"?"+urlencode(params);
+//            }
+//            URL url = new URL(strUrl);
+//            conn = (HttpURLConnection) url.openConnection();
+//            if(method==null || method.equals("GET")){
+//                conn.setRequestMethod("GET");
+//            }else{
+//                conn.setRequestMethod("POST");
+//                conn.setDoOutput(true);
+//            }
+//            conn.setRequestProperty("User-agent", userAgent);
+//            conn.setUseCaches(false);
+//            conn.setConnectTimeout(DEF_CONN_TIMEOUT);
+//            conn.setReadTimeout(DEF_READ_TIMEOUT);
+//            conn.setInstanceFollowRedirects(false);
+//            conn.connect();
+//            if (params!= null && method.equals("POST")) {
+//                try (DataOutputStream out = new DataOutputStream(conn.getOutputStream())) {
+//                    out.writeBytes(urlencode(params));
+//                }
+//            }
+//            InputStream is = conn.getInputStream();
+//            reader = new BufferedReader(new InputStreamReader(is, DEF_CHATSET));
+//            String strRead = null;
+//            while ((strRead = reader.readLine()) != null) {
+//                sb.append(strRead);
+//            }
+//            rs = sb.toString();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } finally {
+//            if (reader != null) {
+//                reader.close();
+//            }
+//            if (conn != null) {
+//                conn.disconnect();
+//            }
+//        }
+//        return rs;
+//    }
 
     /**
      * 将map型转为请求参数型
-     * ##author: Jevon
-     * ##Params: data
-     * ##version: 1.0
-     * ##updated: 2020/11/16 22:23
-     * ##Return: java.lang.String
+     * @author Jevon
+     * @param data
+     * @ver 1.0
+     * @updated 2020/11/16 22:23
+     * @return java.lang.String
      */
     public static String urlencode(Map<String,Object>data) {
         StringBuilder sb = new StringBuilder();
@@ -269,23 +261,23 @@ public class Ut {
 
     /**
      * 判断str是否为数字
-     * ##Params: str	字符串
-     * ##return: boolean  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param str	字符串
+     * @return boolean  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:19
      */
-    public static boolean isNumber(String str) {
+    public static boolean isNum(String str) {
         Matcher isNum = NUMBER_PATTERN.matcher(str);
         return isNum.matches();
     }
 
     /**
      * 用于去掉s里面小数点后面不需要的0
-     * ##Params: s	数字字符串
-     * ##return: java.lang.String  返回结果: 结果字符串
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param s	数字字符串
+     * @return java.lang.String  返回结果: 结果字符串
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:19
      */
     public static String trimZero(String s) {
@@ -297,10 +289,10 @@ public class Ut {
 
     /**
      * String转double类型
-     * ##Params: s	String数据
-     * ##return: double  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param s	String数据
+     * @return double  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:20
      */
     public static double getDouble(String s) {
@@ -309,26 +301,26 @@ public class Ut {
 
     /**
      * 将数字补零,只限用于时间
-     * ##Params: b	需要补零的数字
-     * ##return: java.lang.String  返回结果: 补零结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param b	需要补零的数字
+     * @return java.lang.String  返回结果: 补零结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:20
      */
-    public static String getBl(int b) {
-        if (b > Constants.INT_NINE) {
-            return b + Constants.STRING_EMPTY;
+    public static String addZero(int b) {
+        if (b > 9) {
+            return b + "";
         } else {
-            return Constants.STRING_NUMBER_ZERO + b;
+            return "0" + b;
         }
     }
 
     /**
      * 获取0到shu的随机数
-     * ##Params: shu	随机数的最大值
-     * ##return: int  返回结果: 之间的随机数
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param shu	随机数的最大值
+     * @return int  返回结果: 之间的随机数
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:20
      */
     public static int getMathRandom(int shu){
@@ -339,13 +331,13 @@ public class Ut {
 
     /**
      * 获取s的长度
-     * ##Params: s	数组
-     * ##return: int  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param s	数组
+     * @return int  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:21
      */
-    public static int getIndex(String[] s) {
+    public static int getLength(String[] s) {
         if (s.length == Constants.INT_TWO) {
             return 1;
         } else if (s.length == Constants.INT_THREE) {
@@ -356,38 +348,58 @@ public class Ut {
     }
 
 
-    /**
-     * 获取v的负数
-     * ##Params: v	正数值
-     * ##return: int  返回结果: v的负数
-     * ##Author: tang
-     * ##version: 1.0.0
-     * ##Updated: 2020/8/6 11:25
-     */
-    public static int getNegative(int v) {
-        return v - (v * Constants.INT_TWO);
-    }
 
     /**
      * 获取d保留两位小数并四舍五入
-     * ##Params: d	数值
-     * ##return: double  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param d	数值
+     * @return double  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:25
      */
-    public static double getDoubleByDigitAndRounding(double d) {
-        DecimalFormat df = new DecimalFormat(Constants.DIGIT_ROUNDING);
+    public static double round(double d, int digit) {
+        String length;
+        switch (digit) {
+            case 1:
+                length = "#.0";
+                break;
+            case 2:
+                length = "#.00";
+                break;
+            case 3:
+                length = "#.000";
+                break;
+            case 4:
+                length = "#.0000";
+                break;
+            case 5:
+                length = "#.00000";
+                break;
+            case 6:
+                length = "#.000000";
+                break;
+            case 7:
+                length = "#.0000000";
+                break;
+            case 8:
+                length = "#.00000000";
+                break;
+            default:
+                length = "#.000000000";
+
+        }
+
+        DecimalFormat df = new DecimalFormat(length);
         return Double.parseDouble(df.format(d));
     }
 
     /**
      * 获取f保留position位小数并四舍五入
-     * ##Params: f	数值
-     * ##Params: position	小数位
-     * ##return: float  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param f	数值
+     * @param position	小数位
+     * @return float  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:25
      */
     public static float getFloatByDigitAndRounding(float f, int position) {
@@ -403,10 +415,10 @@ public class Ut {
 
     /**
      * 将obj转换成int
-     * ##Params: obj	需要转换的数值
-     * ##return: java.lang.Integer  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param obj	需要转换的数值
+     * @return java.lang.Integer  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:29
      */
     public static Integer objToInteger(Object obj) {
@@ -418,10 +430,10 @@ public class Ut {
 
     /**
      * 将obj转换成double
-     * ##Params: obj	需要转换的数值
-     * ##return: java.lang.Double  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param obj	需要转换的数值
+     * @return java.lang.Double  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:29
      */
     public static Double objToDouble(Object obj) {
@@ -436,7 +448,7 @@ public class Ut {
 //    /**
 //     * 动态切换 Redis 数据库
 //     *
-//     * ##Params: num 数据库下标
+//     * @param num 数据库下标
 //     */
 //    public static void setDataBase(int num, StringRedisTemplate redisTemplate0) {
 //
@@ -460,10 +472,10 @@ public class Ut {
 
     /**
      * 对list集合进行排序
-     * ##Params: list	集合
-     * ##return: void  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param list	集合
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:32
      */
     public static void listSort(List<LogFlow> list) {
@@ -474,12 +486,12 @@ public class Ut {
 
     /**
      * 将list根据dateType按照is进行排序
-     * ##Params: is	模式
-     * ##Params: list	集合
-     * ##Params: dateType	排序条件
-     * ##return: void  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param is	模式
+     * @param list	集合
+     * @param dateType	排序条件
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:32
      */
     public static void sortIs(int is, List<LogFlow> list, String dateType) {
@@ -513,12 +525,12 @@ public class Ut {
 
     /**
      * 对dt1和dt2进行判断并返回值
-     * ##Params: is	需要的返回结果：1是降序，2是升序
-     * ##Params: dt1	比较值1
-     * ##Params: dt2	比较值2
-     * ##return: int  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param is	需要的返回结果：1是降序，2是升序
+     * @param dt1	比较值1
+     * @param dt2	比较值2
+     * @return int  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:33
      */
     public static int listSortResult(int is, Date dt1, Date dt2) {
@@ -554,10 +566,10 @@ public class Ut {
 
     /**
      * 对list集合进行排序
-     * ##Params: list	集合
-     * ##return: void  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param list	集合
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:33
      */
     public static void listSort2(List<LogFlow> list) {
@@ -566,10 +578,10 @@ public class Ut {
 
     /**
      * 对list集合进行排序
-     * ##Params: list	集合
-     * ##return: void  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param list	集合
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:33
      */
     public static void listSortOb(List<String> list) {
@@ -597,9 +609,9 @@ public class Ut {
     /**
      //     * 为筛选接口优化代码而写的工具
      //     *
-     //     * ##Params: listType 列表类型
-     //     * ##Params: find     查询结果
-     //     * ##return: Jevon
+     //     * @param listType 列表类型
+     //     * @param find     查询结果
+     //     * @return Jevon
      //     */
     public List<Object> contentMap(String listType, List<Object> find) {
         List<Object> contentList = new LinkedList<>();
@@ -639,22 +651,36 @@ public class Ut {
         return contentList;
     }
 
+//    public Object getMongoOneFields(String id, List<String> listField, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").is(id));
+//        listField.forEach(query.fields()::include);
+//        return mongoTemplate.findOne(query, classType);
+//    }
+
 
     /**
      * 检查公司ref是否唯一
-     * ##Params: ref 编号
-     * ##return:
+     * @param ref 编号
+     * @return
      * Jevon
      */
-    public Boolean uniqueRef(String ref) {
-        // 创建查询对象
+    public String chkRef(String ref, String id_C, String listType , Class<?> classType) {
+//        public static <T> T jsonTo(Object data, Class<T> classType){
+
+//        public <T> T save(     T objectToSave )
+
+        //TODO Rachel
+        // 1.get from lSBxxx, filter id_C
+        // use ES don't use MDB
+        // if found, return String false,
+        // else return ref
         Query query = new Query();
 
         // 创建查询条件
         query.addCriteria(
                 new Criteria("info").exists(true));
 
-        List<Comp> comps = mongoTemplate.find(query, Comp.class);
+        List<?> comps = mongoTemplate.find(query, classType);
 
         boolean judge = false;
 
@@ -687,9 +713,9 @@ public class Ut {
         }
         //如果等于true证明有相同，否则就是没有
         if (judge) {
-            return true;
+            return ref;
         } else {
-            return false;
+            return "";
         }
     }
 
@@ -732,11 +758,11 @@ public class Ut {
 
     /**
      * 根据getUserIdForToken和request获取用户id
-     * ##Params: getUserIdByToken	获取用户id类
-     * ##Params: request	请求
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param getUserIdByToken	获取用户id类
+     * @param request	请求
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/9/2 16:04
      */
 //    public static String getUserId(GetUserIdByToken getUserIdByToken, HttpServletRequest request){
@@ -746,10 +772,10 @@ public class Ut {
 
 //    /**
 //     * 发送日志方法，带推送
-//     * ##Params: logL	需要发送的日志
-//     * ##return: void  返回结果: 结果
-//     * ##Author: tang
-//     * ##version: 1.0.0
+//     * @param logL	需要发送的日志
+//     * @return void  返回结果: 结果
+//     * @author tang
+//     * @ver 1.0.0
 //     * ##Updated: 2020/8/6 9:26
 //     */
 //    @SuppressWarnings("unchecked")
@@ -834,10 +860,10 @@ public class Ut {
 
     /**
      * 发送日志方法，带推送
-     * ##Params: logL	需要发送的日志
-     * ##return: void  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param logL	需要发送的日志
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 9:26
      */
 ////    @SuppressWarnings("unchecked")

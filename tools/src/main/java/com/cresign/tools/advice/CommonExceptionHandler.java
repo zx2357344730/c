@@ -21,8 +21,8 @@ import java.util.Map;
 
 /**
  *
- * ##author: JackSon
- * ##updated: 2020/7/25 10:34
+ * @author JackSon
+ * @updated 2020/7/25 10:34
  */
 @ControllerAdvice  //不指定包默认加了@Controller和@RestController都能控制
 @Slf4j
@@ -35,10 +35,10 @@ public class CommonExceptionHandler {
 
     /**
      * 捕获自定义异常返回出去给前端
-     * ##Params: reEx
-     * ##author: JackSon
-     * ##updated: 2020/7/25 10:34
-     * ##Return: java.util.Map<java.lang.String, java.lang.Object>
+     * @param reEx
+     * @author JackSon
+     * @updated 2020/7/25 10:34
+     * @return java.util.Map<java.lang.String, java.lang.Object>
      */
     @ResponseBody
     @ExceptionHandler(value = ResponseException.class)
@@ -76,10 +76,10 @@ public class CommonExceptionHandler {
 
     /**
      * 捕获自定义异常返回出去给前端
-     * ##Params: reEx
-     * ##author: JackSon
-     * ##updated: 2020/7/25 10:34
-     * ##Return: java.util.Map<java.lang.String, java.lang.Object>
+     * @param reEx
+     * @author JackSon
+     * @updated 2020/7/25 10:34
+     * @return java.util.Map<java.lang.String, java.lang.Object>
      */
     @ResponseBody
     @ExceptionHandler(value = ErrorResponseException.class)
@@ -155,33 +155,6 @@ public class CommonExceptionHandler {
 
     }
 
-//    @ResponseBody
-//    @ExceptionHandler(value = NullPointerException.class)
-//    public Map<String,Object> nullPointerException(){
-//
-//        Map<String,Object> map  = new HashMap<String,Object>();
-//
-//        map.put("code","10006");
-//
-//        map.put("descinfo","后端空指针异常或者前端传参为空");
-//
-//        return map;
-//    }
-
-//    @ExceptionHandler(value=Exception.class)
-//    @ResponseBody
-//    public Map<String, Object> errorHandler(HttpServletRequest request, HttpServletResponse response, Exception e) {
-//
-//        Map<String,Object> map  = new HashMap<String,Object>();
-//
-//        map.put("code","500");
-//
-//        map.put("descinfo","服务器异常");
-//
-//        return map;
-//
-//
-//    }
 
 
 

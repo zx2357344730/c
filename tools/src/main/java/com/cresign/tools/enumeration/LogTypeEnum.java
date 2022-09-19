@@ -4,10 +4,10 @@ import lombok.Getter;
 
 /**
  * 用户行为日志类型
- * ##author: Jevon
- * ##version: 1.0
- * ##updated: 2020/8/21 9:49
- * ##Return:
+ * @author Jevon
+ * @ver 1.0
+ * @updated 2020/8/21 9:49
+ * @return
  */
 @Getter
 public enum LogTypeEnum {
@@ -80,7 +80,7 @@ public enum LogTypeEnum {
 
     /**
      * 带参构造方法
-     * ##Params: code  异常状态码
+     * @param code  异常状态码
      */
     LogTypeEnum(String code){
         this.code = code;

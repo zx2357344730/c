@@ -18,9 +18,9 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020-12-28 13:24
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020-12-28 13:24
+ * @ver 1.0
  */
 
 @Configuration

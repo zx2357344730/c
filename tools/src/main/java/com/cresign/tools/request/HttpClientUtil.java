@@ -55,9 +55,9 @@ public class HttpClientUtil {
  
     /**
      * 发送get请求
-     * ##Params: url       链接地址
-     * ##Params: charset   字符编码，若为null则默认utf-8
-     * ##return:
+     * @param url       链接地址
+     * @param charset   字符编码，若为null则默认utf-8
+     * @return
      */
     public static String doGet(String url,String charset){
         if(null == charset){

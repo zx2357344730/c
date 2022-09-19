@@ -11,6 +11,7 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
 import com.cresign.tools.dbTools.DbUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
@@ -47,13 +48,17 @@ public class SetAuthServicelmpl implements SetAuthService {
     private DbUtils dbUtils;
 
     @Autowired
+    private Qt qt;
+
+    @Autowired
     private AuthFilterService authFilterService;
 
 
     @Override
     public ApiResponse getMyBatchList(String id_U, String id_C, String listType, JSONArray grp) {
 
-         JSONObject rolex = MongoUtils.getRolex(id_U, id_C, mongoTemplate);
+        User user = qt.getMDContent(id_U, "rolex.objComp."+id_C,User.class);
+        JSONObject rolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
 
         if (rolex == null){
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(), null);
@@ -120,7 +125,8 @@ public class SetAuthServicelmpl implements SetAuthService {
     @Override
     public ApiResponse getMyUpdateCardList(String id_U, String id_C, String listType, String grp) {
 
-        JSONObject rolex = MongoUtils.getRolex(id_U, id_C, mongoTemplate);
+        User user = qt.getMDContent(id_U, "rolex.objComp."+id_C,User.class);
+        JSONObject rolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
 
         if (rolex == null){
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(), null);

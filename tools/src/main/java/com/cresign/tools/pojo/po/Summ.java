@@ -7,9 +7,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Map;
 
 /**
- * ##author: tangzejin
- * ##updated: 2019/10/23
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/10/23
+ * @ver 1.0.0
  * ##description: 结果类
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)

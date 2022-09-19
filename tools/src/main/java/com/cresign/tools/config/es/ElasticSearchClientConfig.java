@@ -16,9 +16,9 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * ##description: ES连接配置文件
- * ##author: JackSon
- * ##updated: 2020/8/24 9:44
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/8/24 9:44
+ * @ver 1.0
  */
 @Configuration
 public class ElasticSearchClientConfig {

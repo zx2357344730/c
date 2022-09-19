@@ -13,6 +13,7 @@ import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.common.Constants;
 import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ut;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
@@ -66,6 +67,9 @@ public class PurchaseServiceImpl implements PurchaseService {
     private Ut ut;
 
     @Autowired
+    private Qt qt;
+
+    @Autowired
     private DateUtils dateUtils;
 
     @Resource
@@ -84,10 +88,10 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 新增stripe的产品和价格
      *
-     * ##Params: orderId 订单id
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param orderId 订单id
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/25 13:58
      */
     @Override
@@ -141,10 +145,10 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 根据orderId查询微信支付订单结果
      *
-     * ##Params: orderId 订单编号confirmOrder
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param orderId 订单编号confirmOrder
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 8:19
      */
     @Override
@@ -233,11 +237,10 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 根据orderId和id_C生成微信支付二维码
      *
-     * ##Params: orderId 订单编号
-     * ##Params: id_C    公司编号
-     * ##return: java.lang.String  返回结果: 支付二维码
-     * ##Author: tang
-     * ##version: 1.0.0
+
+     * @return java.lang.String  返回结果: 支付二维码
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 8:19
      */
 
@@ -403,12 +406,12 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * stripe支付成功回调方法
      *
-     * ##Params: orderId 订单编号
-     * ##Params: id_C    公司编号
-     * ##Params: uId     用户编号
-     * ##return: java.lang.String  返回结果: 添加结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param orderId 订单编号
+     * @param id_C    公司编号
+     * @param uId     用户编号
+     * @return java.lang.String  返回结果: 添加结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 8:20
      */
     @Override
@@ -435,10 +438,12 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         } else if (optionType == 1 || optionType == 2) {
 //            String aId = (SetLogEnum.A_MODULE.getType() + id_C);
-            String assetId = coupaUtil.getAssetId(id_C, "a-module");
+//            String assetId = coupaUtil.getAssetId(id_C, "a-module");
 
-            if (null != assetId) {
-                Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("modList"));
+//            if (null != assetId) {
+//                Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("modList"));
+                Asset asset = qt.getConfig(id_C,"a-module", "modList");
+
                 if (null == asset) {
                     // 返回处理结果
 //                    return RetResult.errorJsonResult(HttpStatus.OK, PurchaseEnum.PR_GET_NULL.getCode(), "失败:购买信息为空！！！");
@@ -465,11 +470,11 @@ public class PurchaseServiceImpl implements PurchaseService {
                 orderById.put("tdurMonth", (ut.objToInteger(orderById.get("tdurMonth")) + ut.objToInteger(mod.get("tdurMonth"))));
                 orderById.put("wn2PaidPrice", (ut.getDouble(orderById.get("wn2PaidPrice").toString()) + ut.getDouble(mod.get("wn2PaidPrice").toString())));
                 orderById.put("wn2EstPrice", (ut.getDouble(orderById.get("wn2EstPrice").toString()) + ut.getDouble(mod.get("wn2EstPrice").toString())));
-            } else {
-                // 返回处理结果
-//                return RetResult.errorJsonResult(HttpStatus.OK, PurchaseEnum.PR_GET_NULL.getCode(), "失败:购买信息为空！！！");
-                throw new ErrorResponseException(HttpStatus.BAD_REQUEST, PurchaseEnum.ERR_PURCHASE_INFO_IS_NULL.getCode(), "失败:购买信息为空！！！");
-            }
+//            } else {
+//                // 返回处理结果
+////                return RetResult.errorJsonResult(HttpStatus.OK, PurchaseEnum.PR_GET_NULL.getCode(), "失败:购买信息为空！！！");
+//                throw new ErrorResponseException(HttpStatus.BAD_REQUEST, PurchaseEnum.ERR_PURCHASE_INFO_IS_NULL.getCode(), "失败:购买信息为空！！！");
+//            }
         }
 
 
@@ -696,12 +701,12 @@ public class PurchaseServiceImpl implements PurchaseService {
                 calculation.put("amk", id_U);
 
                 //开始时间
-                calculation.put("tmk", DateUtils.getDateByT(DateEnum.DATE_ONE.getDate()));
+                calculation.put("tmk", DateUtils.getDateNow(DateEnum.DATE_ONE.getDate()));
                 //结束时间
-                calculation.put("tfin", dateUtils.getEndTime(DateUtils.getDateByT(DateEnum.DATE_ONE.getDate()), (Integer) data.get("tdurMonth")));
+                calculation.put("tfin", dateUtils.getEndTime(DateUtils.getDateNow(DateEnum.DATE_ONE.getDate()), (Integer) data.get("tdurMonth")));
 
-//                int tdurDay = DateUtils.nDaysBetweenTwoDate(DateUtils.getDateByT(DateEnum.DATE_ONE.getDate()),
-//                        commUtils.getEndTime(DateUtils.getDateByT(DateEnum.DATE_ONE.getDate()), (Integer) data.get("tdurMonth")));
+//                int tdurDay = DateUtils.nDaysBetweenTwoDate(DateUtils.getDateNow(DateEnum.DATE_ONE.getDate()),
+//                        commUtils.getEndTime(DateUtils.getDateNow(DateEnum.DATE_ONE.getDate()), (Integer) data.get("tdurMonth")));
 //                //购买天数
 //                data.put("tdurDay", tdurDay);
 
@@ -732,10 +737,10 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 根据orderId获取redis的订单
      *
-     * ##Params: orderId redis订单id
-     * ##return: java.util.Map<java.lang.String, java.lang.Object>  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param orderId redis订单id
+     * @return java.util.Map<java.lang.String, java.lang.Object>  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 9:43
      */
     private JSONObject getOrderById(String orderId) {
@@ -749,10 +754,10 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 把orderById信息新增到redis数据库
      *
-     * ##Params: orderById 订单信息
-     * ##return: void  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param orderById 订单信息
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 9:43
      */
     private void addOrderById(Map<String, Object> orderById) {
@@ -762,31 +767,30 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 根据aId_Auth删除view指定数据，根据aId_BuyTemp删除id_O指定数据
      *
-     * ##Params: aId_Auth    assetId
-     * ##Params: aId_BuyTemp assetId
-     * ##Params: view        数据
-     * ##Params: id_O        数据
-     * ##return: void  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param aId_Auth    assetId
+     * @param aId_BuyTemp assetId
+     * @param view        数据
+     * @param id_O        数据
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 9:44
      */
-    private void del(String aId_Auth, String aId_BuyTemp, String view, String id_O) {
-        if (null != aId_Auth) {
-            coupaUtil.delAssetAuth(aId_Auth, view);
-        }
-        if (null != aId_BuyTemp) {
-            coupaUtil.delAssetBuyTemp(aId_BuyTemp, id_O);
-        }
-    }
+//    private void del(String aId_Auth, String aId_BuyTemp, String view, String id_O) {
+//        if (null != aId_Auth) {
+//            coupaUtil.delAssetAuth(aId_Auth, view);
+//        }
+//        if (null != aId_BuyTemp) {
+//            coupaUtil.delAssetBuyTemp(aId_BuyTemp, id_O);
+//        }
+//    }
 
     /**
      * 根据map删除订单，和lsb订单
      *
-     * ##Params: map 数据
-     * ##return: void  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 9:45
      */
 //    private void delAndIs(Map<String, Object> map) {
@@ -1109,12 +1113,12 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 查询用户是否是该公司下def的负责人
      *
-     * ##Params: id_U 用户id
-     * ##Params: id_C 公司id
-     * ##author: JackSon
-     * ##version: 1.0
-     * ##updated: 2020/8/24 17:13
-     * ##Return: int 0 : 是，1 : 不是，2 : 公司数据找不到
+     * @param id_U 用户id
+     * @param id_C 公司id
+     * @author JackSon
+     * @ver 1.0
+     * @updated 2020/8/24 17:13
+     * @return int 0 : 是，1 : 不是，2 : 公司数据找不到
      */
     private int selectCompDefOFUser(String id_U, String id_C) {
 
@@ -2129,8 +2133,8 @@ public class PurchaseServiceImpl implements PurchaseService {
         JSONObject dataJson = (JSONObject) JSON.toJSON(oldModule.getControl().getJSONArray("objData").get(0));
 
 
-
-        // todo 根据mode再去init拿数据。然后再计算出钱   获取模块下的基本参数
+        //???????
+        // 根据mode再去init拿数据。然后再计算出钱   获取模块下的基本参数
         JSONObject oldModuleInit = getModuleInit(dataJson.getString("ref"), dataJson.getInteger("bcdLevel"),reqJson.getString("id_P"));
 
         //JSONObject oldModuleObj = oldModuleInit.getJSONObject("moduleObj");
@@ -2256,7 +2260,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
 
             // 获取旧数据的开始时间(开始时间要拿当前日期)
-            Date startDate = dateUtils.strTurnDate(DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+            Date startDate = dateUtils.strTurnDate(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
             // 获取旧数据的结束时间
             Date endDate = dateUtils.strTurnDate(dataJson.getString("tfin"));
             // 计算出两个时间差多少个月

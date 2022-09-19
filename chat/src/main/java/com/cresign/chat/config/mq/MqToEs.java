@@ -21,9 +21,9 @@ import java.io.IOException;
 /**
  * @ClassName MqToEs
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2022/6/30
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 @Component
 @RocketMQMessageListener(

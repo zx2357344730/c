@@ -13,9 +13,9 @@
 //import java.security.NoSuchAlgorithmException;
 //
 ///**
-// * ##author: tangzejin
-// * ##updated: 2019/8/23
-// * ##version: 1.0.0
+// * @author tangzejin
+// * @updated 2019/8/23
+// * @ver 1.0.0
 // * ##description: 实现MD5加密
 // */
 //@Log4j2
@@ -25,8 +25,8 @@
 //
 //    /**
 //     * ##description:(用来实现MD5加密)
-//     * ##return: String
-//     * ##Params: inStr 要加密的字符串
+//     * @return String
+//     * @param inStr 要加密的字符串
 //     *  思路，
 //     *  实现32位的MD5码
 //     */
@@ -76,8 +76,8 @@
 //
 //    /**
 //     * ##description:(在MD5的基础上在进行一次加密，加盐加密)
-//     * ##Params: inStr	要加密的字符串
-//     * ##return: String
+//     * @param inStr	要加密的字符串
+//     * @return String
 //     */
 //    public static String twoPaswwWord(String inStr) {
 //
@@ -92,9 +92,9 @@
 //    }
 //
 //    /**
-//     * ##description:TODO(与kL方法一致，但是是解密的方法，所谓负负得正)
-//     * ##Params: inStr 解密字符串
-//     * ##return:  结果
+//     * ##description:(与kL方法一致，但是是解密的方法，所谓负负得正)
+//     * @param inStr 解密字符串
+//     * @return  结果
 //     */
 //    public static String jL(String inStr) {
 //        char[] charArray = inStr.toCharArray();
@@ -108,8 +108,8 @@
 //
 //    /**
 //     * 把pwd一次性进行两次加密
-//     * ##Params: pwd   密码
-//     * ##return:  加密后的密码
+//     * @param pwd   密码
+//     * @return  加密后的密码
 //     */
 //    public static String pwdDisposableEncryption(String pwd){
 //        String password = password(pwd);
@@ -122,8 +122,8 @@
 //
 //    /**
 //     * 生成md5
-//     * ##Params: file 图片文件
-//     * ##return: MD5值
+//     * @param file 图片文件
+//     * @return MD5值
 //     */
 //    public static String getFileMD5(File file) throws FileNotFoundException {
 //

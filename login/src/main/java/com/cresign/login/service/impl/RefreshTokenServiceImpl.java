@@ -24,9 +24,9 @@ import org.springframework.stereotype.Service;
 
 /**
  * ##description: 注销账户实现类
- * ##author: JackSon
- * ##updated: 2020/9/5 14:23
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/9/5 14:23
+ * @ver 1.0
  */
 @Service
 @Log4j2
@@ -81,7 +81,7 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
     }
 
     @Override
-    public ApiResponse loginOut(String refreshToken, String clientType) {
+    public ApiResponse logout(String refreshToken, String clientType) {
 
         // 判断参数是否为空
         if (StringUtils.isNoneEmpty(refreshToken) || StringUtils.isNotEmpty(clientType)) {
@@ -93,10 +93,10 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
                 boolean deleteResult = redisTemplate1.delete(clientType + "RefreshToken-" + refreshToken);
 
                 if (!deleteResult) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGINOUT_ERROR.getCode(), null);
+                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGOUT_ERROR.getCode(), null);
                 }
                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-LOGINOUT_SUCCESS.getCode(), null);
+LOGOUT_SUCCESS.getCode(), null);
             }
 
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.

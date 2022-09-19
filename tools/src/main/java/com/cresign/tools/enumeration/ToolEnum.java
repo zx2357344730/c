@@ -8,6 +8,8 @@ public enum ToolEnum {
     //assset不存在
     ASSET_NOT_FOUND("021005"),
 
+    DB_ERROR("029001"),
+
 
     ;
     /**
@@ -17,7 +19,7 @@ public enum ToolEnum {
 
     /**
      * 带参构造方法
-     * ##Params: code  异常状态码
+     * @param code  异常状态码
      */
     ToolEnum(String code){
         this.code = code;

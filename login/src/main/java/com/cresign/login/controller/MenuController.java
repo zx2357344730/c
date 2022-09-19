@@ -23,9 +23,9 @@ import java.io.IOException;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020-12-26 11:45
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020-12-26 11:45
+ * @ver 1.0
  */
 @RequestMapping("menu")
 @RestController
@@ -103,7 +103,7 @@ public class MenuController {
 
     @SecurityParameter
     @PostMapping("/v1/get_menuData")
-    public ApiResponse getMenuListByGrpU(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse getMenuListByGrpU(@RequestBody JSONObject reqJson){
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return menuService.getMenuListByGrpU(
                 tokData.getString("id_C"),

@@ -50,7 +50,7 @@ public class LogFlow {
         this.lang = "cn";
         this.zcndesc = zcndesc;
         this.tzone = 8;
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
     }
 
     public LogFlow(String logType, String id_FC, String id_FS,  String subType,
@@ -79,14 +79,14 @@ public class LogFlow {
         this.lang = "cn";
         this.zcndesc = zcndesc;
         this.tzone = 8;
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
     }
 
     /**
      * 1、线程安全性保证:线程安全的
      * 2、性能:好
      * 3、延迟加载:延迟加载
-     * ##return:  日志
+     * @return  日志
      */
     public static LogFlow getInstance(){
         return LogFlow.Hod.instance;
@@ -96,12 +96,7 @@ public class LogFlow {
         private static final LogFlow instance = new LogFlow();
     }
 
-    /**
-     *  如果Log是action / prob，data内加
-     * private String bcdStatus; 现在的状态
-     * private String type; 是普通 0/ 管理员 1/ 自动trigger 2
-     * errId / errIndex / pan
-     */
+
 //    public void setActionData(Integer bisactivate, Integer bcdStatus, JSONArray id_Us, Double priority,String id_P,
 //                              String id_OP, Integer ind_OP, String refOP, Integer bmdpt, JSONObject wrdNP,JSONObject wrdN) {
 //        JSONObject data = new JSONObject();

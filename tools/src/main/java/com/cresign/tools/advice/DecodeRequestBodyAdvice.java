@@ -4,17 +4,12 @@ package com.cresign.tools.advice;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.annotation.SecurityParameter;
-import com.cresign.tools.encrypt.AesEncryptUtils;
-import com.cresign.tools.encrypt.RSAUtils;
-import com.cresign.tools.token.GetUserIdByToken;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
@@ -24,18 +19,14 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdvice;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
 /**
- * ##Author: jackson
+ * @author jackson
  * @desc 请求数据解密
  */
 @Slf4j
@@ -124,8 +115,8 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
 
         /**
          *
-         * ##Params: requestData
-         * ##return:
+         * @param requestData
+         * @return
          */
         public String easpString(String requestData) {
 
@@ -191,12 +182,12 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
 //                        throw  new RuntimeException("参数【aseKey】解析异常！");
 //                    }
 
-                    System.out.println("私钥:");
-                    System.out.println(server_private_key);
-                    System.out.println("公钥:");
-                    System.out.println(re.getString("publicKey"));
-                    System.out.println("encryped");
-                    System.out.println(Base64.decodeBase64(encrypted));
+//                    System.out.println("私钥:");
+//                    System.out.println(server_private_key);
+//                    System.out.println("公钥:");
+//                    System.out.println(re.getString("publicKey"));
+//                    System.out.println("encryped");
+//                    System.out.println(Base64.decodeBase64(encrypted));
                     byte[] plaintext ;
                     try {
 

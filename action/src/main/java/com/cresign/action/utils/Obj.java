@@ -13,9 +13,9 @@ import java.util.List;
 /**
  * @ClassName NewObj
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2022/4/18 10:36
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 public class Obj {
 
@@ -91,7 +91,7 @@ public class Obj {
      * @param teDelayDate	延迟总时间
      * @return com.cresign.tools.pojo.po.chkin.Task  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/2/18 16:58
      */
     public static Task getTask(Long tePStart, Long tePFinish, String id_O, Integer index
@@ -130,7 +130,7 @@ public class Obj {
      * @param teDurTotal 任务总时间
      * @return com.cresign.tools.pojo.po.chkin.Task  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/2/18 16:58
      */
     public static Task getTaskX(Long tePStart, Long tePFinish,Long teDurTotal,Task task){
@@ -256,7 +256,7 @@ public class Obj {
      * @param teS	当前时间戳
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/2/17 21:01
      */
     public static void addOrder(Long teS, CoupaUtil coupaUtil){
@@ -335,7 +335,7 @@ public class Obj {
      * @param teS	当前时间戳
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/2/17 21:01
      */
     public static void addOrder2(Long teS, CoupaUtil coupaUtil){
@@ -390,7 +390,7 @@ public class Obj {
      * @param teS	当前时间戳
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/2/17 21:01
      */
     public static void addOrder3(Long teS, CoupaUtil coupaUtil){
@@ -469,7 +469,7 @@ public class Obj {
      * @param teS	当前时间戳
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/2/17 21:02
      */
     public static void addTasksAndOrder(Long teS,String id_C,JSONObject objTaskAll){
@@ -506,7 +506,7 @@ public class Obj {
      * @param teS	当前时间戳
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/2/17 21:02
      */
     public static void addTasksAndOrder3(Long teS,String id_C,JSONObject objTaskAll){
@@ -551,7 +551,7 @@ public class Obj {
      * @param dep	部门
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/2/17 21:03
      */
     public static void addTasks(Long teS,String grpB,String dep,String id_C,JSONObject objTaskAll){

@@ -1,6 +1,5 @@
 package com.cresign.login.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.service.SetAuthService;
 import com.cresign.tools.annotation.SecurityParameter;
@@ -67,6 +66,7 @@ public class SetAuthController {
     @PostMapping("/v1/setAUN")
     public ApiResponse setAUN(
             @RequestBody Map<String, Object> reqMap) {
+
         return setAuthService.setAUN(
                 getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
                 reqMap.get("id_AUN").toString());

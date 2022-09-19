@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * ##description: 登录返回工具类
- * ##author: JackSon
- * ##updated: 2020/7/25 10:54
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/7/25 10:54
+ * @ver 1.0
  */
 @Component
 public class LoginResult {
@@ -34,12 +34,12 @@ public class LoginResult {
     /**
      * 返回allList 所有信息方法（账号登录，以及微信登录可用）
      *
-     * ##Params: user       用户对象
-     * ##Params: clientType 客户端类型
-     * ##Params: loginType  登录类型
-     * ##author: JackSon
-     * ##updated: 2020/7/25 11:00
-     * ##Return: java.lang.Object
+     * @param user       用户对象
+     * @param clientType 客户端类型
+     * @param loginType  登录类型
+     * @author JackSon
+     * @updated 2020/7/25 11:00
+     * @return java.lang.Object
      */
     public JSONObject allResult(User user, String clientType, String loginType) {
 

@@ -3,9 +3,9 @@ package com.cresign.action.service;
 /**
  * @ClassName TimeService
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2021/12/20 11:09
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 public interface TimeZjService {
 //    /**
@@ -15,7 +15,7 @@ public interface TimeZjService {
 //     * @param dep	部门
 //     * @return void  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/2/17 21:03
 //     */
 //    void addTasks(Long teS,String grpB,String dep,String id_C);
@@ -25,7 +25,7 @@ public interface TimeZjService {
 //     * @param teS	当前时间戳
 //     * @return void  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/2/17 21:02
 //     */
 //    void addTasksAndOrder(Long teS,String id_C);
@@ -35,7 +35,7 @@ public interface TimeZjService {
 //     * @param teS	当前时间戳
 //     * @return void  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/2/17 21:02
 //     */
 //    void addTasksAndOrder3(Long teS,String id_C);
@@ -45,7 +45,7 @@ public interface TimeZjService {
 //     * @param teS	当前时间戳
 //     * @return void  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/2/17 21:01
 //     */
 //    void addOrder(Long teS);
@@ -55,7 +55,7 @@ public interface TimeZjService {
 //     * @param teS	当前时间戳
 //     * @return void  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/2/17 21:01
 //     */
 //    void addOrder2(Long teS);
@@ -65,7 +65,7 @@ public interface TimeZjService {
 //     * @param teS	当前时间戳
 //     * @return void  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/2/17 21:01
 //     */
 //    void addOrder3(Long teS);
@@ -81,7 +81,7 @@ public interface TimeZjService {
 //     * @param dep	部门
 //     * @return java.lang.Long  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/2/17 23:59
 //     */
 //    Long getTeS(String random,String grpB,String dep);
@@ -92,7 +92,7 @@ public interface TimeZjService {
 //     * @param dep	部门
 //     * @return java.lang.Integer  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/2/17 23:39
 //     */
 //    Integer getObjGrpUNum(String grpB,String dep,String id_C,String randomAll);
@@ -110,7 +110,7 @@ public interface TimeZjService {
 //     * @param teDelayDate	延迟总时间
 //     * @return com.cresign.tools.pojo.po.chkin.Task  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/2/18 16:58
 //     */
 //    Task getTask(Long tePStart, Long tePFinish, String id_O, Integer index
@@ -135,7 +135,7 @@ public interface TimeZjService {
 //     * @param randomAll 全局唯一编号
 //     * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/2/18 22:27
 //     */
 //    JSONObject chkInJi(Task task, Long hTeStart, String grpB
@@ -150,7 +150,7 @@ public interface TimeZjService {
 //     * @param randomAll 全局唯一编号
 //     * @return void  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/2/17 19:26
 //     */
 //    void setZui(JSONObject teDaF

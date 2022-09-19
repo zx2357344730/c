@@ -1,11 +1,8 @@
 package com.cresign.tools.advice;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.apires.LocalMessage;
-import com.cresign.tools.encrypt.AesEncryptUtils;
-import com.cresign.tools.encrypt.RSAUtils;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,21 +10,19 @@ import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
 /**
- * ##author: tangzejin
- * ##updated: 2019/8/23
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/8/23
+ * @ver 1.0.0
  * ##description: 作者很懒, 什么也没写...
  */
 @Slf4j
@@ -42,9 +37,6 @@ public class RetResult {
 //    @Resource
 //    private StringRedisTemplate redisTemplate1;
 
-    /**
-     * 注入RocketMQ模板
-     */
     public static HttpServletRequest request;
 
     public static StringRedisTemplate redisTemplate1;
@@ -99,27 +91,27 @@ public class RetResult {
     @Autowired
     private LocalMessage localMessage;
 
-    private static String QD_Key = "\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCmZ22+NactiEwYmw06yU/Tiy1L\npenHWgbPtcjdSGIqCzZdZF9pP7X/q1XLknm6yt3lh0KQTka7MoHlK/5rauZ4Y6Jw\ny6bqXwdjRO+EmvFY/UN/fj2bczWf4XJ2WtvBZTnOzk5buk4Gp3sTkbRLpOPwvNAz\n4DrAFD1biUZF62/vyQIDAQAB\n";
-
-    static {
-        // 字符串转换
-        String s = QD_Key.replaceAll(",", "/");
-        s = s.replaceAll("%0A","\n");
-        s = s.replaceAll("%2C","/");
-        s = s.replaceAll("%2B","+");
-        QD_Key = s.replaceAll("%3D","=");
-    }
+//    private static String QD_Key = "\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCmZ22+NactiEwYmw06yU/Tiy1L\npenHWgbPtcjdSGIqCzZdZF9pP7X/q1XLknm6yt3lh0KQTka7MoHlK/5rauZ4Y6Jw\ny6bqXwdjRO+EmvFY/UN/fj2bczWf4XJ2WtvBZTnOzk5buk4Gp3sTkbRLpOPwvNAz\n4DrAFD1biUZF62/vyQIDAQAB\n";
+//
+//    static {
+//        // 字符串转换
+//        String s = QD_Key.replaceAll(",", "/");
+//        s = s.replaceAll("%0A","\n");
+//        s = s.replaceAll("%2C","/");
+//        s = s.replaceAll("%2B","+");
+//        QD_Key = s.replaceAll("%3D","=");
+//    }
 
     public static final String RED_KEY = "key:k_";
 
     /**
      * 返回加密數據給前端
-     * ##Params: httpStatus  web响应码
-     * ##Params: code        自定义状态码
-     * ##Params: message     返回数据
-     * ##author: JackSon
-     * ##updated: 2020/7/29 9:53
-     * ##Return: java.lang.String
+     * @param httpStatus  web响应码
+     * @param code        自定义状态码
+     * @param message     返回数据
+     * @author JackSon
+     * @updated 2020/7/29 9:53
+     * @return java.lang.String
      */
     public static String jsonResultEncrypt(HttpStatus httpStatus, String code, Object message
 //            ,String qdKey
@@ -138,13 +130,13 @@ public class RetResult {
 
     /**
      * 返回沒有加密的數據
-     * ##author: JackSon
-     * ##Params: httpStatus
-     * ##Params: code
-     * ##Params: message
-     * ##version: 1.0
-     * ##updated: 2020/8/25 14:17
-     * ##Return: java.lang.String
+     * @author JackSon
+     * @param httpStatus
+     * @param code
+     * @param message
+     * @ver 1.0
+     * @updated 2020/8/25 14:17
+     * @return java.lang.String
      */
     public static String jsonResult(HttpStatus httpStatus, String code, Object message){
 
@@ -162,13 +154,13 @@ public class RetResult {
 
     /**
      * 返回沒有加密的错误數據
-     * ##author: JackSon
-     * ##Params: httpStatus
-     * ##Params: code
-     * ##Params: message
-     * ##version: 1.0
-     * ##updated: 2020/8/25 14:17
-     * ##Return: java.lang.String
+     * @author JackSon
+     * @param httpStatus
+     * @param code
+     * @param message
+     * @ver 1.0
+     * @updated 2020/8/25 14:17
+     * @return java.lang.String
      */
     public static String errorJsonResult(HttpStatus httpStatus, String code, Object message){
 
@@ -227,10 +219,10 @@ public class RetResult {
 
     /**
      * 混合加密
-     * ##Params: body      传入加密内容
-     * ##author:         JackSon
-     * ##updated:     2020/7/29 9:56
-     * ##Return:         java.lang.Object
+     * @param body      传入加密内容
+     * @author         JackSon
+     * @updated     2020/7/29 9:56
+     * @return         java.lang.Object
      */
     private static Object encodeAesRsa(Object body
 //            ,String qdKey
@@ -300,8 +292,8 @@ public class RetResult {
 
     /**
      * 创建指定位数的随机字符串
-     * ##Params: length 表示生成字符串的长度
-     * ##return: 字符串
+     * @param length 表示生成字符串的长度
+     * @return 字符串
      */
     private static String getRandomString(int length) {
         String base = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -317,15 +309,15 @@ public class RetResult {
     // 以后可能会用到
 //    /**
 //     * 用来新增日志，与抛出异常信息
-//     * ##Params: id_C  公司id
-//     * ##Params: id_U  用户id
-//     * ##Params: logType   日志类型
-//     * ##Params: zcndesc 日志描述
-//     * ##Params: data  具体数据
-//     * ##Params: my    异常信息
-//     * ##Params: message   异常具体信息
-//     * ##Params: logService    新增日志接口
-//     * ##return:  异常结果
+//     * @param id_C  公司id
+//     * @param id_U  用户id
+//     * @param logType   日志类型
+//     * @param zcndesc 日志描述
+//     * @param data  具体数据
+//     * @param my    异常信息
+//     * @param message   异常具体信息
+//     * @param logService    新增日志接口
+//     * @return  异常结果
 //     */
 //    public static String exBZ2ByDesc(String id_C, String id_U, String logType
 //            , String zcndesc
@@ -347,7 +339,7 @@ public class RetResult {
 //            }
 //
 //            // 新增日志信息
-//            logService.addLog2(log,TY.getDateByT(DateEnum.DATE_ONE.getDate()));
+//            logService.addLog2(log,TY.getDateNow(DateEnum.DATE_ONE.getDate()));
 //
 //        }
 //
