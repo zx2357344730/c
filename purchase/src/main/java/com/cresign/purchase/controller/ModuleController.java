@@ -66,20 +66,20 @@ public class ModuleController {
                 ,reqJson.getString("grp"));
     }
 
-    /**
-     * 单翻译 - 只能翻译一个字段
-     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
-     * @author tang
-     * @version 1.0.0
-     * @date 2022/8/19
-     */
-    @PostMapping("/v1/singleTranslate")
-    @SecurityParameter
-    public ApiResponse singleTranslate(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.singleTranslate(reqJson.getJSONObject("data"));
-    }
+//    /**
+//     * 单翻译 - 只能翻译一个字段
+//     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+//     * @author tang
+//     * @version 1.0.0
+//     * @date 2022/8/19
+//     */
+//    @PostMapping("/v1/singleTranslate")
+//    @SecurityParameter
+//    public ApiResponse singleTranslate(@RequestBody JSONObject reqJson){
+//        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+//        reqJson.put("id_U",tokData.getString("id_U"));
+//        return moduleService.singleTranslate(reqJson.getJSONObject("data"));
+//    }
 
     /**
      * 多翻译 - 按照指定格式请求，可以翻译所有的字段

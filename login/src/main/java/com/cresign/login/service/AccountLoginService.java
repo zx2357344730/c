@@ -10,6 +10,15 @@ import com.cresign.tools.apires.ApiResponse;
  */
 public interface AccountLoginService {
 
+    /**
+     * 根据id_U修改appId
+     * @param appId 应用编号
+     * @param id_U  用户编号
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
     ApiResponse setAppId(String appId,String id_U);
 
 //    ApiResponse getKey(String qdKey);

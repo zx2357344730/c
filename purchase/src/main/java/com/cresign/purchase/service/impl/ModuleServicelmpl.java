@@ -26,8 +26,6 @@ import com.tencentcloudapi.common.profile.HttpProfile;
 import com.tencentcloudapi.tmt.v20180321.TmtClient;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchRequest;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchResponse;
-import com.tencentcloudapi.tmt.v20180321.models.TextTranslateRequest;
-import com.tencentcloudapi.tmt.v20180321.models.TextTranslateResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -74,144 +72,212 @@ public class ModuleServicelmpl implements ModuleService {
     private static final String secretId = "AKIDwjMl15uUt53mFUVGk39zaw4ydAWfaS8a";
     private static final String secretKey = "HLEsHSRChx1sTtELCpFXfZGk14tVw97w";
 
+    /**
+     * 更新a-auth内日志权限信息，更新全部
+     * @param id_C	公司编号
+     * @param grpU	用户组别
+     * @param listType	集合类型
+     * @param grp	组别
+     * @param auth	更新的状态
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
     @Override
     public ApiResponse modifyLogAuthAll(String id_C, String grpU, String listType, String grp, Integer auth) {
-        JSONObject compAssetRole = getCompAssetRole(id_C);
-        JSONObject result = new JSONObject();
-        // 获取错误状态，为0是没有错误
-        Integer statusRole = compAssetRole.getInteger("status");
-        if (0 == statusRole) {
-            JSONObject role = compAssetRole.getJSONObject("role");
-            String assetIdRole = compAssetRole.getString("assetId");
-
-            JSONArray errRole = new JSONArray();
-            JSONObject objAuth = role.getJSONObject("objAuth");
-            boolean isOk = getLogAuth(objAuth,errRole,grpU,listType,grp);
-            result.put("errRole",errRole);
-            result.put("type",0);
-            if (isOk) {
-                JSONObject authGrpU = objAuth.getJSONObject(grpU);
-                JSONObject authListType = authGrpU.getJSONObject(listType);
-                JSONObject listTypeGrp = authListType.getJSONObject(grp);
-                JSONArray logAuthList = listTypeGrp.getJSONArray("log");
-
-                for (int i = 0; i < logAuthList.size(); i++) {
-                    JSONObject jsonObject = logAuthList.getJSONObject(i);
-                    jsonObject.put("auth",auth);
-                    logAuthList.set(i,jsonObject);
-                }
-
-                listTypeGrp.put("log",logAuthList);
-                authListType.put(grp,listTypeGrp);
-                authGrpU.put(listType,authListType);
-                objAuth.put(grpU,authGrpU);
-
-                role.put("objAuth",objAuth);
-                // 定义存储flowControl字典
-                JSONObject mapKey = new JSONObject();
-                // 设置字段数据
-                mapKey.put("role",role);
-                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
-                result.put("type",1);
-            }
-            return retResult.ok(CodeEnum.OK.getCode(), result);
-        } else {
-            return errResult(statusRole,1);
-        }
+//        JSONObject compAssetRole = getCompAssetRole(id_C);
+//        JSONObject result = new JSONObject();
+//        // 获取错误状态，为0是没有错误
+//        Integer statusRole = compAssetRole.getInteger("status");
+//        if (0 == statusRole) {
+//            JSONObject role = compAssetRole.getJSONObject("role");
+//            String assetIdRole = compAssetRole.getString("assetId");
+//
+//            JSONArray errRole = new JSONArray();
+//            JSONObject objAuth = role.getJSONObject("objAuth");
+//            boolean isOk = getLogAuth(objAuth,errRole,grpU,listType,grp);
+//            result.put("errRole",errRole);
+//            result.put("type",0);
+//            if (isOk) {
+//                JSONObject authGrpU = objAuth.getJSONObject(grpU);
+//                JSONObject authListType = authGrpU.getJSONObject(listType);
+//                JSONObject listTypeGrp = authListType.getJSONObject(grp);
+//                JSONArray logAuthList = listTypeGrp.getJSONArray("log");
+//
+//                for (int i = 0; i < logAuthList.size(); i++) {
+//                    JSONObject jsonObject = logAuthList.getJSONObject(i);
+//                    jsonObject.put("auth",auth);
+//                    logAuthList.set(i,jsonObject);
+//                }
+//
+//                listTypeGrp.put("log",logAuthList);
+//                authListType.put(grp,listTypeGrp);
+//                authGrpU.put(listType,authListType);
+//                objAuth.put(grpU,authGrpU);
+//
+//                role.put("objAuth",objAuth);
+//                // 定义存储flowControl字典
+//                JSONObject mapKey = new JSONObject();
+//                // 设置字段数据
+//                mapKey.put("role",role);
+//                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+//                result.put("type",1);
+//            }
+//            return retResult.ok(CodeEnum.OK.getCode(), result);
+//        } else {
+//            return errResult(statusRole,1);
+//        }
+        return getObjAuth(id_C,grpU,listType,grp,auth,null,true);
     }
 
+    /**
+     * 更新a-auth内日志权限信息，指定更新
+     * @param id_C	公司编号
+     * @param grpU	用户组别
+     * @param listType	集合类型
+     * @param grp	组别
+     * @param auth	更新的状态
+     * @param modRef	指定的模块权限
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
     @Override
     public ApiResponse modifyLogAuth(String id_C, String grpU, String listType, String grp, Integer auth, String modRef) {
-        JSONObject compAssetRole = getCompAssetRole(id_C);
-        JSONObject result = new JSONObject();
-        // 获取错误状态，为0是没有错误
-        Integer statusRole = compAssetRole.getInteger("status");
-        if (0 == statusRole) {
-            JSONObject role = compAssetRole.getJSONObject("role");
-            String assetIdRole = compAssetRole.getString("assetId");
-
-            JSONArray errRole = new JSONArray();
-            JSONObject objAuth = role.getJSONObject("objAuth");
-            boolean isOk = getLogAuth(objAuth,errRole,grpU,listType,grp);
-            result.put("errRole",errRole);
-            result.put("type",0);
-            if (isOk) {
-                JSONObject authGrpU = objAuth.getJSONObject(grpU);
-                JSONObject authListType = authGrpU.getJSONObject(listType);
-                JSONObject listTypeGrp = authListType.getJSONObject(grp);
-                JSONArray logAuthList = listTypeGrp.getJSONArray("log");
-                int updateInd = -1;
-                for (int i = 0; i < logAuthList.size(); i++) {
-                    JSONObject jsonObject = logAuthList.getJSONObject(i);
-                    String modRefLog = jsonObject.getString("modRef");
-                    if (modRefLog.equals(modRef)) {
-                        updateInd = i;
-                    }
-                }
-                if (updateInd != -1) {
-                    JSONObject jsonObject = logAuthList.getJSONObject(updateInd);
-                    jsonObject.put("auth",auth);
-                    logAuthList.set(updateInd,jsonObject);
-                    listTypeGrp.put("log",logAuthList);
-                    authListType.put(grp,listTypeGrp);
-                    authGrpU.put(listType,authListType);
-                    objAuth.put(grpU,authGrpU);
-
-                    role.put("objAuth",objAuth);
-                    // 定义存储flowControl字典
-                    JSONObject mapKey = new JSONObject();
-                    // 设置字段数据
-                    mapKey.put("role",role);
-                    coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
-                    result.put("type",1);
-                } else {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_MATCHING_MOD_REF.getCode(), "无匹配的modRef");
-                }
-            }
-            return retResult.ok(CodeEnum.OK.getCode(), result);
-        } else {
-            return errResult(statusRole,1);
-        }
+//        JSONObject compAssetRole = getCompAssetRole(id_C);
+//        JSONObject result = new JSONObject();
+//        // 获取错误状态，为0是没有错误
+//        Integer statusRole = compAssetRole.getInteger("status");
+//        if (0 == statusRole) {
+//            JSONObject role = compAssetRole.getJSONObject("role");
+//            String assetIdRole = compAssetRole.getString("assetId");
+//
+//            JSONArray errRole = new JSONArray();
+//            JSONObject objAuth = role.getJSONObject("objAuth");
+//            boolean isOk = getLogAuth(objAuth,errRole,grpU,listType,grp);
+//            result.put("errRole",errRole);
+//            result.put("type",0);
+//            if (isOk) {
+//                JSONObject authGrpU = objAuth.getJSONObject(grpU);
+//                JSONObject authListType = authGrpU.getJSONObject(listType);
+//                JSONObject listTypeGrp = authListType.getJSONObject(grp);
+//                JSONArray logAuthList = listTypeGrp.getJSONArray("log");
+//                int updateInd = -1;
+//                for (int i = 0; i < logAuthList.size(); i++) {
+//                    JSONObject jsonObject = logAuthList.getJSONObject(i);
+//                    String modRefLog = jsonObject.getString("modRef");
+//                    if (modRefLog.equals(modRef)) {
+//                        updateInd = i;
+//                    }
+//                }
+//                if (updateInd != -1) {
+//                    JSONObject jsonObject = logAuthList.getJSONObject(updateInd);
+//                    jsonObject.put("auth",auth);
+//                    logAuthList.set(updateInd,jsonObject);
+//                    listTypeGrp.put("log",logAuthList);
+//                    authListType.put(grp,listTypeGrp);
+//                    authGrpU.put(listType,authListType);
+//                    objAuth.put(grpU,authGrpU);
+//
+//                    role.put("objAuth",objAuth);
+//                    // 定义存储flowControl字典
+//                    JSONObject mapKey = new JSONObject();
+//                    // 设置字段数据
+//                    mapKey.put("role",role);
+//                    coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+//                    result.put("type",1);
+//                } else {
+//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_MATCHING_MOD_REF.getCode(), "无匹配的modRef");
+//                }
+//            }
+//            return retResult.ok(CodeEnum.OK.getCode(), result);
+//        } else {
+//            return errResult(statusRole,1);
+//        }
+        return getObjAuth(id_C,grpU,listType,grp,auth,modRef,false);
     }
 
+    /**
+     * 新增或修改init内日志模块
+     * @param objLogMod	新增或修改信息
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
     @Override
     public ApiResponse addOrUpdateInitMod(JSONObject objLogMod) {
+        // 获取init信息
         Init init = coupaUtil.getInit();
+        // 获取日志模块信息
         JSONObject logInit = init.getLogInit();
+        // 遍历模块信息
         objLogMod.keySet().forEach(k -> {
+            // 获取模块对象
             JSONObject jsonObject = objLogMod.getJSONObject(k);
+            // 添加模块
             logInit.put(k,jsonObject);
         });
+        // 更新数据库
         coupaUtil.updateInitLog(logInit);
         return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
     }
 
+    /**
+     * 根据id_C修改asset的a-auth内role对应的grpU+listType+grp
+     * @param id_C  公司编号
+     * @param grpU  用户组别
+     * @param listType  集合类型
+     * @param grp   组别
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
     @Override
     public ApiResponse updateLogAuth(String id_C,String grpU,String listType,String grp) {
         // 调用方法获取公司模块信息
-        JSONObject compAssetMod = getCompAssetMod(id_C);
+//        JSONObject compAssetMod = getCompAssetMod(id_C);
+        // 调用方法获取asset的a-core信息
+        JSONObject compAssetMod = getCompAssetByRef(id_C,"a-core","control");
         // 获取错误状态，为0是没有错误
         Integer status = compAssetMod.getInteger("status");
+        // 创建返回结果对象
         JSONObject result = new JSONObject();
         if (0 == status) {
-            JSONObject compAssetRole = getCompAssetRole(id_C);
+//            JSONObject compAssetRole = getCompAssetRole(id_C);
+            // 调用方法获取asset的a-auth信息
+            JSONObject compAssetRole = getCompAssetByRef(id_C,"a-auth","role");
             // 获取错误状态，为0是没有错误
             Integer statusRole = compAssetRole.getInteger("status");
             if (0 == statusRole) {
+                // 获取role卡片信息
                 JSONObject role = compAssetRole.getJSONObject("role");
+                // 获取asset编号
                 String assetIdRole = compAssetRole.getString("assetId");
 
+                // 获取control卡片信息
                 JSONObject control = compAssetMod.getJSONObject("control");
+                // 获取卡片内模块信息
                 JSONObject objMod = control.getJSONObject("objMod");
+                // 获取init对象
                 Init init = coupaUtil.getInit();
+                // 获取日志init信息
                 JSONObject logInit = init.getLogInit();
-                System.out.println("init:");
-                System.out.println(JSON.toJSONString(init));
+//                System.out.println("init:");
+//                System.out.println(JSON.toJSONString(init));
+                // 创建存储a-core模组对象
                 JSONObject modList = new JSONObject();
 //                JSONObject modListNew = new JSONObject();
+                // 创建存储a-auth模组集合
                 JSONArray modListNew = new JSONArray();
+                // 创建存储a-core异常信息集合
                 JSONArray errMod = new JSONArray();
+                // 遍历模组信息
                 objMod.keySet().forEach(k -> {
+                    // 根据键获取对应的模组信息
                     JSONObject jsonObject = logInit.getJSONObject(k);
                     if (null != jsonObject) {
 //                        Integer auth = jsonObject.getInteger("auth");
@@ -224,41 +290,52 @@ public class ModuleServicelmpl implements ModuleService {
 //                            modList.put(k,objMod.getJSONObject(k));
 //                            modListNew.put(k,jsonObject);
 //                        }
+                        // 添加模组信息
                         modList.put(k,objMod.getJSONObject(k));
                         modListNew.add(jsonObject);
                     } else {
+                        // 添加错误信息
                         JSONObject errSon = new JSONObject();
                         errSon.put("modKey",k);
                         errSon.put("desc","init内不存在");
                         errMod.add(errSon);
                     }
                 });
-                System.out.println("modList:");
-                System.out.println(JSON.toJSONString(modList));
-                System.out.println(JSON.toJSONString(modListNew));
+//                System.out.println("modList:");
+//                System.out.println(JSON.toJSONString(modList));
+//                System.out.println(JSON.toJSONString(modListNew));
+                // 判断有模组
                 if (modList.size() > 0) {
+                    // 创建存储a-auth异常信息集合
                     JSONArray errRole = new JSONArray();
-                    System.out.println("前:");
-                    System.out.println(JSON.toJSONString(role));
+//                    System.out.println("前:");
+//                    System.out.println(JSON.toJSONString(role));
+                    // 获取auth信息
                     JSONObject objAuth = role.getJSONObject("objAuth");
+                    // 获取判断结果
                     boolean isOk = getLogAuth(objAuth,errRole,grpU,listType,grp);
                     if (isOk) {
+                        // 添加信息
                         JSONObject authGrpU = objAuth.getJSONObject(grpU);
                         JSONObject authListType = authGrpU.getJSONObject(listType);
                         JSONObject listTypeGrp = authListType.getJSONObject(grp);
-                        listTypeGrp.put("log",modListNew);
-                        authListType.put(grp,listTypeGrp);
-                        authGrpU.put(listType,authListType);
-                        objAuth.put(grpU,authGrpU);
-
-                        System.out.println("后:");
-                        role.put("objAuth",objAuth);
-                        System.out.println(JSON.toJSONString(role));
-                        // 定义存储flowControl字典
-                        JSONObject mapKey = new JSONObject();
-                        // 设置字段数据
-                        mapKey.put("role",role);
-                        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+//                        listTypeGrp.put("log",modListNew);
+//                        authListType.put(grp,listTypeGrp);
+//                        authGrpU.put(listType,authListType);
+//                        objAuth.put(grpU,authGrpU);
+//
+////                        System.out.println("后:");
+//                        role.put("objAuth",objAuth);
+////                        System.out.println(JSON.toJSONString(role));
+//                        // 定义存储flowControl字典
+//                        JSONObject mapKey = new JSONObject();
+//                        // 设置字段数据
+//                        mapKey.put("role",role);
+//                        // 更新数据库
+//                        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+                        // 调用方法更新数据
+                        setAndUpdateAuth(listTypeGrp,modListNew,authListType,authGrpU
+                                ,objAuth,role,assetIdRole,grpU,listType,grp);
                     }
 
 //                    objAuth.keySet().forEach(k -> {
@@ -283,12 +360,12 @@ public class ModuleServicelmpl implements ModuleService {
 //                        }
 //                    });
 
-                    System.out.println("role异常:");
-                    System.out.println(JSON.toJSONString(errRole));
+//                    System.out.println("role异常:");
+//                    System.out.println(JSON.toJSONString(errRole));
                     result.put("errRole",errRole);
                 }
-                System.out.println("modInit异常:");
-                System.out.println(JSON.toJSONString(errMod));
+//                System.out.println("modInit异常:");
+//                System.out.println(JSON.toJSONString(errMod));
                 result.put("errMod",errMod);
             } else {
                 return errResult(statusRole,1);
@@ -299,47 +376,47 @@ public class ModuleServicelmpl implements ModuleService {
         return retResult.ok(CodeEnum.OK.getCode(), result);
     }
 
-    /**
-     * 单翻译 - 只能翻译一个字段
-     * @param data	需要翻译的数据
-     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
-     * @author tang
-     * @version 1.0.0
-     * @date 2022/8/19
-     */
-    @Override
-    public ApiResponse singleTranslate(JSONObject data){
-        try{
-//            JSONObject data = can.getJSONObject("data");
-            String cn = data.getString("cn");
-            // 实例化一个认证对象，入参需要传入腾讯云账户secretId，secretKey,此处还需注意密钥对的保密
-            // 密钥可前往https://console.cloud.tencent.com/cam/capi网站进行获取
-            Credential cred = new Credential(secretId, secretKey);
-            // 实例化一个http选项，可选的，没有特殊需求可以跳过
-            HttpProfile httpProfile = new HttpProfile();
-            httpProfile.setEndpoint("tmt.tencentcloudapi.com");
-            // 实例化一个client选项，可选的，没有特殊需求可以跳过
-            ClientProfile clientProfile = new ClientProfile();
-            clientProfile.setHttpProfile(httpProfile);
-            // 实例化要请求产品的client对象,clientProfile是可选的
-            TmtClient client = new TmtClient(cred, "ap-guangzhou", clientProfile);
-            // 实例化一个请求对象,每个接口都会对应一个request对象
-            TextTranslateRequest req = new TextTranslateRequest();
-            req.setSourceText(cn);
-            req.setSource("zh");
-            req.setTarget("en");
-            req.setProjectId(1270102L);
-            // 返回的resp是一个TextTranslateResponse的实例，与请求对象对应
-            TextTranslateResponse resp = client.TextTranslate(req);
-            // 输出json格式的字符串回包
-            System.out.println(TextTranslateResponse.toJsonString(resp));
-            data.put("en",resp.getTargetText());
-            return retResult.ok(CodeEnum.OK.getCode(), data);
-        } catch (TencentCloudSDKException e) {
-            System.out.println(e.toString());
-        }
-        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
-    }
+//    /**
+//     * 单翻译 - 只能翻译一个字段
+//     * @param data	需要翻译的数据
+//     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+//     * @author tang
+//     * @version 1.0.0
+//     * @date 2022/8/19
+//     */
+//    @Override
+//    public ApiResponse singleTranslate(JSONObject data){
+//        try{
+////            JSONObject data = can.getJSONObject("data");
+//            String cn = data.getString("cn");
+//            // 实例化一个认证对象，入参需要传入腾讯云账户secretId，secretKey,此处还需注意密钥对的保密
+//            // 密钥可前往https://console.cloud.tencent.com/cam/capi网站进行获取
+//            Credential cred = new Credential(secretId, secretKey);
+//            // 实例化一个http选项，可选的，没有特殊需求可以跳过
+//            HttpProfile httpProfile = new HttpProfile();
+//            httpProfile.setEndpoint("tmt.tencentcloudapi.com");
+//            // 实例化一个client选项，可选的，没有特殊需求可以跳过
+//            ClientProfile clientProfile = new ClientProfile();
+//            clientProfile.setHttpProfile(httpProfile);
+//            // 实例化要请求产品的client对象,clientProfile是可选的
+//            TmtClient client = new TmtClient(cred, "ap-guangzhou", clientProfile);
+//            // 实例化一个请求对象,每个接口都会对应一个request对象
+//            TextTranslateRequest req = new TextTranslateRequest();
+//            req.setSourceText(cn);
+//            req.setSource("zh");
+//            req.setTarget("en");
+//            req.setProjectId(1270102L);
+//            // 返回的resp是一个TextTranslateResponse的实例，与请求对象对应
+//            TextTranslateResponse resp = client.TextTranslate(req);
+//            // 输出json格式的字符串回包
+//            System.out.println(TextTranslateResponse.toJsonString(resp));
+//            data.put("en",resp.getTargetText());
+//            return retResult.ok(CodeEnum.OK.getCode(), data);
+//        } catch (TencentCloudSDKException e) {
+//            System.out.println(e.toString());
+//        }
+//        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+//    }
 
     /**
      * 多翻译 - 按照指定格式请求，可以翻译所有的字段
@@ -511,7 +588,8 @@ public class ModuleServicelmpl implements ModuleService {
     public ApiResponse modSetControl(String id_C,JSONObject objModQ) {
 //        String id_C = can.getString("id_C");
         // 调用方法获取公司模块信息
-        JSONObject compAssetMod = getCompAssetMod(id_C);
+//        JSONObject compAssetMod = getCompAssetMod(id_C);
+        JSONObject compAssetMod = getCompAssetByRef(id_C,"a-core","control");
         // 获取错误状态，为0是没有错误
         Integer status = compAssetMod.getInteger("status");
         if (0 == status) {
@@ -600,7 +678,8 @@ public class ModuleServicelmpl implements ModuleService {
     public ApiResponse modGetControl(String id_C) {
 //        String id_C = can.getString("id_C");
         // 调用方法获取公司模块信息
-        JSONObject compAssetMod = getCompAssetMod(id_C);
+//        JSONObject compAssetMod = getCompAssetMod(id_C);
+        JSONObject compAssetMod = getCompAssetByRef(id_C,"a-core","control");
         // 获取错误状态，为0是没有错误
         Integer status = compAssetMod.getInteger("status");
         if (0 == status) {
@@ -674,6 +753,148 @@ public class ModuleServicelmpl implements ModuleService {
         return retResult.ok(CodeEnum.OK.getCode(), "连接关系成功");
     }
 
+    /**
+     * 更新日志模块权限核心方法
+     * @param id_C	公司编号
+     * @param grpU	用户组别
+     * @param listType	集合类型
+     * @param grp	组别
+     * @param auth	更新的状态
+     * @param modRef	指定的模块权限
+     * @param isAll	是否是更新所有
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
+    private ApiResponse getObjAuth(String id_C, String grpU, String listType, String grp, Integer auth, String modRef,boolean isAll){
+//        JSONObject compAssetRole = getCompAssetRole(id_C);
+        // 调用方法获取asset
+        JSONObject compAssetRole = getCompAssetByRef(id_C,"a-auth","role");
+        // 创建返回信息对象
+        JSONObject result = new JSONObject();
+        // 获取错误状态，为0是没有错误
+        Integer statusRole = compAssetRole.getInteger("status");
+        if (0 == statusRole) {
+            // 获取role卡片信息
+            JSONObject role = compAssetRole.getJSONObject("role");
+            // 获取asset编号
+            String assetIdRole = compAssetRole.getString("assetId");
+            // 创建存储异常集合
+            JSONArray errRole = new JSONArray();
+            // 获取权限信息
+            JSONObject objAuth = role.getJSONObject("objAuth");
+            // 获取权限信息判断结果
+            boolean isOk = getLogAuth(objAuth,errRole,grpU,listType,grp);
+            // 添加返回信息
+            result.put("errRole",errRole);
+            result.put("type",0);
+            if (isOk) {
+                // 获取内部字段
+                JSONObject authGrpU = objAuth.getJSONObject(grpU);
+                JSONObject authListType = authGrpU.getJSONObject(listType);
+                JSONObject listTypeGrp = authListType.getJSONObject(grp);
+                JSONArray logAuthList = listTypeGrp.getJSONArray("log");
+                // 判断是更新所有
+                if (isAll) {
+                    // 遍历权限集合
+                    for (int i = 0; i < logAuthList.size(); i++) {
+                        JSONObject jsonObject = logAuthList.getJSONObject(i);
+                        // 更新权限
+                        jsonObject.put("auth",auth);
+                        logAuthList.set(i,jsonObject);
+                    }
+                } else {
+                    // 定义存储下标，默认-1
+                    int updateInd = -1;
+                    // 遍历权限集合
+                    for (int i = 0; i < logAuthList.size(); i++) {
+                        JSONObject jsonObject = logAuthList.getJSONObject(i);
+                        String modRefLog = jsonObject.getString("modRef");
+                        // 判断指定的模块
+                        if (modRefLog.equals(modRef)) {
+                            // 获取下标
+                            updateInd = i;
+                        }
+                    }
+                    if (updateInd != -1) {
+                        JSONObject jsonObject = logAuthList.getJSONObject(updateInd);
+                        // 更新状态
+                        jsonObject.put("auth",auth);
+                        logAuthList.set(updateInd,jsonObject);
+                    } else {
+                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_MATCHING_MOD_REF.getCode(), "无匹配的modRef");
+                    }
+                }
+//                listTypeGrp.put("log",logAuthList);
+//                authListType.put(grp,listTypeGrp);
+//                authGrpU.put(listType,authListType);
+//                objAuth.put(grpU,authGrpU);
+//
+//                role.put("objAuth",objAuth);
+//                // 定义存储flowControl字典
+//                JSONObject mapKey = new JSONObject();
+//                // 设置字段数据
+//                mapKey.put("role",role);
+//                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+                // 调用更新字段并且更新数据库方法
+                setAndUpdateAuth(listTypeGrp,logAuthList,authListType,authGrpU
+                        ,objAuth,role,assetIdRole,grpU,listType,grp);
+                // 返回正常状态
+                result.put("type",1);
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        } else {
+            return errResult(statusRole,1);
+        }
+    }
+
+    /**
+     * 更新字段并且更新数据库方法
+     * @param listTypeGrp	字段
+     * @param logAuthList	字段
+     * @param authListType	字段
+     * @param authGrpU	字段
+     * @param objAuth	字段
+     * @param role	卡片信息
+     * @param assetIdRole	asset编号
+     * @param grpU	用户组别
+     * @param listType	集合类型
+     * @param grp	组别
+     * @return void  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
+    private void setAndUpdateAuth(JSONObject listTypeGrp,JSONArray logAuthList,JSONObject authListType
+            ,JSONObject authGrpU,JSONObject objAuth,JSONObject role,String assetIdRole,String grpU
+            ,String listType,String grp){
+        listTypeGrp.put("log",logAuthList);
+        authListType.put(grp,listTypeGrp);
+        authGrpU.put(listType,authListType);
+        objAuth.put(grpU,authGrpU);
+
+        role.put("objAuth",objAuth);
+        // 定义存储flowControl字典
+        JSONObject mapKey = new JSONObject();
+        // 设置字段数据
+        mapKey.put("role",role);
+        // 更新数据库
+        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+    }
+
+    /**
+     * 判断objAuth为空，并且加上错误信息方法
+     * @param objAuth	权限信息
+     * @param errRole	错误信息集合
+     * @param grpU	用户组别
+     * @param listType	集合类型
+     * @param grp	组别
+     * @return boolean  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
     private boolean getLogAuth(JSONObject objAuth,JSONArray errRole,String grpU,String listType,String grp){
         if (null == objAuth) {
             JSONObject errRoleSon = new JSONObject();
@@ -741,76 +962,136 @@ public class ModuleServicelmpl implements ModuleService {
         }
     }
 
+//    /**
+//     * 根据公司编号获取公司资产的模块信息
+//     * @param id_C	公司编号
+//     * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
+//     * @author tang
+//     * @version 1.0.0
+//     * @date 2022/8/19
+//     */
+//    private JSONObject getCompAssetMod(String id_C){
+//        JSONObject result = new JSONObject();
+//        String assetId = coupaUtil.getAssetId(id_C, "a-core");
+////        System.out.println("assetId:"+assetId);
+//        if (null == assetId) {
+//            result.put("status",1);
+//            return result;
+//        }
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("control"));
+//        if (null == asset) {
+//            result.put("status",2);
+//            return result;
+//        }
+////        System.out.println(JSON.toJSONString(asset));
+//        JSONObject control = asset.getControl();
+//        if (null == control) {
+//            result.put("status",3);
+//            return result;
+//        }
+//        JSONObject objData = control.getJSONObject("objMod");
+//        if (null == objData) {
+//            result.put("status",4);
+//            return result;
+//        }
+//        result.put("status",0);
+//        result.put("control",control);
+//        result.put("assetId",assetId);
+//        return result;
+//    }
+
+//    /**
+//     * 根据id_C获取asset的a-auth信息
+//     * @param id_C	公司编号
+//     * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
+//     * @author tang
+//     * @version 1.0.0
+//     * @date 2022/9/19
+//     */
+//    private JSONObject getCompAssetRole(String id_C){
+//        JSONObject result = new JSONObject();
+//        String assetId = coupaUtil.getAssetId(id_C, "a-auth");
+////        System.out.println("assetId:"+assetId);
+//        if (null == assetId) {
+//            result.put("status",1);
+//            return result;
+//        }
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("role"));
+//        if (null == asset) {
+//            result.put("status",2);
+//            return result;
+//        }
+////        System.out.println(JSON.toJSONString(asset));
+//        JSONObject role = asset.getRole();
+//        if (null == role) {
+//            result.put("status",3);
+//            return result;
+//        }
+//        JSONObject objAuth = role.getJSONObject("objAuth");
+//        if (null == objAuth) {
+//            result.put("status",4);
+//            return result;
+//        }
+//        result.put("status",0);
+//        result.put("role",role);
+//        result.put("assetId",assetId);
+//        return result;
+//    }
+
     /**
-     * 根据公司编号获取公司资产的模块信息
+     * 根据id_C获取assetRef指定的asset的card信息
      * @param id_C	公司编号
+     * @param assetRef	asset编号
+     * @param card	卡片
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
      * @version 1.0.0
-     * @date 2022/8/19
+     * @date 2022/9/19
      */
-    private JSONObject getCompAssetMod(String id_C){
+    private JSONObject getCompAssetByRef(String id_C,String assetRef,String card){
         JSONObject result = new JSONObject();
-        String assetId = coupaUtil.getAssetId(id_C, "a-core");
-//        System.out.println("assetId:"+assetId);
+        String assetId = coupaUtil.getAssetId(id_C, assetRef);
         if (null == assetId) {
             result.put("status",1);
             return result;
         }
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("control"));
+        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(card));
         if (null == asset) {
             result.put("status",2);
             return result;
         }
-//        System.out.println(JSON.toJSONString(asset));
-        JSONObject control = asset.getControl();
-        if (null == control) {
-            result.put("status",3);
-            return result;
-        }
-        JSONObject objData = control.getJSONObject("objMod");
-        if (null == objData) {
-            result.put("status",4);
-            return result;
-        }
-        result.put("status",0);
-        result.put("control",control);
-        result.put("assetId",assetId);
-        return result;
-    }
-
-    private JSONObject getCompAssetRole(String id_C){
-        JSONObject result = new JSONObject();
-        String assetId = coupaUtil.getAssetId(id_C, "a-auth");
-//        System.out.println("assetId:"+assetId);
-        if (null == assetId) {
-            result.put("status",1);
-            return result;
-        }
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("role"));
-        if (null == asset) {
-            result.put("status",2);
-            return result;
-        }
-//        System.out.println(JSON.toJSONString(asset));
-        JSONObject role = asset.getRole();
-        if (null == role) {
-            result.put("status",3);
-            return result;
-        }
-        JSONObject objAuth = role.getJSONObject("objAuth");
-        if (null == objAuth) {
-            result.put("status",4);
-            return result;
+        if ("a-core".equals(assetRef)) {
+            JSONObject control = asset.getControl();
+            if (null == control) {
+                result.put("status",3);
+                return result;
+            }
+            JSONObject objData = control.getJSONObject("objMod");
+            if (null == objData) {
+                result.put("status",4);
+                return result;
+            }
+            result.put("control",control);
+        } else {
+            JSONObject role = asset.getRole();
+            if (null == role) {
+                result.put("status",3);
+                return result;
+            }
+            JSONObject objAuth = role.getJSONObject("objAuth");
+            if (null == objAuth) {
+                result.put("status",4);
+                return result;
+            }
+            result.put("role",role);
         }
         result.put("status",0);
-        result.put("role",role);
         result.put("assetId",assetId);
         return result;
     }
 
     /**
-     * 新增或删除用户的模块使用权-核心方法
+     * 新增或删除用户的模块使用权-转接方法
      * @param users	用户集合数据
      * @param id_C	公司编号
      * @return com.alibaba.fastjson.JSONArray  返回结果: 结果
@@ -819,17 +1100,33 @@ public class ModuleServicelmpl implements ModuleService {
      * @date 2022/8/19
      */
     private JSONArray addOrDelUserModCore(JSONObject users,String id_C){
+        // 创建返回结果集合
         JSONArray resultArr = new JSONArray();
 //        JSONObject addUser = can.getJSONObject("addUser");
-        users.keySet().forEach(id_U -> {
-            getUserAndUp(id_U,resultArr,id_C,users,0,null,0);
-        });
+        // 遍历用户集合
+        users.keySet().forEach(id_U -> getUserAndUp(id_U,resultArr,id_C,users,0,null,0));
         return resultArr;
     }
 
+    /**
+     * 新增或删除用户的模块使用权-核心方法
+     * @param id_U	用户编号
+     * @param resultArr	返回结果集合
+     * @param id_C	公司编号
+     * @param users	用户集合
+     * @param operation 操作状态
+     * @param modName   模块名称
+     * @param bcdStatus 状态
+     * @return void  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
     private void getUserAndUp(String id_U,JSONArray resultArr,String id_C
             ,JSONObject users,Integer operation,String modName,Integer bcdStatus){
+        // 根据用户编号获取用户的rolex卡片信息
         User user = coupaUtil.getUserById(id_U, Collections.singletonList("rolex"));
+        // 创建返回结果对象
         JSONObject result = new JSONObject();
         if (null == user) {
             result.put("id_U",id_U);
@@ -851,14 +1148,19 @@ public class ModuleServicelmpl implements ModuleService {
                     result.put("desc","用户权限卡片内当前公司信息为空");
                     resultArr.add(result);
                 } else {
+                    // 判断操作状态为0
                     if (operation == 0) {
                         // 调用方法获取公司模块信息
-                        JSONObject compAssetMod = getCompAssetMod(id_C);
+//                        JSONObject compAssetMod = getCompAssetMod(id_C);
+                        JSONObject compAssetMod = getCompAssetByRef(id_C,"a-core","control");
                         // 获取错误状态，为0是没有错误
                         Integer status = compAssetMod.getInteger("status");
                         if (0 == status) {
+                            // 获取卡片信息
                             JSONObject control = compAssetMod.getJSONObject("control");
+                            // 获取资产编号
                             String assetId = compAssetMod.getString("assetId");
+                            // 获取模块信息
                             JSONObject objMod = control.getJSONObject("objMod");
 
                             // 获取修改当前用户的模块信息
@@ -869,49 +1171,67 @@ public class ModuleServicelmpl implements ModuleService {
                             u_role.keySet().forEach(k -> {
                                 // 根据键获取修改的模块信息
                                 JSONObject mod = u_role.getJSONObject(k);
-                                // 判断操作类型
+                                // 获取操作类型
                                 String type = mod.getString("type");
+                                // 定义存储是否为空，默认为空
                                 boolean isNull = false;
+                                // 获取卡片的模块信息
                                 JSONObject jsonObject = objMod.getJSONObject(k);
+                                // 定义存储模块用户信息
                                 JSONArray jsonArray = null;
                                 if (null != jsonObject) {
                                     isNull = true;
                                     jsonArray = jsonObject.getJSONArray("id_U");
                                 }
+                                // 判断为删除状态
                                 if ("del".equals(type) && modAuth.containsKey(k)) {
                                     // 删除当前模块
                                     modAuth.remove(k);
                                     if (isNull) {
 //                                        JSONArray jsonArray = jsonObject.getJSONArray("id_U");
+                                        // 定义存储要删除的下标，默认-1
                                         int currentUser = -1;
+                                        // 遍历用户集合
                                         for (int i = 0; i < jsonArray.size(); i++) {
-                                            String string = jsonArray.getString(i);
-                                            if (string.equals(id_U)) {
+                                            // 根据下标获取用户id
+                                            String id_UN = jsonArray.getString(i);
+                                            // 判断等于当前用户
+                                            if (id_UN.equals(id_U)) {
+                                                // 赋值下标
                                                 currentUser = i;
                                             }
                                         }
                                         if (currentUser != -1) {
+                                            // 根据下标删除信息
                                             jsonArray.remove(currentUser);
                                             jsonObject.put("id_U",jsonArray);
                                             objMod.put(k,jsonObject);
                                         }
                                     }
                                 } else {
+                                    // 获取当前模块键是否存在
                                     boolean isModAuth = modAuth.containsKey(k);
                                     // 修改当前模块
                                     modAuth.put(k,mod.getJSONObject("val"));
 //                                    JSONObject jsonObject = objMod.getJSONObject(k);
+                                    // 判断模块键不存在
                                     if (!isModAuth && isNull) {
 //                                        JSONArray jsonArray = jsonObject.getJSONArray("id_U");
+                                        // 定义存储，当前用户是否存在，默认不存在
                                         boolean isExistence = false;
+                                        // 遍历用户集合
                                         for (int i = 0; i < jsonArray.size(); i++) {
-                                            String string = jsonArray.getString(i);
-                                            if (string.equals(id_U)) {
+                                            // 根据下标获取用户id
+                                            String id_UN = jsonArray.getString(i);
+                                            // 判断等于当前用户id
+                                            if (id_UN.equals(id_U)) {
                                                 isExistence = true;
                                                 break;
                                             }
                                         }
+                                        // 判断不存在
                                         if (!isExistence) {
+                                            // 添加用户id
                                             jsonArray.add(id_U);
                                             jsonObject.put("id_U",jsonArray);
                                             objMod.put(k,jsonObject);
@@ -963,6 +1283,14 @@ public class ModuleServicelmpl implements ModuleService {
         }
     }
 
+    /**
+     * 获取当前公司的模块信息方法,为空则创建一个
+     * @param modAuth	模块信息
+     * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
     private JSONObject getModAuth(JSONObject modAuth){
         if (null == modAuth) {
             modAuth = new JSONObject();

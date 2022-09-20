@@ -67,25 +67,42 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 
     public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_LOGIN_COMP_T = "https://www.cresign.cn/qrCodeTest?qrType=logincomp&t=";
 
-
+    /**
+     * 根据id_U修改appId
+     * @param appId 应用编号
+     * @param id_U  用户编号
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
     @Override
     public ApiResponse setAppId(String appId,String id_U) {
-        System.out.println("id_U:"+id_U);
+//        System.out.println("id_U:"+id_U);
+        // 根据用户编号获取rolex卡片和info卡片信息
         User user = coupaUtil.getUserById(id_U, Arrays.asList("rolex","info"));
+        // 判断用户数据为空
         if (null == user) {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, "tang", "当前用户为空，不存在");
         }
+        // 获取info卡片信息
         UserInfo info = user.getInfo();
+        // 获取卡片appId
         String id_app = info.getId_APP();
+        // 定义存储判断卡片内的appId为空或者不等于传入的appId
         boolean isSetId_App = false;
+        // 判断卡片内appId为空
         if (null == id_app || "".equals(id_app)) {
             isSetId_App = true;
         } else {
+            // 判断卡片内appId不等于传入appId
             if (!appId.equals(id_app)) {
                 isSetId_App = true;
             }
         }
+        // 判断
         if (isSetId_App) {
+            // 写入appId
             info.setId_APP(appId);
             // 定义存储flowControl字典
             JSONObject mapKeyUser = new JSONObject();
@@ -93,17 +110,27 @@ public class AccountLoginServiceImpl implements AccountLoginService {
             mapKeyUser.put("info",info);
             // 更新数据库
             coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKeyUser);
+            // 获取rolex卡片信息
             JSONObject rolex = user.getRolex();
+            // 定义存储返回结果对象
             JSONObject result = new JSONObject();
+            // 定义存储异常信息集合
             JSONArray err = new JSONArray();
+            // 遍历rolex卡片的objComp字段
             rolex.getJSONObject("objComp").keySet().forEach(id_C -> {
 //            if (id_C.equals("6076a1c7f3861e40c87fd294")) {
+                // 指定测试公司id
                 if (id_C.equals("6141b6797e8ac90760913fd0")) {
+                    // 根据公司编号获取对应ref的assetId
                     String aId = coupaUtil.getAssetId(id_C, "a-auth");
+                    // 根据assetId获取asset的flowControl信息
                     Asset asset = coupaUtil.getAssetById(aId, Collections.singletonList("flowControl"));
+                    // 定义存储异常信息，默认无异常
                     boolean isErr = true;
+                    // 定义字段
                     JSONObject flowControl = null;
                     JSONArray objData = null;
+                    // 判断
                     if (null == asset) {
                         System.out.println("公司该资产为空");
                         setErrJson(err,id_C,aId,"公司该资产为空");
@@ -121,21 +148,31 @@ public class AccountLoginServiceImpl implements AccountLoginService {
                             }
                         }
                     }
+                    // 判断无异常
                     if (isErr) {
+                        // 定义存储异常信息第二个，默认异常
                         boolean isErr2 = false;
+                        // 遍历卡片数据
                         for (int i = 0; i < objData.size(); i++) {
+                            // 根据下标获取卡片数据
                             JSONObject dataZ = objData.getJSONObject(i);
+                            // 获取日志用户集合
                             JSONArray objUser = dataZ.getJSONArray("objUser");
                             if (null == objUser) {
                                 setErrJson(err,id_C,aId,"公司该资产的flowControl卡片内objData内的objUser数据为空:"+i);
                             } else {
+                                // 遍历用户集合
                                 for (int i1 = 0; i1 < objUser.size(); i1++) {
+                                    // 根据下标获取每个用户信息
                                     JSONObject userZ = objUser.getJSONObject(i1);
+                                    // 获取用户id
                                     String id_UN = userZ.getString("id_U");
                                     if (null == id_UN) {
                                         setErrJson(err,id_C,aId,"公司该资产的flowControl卡片内objData内的objUser数据内的id_U为空"+i);
                                     } else {
+                                        // 判断用户id等于传入用户id
                                         if (id_UN.equals(id_U)){
+                                            // 更新appId
                                             userZ.put("id_APP",appId);
                                             objUser.set(i1,userZ);
                                             isErr2 = true;
@@ -149,12 +186,15 @@ public class AccountLoginServiceImpl implements AccountLoginService {
                                 }
                             }
                         }
+                        // 判断无异常
                         if (isErr2) {
+                            // 写入日志flowControl
                             flowControl.put("objData",objData);
                             // 定义存储flowControl字典
                             JSONObject mapKey = new JSONObject();
                             // 设置字段数据
                             mapKey.put("flowControl",flowControl);
+                            // 更新数据库
                             coupaUtil.updateAssetByKeyAndListKeyVal("id",aId,mapKey);
                         }
                     }
@@ -175,6 +215,13 @@ public class AccountLoginServiceImpl implements AccountLoginService {
         return retResult.ok(CodeEnum.OK.getCode(),"无需修改");
     }
 
+    /**
+     * 写入异常信息到err集合
+     * @param err   异常信息集合
+     * @param id_C  公司编号
+     * @param id_A  asset编号
+     * @param desc  错误信息
+     */
     private void setErrJson(JSONArray err,String id_C,String id_A,String desc){
         JSONObject reZ = new JSONObject();
         reZ.put("id_C",id_C);

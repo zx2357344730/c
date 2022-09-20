@@ -14,23 +14,67 @@ import java.io.IOException;
  */
 public interface ModuleService {
 
-    ApiResponse modifyLogAuthAll(String id_C,String grpU,String listType,String grp,Integer auth);
-
-    ApiResponse modifyLogAuth(String id_C,String grpU,String listType,String grp,Integer auth,String modRef);
-
-    ApiResponse addOrUpdateInitMod(JSONObject objLogMod);
-
-    ApiResponse updateLogAuth(String id_C,String grpU,String listType,String grp);
-
     /**
-     * 单翻译 - 只能翻译一个字段
-     * @param data	需要翻译的数据
+     * 更新a-auth内日志权限信息，更新全部
+     * @param id_C	公司编号
+     * @param grpU	用户组别
+     * @param listType	集合类型
+     * @param grp	组别
+     * @param auth	更新的状态
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
      * @version 1.0.0
-     * @date 2022/8/19
+     * @date 2022/9/19
      */
-    ApiResponse singleTranslate(JSONObject data);
+    ApiResponse modifyLogAuthAll(String id_C,String grpU,String listType,String grp,Integer auth);
+
+    /**
+     * 更新a-auth内日志权限信息，指定更新
+     * @param id_C	公司编号
+     * @param grpU	用户组别
+     * @param listType	集合类型
+     * @param grp	组别
+     * @param auth	更新的状态
+     * @param modRef	指定的模块权限
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
+    ApiResponse modifyLogAuth(String id_C,String grpU,String listType,String grp,Integer auth,String modRef);
+
+    /**
+     * 新增或修改init内日志模块
+     * @param objLogMod	新增或修改信息
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
+    ApiResponse addOrUpdateInitMod(JSONObject objLogMod);
+
+    /**
+     * 根据id_C修改asset的a-auth内role对应的grpU+listType+grp
+     * @param id_C  公司编号
+     * @param grpU  用户组别
+     * @param listType  集合类型
+     * @param grp   组别
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
+    ApiResponse updateLogAuth(String id_C,String grpU,String listType,String grp);
+
+//    /**
+//     * 单翻译 - 只能翻译一个字段
+//     * @param data	需要翻译的数据
+//     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+//     * @author tang
+//     * @version 1.0.0
+//     * @date 2022/8/19
+//     */
+//    ApiResponse singleTranslate(JSONObject data);
 
     /**
      * 多翻译 - 按照指定格式请求，可以翻译所有的字段

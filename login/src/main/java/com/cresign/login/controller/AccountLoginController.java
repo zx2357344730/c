@@ -43,10 +43,18 @@ public class AccountLoginController {
 
     }
 
+    /**
+     * 根据id_U修改appId
+     * @param reqJson 请求参数
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/9/19
+     */
     @SecurityParameter
     @PostMapping("/v1/setAppId")
     public ApiResponse setAppId(@RequestBody JSONObject reqJson) {
-        System.out.println("进入接口:");
+//        System.out.println("进入接口:");
         String id_U = reqJson.getString("id_U");
         if (null == id_U) {
             id_U = getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"));
