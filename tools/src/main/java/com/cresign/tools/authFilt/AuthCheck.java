@@ -5,10 +5,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.DbUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.mongo.MongoUtils;
 import com.cresign.tools.pojo.po.Asset;
+import com.cresign.tools.pojo.po.User;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -20,7 +22,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * redis工具类
- * @Author Rachel
+ * @author Rachel
  * @Data 2021/09/15
  **/
 @Component
@@ -34,6 +36,9 @@ public class AuthCheck {
 
     @Autowired
     private DbUtils dbUtils;
+
+    @Autowired
+    private Qt qt;
 
     @Autowired
     private RetResult retResult;
@@ -102,7 +107,8 @@ public class AuthCheck {
         enabledArray.add("view");
         JSONObject result = new JSONObject();
 
-        JSONObject rolex = MongoUtils.getRolex(id_U, id_C, mongoTemplate);
+        User user = qt.getMDContent(id_U, "rolex.objComp."+id_C,User.class);
+        JSONObject rolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
         if (rolex == null){
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, "042000", null);
         }

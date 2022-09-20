@@ -15,9 +15,9 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/7/25 11:37
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/7/25 11:37
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("/account")

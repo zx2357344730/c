@@ -9,10 +9,10 @@ import org.springframework.context.annotation.ComponentScan;
 
 /**
 *##description:
-*##Params:
-*##Return:
-*##author:           JackSon
-*##updated:             2020/7/24 10:41
+*@param
+*@return
+*@author           JackSon
+*@updated             2020/7/24 10:41
 */
 @ComponentScan({"com.cresign.tools", "com.cresign.login"})
 @SpringBootApplication

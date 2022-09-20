@@ -4,9 +4,9 @@ import lombok.Getter;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/8/10 19:33
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/8/10 19:33
+ * @ver 1.0
  */
 @Getter
 public enum CompEnum {
@@ -26,7 +26,7 @@ public enum CompEnum {
 
     /**
      * 带参构造方法
-     * ##Params: code  异常状态码
+     * @param code  异常状态码
      */
     CompEnum(String code){
         this.code = code;

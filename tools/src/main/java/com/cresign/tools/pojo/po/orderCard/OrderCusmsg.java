@@ -6,9 +6,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * ##ClassName: OrderProb
  * ##description: 作者很懒什么也没写
- * ##Author: tang
+ * @author tang
  * ##Updated: 2020/10/20 14:33
- * ##version: 1.0.0
+ * @ver 1.0.0
  */
 @Document(collection = "Order")
 @Data

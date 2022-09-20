@@ -9,12 +9,14 @@ import com.cresign.purchase.service.RpiService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.CoupaUtil;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.uuid.UUID19;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,9 +27,9 @@ import java.util.*;
 /**
  * @ClassName RpiServiceImpl
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2022/8/18
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 @Service
 @Slf4j
@@ -58,6 +60,9 @@ public class RpiServiceImpl implements RpiService {
     @Resource
     private RetResult retResult;
 
+    @Autowired
+    private Qt qt;
+
     @Resource
     private WSClient ws;
 
@@ -67,7 +72,7 @@ public class RpiServiceImpl implements RpiService {
      * @param id_C  公司编号
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/8/18
      */
     @Override
@@ -100,12 +105,10 @@ public class RpiServiceImpl implements RpiService {
                 // 更新信息
                 rpi.put("rnames",rnames);
                 rpi.put("pinfo",pinfo);
-                // 定义存储flowControl字典
-                JSONObject mapKey = new JSONObject();
-                // 设置字段数据
-                mapKey.put("rpi",rpi);
+
                 // 更新数据库
-                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+                qt.setMDContent(assetId,qt.setJson("rpi",rpi), Asset.class);
+
                 // 获取redis对应的rname信息
                 String rnameRedisDataStr = redisTemplate1.opsForValue().get(PI + rname);
                 // 将字符串转换成json对象
@@ -462,7 +465,7 @@ public class RpiServiceImpl implements RpiService {
      * @param id_C	公司编号
      * @return int  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/8/18
      */
     private int piNameSta(String rname,String id_C){
@@ -496,7 +499,7 @@ public class RpiServiceImpl implements RpiService {
      * @param status	状态信息
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/8/18
      */
     private ApiResponse errResultPi(int status){
@@ -513,7 +516,7 @@ public class RpiServiceImpl implements RpiService {
      * @param status    错误状态
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/8/18
      */
     private ApiResponse errResult(int status){
@@ -538,7 +541,7 @@ public class RpiServiceImpl implements RpiService {
      * @param isInfo	是否携带info信息
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/8/18
      */
     private JSONObject getRNames(String id_C,boolean isInfo){
@@ -605,7 +608,7 @@ public class RpiServiceImpl implements RpiService {
      * @param isBinding	是否绑定
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/8/18
      */
     private void updateRedJ(JSONObject redJ,String id_U,String id_C,String grpU,Integer oIndex,JSONObject wrdNU
@@ -637,7 +640,7 @@ public class RpiServiceImpl implements RpiService {
      * @param rname	树莓派编号
      * @return com.cresign.tools.pojo.po.LogFlow  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/8/18
      */
     private LogFlow getLogF(String id_C,String id_U,String rname){

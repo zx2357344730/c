@@ -33,9 +33,9 @@ import java.util.Set;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020-12-26 11:26
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020-12-26 11:26
+ * @ver 1.0
  */
 @Service
 public class RoleServiceImpl implements RoleService {
@@ -216,40 +216,40 @@ public class RoleServiceImpl implements RoleService {
     }
 
 
-    @Override
-    public ApiResponse getListTypeGrp(String id_U, String id_C) {
-
-        authCheck.getUserUpdateAuth(id_U,id_C,"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
-
-
-        String id_A = dbUtils.getId_A(id_C, "a-auth");
-        Query query = new Query(new Criteria("_id").is(id_A));
-        query.fields().include("def");
-        Asset asset = mongoTemplate.findOne(query, Asset.class);
-        //JSONObject assetJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(query, Asset.class));
-
-        // 最终返回数据
-        JSONArray resultArray = new JSONArray();
-
-        //JSONObject ocnlistType = assetJson.getJSONObject("def").getJSONObject("ocnlistType");
-        JSONObject ocnlistType = asset.getDef().getJSONObject("ocnlistType");
-        for (String listTypeKey : ocnlistType.keySet()) {
-
-            // 列表类型名称
-            String listTypeName = ocnlistType.getString(listTypeKey);
-
-            JSONObject listTypeGrpData = new JSONObject();
-            listTypeGrpData.put("name", listTypeName);
-            listTypeGrpData.put("key", listTypeKey);
-
-            // 动态获取每个列表类型的组别列表
-            listTypeGrpData.put("grpList", asset.getDef().getJSONObject("obj" + listTypeKey.substring(0,3)));
-            resultArray.add(listTypeGrpData);
-        }
-
-        return retResult.ok(CodeEnum.OK.getCode(), resultArray);
-
-    }
+//    @Override
+//    public ApiResponse getListTypeGrp(String id_U, String id_C) {
+//
+//        authCheck.getUserUpdateAuth(id_U,id_C,"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
+//
+//
+//        String id_A = dbUtils.getId_A(id_C, "a-auth");
+//        Query query = new Query(new Criteria("_id").is(id_A));
+//        query.fields().include("def");
+//        Asset asset = mongoTemplate.findOne(query, Asset.class);
+//        //JSONObject assetJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(query, Asset.class));
+//
+//        // 最终返回数据
+//        JSONArray resultArray = new JSONArray();
+//
+//        //JSONObject ocnlistType = assetJson.getJSONObject("def").getJSONObject("ocnlistType");
+//        JSONObject ocnlistType = asset.getDef().getJSONObject("ocnlistType");
+//        for (String listTypeKey : ocnlistType.keySet()) {
+//
+//            // 列表类型名称
+//            String listTypeName = ocnlistType.getString(listTypeKey);
+//
+//            JSONObject listTypeGrpData = new JSONObject();
+//            listTypeGrpData.put("name", listTypeName);
+//            listTypeGrpData.put("key", listTypeKey);
+//
+//            // 动态获取每个列表类型的组别列表
+//            listTypeGrpData.put("grpList", asset.getDef().getJSONObject("obj" + listTypeKey.substring(0,3)));
+//            resultArray.add(listTypeGrpData);
+//        }
+//
+//        return retResult.ok(CodeEnum.OK.getCode(), resultArray);
+//
+//    }
 
     @Override
     public ApiResponse getRoleDataByGrpUAndGrp(String id_U, String id_C, String listType, String grp, String grpU) {
@@ -671,14 +671,14 @@ public class RoleServiceImpl implements RoleService {
     /**
      * 初始化权限模块的数据
      *
-     * ##Params: id_C
-     * ##Params: listType
-     * ##Params: grp
-     * ##Params: grpU
-     * ##author: JackSon
-     * ##version: 1.0
-     * ##updated: 2021-01-22 13:29
-     * ##Return: void
+     * @param id_C
+     * @param listType
+     * @param grp
+     * @param grpU
+     * @author JackSon
+     * @ver 1.0
+     * @updated 2021-01-22 13:29
+     * @return void
      */
     public boolean addModInitRole(String id_C, String listType, String grp, String grpU) {
 

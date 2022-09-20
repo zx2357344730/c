@@ -1,9 +1,11 @@
 package com.cresign.gateway.filter;
 
 
-import com.cresign.gateway.config.GatewayAuthConfig;
+//import com.cresign.gateway.config.GatewayAuthConfig;
 import com.cresign.gateway.utils.jwt.JwtUtil;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -17,6 +19,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 @Component
 public class GatewayFilter implements GlobalFilter, Ordered {
@@ -35,8 +38,8 @@ public class GatewayFilter implements GlobalFilter, Ordered {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
-    private GatewayAuthConfig gatewayAuthConfig;
+//    @Autowired
+//    private GatewayAuthConfig gatewayAuthConfig;
 
 
     @Override
@@ -50,13 +53,31 @@ public class GatewayFilter implements GlobalFilter, Ordered {
         String url = exchange.getRequest().getURI().getPath();
 
         // 跳过不需要验证的路径
-        if(Arrays.asList(gatewayAuthConfig.getSkipUrls()).contains(url)){
+//        if(Arrays.asList(gatewayAuthConfig.getSkipUrls()).contains(url)){
+//            return chain.filter(exchange);
+//        }
+        if(url.startsWith("/chat/wsU/")
+                || url.equals("/login/init/v1/getInit")
+                || url.equals("/login/refreshToken/v1/refreshToken")
+                || url.equals("/login/refreshToken/v1/login")
+                || url.equals("/login/wx/v1/getwxWebLogin")
+                || url.equals("/login/linked/v1/LinkedWebLogin")
+                || url.equals("/login/wx/v1/decodeUserInfo")
+                || url.equals("/login/wx/v1/wxAsLogin")
+                || url.equals("/login/wx/v1/wxWebLogin")
+                || url.equals("/login/wx/v1/wxmp_register")
+                || url.equals("/login/account/v1/logout")
+                || url.equals("/login/account/v1/login") //default login
+                || url.equals("/login/sms/v1/getSmsLoginNum")
+                || url.equals("/login/sms/v1/smsLogin")
+                || url.equals("/login/sms/v1/getSmsRegisterNum")
+                || url.equals("/login/sms/v1/smsRegister")
+                || url.equals("/login/wx/v1/wechatRegister")
+                || url.equals("/login/facebook/v1/faceBookLogin")
+                || url.equals("/login/facebook/v1/faceBookRegister")
+                || url.equals("/file/picture/v1/picUpload")
+        ){
             return chain.filter(exchange);
-        }
-//        else if(url.startsWith("/chat/pay/")||url.startsWith("/chat/wsU/")||url.startsWith("/chat/login/")||url.startsWith("/chat/pi/")){
-        else if(url.startsWith("/chat/wsU/")){
-
-                return chain.filter(exchange);
         }
 
         // 从请求头中取出token

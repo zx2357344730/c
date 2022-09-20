@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/8/6 10:05
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/8/6 10:05
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("/auth")
@@ -49,16 +49,16 @@ public class AuthFilterController {
 //
 //    }
 
-    @PostMapping("/v1/getTouristAuth")
-    public ApiResponse getTouristAuth(@RequestBody JSONObject reqJson) {
-        return authFilterService.getTouristAuth(
-                reqJson.getString("id_C"),
-                reqJson.getString("listType"),
-                reqJson.getString("grp"),
-                reqJson.getString("authType")
-        );
-
-    }
+//    @PostMapping("/v1/getTouristAuth")
+//    public ApiResponse getTouristAuth(@RequestBody JSONObject reqJson) {
+//        return authFilterService.getTouristAuth(
+//                reqJson.getString("id_C"),
+//                reqJson.getString("listType"),
+//                reqJson.getString("grp"),
+//                reqJson.getString("authType")
+//        );
+//
+//    }
 
 
 

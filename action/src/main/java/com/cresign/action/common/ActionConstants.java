@@ -5,9 +5,9 @@ import com.cresign.tools.mongo.MongoUtils;
 /**
  * ##ClassName: ActionConstants
  * ##description: chat静态变量定义类
- * ##Author: tang
+ * @author tang
  * ##Updated: 2020/8/7 14:55
- * ##version: 1.0.0
+ * @ver 1.0.0
  */
 public class ActionConstants {
 

@@ -1,14 +1,10 @@
 package com.cresign.tools.advice;
 
 
-import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.pojo.po.LogFlow;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
 
 import javax.crypto.Cipher;
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -132,15 +128,15 @@ public class RsaUtilF {
     /**
      * 私钥解密
      *
-     * ##Params: encryptedData 已加密数据
-     * ##Params: privateKey    私钥(BASE64编码)
+     * @param encryptedData 已加密数据
+     * @param privateKey    私钥(BASE64编码)
      */
     public static byte[] decryptByPrivateKey(byte[] encryptedData, String privateKey) throws Exception {
         //base64格式的key字符串转Key对象
         byte[] keyBytes = Base64.decodeBase64(privateKey);
         PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
-        System.out.println("all working");
+//        System.out.println("all working");
 
         Key privateK = keyFactory.generatePrivate(pkcs8KeySpec);
 
@@ -155,11 +151,9 @@ public class RsaUtilF {
             并改成
             Cipher cipher = Cipher.getInstance(ALGORITHMS ,new BouncyCastleProvider());
          */
-        System.out.println("all working");
 
         Cipher cipher = Cipher.getInstance(ALGORITHMS);
         cipher.init(Cipher.DECRYPT_MODE, privateK);
-        System.out.println("all working"+cipher);
 
         //分段进行解密操作
         return encryptAndDecryptOfSubsection(encryptedData, cipher, MAX_DECRYPT_BLOCK);
@@ -168,8 +162,8 @@ public class RsaUtilF {
     /**
      * 公钥加密
      *
-     * ##Params: data      源数据
-     * ##Params: publicKey 公钥(BASE64编码)
+     * @param data      源数据
+     * @param publicKey 公钥(BASE64编码)
      */
     public static byte[] encryptByPublicKey(byte[] data, String publicKey) throws Exception {
         //base64格式的key字符串转Key对象
@@ -236,7 +230,6 @@ public class RsaUtilF {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         int offSet = 0;
         byte[] cache;
-        System.out.println("all working");
 
         int i = 0;
         // 对数据分段加密
@@ -250,18 +243,17 @@ public class RsaUtilF {
             i++;
             offSet = i * encryptBlock;
         }
-        System.out.println("all working"+out);
 
         byte[] toByteArray = out.toByteArray();
         out.close();
-        System.out.println("all working"+toByteArray);
+//        System.out.println("all working"+toByteArray);
 
         return toByteArray;
     }
 
 //    /***
 //     * 利用Apache的工具类实现SHA-256加密
-//     * ##param str 加密后的报文
+//     * @param str 加密后的报文
 //     * @return 加密结果
 //     */
 //    public static String getSHA256Str(String str){

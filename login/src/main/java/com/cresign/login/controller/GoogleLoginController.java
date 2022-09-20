@@ -14,9 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/9/21 16:36
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/9/21 16:36
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("google")
@@ -30,11 +30,11 @@ public class GoogleLoginController {
 
     /**
      * 谷歌登录
-     * ##author: JackSon
-     * ##Params: reqJson      前端传入参数
-     * ##version: 1.0
-     * ##updated: 2020/9/21 16:35
-     * ##Return: java.lang.String
+     * @author JackSon
+     * @param reqJson      前端传入参数
+     * @ver 1.0
+     * @updated 2020/9/21 16:35
+     * @return java.lang.String
      */
     @PostMapping("/v1/googleLogin")
     @SecurityParameter

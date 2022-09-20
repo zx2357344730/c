@@ -5,9 +5,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 
 /**
- * ##author: tangzejin
- * ##updated: 2019/7/16
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/7/16
+ * @ver 1.0.0
  * ##description: 日志接口类
  */
 public interface LogService {
@@ -16,12 +16,12 @@ public interface LogService {
 
     /**
      * 推送
-     * ##param clientId	推送id
-     * ##param title	推送标题
-     * ##param body	推送内容
+     * @param clientId	推送id
+     * @param title	推送标题
+     * @param body	推送内容
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2021/7/12 14:47
      */
     void sendPush(String clientId,String title,String body,String token);

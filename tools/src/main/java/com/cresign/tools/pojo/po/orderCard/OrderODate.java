@@ -6,9 +6,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * @ClassName OrderODate
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2021/9/16 11:15
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 @Document(collection = "Order")
 @Data

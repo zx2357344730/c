@@ -3,9 +3,9 @@ package com.cresign.tools.enumeration;
 import lombok.Getter;
 
 /**
- * ##author: tangzejin
- * ##updated: 2019/8/23
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/8/23
+ * @ver 1.0.0
  * ##description: 通用异常枚举类
  */
 @Getter
@@ -539,9 +539,9 @@ public enum MyExEnum {
 
     /**
      * 带参构造方法
-     * ##Params: code  异常状态码
-     * ##Params: method    异常位置
-     * ##Params: descInfo  异常描述
+     * @param code  异常状态码
+     * @param method    异常位置
+     * @param descInfo  异常描述
      */
     MyExEnum(String code, String method, String descInfo){
         this.code = code;

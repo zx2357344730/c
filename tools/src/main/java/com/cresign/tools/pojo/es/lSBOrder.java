@@ -13,8 +13,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * ##class: lSBComp
  * ##description: 卖买家公司类
- * ##author: jackson
- * ##updated: 2019-08-19 16:41
+ * @author jackson
+ * @updated 2019-08-19 16:41
  **/
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -50,8 +50,8 @@ public class lSBOrder {
         this.pic = pic  == null? "": pic;
         this.lST = lST  == null? 0: lST;
         this.lCR = lCR  == null? 0: lCR;
-        this.tmk = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
     }
 
     public static lSBOrder getInstance(){

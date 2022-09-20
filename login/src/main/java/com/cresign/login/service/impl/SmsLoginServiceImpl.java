@@ -28,27 +28,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 /**
  * 短信登录接口实现类
  * ##description: 短信登录接口实现类
- * ##author: JackSon
- * ##updated: 2020/7/31 23:02
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/7/31 23:02
+ * @ver 1.0
  */
 @Service
 public class SmsLoginServiceImpl implements SmsLoginService {
 
-    /**
-     * mongodb中User表下的info字段下的mbn，表示用户手机号
-     */
-    public static final String INFO_MBN = "info.mbn";
-
-    /**
-     * 短信验证码数位
-     */
-    public static final int SMSCODE = 6;
 
     @Autowired
     private StringRedisTemplate redisTemplate1;
@@ -62,8 +53,6 @@ public class SmsLoginServiceImpl implements SmsLoginService {
     @Autowired
     private RegisterUserUtils registerUserUtils;
 
-    @Autowired
-    private HttpServletRequest request;
 
     @Autowired
     private RetResult retResult;
@@ -94,7 +83,7 @@ public class SmsLoginServiceImpl implements SmsLoginService {
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
             if (smsNum.equals(redisTemplate1.opsForValue().get(SMSTypeEnum.LOGIN.getSmsType() + phone))) {
 
-                Query query = new Query(new Criteria(INFO_MBN).is(phone));
+                Query query = new Query(new Criteria("info.mbn").is(phone));
 
                 User user = mongoTemplate.findOne(query, User.class);
 
@@ -138,8 +127,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
     @Override
     @Transactional(noRollbackFor = ResponseException.class)
     public ApiResponse smsRegister(String phone, Integer phoneType, String smsNum,
-                                   String clientType, String id_APP, String pic, JSONObject wrdN)
-    {
+                                   String clientType, String id_APP, String pic, JSONObject wrdN) throws IOException {
         // 判断是否存在这个 key
         if (redisTemplate1.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
 
@@ -176,8 +164,8 @@ SMS_CODE_NOT_FOUND.getCode(), null);
                 info.put("pic",pic);
                 info.put("mbn", phone);
                 info.put("phoneType", phoneType);
-                info.put("tmk", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-                info.put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                info.put("tmk", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                info.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
 
                 // 判断
                 if (ClientEnum.APP_CLIENT.getClientType().equals(clientType)) {

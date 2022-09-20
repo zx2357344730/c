@@ -12,8 +12,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * ##class: lSBComp
  * ##description: 卖买家公司类
- * ##author: jackson
- * ##updated: 2019-08-19 16:41
+ * @author jackson
+ * @updated 2019-08-19 16:41
  **/
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
@@ -43,8 +43,8 @@ public class lSBComp {
         this.refCB = refCB == null ? "": refCB;
         this.picC = picC == null ? "": picC;
         this.picCB = picCB == null ? "": picCB;
-        this.tmk = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
 
     }
 

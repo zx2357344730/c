@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * ##class: Oauth
  * ##description: 设置 token，以及oauth等
- * ##author: jackson
- * ##updated: 2019-07-02 13:54
+ * @author jackson
+ * @updated 2019-07-02 13:54
  **/
 @Component
 @Service
@@ -34,10 +34,10 @@ public class Oauth {
 
     /**
      *##description:      设置该用户的基本信息存入到redis中
-     *##Params:            user : 用户对象
-     *##Return:
-     *##author:           Kevin
-     *##updated:             2020/5/15 13:29
+     *@param            user : 用户对象
+     *@return
+     *@author           Kevin
+     *@updated             2020/5/15 13:29
      */
     public void setOauth(User user) {
 
@@ -59,10 +59,10 @@ public class Oauth {
 
     /**
      *##description:      根据uuid 生成token
-     *##Params:            uid : 用户id， clientType : 客户端类型
-     *##Return:           token and refreshToken
-     *##author:           JackSon
-     *##updated:             2020/5/15 13:28
+     *@param            uid : 用户id， clientType : 客户端类型
+     *@return           token and refreshToken
+     *@author           JackSon
+     *@updated             2020/5/15 13:28
      */
     public  String setToken(User user, String cid, String grpU, String dep,  String clientType) {
 
@@ -121,19 +121,19 @@ public class Oauth {
 
             token = jwtUtil.createJWT(uid, "wx");
 
-            redisTemplate1.opsForValue().set("wxToken-" + token, dataSet.toJSONString(), 10, TimeUnit.MINUTES);
+            redisTemplate1.opsForValue().set("wxToken-" + token, dataSet.toJSONString(), 30, TimeUnit.MINUTES);
 
         } else if ("app".equals(clientType)) {
 
             token = jwtUtil.createJWT(uid, "app");
 
-            redisTemplate1.opsForValue().set("appToken-" + token, dataSet.toJSONString(), 10, TimeUnit.MINUTES);
+            redisTemplate1.opsForValue().set("appToken-" + token, dataSet.toJSONString(), 30, TimeUnit.MINUTES);
 
         } else {
 
             token = jwtUtil.createJWT(uid, "web");
 
-            redisTemplate1.opsForValue().set("webToken-" + token, dataSet.toJSONString(), 10, TimeUnit.MINUTES);
+            redisTemplate1.opsForValue().set("webToken-" + token, dataSet.toJSONString(), 30, TimeUnit.MINUTES);
 
         }
 
@@ -142,10 +142,10 @@ public class Oauth {
 
     /**
      *##description:      获取 refreshToken
-     *##Params:
-     *##Return:
-     *##author:           JackSon
-     *##updated:             2020/5/15 15:45
+     *@param
+     *@return
+     *@author           JackSon
+     *@updated             2020/5/15 15:45
      */
     public  String setRefreshToken(String uid, String clientType) {
 
@@ -183,10 +183,10 @@ public class Oauth {
 //
 //    /**
 //     *##description:      根据公司id生成 menu 和 role 存入到 redis 中
-//     *##Params:            cid : 公司id
-//     *##Return:
-//     *##author:           JackSon
-//     *##updated:             2020/5/15 13:30
+//     *@param            cid : 公司id
+//     *@return
+//     *@author           JackSon
+//     *@updated             2020/5/15 13:30
 //     */
 //    public void setCompMenuAndRole(String cid) {
 //

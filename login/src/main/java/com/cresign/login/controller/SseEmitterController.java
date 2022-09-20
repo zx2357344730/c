@@ -35,8 +35,8 @@
 //    /**
 //     * 返回SseEmitter对象
 //     *
-//     * ##Params: clientId
-//     * ##return:
+//     * @param clientId
+//     * @return
 //     */
 //    @RequestMapping("/start")
 //    public SseEmitter testSseEmitter(String clientId) throws IOException {
@@ -51,8 +51,8 @@
 //    /**
 //     * 向SseEmitter对象发送数据
 //     *
-//     * ##Params: clientId
-//     * ##return:
+//     * @param clientId
+//     * @return
 //     */
 //    @RequestMapping("/send")
 //    public String setSseEmitter(String clientId) {
@@ -77,8 +77,8 @@
 //    /**
 //     * 将SseEmitter对象设置成完成
 //     *
-//     * ##Params: clientId
-//     * ##return:
+//     * @param clientId
+//     * @return
 //     */
 //    @RequestMapping("/end")
 //    public String completeSseEmitter(String clientId) {

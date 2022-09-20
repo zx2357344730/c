@@ -9,6 +9,7 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
 import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -46,9 +47,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2021-05-03 9:55
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2021-05-03 9:55
+ * @ver 1.0
  */
 @Service
 public class RedirectServiceImpl implements RedirectService {
@@ -73,6 +74,9 @@ public class RedirectServiceImpl implements RedirectService {
 
     @Autowired
     private AuthCheck authCheck;
+
+    @Autowired
+    private Qt qt;
 
     @Override
     @Transactional
@@ -107,7 +111,7 @@ public class RedirectServiceImpl implements RedirectService {
         jsonObject.put("id_P", id_P);
         jsonObject.put("grp", prod.getInfo().getGrp());
         jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -179,7 +183,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 //        jsonObject.put("grp",rolexMap.get("grpU"));
         jsonObject.put("grp","1099");
         jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -245,7 +249,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         jsonObject.put("id", id_C);
         jsonObject.put("grp","1099");
         jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -320,7 +324,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
 
         jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -382,7 +386,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id_C", id_C);
         jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
         String token = UUID19.uuid();
         // 2.
         if ("frequency".equals(mode)) {
@@ -504,7 +508,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
         // 2.
         JSONObject dataJson = comp.getJoinCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_JOINCOMP + token;
@@ -764,7 +768,7 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         // 2.
         JSONObject dataJson = prod.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -821,7 +825,7 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         // 2.
         JSONObject dataJson = user.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -877,7 +881,7 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         // 2.
         JSONObject dataJson = comp.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -930,7 +934,7 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         // 2.
         JSONObject dataJson = order.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -968,7 +972,8 @@ PROD_CODE_OVERDUE.getCode(), null);
         // 校验权限先校验如果是rolex中有这家公司则可以直接拿当前他的权限，否则就是游客
 
 
-        JSONObject rolex = MongoUtils.getRolex(id_U, prodJson.getString("id_C"), mongoTemplate);
+        User user = qt.getMDContent(id_U, "rolex.objComp."+prodJson.getString("id_C"),User.class);
+        JSONObject rolex = user.getRolex().getJSONObject("objComp").getJSONObject(prodJson.getString("id_C"));
 
         JSONArray viewArray;
         // 游客权限

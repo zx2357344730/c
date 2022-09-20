@@ -9,6 +9,7 @@ import com.cresign.chat.utils.AesUtil;
 import com.cresign.chat.utils.RsaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DbUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
@@ -33,9 +34,9 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * ##author: tangzejin
- * ##updated: 2019/8/23
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/8/23
+ * @ver 1.0.0
  * ##description: 群聊天websocket类
  */
 @ServerEndpoint("/wsU/msg/{uId}/{publicKey}/{token}/{client}")
@@ -86,7 +87,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     /**
      * 注入redis工具类
      */
-    private static DbUtils dbUtils;
+    private static Qt qt;
     /**
      * 注入redis数据库下标1模板
      */
@@ -111,20 +112,20 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     private Session session;
     /**
      * 注入的时候，给类的 service 注入
-     * @param dbUtils	redis工具类
+     * @param qt	DB工具类
      * @param logService	日志接口
      * @param redisTemplate1	redis下标为1的数据库模板
      * @param rocketMQTemplate	rocketMQ模板
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/22
      */
     @Autowired
-    public void setWebSocketUserServer(DbUtils dbUtils,LogService logService
-            , StringRedisTemplate redisTemplate1,RocketMQTemplate rocketMQTemplate, MqToEs mqToEs) {
+    public void setWebSocketUserServer(Qt qt, LogService logService
+            , StringRedisTemplate redisTemplate1, RocketMQTemplate rocketMQTemplate, MqToEs mqToEs) {
         WebSocketUserServer.logService = logService;
-        WebSocketUserServer.dbUtils = dbUtils;
+        WebSocketUserServer.qt = qt;
         WebSocketUserServer.redisTemplate1 = redisTemplate1;
         WebSocketUserServer.rocketMQTemplate = rocketMQTemplate;
 
@@ -134,11 +135,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     /**
      * 连接建立成功调用的方法
-     * ##Params: session   连接用户的session
-     * ##Params: id   聊天室id
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param session   连接用户的session
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnOpen
     public void onOpen(Session session, @PathParam("uId") String uId,@PathParam("publicKey") String publicKey
@@ -251,10 +251,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     /**
      * 连接关闭调用的方法
-     * ##Params: id    聊天室连接id
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param uId    聊天室连接id
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnClose
     public void onClose(@PathParam("uId") String uId) {
@@ -267,10 +267,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     /**
      * websocket异常回调类
-     * ##Params: error 异常信息
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param error 异常信息
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnError
     public void onError(Throwable error) {
@@ -282,9 +282,9 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     /**
      * 实现服务器主动推送
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     private synchronized void sendMessage(JSONObject stringMap, String key, boolean isEncrypt) {
         if (isEncrypt) {
@@ -316,16 +316,16 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     /**
      * 群发自定义消息
-     * ##Params: logContent   发送消息
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param logContent   发送消息
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     public synchronized static void sendLog(LogFlow logContent) {
         System.out.println("logContent:");
         System.out.println(JSON.toJSONString(logContent));
         // 设置日志时间
-        logContent.setTmd(DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
 //        //每次响应之前随机获取AES的key，加密data数据
 //        String key = AesUtil.getKey();
@@ -399,13 +399,13 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 prepareMqUserInfo(id_CS, logContent, id_Us, cidArray);
             }
 //            // 127.0.0.1 local test switching
-            localSending(id_Us, logContent);
+//            localSending(id_Us, logContent);
             // 调用检测id_U在不在本服务并发送信息方法
-//            sendMsgToMQ(id_Us,logContent);
-//            //4. regular send to ES 1 time
-//              sendMsgToEs(logContent);
-//            //5. regular send to PUSH to everybody who registered id_APP - batch push
-//            sendMsgToPush(cidArray,logContent);
+            sendMsgToMQ(id_Us,logContent);
+            //4. regular send to ES 1 time
+              sendMsgToEs(logContent);
+            //5. regular send to PUSH to everybody who registered id_APP - batch push
+            sendMsgToPush(cidArray,logContent);
         }
 
 
@@ -413,11 +413,11 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     /**
      * 根据key加密logContent数据
-     * ##Params: logContent	发送的日志数据
-     * ##Params: key	AES
-     * ##return: java.util.Map<java.lang.String,java.lang.String>  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param logContent	发送的日志数据
+     * @param key	AES
+     * @return java.util.Map<java.lang.String,java.lang.String>  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/11/28 16:12
      */
     private static JSONObject aes(LogFlow logContent,String key){
@@ -441,10 +441,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     /**
      * websocket消息接收
-     * ##Params: message   接收的消息
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param message   接收的消息
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnMessage
     public void onMessageWeb(String message){
@@ -489,7 +489,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @param msg	接收的消息
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/22
      */
     @Override
@@ -587,7 +587,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //     * @param state	状态
 //     * @return void  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/6/23
 //     */
 //    public static void setWsU(String id_U,String state){
@@ -599,7 +599,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //     * @param id_U	用户编号
 //     * @return java.lang.String  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/6/23
 //     */
 //    public static String getWsU(String id_U){
@@ -611,7 +611,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * 无参
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/23
      */
     private static synchronized void addOnlineCount(){
@@ -623,7 +623,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * 无参
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/23
      */
     private static synchronized void subOnlineCount(){
@@ -635,7 +635,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * 无参
      * @return int  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/23
      */
     private static synchronized int getOnlineCount(){
@@ -647,7 +647,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @param uId	当前连接用户编号
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/23
      */
     private synchronized void closeWS(String uId){
@@ -684,13 +684,18 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     private static void prepareMqUserInfo(String id_C, LogFlow logContent, JSONArray id_Us, JSONArray cidArray)
     {
-        String assetId = dbUtils.getId_A(id_C, "a-auth");
-        if (null == assetId || "none".equals(assetId)) {
-            return;
-        }
+//        String assetId = dbUtils.getId_A(id_C, "a-auth");
+//        if (null == assetId || "none".equals(assetId)) {
+//            return;
+//        }
 
         // 根据asset编号获取asset信息
-        Asset asset = dbUtils.getAssetById(assetId, Collections.singletonList("flowControl"));
+//        Asset asset = dbUtils.getAssetById(assetId, Collections.singletonList("flowControl"));
+
+        Asset asset = qt.getConfig(id_C,"a-auth","flowControl");
+        if (asset.equals(null))
+            return;
+
         // 获取卡片信息
         JSONObject flowControl = asset.getFlowControl();
         // 获取卡片data信息
@@ -828,7 +833,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //     * @param cidArray	需要推送的信息
 //     * @return void  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2022/6/23
 //     */
 //    private static void getPushList(JSONArray cidArray,String title,String body){
@@ -842,7 +847,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @param logContent 消息体
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/6/28
      */
     private static void sendMsgToMQ(JSONArray id_Us,LogFlow logContent) {
@@ -877,7 +882,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
 
     private static void sendMsgToPush(JSONArray cidArray, LogFlow logContent)
-    {
+    { //id_APP
         if (cidArray.size() > 0) {
             String wrdNUC = "用户名称为空";
             JSONObject wrdNU = logContent.getWrdNU();
@@ -894,7 +899,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @param logContent	发送的消息
      * @return void  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/7/2
      */
     private static void sendMsgToEs(LogFlow logContent){

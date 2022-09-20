@@ -17,10 +17,10 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
- * ##Author: JackSon
- * ##version: 1.0
+ * @author JackSon
+ * @ver 1.0
  * ##description: 腾讯云短信工具类
- * ##updated: 2020-03-16 14:02
+ * @updated 2020-03-16 14:02
  */
 @Component
 public class SMSTencent {
@@ -71,10 +71,10 @@ public class SMSTencent {
 
     /**
      *##description:
-     *##Params:            phones : 发送的手机号码 ,templateParam : 模版参数，从前往后对应的是模版的{1}、{2}等,见《创建短信签名和模版》小节
-     *##Return:
-     *##author:           JackSon
-     *##updated:             2020/3/16 14:36
+     *@param            phones : 发送的手机号码 ,templateParam : 模版参数，从前往后对应的是模版的{1}、{2}等,见《创建短信签名和模版》小节
+     *@return
+     *@author           JackSon
+     *@updated             2020/3/16 14:36
      */
     public static String sendSMS(String [] phones, int smsCodeSize, String templateId, String smsType)  {
 

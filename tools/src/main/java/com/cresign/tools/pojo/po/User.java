@@ -18,6 +18,8 @@ public class User {
 
     private JSONObject contactu;
 
+    private JSONObject cookiex;  //公司资料缓存
+
     private JSONArray view;
 
     private JSONObject spec;
@@ -36,9 +38,6 @@ public class User {
 
     private JSONObject link00s;
 
-    private JSONObject feedback;
-
-    private JSONObject cookiex;  //公司资料缓存
 
     private JSONObject qrShareCode;
 
@@ -47,8 +46,6 @@ public class User {
     private JSONObject summx;  //公司资料缓存
 
     private Integer tvs = 1;
-
-
 
 
 }

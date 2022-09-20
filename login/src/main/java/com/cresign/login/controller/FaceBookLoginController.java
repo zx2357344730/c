@@ -12,12 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/9/22 14:17
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/9/22 14:17
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("facebook")
@@ -53,7 +54,7 @@ public class FaceBookLoginController {
 
     @SecurityParameter
     @PostMapping("/v1/faceBookRegister")
-    public ApiResponse faceBookRegister(@RequestBody JSONObject reqJson) {
+    public ApiResponse faceBookRegister(@RequestBody JSONObject reqJson) throws IOException {
         String clientID = "";
         if (reqJson.containsKey(CLIENT_ID)) {
             clientID = reqJson.getString(CLIENT_ID);

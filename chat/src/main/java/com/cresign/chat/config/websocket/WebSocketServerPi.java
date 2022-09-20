@@ -25,9 +25,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 /**
  * @ClassName WebSocketServer
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2022/3/1 11:28
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 @ServerEndpoint("/wsU/pi/{id_C}/{name}/{publicKey}")
 @Component
@@ -177,11 +177,11 @@ public class WebSocketServerPi {
 
     /**
      * 连接建立成功调用的方法
-     * ##Params: session   连接用户的session
-     * ##Params: id   聊天室id
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param session   连接用户的session
+     * @param id   聊天室id
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnOpen
     public void onOpen(Session session,@PathParam("name") String name,@PathParam("publicKey") String publicKey){
@@ -240,10 +240,10 @@ public class WebSocketServerPi {
 
     /**
      * 连接关闭调用的方法
-     * ##Params: id    聊天室连接id
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param id    聊天室连接id
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnClose
     public synchronized void onClose(@PathParam("name") String name){
@@ -261,10 +261,10 @@ public class WebSocketServerPi {
 
     /**
      * websocket异常回调类
-     * ##Params: error 异常信息
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param error 异常信息
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnError
     public synchronized void onError(Throwable error,@PathParam("name") String name) {
@@ -286,10 +286,10 @@ public class WebSocketServerPi {
 
     /**
      * websocket消息接收
-     * ##Params: message   接收的消息
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param message   接收的消息
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnMessage
     public void onMessageWeb(String message){
@@ -299,14 +299,14 @@ public class WebSocketServerPi {
 
     /**
      * 群发自定义消息
-     * ##Params: log1   发送消息
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param log1   发送消息
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     public static void sendInfo(LogFlow log) {
         // 设置日志时间
-        log.setTmd(DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
         //每次响应之前随机获取AES的key，加密data数据
         String key = AesUtil.getKey();
         // 加密log1数据
@@ -320,9 +320,9 @@ public class WebSocketServerPi {
 
     /**
      * 实现服务器主动推送
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     private synchronized void sendMessage(JSONObject stringMap,String key) {
         //用前端的公钥来解密AES的key，并转成Base64
@@ -350,11 +350,11 @@ public class WebSocketServerPi {
 
     /**
      * 根据key加密log1数据
-     * ##Params: log1	发送的日志数据
-     * ##Params: key	AES
-     * ##return: java.util.Map<java.lang.String,java.lang.String>  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param log1	发送的日志数据
+     * @param key	AES
+     * @return java.util.Map<java.lang.String,java.lang.String>  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/11/28 16:12
      */
     private static JSONObject aes(String key,LogFlow log){
@@ -475,11 +475,11 @@ public class WebSocketServerPi {
 
     /**
      * 根据prodID获取该连接的总在线人数
-     * ##Params: key    公司id拼接角色
-     * ##return:  总在线人数
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param key    公司id拼接角色
+     * @return  总在线人数
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     private static synchronized int getOnlineCount(String key) {
         return map2.getInteger(key);
@@ -487,10 +487,10 @@ public class WebSocketServerPi {
 
     /**
      * 根据prodID，把当前人数加一
-     * ##Params: key    公司id拼接角色
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param key    公司id拼接角色
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     private static synchronized void addOnlineCount(String key) {
 
@@ -506,10 +506,10 @@ public class WebSocketServerPi {
 
     /**
      * 根据prodID，把当前人数减一
-     * ##Params: key    产品id
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param key    产品id
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     private static synchronized void subOnlineCount(String key) {
 

@@ -12,6 +12,7 @@ import com.cresign.chat.utils.RsaUtil;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.CoupaUtil;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.mongo.MongoUtils;
@@ -25,9 +26,9 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 
 /**
- * ##author: tangzejin
- * ##updated: 2019/7/16
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/7/16
+ * @ver 1.0.0
  * ##description: 日志实现类
  */
 @Service
@@ -39,7 +40,7 @@ public class LogServiceImpl  implements LogService {
     private RetResult retResult;
 
     @Autowired
-    private CoupaUtil coupaUtil;
+    private Qt qt;
 
     @Autowired
     private DetailsClient detailsClient;
@@ -54,12 +55,11 @@ public class LogServiceImpl  implements LogService {
 
     /**
      * 推送
-     * ##param clientId	推送id
-     * ##param title	推送标题
-     * ##param body	推送内容
-     * @return void  返回结果: 结果
+     * @param clientId	推送id
+     * @param title	推送标题
+     * @param body	推送内容
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2021/7/12 14:47
      */
     @Override
@@ -192,11 +192,15 @@ public class LogServiceImpl  implements LogService {
         String gpio = bindingInfo.getString("gpio");
         String rname = bindingInfo.getString("rname");
 
-        String assetId = coupaUtil.getAssetId(cid, "a-core");
-        System.out.println("输出:");
-        System.out.println(cid);
-        System.out.println(assetId);
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("rpi"));
+//        String assetId = coupaUtil.getAssetId(cid, "a-core");
+//        System.out.println("输出:");
+//        System.out.println(cid);
+//        System.out.println(assetId);
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("rpi"));
+//
+        Asset asset = qt.getConfig(cid,"a-core","rpi");
+
+
         JSONObject rpi = asset.getRpi();
         JSONObject rnames = rpi.getJSONObject("rnames");
         JSONObject r = rnames.getJSONObject(rname);
@@ -218,7 +222,9 @@ public class LogServiceImpl  implements LogService {
         JSONObject mapKey = new JSONObject();
         // 设置字段数据
         mapKey.put("rpi",rpi);
-        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+        qt.setMDContent(asset.getId(),mapKey,Asset.class);
+
+//        coupaUtil.updateAssetByKeyAndListKeyVal("id",asset.getId(),mapKey);
         LogFlow logFlow = LogFlow.getInstance();
         logFlow.setId_C(cid);
         logFlow.setId_U(bindingInfo.getString("id_U"));
@@ -227,9 +233,11 @@ public class LogServiceImpl  implements LogService {
         data.put("gpio",gpio);
         data.put("rname",rname);
         if (isBind) {
+            //TODO ZJ 要用 new logFlow 来做， 在pojo 加个 setLogData_rpi
             logFlow.setLogType("binding");
             logFlow.setZcndesc("绑定gpIo成功");
             logFlow.setGrpU(bindingInfo.getString("grpU"));
+            //TODO ZJ oIndex 不存在了， 改为 index
             logFlow.setIndex(bindingInfo.getInteger("oIndex"));
             logFlow.setWrdNU(bindingInfo.getJSONObject("wrdNU"));
             logFlow.setImp(bindingInfo.getInteger("imp"));
@@ -263,7 +271,7 @@ public class LogServiceImpl  implements LogService {
      * 推送
      * @return java.lang.String  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2021/6/16 15:01
      */
 //    @Override

@@ -21,16 +21,16 @@ import org.springframework.stereotype.Service;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/8/6 10:29
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/8/6 10:29
+ * @ver 1.0
  */
 @Service
 public class AuthFilterServiceImpl implements AuthFilterService {
 
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+//    @Autowired
+//    private MongoTemplate mongoTemplate;
 
     @Autowired
     private DbUtils dbUtils;
@@ -265,59 +265,59 @@ public class AuthFilterServiceImpl implements AuthFilterService {
 //
 //    }
 
-    @Override
-    public ApiResponse getTouristAuth(String id_C, String listType, String grp, String authType) {
-        // 最终返回数组
-        JSONArray resultArray = new JSONArray();
-
-
-        // 用户的role下标
-        String user_grpU = "1099";
-
-        String id_A = dbUtils.getId_A(id_C, "a-auth");
-        Query roleQ = new Query(new Criteria("_id").is(id_A));
-        roleQ.fields().include("role");
-        Asset asset = mongoTemplate.findOne(roleQ, Asset.class);
-        //JSONObject roleJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(roleQ, Asset.class));
-
-        JSONObject grpJson = null;
-        try {
-             grpJson = asset.getRole().getJSONObject("objAuth").getJSONObject(user_grpU).getJSONObject(listType).getJSONObject(grp);
-
-            //grpJson = roleJson.getJSONObject("role").getJSONObject("objAuth").getJSONObject(user_grpU).getJSONObject(listType).getJSONObject(grp);
-        } catch (RuntimeException e) {
-            throw new ErrorResponseException(HttpStatus.FORBIDDEN, LoginEnum.NOT_FOUND_AUTH.getCode(), null);
-
-        }
-
-        if (ObjectUtils.isEmpty(grpJson)){
-
-            throw new ErrorResponseException(HttpStatus.FORBIDDEN, LoginEnum.GRP_NOT_AUTH.getCode(), null);
-
-        }
-
-        // 权限的数组
-        JSONArray authTypeArray = grpJson.getJSONArray(authType);
-
-
-        for (Object authTypeObj : authTypeArray) {
-            JSONObject authJson = (JSONObject) authTypeObj;
-            if (authJson.getInteger("auth").equals(1) || authJson.getInteger("auth").equals(2)) {
-                resultArray.add(authJson.getString("ref"));
-            }
-        }
-
-        // 如果 selectResult 等于空则无权限
-        if (ObjectUtils.isEmpty(resultArray)){
-            // 无权限
-            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), null);
-        }
-
-
-        // 硬编+view卡片的权限
-        resultArray.add("view");
-        return retResult.okNoEncode(CodeEnum.OK.getCode(), resultArray);
-    }
+//    @Override
+//    public ApiResponse getTouristAuth(String id_C, String listType, String grp, String authType) {
+//        // 最终返回数组
+//        JSONArray resultArray = new JSONArray();
+//
+//
+//        // 用户的role下标
+//        String user_grpU = "1099";
+//
+//        String id_A = dbUtils.getId_A(id_C, "a-auth");
+//        Query roleQ = new Query(new Criteria("_id").is(id_A));
+//        roleQ.fields().include("role");
+//        Asset asset = mongoTemplate.findOne(roleQ, Asset.class);
+//        //JSONObject roleJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(roleQ, Asset.class));
+//
+//        JSONObject grpJson = null;
+//        try {
+//             grpJson = asset.getRole().getJSONObject("objAuth").getJSONObject(user_grpU).getJSONObject(listType).getJSONObject(grp);
+//
+//            //grpJson = roleJson.getJSONObject("role").getJSONObject("objAuth").getJSONObject(user_grpU).getJSONObject(listType).getJSONObject(grp);
+//        } catch (RuntimeException e) {
+//            throw new ErrorResponseException(HttpStatus.FORBIDDEN, LoginEnum.NOT_FOUND_AUTH.getCode(), null);
+//
+//        }
+//
+//        if (ObjectUtils.isEmpty(grpJson)){
+//
+//            throw new ErrorResponseException(HttpStatus.FORBIDDEN, LoginEnum.GRP_NOT_AUTH.getCode(), null);
+//
+//        }
+//
+//        // 权限的数组
+//        JSONArray authTypeArray = grpJson.getJSONArray(authType);
+//
+//
+//        for (Object authTypeObj : authTypeArray) {
+//            JSONObject authJson = (JSONObject) authTypeObj;
+//            if (authJson.getInteger("auth").equals(1) || authJson.getInteger("auth").equals(2)) {
+//                resultArray.add(authJson.getString("ref"));
+//            }
+//        }
+//
+//        // 如果 selectResult 等于空则无权限
+//        if (ObjectUtils.isEmpty(resultArray)){
+//            // 无权限
+//            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), null);
+//        }
+//
+//
+//        // 硬编+view卡片的权限
+//        resultArray.add("view");
+//        return retResult.okNoEncode(CodeEnum.OK.getCode(), resultArray);
+//    }
 
 
 }

@@ -25,15 +25,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/9/22 14:08
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/9/22 14:08
+ * @ver 1.0
  */
 @Service
 public class FaceBookLoginServiceImpl implements FaceBookLoginService {
@@ -84,7 +85,7 @@ WX_NOT_BIND.getCode(), null);
       }
 
     @Override
-    public ApiResponse faceBookRegister(String id_fb, String wcnN, String email, String pic, String phone, String phoneType, String smsNum, String clientID, String clientType) {
+    public ApiResponse faceBookRegister(String id_fb, String wcnN, String email, String pic, String phone, String phoneType, String smsNum, String clientID, String clientType) throws IOException {
         // 判断是否存在这个 key
         if (redisTemplate1.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
 
@@ -109,7 +110,7 @@ REGISTER_USER_IS_HAVE.getCode(), null);
 
                     Update update = new Update();
                     update.set("info.id_fb", id_fb);
-                    update.set("info.tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
 
                     mongoTemplate.updateFirst(mbnQue, update, User.class);
 
@@ -128,8 +129,8 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                 infoJson.put("email", email);
                 infoJson.put("mbn", phone);
                 infoJson.put("phoneType", phoneType);
-                infoJson.put("tmk", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-                infoJson.put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                infoJson.put("tmk", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
 
                 // 判断
                 if (ClientEnum.APP_CLIENT.getClientType().equals(clientType)) {

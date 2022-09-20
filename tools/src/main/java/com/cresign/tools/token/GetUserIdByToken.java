@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * ##description: 通过token获取uid
- * ##author: JackSon
- * ##updated: 2020/7/29 15:13
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/7/29 15:13
+ * @ver 1.0
  */
 @Component
 public class GetUserIdByToken {
@@ -26,10 +26,10 @@ public class GetUserIdByToken {
 
     /**
      *##description:      获取token从redis中拿取id_U
-     *##Params:            jwtStr : token
-     *##Return:
-     *##author:           JackSon
-     *##updated:             2020/5/16 9:49
+     *@param            jwtStr : token
+     *@return
+     *@author           JackSon
+     *@updated             2020/5/16 9:49
      */
     public String getTokenOfUserId(String jwtStr, String clientType) {
 
@@ -38,15 +38,8 @@ public class GetUserIdByToken {
         if(token_is) {
 
             JSONObject result = new JSONObject();
-//            System.out.println(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
             result = JSONObject.parseObject(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
-//            System.out.println(result.getString("id_C"));
-//            System.out.println(result.getString("id_U"));
-//            System.out.println(result.getString("grpU"));
-//            System.out.println(result.getString("dep"));
 
-
-//            return redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr);
             return result.getString("id_U");
         }
 
@@ -58,11 +51,9 @@ public class GetUserIdByToken {
 
         boolean token_is = jwtUtil.validJWT(clientType, jwtStr);
         if(token_is) {
-            //            System.out.println(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
             JSONObject result = JSONObject.parseObject(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
             return result;
-//            return redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr);
-//            return result;
+
         }
 
         throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), "");

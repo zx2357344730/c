@@ -91,8 +91,8 @@ public class RsaUtilF {
     /**
      * 私钥解密
      *
-     * ##Params: encryptedData 已加密数据
-     * ##Params: privateKey    私钥(BASE64编码)
+     * @param encryptedData 已加密数据
+     * @param privateKey    私钥(BASE64编码)
      */
     public static byte[] decryptByPrivateKey(byte[] encryptedData, String privateKey) throws Exception {
         //base64格式的key字符串转Key对象
@@ -122,8 +122,8 @@ public class RsaUtilF {
     /**
      * 公钥加密
      *
-     * ##Params: data      源数据
-     * ##Params: publicKey 公钥(BASE64编码)
+     * @param data      源数据
+     * @param publicKey 公钥(BASE64编码)
      */
     public static byte[] encryptByPublicKey(byte[] data, String publicKey) throws Exception {
         //base64格式的key字符串转Key对象
@@ -193,7 +193,7 @@ public class RsaUtilF {
 
     /***
      * 利用Apache的工具类实现SHA-256加密
-     * ##param str 加密后的报文
+     * @param str 加密后的报文
      * @return 加密结果
      */
     public static String getSHA256Str(String str){

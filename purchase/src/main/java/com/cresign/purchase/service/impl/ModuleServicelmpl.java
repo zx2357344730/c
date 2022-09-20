@@ -11,6 +11,7 @@ import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DbUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -59,6 +60,9 @@ public class ModuleServicelmpl implements ModuleService {
 
     @Autowired
     private DbUtils dbUtils;
+
+    @Autowired
+    private Qt qt;
 
     @Autowired
     private RestHighLevelClient restHighLevelClient;
@@ -494,8 +498,9 @@ public class ModuleServicelmpl implements ModuleService {
 //        Boolean isMove = can.getBoolean("isMove");
 
         // 获取es的lsprod信息
-        JSONArray esQuery = coupaUtil.getEsQuery("lsprod", Collections.singletonList("id_P")
-                , Collections.singletonList(id_P));
+//        JSONArray esQuery = coupaUtil.getEsQuery("lsprod", Collections.singletonList("id_P")
+//                , Collections.singletonList(id_P));
+        JSONArray esQuery = qt.getES("lsprod", qt.setESFilt("id_P", id_P),1);
         // 获取查询es的第一个信息
         JSONObject prodRe = esQuery.getJSONObject(0);
         // 获取lsprod具体信息
@@ -506,12 +511,12 @@ public class ModuleServicelmpl implements ModuleService {
         System.out.println(esId);
         // 判断是否删除lsprod
         if (isMove) {
-            // 放入es编号，获取删除结果
-            Integer resultStatus = coupaUtil.delEsById("lsprod", esId);
-            if (resultStatus != 0) {
-                System.out.println("删除lsprod出现异常");
-                return retResult.ok(CodeEnum.OK.getCode(), "错误码：删除lsprod出现异常");
-            }
+//            Integer reI = coupaUtil.delEsById("lsprod", esId);
+            qt.delES("lsprod",esId);
+//            if (reI != 0) {
+//                System.out.println("删除lsprod出现异常");
+//                return retResult.ok(CodeEnum.OK.getCode(), "错误码：删除lsprod出现异常");
+//            }
 //            else {
 //                lsprod.put("id_P","test_id_P");
 //                coupaUtil.updateES_lSProd(JSONObject.parseObject(JSON.toJSONString(lsprod), lSProd.class));
@@ -519,17 +524,17 @@ public class ModuleServicelmpl implements ModuleService {
         }
         // 根据lsprod创建lbprod
         lBProd lbprod = new lBProd(
-                getStrIsNull(lsprod.getString("id_P")), id_C
-                , getStrIsNull(lsprod.getString("id_CP")), id_C
+                lsprod.getString("id_P"), id_C
+                , lsprod.getString("id_CP"), id_C
                 , lsprod.getJSONObject("wrdN")==null?new JSONObject():lsprod.getJSONObject("wrdN")
                 , lsprod.getJSONObject("wrddesc")==null?new JSONObject():lsprod.getJSONObject("wrddesc")
                 , getStrIsNull(lsprod.getString("grp")), getStrIsNull(lsprod.getString("grpB"))
-                , getStrIsNull(lsprod.getString("grpU")), getStrIsNull(lsprod.getString("grpUB"))
                 , getStrIsNull(lsprod.getString("ref")), getStrIsNull(lsprod.getString("refB"))
-                , getStrIsNull(lsprod.getString("pic"))
+                , getStrIsNull(lsprod.getString("pic")),lsprod.getInteger("lDC")
                 , lsprod.getInteger("lUT")==null?0:lsprod.getInteger("lUT"));
         // 写入lbprod信息
-        coupaUtil.updateES_lBProd(lbprod);
+//        coupaUtil.updateES_lBProd(lbprod);
+        qt.addES("lbprod", lbprod);
 
         return retResult.ok(CodeEnum.OK.getCode(), "请求成功");
     }
@@ -730,9 +735,9 @@ public class ModuleServicelmpl implements ModuleService {
 //                , can.getString("refCB")
 //                , can.getString("picC")
 //                , can.getString("picCB")
-//                , DateUtils.getDateByT(DateEnum.DATE_TWO.getDate())
-//                , DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
-        lSBComp comp = new lSBComp(
+//                , DateUtils.getDateNow(DateEnum.DATE_TWO.getDate())
+//                , DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        lSBComp lsbcomp = new lSBComp(
                 id_C
                 , id_CP
                 , id_CB
@@ -747,9 +752,10 @@ public class ModuleServicelmpl implements ModuleService {
                 , refCB
                 , picC
                 , picCB
-                , DateUtils.getDateByT(DateEnum.DATE_TWO.getDate())
-                , DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
-        coupaUtil.updateES_lSBComp(comp);
+                , DateUtils.getDateNow(DateEnum.DATE_TWO.getDate())
+                , DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+//        coupaUtil.updateES_lSBComp(comp);
+        qt.addES("lsbcomp", lsbcomp);
         return retResult.ok(CodeEnum.OK.getCode(), "连接关系成功");
     }
 
@@ -1127,6 +1133,8 @@ public class ModuleServicelmpl implements ModuleService {
         // 根据用户编号获取用户的rolex卡片信息
         User user = coupaUtil.getUserById(id_U, Collections.singletonList("rolex"));
         // 创建返回结果对象
+//        User user = coupaUtil.getUserById(id_U, Collections.singletonList("rolex"));
+        User user = qt.getMDContent(id_U, "rolex", User.class);
         JSONObject result = new JSONObject();
         if (null == user) {
             result.put("id_U",id_U);
@@ -1255,7 +1263,8 @@ public class ModuleServicelmpl implements ModuleService {
                             // 设置字段数据
                             mapKey.put("rolex",rolex);
                             // 更新数据库
-                            coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKey);
+                            qt.setMDContent(id_U, mapKey, User.class);
+//                            coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKey);
                         } else {
                             result.put("id_U",id_U);
                             result.put("desc","获取公司信息异常");
@@ -1275,8 +1284,8 @@ public class ModuleServicelmpl implements ModuleService {
                         JSONObject mapKey = new JSONObject();
                         // 设置字段数据
                         mapKey.put("rolex",rolex);
-                        // 更新数据库
-                        coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKey);
+                        qt.setMDContent(id_U,mapKey,User.class);
+//                        coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKey);
                     }
                 }
             }
@@ -1547,8 +1556,8 @@ public class ModuleServicelmpl implements ModuleService {
 
         comp.getInfo().setId_CP(new_id_C);
         comp.getInfo().setId_C(new_id_C);
-        comp.getInfo().setTmk(DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-        comp.getInfo().setTmd(DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        comp.getInfo().setTmk(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        comp.getInfo().setTmd(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
 
         //真公司标志
         comp.setBcdNet(1);
@@ -1566,8 +1575,8 @@ public class ModuleServicelmpl implements ModuleService {
         //a-module
         JSONObject moduleObject = newComp.getJSONObject("a-module");
         moduleObject.getJSONObject("info").put("id_C",new_id_C);
-        moduleObject.getJSONObject("info").put("tmk", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
-        moduleObject.getJSONObject("info").put("tmd", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        moduleObject.getJSONObject("info").put("tmk", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        moduleObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
         //control.id_U
         JSONArray objDataList = moduleObject.getJSONObject("control").getJSONArray("objData");
 
@@ -1619,8 +1628,8 @@ public class ModuleServicelmpl implements ModuleService {
         infoData.put("id_U",uid);
         infoData.put("wrdN",user.getInfo().getWrdN());
         infoData.put("pic",user.getInfo().getPic());
-        infoData.put("tmd",DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-        infoData.put("tmk",DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        infoData.put("tmd",DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        infoData.put("tmk",DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
         infoData.put("id_CB",new_id_C);
         infoData.put("wrdNReal",user.getInfo().getWrdNReal());
         infoData.put("refU","");
@@ -1637,8 +1646,8 @@ public class ModuleServicelmpl implements ModuleService {
         authObject.getJSONObject("role").getJSONObject("objAuth").putAll(setRole(new_id_C));
 //        authObject.getJSONObject("def").put("id_UM",uid);//添加root id_U
         authObject.getJSONObject("info").put("id_C",new_id_C);
-        authObject.getJSONObject("info").put("tmk", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
-        authObject.getJSONObject("info").put("tmd", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        authObject.getJSONObject("info").put("tmk", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        authObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 
 
 
@@ -1660,17 +1669,17 @@ public class ModuleServicelmpl implements ModuleService {
         //调用
         this.createAsset(new_id_C, MongoUtils.GetObjectId() ,"a-auth",JSON.toJSONString(authObject));
 
-        //a-core
-        JSONObject coreObject = newComp.getJSONObject("a-core");
-        coreObject.getJSONObject("info").put("id_C",new_id_C);
-        coreObject.getJSONObject("info").put("tmk", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
-        coreObject.getJSONObject("info").put("tmd", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
-
-        //coreObject.getJSONObject("info").put("wrdNC",comp.getInfo().get("wrdN"));
-
-        //调用
-        this.createAsset(new_id_C, MongoUtils.GetObjectId() ,"a-core",JSON.toJSONString(coreObject));
-
+//        //a-core
+//        JSONObject coreObject = newComp.getJSONObject("a-core");
+//        coreObject.getJSONObject("info").put("id_C",new_id_C);
+//        coreObject.getJSONObject("info").put("tmk", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+//        coreObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+//
+//        //coreObject.getJSONObject("info").put("wrdNC",comp.getInfo().get("wrdN"));
+//
+//        //调用
+//        this.createAsset(new_id_C, MongoUtils.GetObjectId() ,"a-core",JSON.toJSONString(coreObject));
+//
 
 
         return retResult.ok(CodeEnum.OK.getCode(),new_id_C);
@@ -1861,8 +1870,8 @@ public class ModuleServicelmpl implements ModuleService {
             JSONObject listObject = new  JSONObject();
             listObject.putAll( objData.getJSONObject("info"));
             listObject.put("id_A", id);
-            listObject.put("tmk", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
-            listObject.put("tmd", DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+            listObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+            listObject.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
             listObject.put("id_CP", objComp.getInfo().getId_CP());
 
             request.source(listObject, XContentType.JSON);
@@ -1903,8 +1912,8 @@ public class ModuleServicelmpl implements ModuleService {
 //                assetflow.put("wn4price",infoObject.getDouble("wn4price"));
 //                assetflow.put("wn2qc",infoObject.get("wn2qc"));//hashMap.put("refSpace", infoObject.get("refSpace"));
 //                assetflow.put("grpU","");assetflow.put("grpUB",id_U);
-//                assetflow.put("tmk",DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
-//                assetflow.put("tmd",DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+//                assetflow.put("tmk",DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+//                assetflow.put("tmd",DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
 //
 //
 //                dbUtils.addES(assetflow,"assetflow");

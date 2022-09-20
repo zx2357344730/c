@@ -16,9 +16,9 @@ import java.io.IOException;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/7/29 9:26
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/7/29 9:26
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("wx")
@@ -47,10 +47,10 @@ public class WxLoginController {
 
     /**
      * 微信登录接口 (web端)
-     * ##Params: reqJson 前端传入参数
-     * ##author: JackSon
-     * ##updated: 2020/7/29 9:26
-     * ##Return: java.lang.String
+     * @param reqJson 前端传入参数
+     * @author JackSon
+     * @updated 2020/7/29 9:26
+     * @return java.lang.String
      */
     @SecurityParameter
     @PostMapping("/v1/wxWebLogin")
@@ -62,11 +62,11 @@ public class WxLoginController {
 
     /**
      * 微信小程序解密用户数据接口
-     * ##author: JackSon
-     * ##Params: reqJson 前端传入参数
-     * ##version: 1.0
-     * ##updated: 2020/8/8 10:38
-     * ##Return: java.lang.String
+     * @author JackSon
+     * @param reqJson 前端传入参数
+     * @ver 1.0
+     * @updated 2020/8/8 10:38
+     * @return java.lang.String
      */
     @SecurityParameter
     @PostMapping("/v1/decodeUserInfo")
@@ -77,10 +77,10 @@ public class WxLoginController {
 
     /**
      * 微信小程序登录接口 (微信小程序)
-     * ##Params: reqJson 前端传入参数
-     * ##author: JackSon
-     * ##updated: 2020/7/29 9:26
-     * ##Return: java.lang.String
+     * @param reqJson 前端传入参数
+     * @author JackSon
+     * @updated 2020/7/29 9:26
+     * @return java.lang.String
      */
     @SecurityParameter
     @PostMapping("/v1/wxAsLogin")
@@ -96,10 +96,10 @@ public class WxLoginController {
 
     /**
      * 微信小程序登录接口 (微信小程序)
-     * ##Params: reqJson 前端传入参数
-     * ##author: JackSon
-     * ##updated: 2020/7/29 9:26
-     * ##Return: java.lang.String
+     * @param reqJson 前端传入参数
+     * @author JackSon
+     * @updated 2020/7/29 9:26
+     * @return java.lang.String
      */
     @SecurityParameter
     @PostMapping("/v1/wxAppLogin")
@@ -113,7 +113,7 @@ public class WxLoginController {
 
     @SecurityParameter
     @PostMapping("/v1/wxRegisterUser")
-    public ApiResponse wxRegisterUser(@RequestBody JSONObject reqJson) {
+    public ApiResponse wxRegisterUser(@RequestBody JSONObject reqJson) throws IOException {
 
         return wxLoginService.wxRegisterUser(reqJson);
 
@@ -137,7 +137,7 @@ public class WxLoginController {
 
     @SecurityParameter
     @PostMapping("/v1/wechatRegister")
-    public ApiResponse wechatRegister(@RequestBody JSONObject reqJson) {
+    public ApiResponse wechatRegister(@RequestBody JSONObject reqJson) throws IOException {
         String clientID = "";
         if (reqJson.containsKey(CLIENT_ID)) {
             clientID = reqJson.getString(CLIENT_ID);

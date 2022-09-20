@@ -84,50 +84,51 @@ public class DbUtils {
 
     /**
      * 根据id查询mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param field 返回字段
-     * ##param classType 表对应的实体类
+     * @param id
+     * @param field 返回字段
+     * @param classType 表对应的实体类
      * @Return java.lang.Object
      * @Card
      **/
+    //FIXED
     public Object getMongoOneField(String id, String field, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
         if (field != null) {
             query.fields().include(field);
         }
-        Object one = mongoTemplate.findOne(query, classType);
-        return one;
+        return mongoTemplate.findOne(query, classType);
     }
 
     /**
      * 根据id查询mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param listField 多个返回字段
-     * ##param classType 表对应的实体类
+     * @param id
+     * @param listField 多个返回字段
+     * @param classType 表对应的实体类
      * @Return java.lang.Object
      * @Card
      **/
+    //FIXED
     public Object getMongoOneFields(String id, List<String> listField, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
         listField.forEach(query.fields()::include);
-        Object one = mongoTemplate.findOne(query, classType);
-        return one;
+        return mongoTemplate.findOne(query, classType);
     }
 
     /**
      * 根据多个id查询mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param field 返回字段
-     * ##param classType 表对应的实体类
+     * @param setId
+     * @param field 返回字段
+     * @param classType 表对应的实体类
      * @Return java.util.List<?>
      * @Card
      **/
+    //FIXED
     public List<?> getMongoListField(HashSet setId, String field, Class<?> classType) {
         Query query = new Query(new Criteria("_id").in(setId));
         if (field != null) {
@@ -139,20 +140,24 @@ public class DbUtils {
 
     /**
      * 根据多个id查询mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param listField 多个返回字段
-     * ##param classType 表对应的实体类
+     * @param setId
+     * @param listField 多个返回字段
+     * @param classType 表对应的实体类
      * @Return java.util.List<?>
      * @Card
      **/
+    //FIXED
+
     public List<?> getMongoListFields(HashSet setId, List<String> listField, Class<?> classType) {
         Query query = new Query(new Criteria("_id").in(setId));
         listField.forEach(query.fields()::include);
         List<?> list = mongoTemplate.find(query, classType);
         return list;
     }
+
+    //FIXED
 
     public Map<String, ?> getMongoMapField(HashSet setId, String field, Class<?> classType) {
         Query query = new Query(new Criteria("_id").in(setId));
@@ -172,6 +177,8 @@ public class DbUtils {
     }
 
 
+    //FIXED
+
     public Map<String, ?> getMongoMapFields(HashSet setId, List<String> listField, Class<?> classType) {
         Query query = new Query(new Criteria("_id").in(setId));
         listField.forEach(query.fields()::include);
@@ -189,15 +196,17 @@ public class DbUtils {
 
     /**
      * set修改mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param updateKey 修改字段key
-     * ##param updateValue 修改字段value
-     * ##param classType 表对应的实体类
+     * @param id
+     * @param updateKey 修改字段key
+     * @param updateValue 修改字段value
+     * @param classType 表对应的实体类
      * @Return com.mongodb.client.result.UpdateResult
      * @Card
      **/
+    //FIXED
+
     public UpdateResult setMongoValue(String id, String updateKey, Object updateValue, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
         Update update = new Update();
@@ -209,14 +218,15 @@ public class DbUtils {
 
     /**
      * set修改mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param jsonUpdate 多个修改字段
-     * ##param classType 表对应的实体类
+     * @param id
+     * @param jsonUpdate 多个修改字段
+     * @param classType 表对应的实体类
      * @Return com.mongodb.client.result.UpdateResult
      * @Card
      **/
+    //FIXED
     public UpdateResult setMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
         Update update = new Update();
@@ -228,55 +238,58 @@ public class DbUtils {
         return updateResult;
     }
 
-    /**
-     * inc修改mongo
-     * @Author Rachel
-     * @Date 2022/01/14
-     * ##param id
-     * ##param updateKey 修改字段key
-     * ##param updateValue 修改字段value
-     * ##param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    public UpdateResult incMongoValue(String id, String updateKey, Number updateValue, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        update.inc(updateKey, updateValue);
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
-
-    /**
-     * inc修改mongo
-     * @Author Rachel
-     * @Date 2022/01/14
-     * ##param id
-     * ##param jsonUpdate 多个修改对象
-     * ##param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    public UpdateResult incMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        jsonUpdate.forEach((k, v) ->{
-            update.inc(k, (Number) v);
-        });
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
+//    /**
+//     * inc修改mongo
+//     * @author Rachel
+//     * @Date 2022/01/14
+//     * @param id
+//     * @param updateKey 修改字段key
+//     * @param updateValue 修改字段value
+//     * @param classType 表对应的实体类
+//     * @Return com.mongodb.client.result.UpdateResult
+//     * @Card
+//     **/
+//    //FIXED
+//
+//    public UpdateResult incMongoValue(String id, String updateKey, Number updateValue, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").is(id));
+//        Update update = new Update();
+//        update.inc(updateKey, updateValue);
+//        update.inc("tvs", 1);
+//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+//        return updateResult;
+//    }
+//
+//    /**
+//     * inc修改mongo
+//     * @author Rachel
+//     * @Date 2022/01/14
+//     * @param id
+//     * @param jsonUpdate 多个修改对象
+//     * @param classType 表对应的实体类
+//     * @Return com.mongodb.client.result.UpdateResult
+//     * @Card
+//     **/
+    //FIXED
+//    public UpdateResult incMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").is(id));
+//        Update update = new Update();
+//        jsonUpdate.forEach((k, v) ->{
+//            update.inc(k, (Number) v);
+//        });
+//        update.inc("tvs", 1);
+//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+//        return updateResult;
+//    }
 
     /**
      * push修改mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param updateKey 修改字段key
-     * ##param updateValue 修改字段value
-     * ##param classType 表对应的实体类
+     * @param id
+     * @param updateKey 修改字段key
+     * @param updateValue 修改字段value
+     * @param classType 表对应的实体类
      * @Return com.mongodb.client.result.UpdateResult
      * @Card
      **/
@@ -288,79 +301,80 @@ public class DbUtils {
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         return updateResult;
     }
-
-    /**
-     * push修改mongo
-     * @Author Rachel
-     * @Date 2022/01/14
-     * ##param id
-     * ##param jsonUpdate 多个修改对象
-     * ##param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    public UpdateResult pushMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        jsonUpdate.forEach((k, v) ->{
-            update.push(k, v);
-        });
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
-
-    /**
-     * pull修改mongo
-     * @Author Rachel
-     * @Date 2022/01/14
-     * ##param id
-     * ##param updateKey 修改字段key
-     * ##param updateValue 修改字段value
-     * ##param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    public UpdateResult pullMongoValue(String id, String updateKey, Object updateValue, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        update.pull(updateKey, updateValue);
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
-
-    /**
-     * pull修改mongo
-     * @Author Rachel
-     * @Date 2022/01/14
-     * ##param id
-     * ##param jsonUpdate 多个修改对象
-     * ##param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    public UpdateResult pullMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        jsonUpdate.forEach((k, v) ->{
-            update.pull(k, v);
-        });
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
+//
+//    /**
+//     * push修改mongo
+//     * @author Rachel
+//     * @Date 2022/01/14
+//     * @param id
+//     * @param jsonUpdate 多个修改对象
+//     * @param classType 表对应的实体类
+//     * @Return com.mongodb.client.result.UpdateResult
+//     * @Card
+//     **/
+//    public UpdateResult pushMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").is(id));
+//        Update update = new Update();
+//        jsonUpdate.forEach((k, v) ->{
+//            update.push(k, v);
+//        });
+//        update.inc("tvs", 1);
+//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+//        return updateResult;
+//    }
+//
+//    /**
+//     * pull修改mongo
+//     * @author Rachel
+//     * @Date 2022/01/14
+//     * @param id
+//     * @param updateKey 修改字段key
+//     * @param updateValue 修改字段value
+//     * @param classType 表对应的实体类
+//     * @Return com.mongodb.client.result.UpdateResult
+//     * @Card
+//     **/
+//    public UpdateResult pullMongoValue(String id, String updateKey, Object updateValue, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").is(id));
+//        Update update = new Update();
+//        update.pull(updateKey, updateValue);
+//        update.inc("tvs", 1);
+//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+//        return updateResult;
+//    }
+//
+//    /**
+//     * pull修改mongo
+//     * @author Rachel
+//     * @Date 2022/01/14
+//     * @param id
+//     * @param jsonUpdate 多个修改对象
+//     * @param classType 表对应的实体类
+//     * @Return com.mongodb.client.result.UpdateResult
+//     * @Card
+//     **/
+//    public UpdateResult pullMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").is(id));
+//        Update update = new Update();
+//        jsonUpdate.forEach((k, v) ->{
+//            update.pull(k, v);
+//        });
+//        update.inc("tvs", 1);
+//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+//        return updateResult;
+//    }
 
     /**
      * 修改mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param update 修改语句
-     * ##param classType 表对应的实体类
+     * @param id
+     * @param update 修改语句
+     * @param classType 表对应的实体类
      * @Return com.mongodb.client.result.UpdateResult
      * @Card
      **/
+    //FIXED
     public UpdateResult updateMongoValues(String id, Update update, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
         update.inc("tvs", 1);
@@ -370,7 +384,7 @@ public class DbUtils {
 
     /**
      * 批量操作mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/05/16
      * @Param listBulk [新增：{"type":"insert", "insert":Object} / 修改：{"type":"update", "id":"", update:Update} / 删除：{"type":"remove", "id":""}]
      * @Param classType 表对应的实体类
@@ -398,7 +412,7 @@ public class DbUtils {
 
     /**
      * 批量操作es
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/05/17
      * @Param arrayBulk 新增：{"type":"insert", "logType":"", "insert":{}} / 修改：{"type":"update", "logType":"", "id":"", update:{}} / 删除：{"type":"remove", "logType":"", "id":""}
      * @Param logType
@@ -439,111 +453,10 @@ public class DbUtils {
         return bulkResponse;
     }
 
-    public BoolQueryBuilder filterBuilder (JSONArray filterArray, BoolQueryBuilder queryBuilder)
-    {
-        //用正则表达式  判断是否为数字
-        Pattern pattern = Pattern.compile("^[-]?[\\d]*$");
-        //条件数组不为空
-        if (filterArray.size() > 0) {
-            for (int i = 0; i < filterArray.size(); i++) {
-                //拿到每一组筛选条件
-                JSONObject conditionMap =  filterArray.getJSONObject(i);
-                String method = conditionMap.getString("method");
-                if (method.equals("exact")) {
-                    //精确查询，速度快不分词，查keyword类型
-                    queryBuilder.must(QueryBuilders.termQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
-                } else if (method.equals("eq")) {
-                    //模糊查询，必须匹配所有分词
-                    queryBuilder.must(QueryBuilders.matchPhraseQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
-                } else if (method.equals("ma")) {
-                    //模糊查询，匹配任意一个分词
-                    queryBuilder.must(QueryBuilders.matchQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
-                } else if (method.equals("gte")) {
-                    //大于等于
-//                    if (pattern.matcher((CharSequence) conditionMap.get("filtVal")).matches())
-                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).gte(conditionMap.get("filtVal")));
-                } else if (method.equals("gt")) {
-                    //大于
-                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).gt(conditionMap.get("filtVal")));
-                } else if (method.equals("lte")) {
-                    //小于等于
-                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).lte(conditionMap.get("filtVal")));
-                } else if (method.equals("lt")) {
-                    //小于
-                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).lt(conditionMap.get("filtVal")));
-                } else if (method.equals("range")){
-                    //范围查询, 大于等于～小于
-                    JSONArray arrayValue = conditionMap.getJSONArray("filtVal");
-                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).gte(arrayValue.get(0)).lt(arrayValue.get(1)));
-                } else if (method.equals("mixeq")) {
-                    //复杂查询，可一对一，一对多，多对一，多对多
-                    JSONArray arrayKey = conditionMap.getJSONArray("filtKey");
-                    JSONArray arrayValue = conditionMap.getJSONArray("filtVal");
-                    String value = StringUtils.join(arrayValue, " OR ");
-                    System.out.println("value=" + value);
-                    QueryStringQueryBuilder queryStringQueryBuilder = QueryBuilders.queryStringQuery(value);
-                    for (int j = 0; j < arrayKey.size(); j++) {
-                        queryStringQueryBuilder = queryStringQueryBuilder.field(arrayKey.getString(j));
-                    }
-                    queryBuilder.must(queryStringQueryBuilder);
-                } else if (method.equals("nexact")) {
-                    //精确查询，不分词
-                    queryBuilder.mustNot(QueryBuilders.termQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
-                }
-//                else if (method.equals("ne")) {
-//                    //模糊查询，必须匹配所有分词
-//                    queryBuilder.mustNot(QueryBuilders.matchPhraseQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
-//                }
-                else if (method.equals("ne")) {
-                    //模糊查询，匹配任意一个分词
-                    queryBuilder.mustNot(QueryBuilders.matchQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
-                } else if (method.equals("mixne")) {
-                    //复杂查询，可一对一，一对多，多对一，多对多
-                    JSONArray arrayKey = conditionMap.getJSONArray("filtKey");
-                    JSONArray arrayValue = conditionMap.getJSONArray("filtVal");
-                    String value = StringUtils.join(arrayValue, " OR ");
-                    System.out.println("value=" + value);
-                    QueryStringQueryBuilder queryStringQueryBuilder = QueryBuilders.queryStringQuery(value);
-                    for (int j = 0; j < arrayKey.size(); j++) {
-                        queryStringQueryBuilder = queryStringQueryBuilder.field(arrayKey.getString(j));
-                    }
-                    queryBuilder.must(queryStringQueryBuilder);
-                } else if (conditionMap.get("method").equals("contain")) {
-                    //设定条件  OR    contain：包含
-                    String joinStr = org.apache.commons.lang3.StringUtils.join((List<Integer>)conditionMap.get("filtVal"), " OR ");
-
-                    queryBuilder.must(QueryBuilders.queryStringQuery(joinStr).field(conditionMap.getString("filtKey")));
-                } else if (conditionMap.get("method").equals("timeRange")){
-                    JSONArray filtList = conditionMap.getJSONArray("filtVal");
-                    //.from（）是时间格式，.gte（）.lte（）  时间范围
-                    queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey"))
-                            .from(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()).gte(filtList.get(0))
-                            .lte(filtList.get(1)));
-                }  else if (conditionMap.get("method").equals("sheq")) {
-                    BoolQueryBuilder shouldQueryBuilder = new BoolQueryBuilder();
-                    JSONArray arrayFiltKey = conditionMap.getJSONArray("filtKey");
-                    for (int j = 0; j < arrayFiltKey.size(); j++) {
-                        shouldQueryBuilder.should(QueryBuilders.matchPhraseQuery(arrayFiltKey.getString(j), conditionMap.get("filtVal")));
-                    }
-                    queryBuilder.must(shouldQueryBuilder);
-                } else if (conditionMap.get("method").equals("shne")) {
-                    BoolQueryBuilder shouldQueryBuilder = new BoolQueryBuilder();
-                    JSONArray arrayFiltKey = conditionMap.getJSONArray("filtKey");
-                    for (int j = 0; j < arrayFiltKey.size(); j++) {
-                        shouldQueryBuilder.should(QueryBuilders.matchQuery(arrayFiltKey.getString(j), conditionMap.get("filtVal")));
-                    }
-                    queryBuilder.must(shouldQueryBuilder);
-                }
-            }
-        }
-
-        return queryBuilder;
-    }
-
 
     /**
      * 获取原有日志修改后发日志
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/05/18
      * @Param queryBuilder es查询语句
      * @Param sortKey 排序字段
@@ -553,6 +466,7 @@ public class DbUtils {
      * @Return org.elasticsearch.action.index.IndexResponse
      * @Card
      **/
+    //FIXED
     public LogFlow getRecentLog(String id_O, Integer index, JSONObject tokData) throws IOException {
         BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
         queryBuilder.must(QueryBuilders.termQuery("id_C", tokData.getString("id_C")))
@@ -580,7 +494,7 @@ public class DbUtils {
         LogFlow newestLog = JSONObject.parseObject(hit.getSourceAsString(), LogFlow.class);
 //        newestLog.putAll(jsonLog);
         //Setup who and when
-        newestLog.setTmd(DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        newestLog.setTmd(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
         newestLog.setId_U(tokData.getString("id_U"));
         newestLog.setDep(tokData.getString("dep"));
         newestLog.setGrpU(tokData.getString("grpU"));
@@ -588,7 +502,7 @@ public class DbUtils {
 
 
 //        
-//        newestLog.put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+//        newestLog.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
 //        newestLog.put("id_U", tokData.getString("id_U"));
 //        newestLog.put("dep", tokData.getString("dep"));
 //        newestLog.put("grpU", tokData.getString("grpU"));
@@ -613,14 +527,15 @@ public class DbUtils {
 
     /**
      * 查询es
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param key 查询key
-     * ##param value 查询value
-     * ##param logType 索引名
+     * @param key 查询key
+     * @param value 查询value
+     * @param logType 索引名
      * @Return org.elasticsearch.action.search.SearchResponse
      * @Card
      **/
+    //FIXED
     public JSONArray getEsKey(String key, Object value, String logType) throws IOException {
 
         JSONArray result = new JSONArray();
@@ -652,6 +567,7 @@ public class DbUtils {
         return null;
 
     }
+    //FIXED
 
     public JSONArray getEsKey(String key, Object value, String key2, Object value2, String logType) {
 
@@ -685,13 +601,15 @@ public class DbUtils {
 
     /**
      * 查询es
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param jsonQuery 多个查询对象
-     * ##param logType 索引名
+     * @param jsonQuery 多个查询对象
+     * @param logType 索引名
      * @Return org.elasticsearch.action.search.SearchResponse
      * @Card
      **/
+    //FIXED
+
     public SearchResponse getEsKeys(JSONObject jsonQuery, String logType) throws IOException {
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
@@ -704,43 +622,17 @@ public class DbUtils {
         return response;
     }
 
-    public JSONArray getEsKeyMany(JSONObject jsonQuery, String logType) throws IOException {
-        JSONArray result = new JSONArray();
-
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
-        jsonQuery.forEach((k, v) ->{
-            queryBuilder.must(QueryBuilders.termQuery(k, v));
-        });
-        sourceBuilder.query(queryBuilder).from(0).size(1000);
-
-        try {
-            SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
-
-            SearchResponse search = client.search(request, RequestOptions.DEFAULT);
-            for (SearchHit hit : search.getHits().getHits()) {
-                result.add(hit.getSourceAsMap());
-            }
-
-            System.out.println("result"+result);
-            return result;
-
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     /**
      * 查询es
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/02/27
-     * ##param queryBuilder 查询语句
-     * ##param logType 索引名
+     * @param queryBuilder 查询语句
+     * @param logType 索引名
      * @Return org.elasticsearch.action.search.SearchResponse
      * @Card
      **/
+    //FIXED
+
     public SearchResponse getEsQuery(BoolQueryBuilder queryBuilder, String logType) throws IOException {
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder.query(queryBuilder).from(0).size(5000);
@@ -750,6 +642,7 @@ public class DbUtils {
         return response;
     }
 
+    //FIXED
     public JSONArray getESListByQuery(BoolQueryBuilder queryBuilder, String logType) throws IOException {
         JSONArray result = new JSONArray();
 
@@ -765,12 +658,13 @@ public class DbUtils {
         return result;
     }
 
-
+    //FIXED
     public BulkByScrollResponse delES(String listType, String key, String id) throws IOException {
         DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(listType);
         deleteByQueryRequest.setQuery(QueryBuilders.termQuery(key, id));
         return client.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
     }
+    //FIXED
     public BulkByScrollResponse delES(String listType, String key, String id, String key2, String id2) throws IOException {
         DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(listType);
         deleteByQueryRequest.setQuery(QueryBuilders.termQuery(key, id));
@@ -781,16 +675,17 @@ public class DbUtils {
 
     /**
      * 新增assetflow日志
-     * ##author: Jevon
-     * ##Params: infoObject
-     * ##version: 1.0
-     * ##updated: 2020/10/26 8:30
-     * ##Return: void
+     * @author Jevon
+     * @param infoObject
+     * @ver 1.0
+     * @updated 2020/10/26 8:30
+     * @return void
      */
+    //Fixed
     public  void addES(JSONObject infoObject , String indexes ) throws IOException {
 
         //8-1 indexes = indexes + "-write";
-        infoObject.put("tmk", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        infoObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
         //指定ES索引 "assetflow" / "assetflow-write / assetflow-read
         IndexRequest request = new IndexRequest(indexes);
         //ES列表
@@ -803,13 +698,14 @@ public class DbUtils {
 
     /**
      * 根据id_C和ref获取id_A
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id_C 公司id
-     * ##param ref 编号
+     * @param id_C 公司id
+     * @param ref 编号
      * @Return java.lang.String
      * @Card
      **/
+//    //FIXED
     public String getId_A(String id_C, String ref) {
         Boolean bool = redisTemplate0.opsForHash().hasKey("login:module_id:compId-" + id_C, ref);
         System.out.println("bool=" + bool);
@@ -834,28 +730,28 @@ public class DbUtils {
 
     /**
      * 根据aId获取listKey需要的信息
-     * ##Params: aId	aid
-     * ##Params: listKey	需要的数据集合
-     * ##return: com.cresign.chat.pojo.po.Asset  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param aId	aid
+     * @param listKey	需要的数据集合
+     * @return com.cresign.chat.pojo.po.Asset  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 9:29
      */
-    public Asset getAssetById(String aId, List<String> listKey) {
-        Query query = new Query(new Criteria("_id").is(aId));
-        Field fields = query.fields();
-        listKey.forEach(fields::include);
-        return mongoTemplate.findOne(query, Asset.class);
-    }
+//    public Asset getAssetById(String aId, List<String> listKey) {
+//        Query query = new Query(new Criteria("_id").is(aId));
+//        Field fields = query.fields();
+//        listKey.forEach(fields::include);
+//        return mongoTemplate.findOne(query, Asset.class);
+//    }
 
     /**
      * 查询公司是真是假  1：真公司    0：假公司，2：都是自己
-     * ##author: Jevon
-     * ##Params: id_C      自己
-     * ##Params: compOther     对方
-     * ##version: 1.0
-     * ##updated: 2021/1/12 9:33
-     * ##Return: int
+     * @author Jevon
+     * @param id_C      自己
+     * @param compOther     对方
+     * @ver 1.0
+     * @updated 2021/1/12 9:33
+     * @return int
      */
     public int judgeComp(String id_C,String compOther){
 
@@ -877,7 +773,7 @@ public class DbUtils {
 
     public UpdateResponse updateEs(String logType, String id, JSONObject logInfo) throws IOException {
         UpdateRequest updateRequest = new UpdateRequest(logType, id);
-        logInfo.put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        logInfo.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
         updateRequest.doc(logInfo, XContentType.JSON);
         UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
         return updateResponse;
@@ -898,7 +794,7 @@ public class DbUtils {
         for (SearchHit hit : search.getHits().getHits()) {
             UpdateRequest updateRequest = new UpdateRequest();
 
-            hit.getSourceAsMap().put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+            hit.getSourceAsMap().put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
             hit.getSourceAsMap().putAll(listCol);
 
             updateRequest.index(listType);
@@ -949,5 +845,13 @@ public class DbUtils {
             }
             return true;
         }
+    }
+
+    public void updateSize(String id_C, Long fileSize) {
+        String id_A = getId_A(id_C, "a-auth");
+        Update update = new Update();
+        update.inc("refAuto.objSize.nowSize", fileSize);
+        update.set("refAuto.objSize.tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        updateMongoValues(id_A, update, Asset.class);
     }
 }

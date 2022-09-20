@@ -5,9 +5,9 @@ import lombok.Getter;
 /**
  * @ClassName ActionEnum
  * @Description chat服务状态码类
- * @Author tang
+ * @authortang
  * @Date 2021/6/23 15:41
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 @Getter
 public enum ActionEnum {
@@ -155,7 +155,7 @@ public enum ActionEnum {
 
     /**
      * 带参构造方法
-     * ##Params: code  异常状态码
+     * @param code  异常状态码
      */
     ActionEnum(String code){
         this.code = code;

@@ -41,10 +41,10 @@ public class QRCodeUtil {
      * 2,设置容错率为最高,一般容错率越高,图片越不清晰, 但是只有将容错率设置高一点才能兼容logo图片
      * 3,logo图片默认占二维码图片的20%,设置太大会导致无法解析
      *
-     * ##Params: content  二维码包含的内容，文本或网址
-     * ##Params: path     生成的二维码图片存放位置
-     * ##Params: size     生成的二维码图片尺寸 可以自定义或者默认（250）
-     * ##Params: logoPath logo的存放位置
+     * @param content  二维码包含的内容，文本或网址
+     * @param path     生成的二维码图片存放位置
+     * @param size     生成的二维码图片尺寸 可以自定义或者默认（250）
+     * @param logoPath logo的存放位置
      */
     public static boolean zxingCodeCreate(String content, String path, Integer size, String logoPath) {
         try {
@@ -74,10 +74,10 @@ public class QRCodeUtil {
      * 2,设置容错率为最高,一般容错率越高,图片越不清晰, 但是只有将容错率设置高一点才能兼容logo图片
      * 3,logo图片默认占二维码图片的20%,设置太大会导致无法解析
      *
-     * ##Params: content  二维码包含的内容，文本或网址
-     * ##Params: path     生成的二维码图片存放位置
-     * ##Params: size     生成的二维码图片尺寸 可以自定义或者默认（250）
-     * ##Params: logoPath logo的存放位置
+     * @param content  二维码包含的内容，文本或网址
+     * @param path     生成的二维码图片存放位置
+     * @param size     生成的二维码图片尺寸 可以自定义或者默认（250）
+     * @param logoPath logo的存放位置
      */
     public static String zxingCodeCreateTang(String content, String path, Integer size, String logoPath, String id) {
         try {
@@ -123,10 +123,10 @@ public class QRCodeUtil {
     /**
      * 二维码流的形式，包含文本内容
      *
-     * ##Params: content  二维码文本内容
-     * ##Params: size     二维码尺寸
-     * ##Params: logoPath logo的存放位置
-     * ##return:
+     * @param content  二维码文本内容
+     * @param size     二维码尺寸
+     * @param logoPath logo的存放位置
+     * @return
      */
     public static BufferedImage getBufferedImage(String content, Integer size, String logoPath) {
         if (size == null || size <= 0) {
@@ -189,9 +189,9 @@ public class QRCodeUtil {
     /**
      * 给二维码图片添加Logo
      *
-     * ##Params: qrPic   二维码图片
-     * ##Params: logoPic logo图片
-     * ##Params: path    合成后的图片存储目录
+     * @param qrPic   二维码图片
+     * @param logoPic logo图片
+     * @param path    合成后的图片存储目录
      */
     public static boolean zxingCodeCreate(File qrPic, File logoPic, String path) {
         try {
@@ -243,8 +243,8 @@ public class QRCodeUtil {
     /**
      * 二维码的解析方法
      *
-     * ##Params: path 二维码图片目录
-     * ##return:
+     * @param path 二维码图片目录
+     * @return
      */
     public static Result zxingCodeAnalyze(String path) {
         try {

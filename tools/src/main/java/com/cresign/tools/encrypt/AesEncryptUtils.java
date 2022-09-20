@@ -9,7 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * 前后端数据传输加密工具类
  *
- * ##Author: jackson
+ * @author jackson
  */
 public class AesEncryptUtils {
 
@@ -21,9 +21,9 @@ public class AesEncryptUtils {
 
     /**
      * 加密
-     * ##Params: content 加密的字符串
-     * ##Params: encryptKey key值
-     * ##return:
+     * @param content 加密的字符串
+     * @param encryptKey key值
+     * @return
      * ##exception:
      */
     public static String encrypt(String content, String encryptKey) throws Exception {
@@ -39,9 +39,9 @@ public class AesEncryptUtils {
 
     /**
      * 解密
-     * ##Params: encryptStr 解密的字符串
-     * ##Params: decryptKey 解密的key值
-     * ##return:
+     * @param encryptStr 解密的字符串
+     * @param decryptKey 解密的key值
+     * @return
      * ##exception:
      */
     public static String decrypt(String encryptStr, String decryptKey) throws Exception {

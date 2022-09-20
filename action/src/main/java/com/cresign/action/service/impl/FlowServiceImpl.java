@@ -13,6 +13,7 @@ import com.cresign.tools.common.Constants;
 import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DbUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -49,12 +50,6 @@ public class FlowServiceImpl implements FlowService {
 //    private static final Map<Long, List<Task>> taskM = new HashMap<>();
 //    private static final Map<Long,Long> zonM = new HashMap<>();
 
-    /**
-     * TODO KEV
-     * dgCheckUtil need to check tvs / tmk if not newest need to full ES data set into part
-     * confusing wn0prior @ action, oItem, part cards
-     */
-
     @Autowired
     private CoupaUtil coupaUtil;
 
@@ -71,7 +66,7 @@ public class FlowServiceImpl implements FlowService {
     private RetResult retResult;
 
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private Qt qt;
 
     @Autowired
     private TimeZjServiceImpl timeZjService;
@@ -214,9 +209,10 @@ public class FlowServiceImpl implements FlowService {
 
         // 获取递归结果键
         Set<String> actionCollection = objActionCollection.keySet();
-        //before getting so many id_A, get myComp id_A first for future use
-        String myId_A = dbUtils.getId_A(myCompId, "a-auth");
-        Asset myDef = dbUtils.getAssetById(myId_A, Collections.singletonList("def"));
+//        //before getting so many id_A, get myComp id_A first for future use
+//        String myId_A = dbUtils.getId_A(myCompId, "a-auth");
+//        Asset myDef = dbUtils.getAssetById(myId_A, Collections.singletonList("def"));
+        Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
 
         // 遍历键，并创建采购单
             for (String thisOrderId : actionCollection) {
@@ -229,7 +225,7 @@ public class FlowServiceImpl implements FlowService {
                 // 创建订单info
                 String prodCompId = "";
                 JSONObject orderNameCas = new JSONObject();
-                String targetCompId = "";
+                String targetCompId;
                 if (id_OParent.equals(thisOrderId)) {
                     targetCompId = salesOrderData.getInfo().getId_CB();
                 } else {
@@ -254,32 +250,37 @@ public class FlowServiceImpl implements FlowService {
                 }
                 String grpO = "";
                 String grpOB = "1000";
-                String aId;
+//                String aId;
+                Asset asset = null;
 
                 if (!targetCompId.equals(myCompId))
                 {
-                    aId = dbUtils.getId_A(targetCompId, "a-auth");
+//                    aId = dbUtils.getId_A(targetCompId, "a-auth");
+                    asset = qt.getConfig(targetCompId,"a-auth","def");
+                    if  (asset.equals(null))
+                        asset = myDef;
                 } else {
-                    aId = myId_A;
+//                    aId = myDef.getId();
+                    asset = myDef;
                 }
 
                 // if it is a real Company get grpB setting from objlBProd by ref, else do nothing now, later can do extra
-                if (!aId.equals("none")) {
-                    Asset asset;
-                    if (!targetCompId.equals(myCompId))
-                    {
-                        asset = dbUtils.getAssetById(aId, Collections.singletonList("def"));
-
-                    } else {
-                        asset = myDef;
-                    }
+//                if (!aId.equals("none")) {
+//                    Asset asset;
+//                    if (!targetCompId.equals(myCompId))
+//                    {
+//                        asset = dbUtils.getAssetById(aId, Collections.singletonList("def"));
+//
+//                    } else {
+//                        asset = myDef;
+//                    }
                     JSONObject defResultBP = asset.getDef().getJSONObject("objlBP");
                     JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
 
 
                     for (OrderOItem orderOItem : unitOItem) {
                         System.out.println(orderOItem.getGrpB());
-                        String grpB = orderOItem.getGrpB().toString();
+                        String grpB = orderOItem.getGrpB();
                         if (grpBGroup.getJSONObject(grpB) == null) {
                             grpBGroup.put(grpB, defResultBP.getJSONObject(grpB));
                         }
@@ -301,34 +302,48 @@ public class FlowServiceImpl implements FlowService {
 //                                break;
 //                            }
 //                        }
-                    }
+//                    }
                 }
 
-                String aId2;
+//                String aId2;
+
+                Asset asset2 = null;
+
                 if (!prodCompId.equals(myCompId))
                 {
-                    aId2 = dbUtils.getId_A(prodCompId, "a-auth");
-                } else if (myCompId.equals(targetCompId)) {
-                    aId2 = "none";
+//                    aId = dbUtils.getId_A(targetCompId, "a-auth");
+                    asset2 = qt.getConfig(prodCompId,"a-auth","def");
+                    if  (asset.equals(null))
+                        asset2 = myDef;
                 } else {
-                    aId2 = myId_A;
+//                    aId = myDef.getId();
+                    asset2 = myDef;
                 }
 
-                // if it is a real Company get grpB setting from objlBP by ref, else do nothing now, later can do extra
-                if (!aId2.equals("none")) {
-                    Asset asset;
-                    if (!prodCompId.equals(myCompId))
-                    {
-                        asset = dbUtils.getAssetById(aId2, Collections.singletonList("def"));
+//                if (!prodCompId.equals(myCompId))
+//                {
+//                    aId2 = dbUtils.getId_A(prodCompId, "a-auth");
+//                } else if (myCompId.equals(targetCompId)) {
+//                    aId2 = "none";
+//                } else {
+//                    aId2 = myDef.getId();
+//                }
 
-                    } else {
-                        asset = myDef;
-                    }
-                    JSONObject defResultSP = asset.getDef().getJSONObject("objlSP");
-                    JSONObject defResultSC = asset.getDef().getJSONObject("objlSC");
+                // if it is a real Company get grpB setting from objlBP by ref, else do nothing now, later can do extra
+//                if (!aId2.equals("none")) {
+//                    Asset asset;
+//                    if (!prodCompId.equals(myCompId))
+//                    {
+//                        asset = dbUtils.getAssetById(aId2, Collections.singletonList("def"));
+//
+//                    } else {
+//                        asset = myDef;
+//                    }
+                    JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
+                    JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
 
                     for (OrderOItem orderOItem : unitOItem) {
-                        String grp = orderOItem.getGrp().toString();
+                        String grp = orderOItem.getGrp();
 
                         if (grpGroup.getJSONObject(grp) == null) {
                             grpGroup.put(grp, defResultSP.getJSONObject(grp));
@@ -354,7 +369,7 @@ public class FlowServiceImpl implements FlowService {
 //                        }
 //                    }
 
-                  }
+//                  }
 
                 System.out.print("got all ok");
 
@@ -425,27 +440,29 @@ public class FlowServiceImpl implements FlowService {
                 JSONObject newPO_oStock = new JSONObject();
                 newPO_oStock.put("objData", new JSONArray());
 
-                for (int k = 0; k < unitOItem.size(); k++) {
-                    JSONObject initStock = new JSONObject();
-                    initStock.put("wn2qtynow", 0);
-                    initStock.put("wn2qtymade", 0);
-                    initStock.put("id_P", unitOItem.get(k).getId_P());
+                    for (OrderOItem orderOItem : unitOItem) {
+                        JSONObject initStock = new JSONObject();
+                        initStock.put("wn2qtynow", 0);
+                        initStock.put("wn2qtymade", 0);
+                        initStock.put("id_P", orderOItem.getId_P());
 
-                    newPO_oStock.getJSONArray("objData").add(initStock);
-                }
+                        newPO_oStock.getJSONArray("objData").add(initStock);
+                    }
 
 
                     newPO.setOStock(newPO_oStock);
 
                 newPO.setAction(newPO_Action);
                 // 新增订单
-                coupaUtil.saveOrder(newPO);
+//                coupaUtil.saveOrder(newPO);
+                qt.addMD(newPO);
 
 //              // 创建lSBOrder订单
                 lSBOrder lsbOrder = new lSBOrder(prodCompId,targetCompId,"","",id_OParent,thisOrderId, arrayId_P,
                             "","",null,"1000",unitOItem.get(0).getPic(),4,0,orderNameCas,null,null);
                     // 新增lsbOrder信息
-                coupaUtil.updateES_lSBOrder(lsbOrder);
+                qt.addES("lsborder", lsbOrder);
+//                coupaUtil.updateES_lSBOrder(lsbOrder);
             }
         }
             System.out.println("all finished...");
@@ -469,10 +486,8 @@ public class FlowServiceImpl implements FlowService {
 
         /**
          * 添加订单方法 - 注释完成
-         * ##param keyOfResult	递归结果键
-         * @return void  返回结果: 结果
          * @author tang
-         * @version 1.0.0
+         * @ver 1.0.0
          * @date 2020/8/6 8:40
          */
         public void updateSalesOrder(JSONArray casItemData,List<OrderAction> salesAction, List<OrderOItem> salesOItem,
@@ -512,11 +527,11 @@ public class FlowServiceImpl implements FlowService {
             //Create oStock
             JSONObject newPO_oStock = new JSONObject();
             newPO_oStock.put("objData", new JSONArray());
-            for (int k = 0; k < salesOItem.size(); k++) {
+            for (OrderOItem orderOItem : salesOItem) {
                 JSONObject initStock = new JSONObject();
                 initStock.put("wn2qtynow", 0);
                 initStock.put("wn2qtymade", 0);
-                initStock.put("id_P", salesOItem.get(k).getId_P());
+                initStock.put("id_P", orderOItem.getId_P());
                 newPO_oStock.getJSONArray("objData").add(initStock);
             }
             orderParentData.setOStock(newPO_oStock);
@@ -534,7 +549,8 @@ public class FlowServiceImpl implements FlowService {
             orderParentData.setView(view);
 
             // 新增订单
-            coupaUtil.saveOrder(orderParentData);
+//            coupaUtil.saveOrder(orderParentData);
+            qt.addMD(orderParentData);
         }
 
 
@@ -543,19 +559,18 @@ public class FlowServiceImpl implements FlowService {
 
     /**
      * 递归方法 - 注释完成
-//     * ##param id_P	产品id
-//     * ##param newObjectId    随机id
-//     * ##param priority  序号
-//     * ##param objOItemCollection   oitem递归数据集合
-//     * ##param objActionCollection  action递归数据集合
-//     * ##param orderIds  订单id集合
-//     * ##param compIds   公司id集合
-//     * ##param id_O   订单id
-//     * ##param pidActionCollection    action递归数据重复集合
-    //     * ##param orderCompPosition 存储订单对应公司的职位集合
-     * @return java.lang.String  返回结果: 结果
+//     * @param id_P	产品id
+//     * @param newObjectId    随机id
+//     * @param priority  序号
+//     * @param objOItemCollection   oitem递归数据集合
+//     * @param objActionCollection  action递归数据集合
+//     * @param orderIds  订单id集合
+//     * @param compIds   公司id集合
+//     * @param id_O   订单id
+//     * @param pidActionCollection    action递归数据重复集合
+    //     * @param orderCompPosition 存储订单对应公司的职位集合
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2021/5/29 14:20
      */
     // get id_P product info,
@@ -836,9 +851,9 @@ public class FlowServiceImpl implements FlowService {
                     partInfo.getInteger("lUT"),partInfo.getInteger("lCR"),
                     0.0,
                     partInfo.getDouble("wn4price"),upperOItem.getWrdN(),partInfo.getJSONObject("wrdN"),
-                    partInfo.getJSONObject("wrddesc"),upperOItem.getWrddesc());
+                    partInfo.getJSONObject("wrddesc"),partInfo.getJSONObject("wrdprep"));
 
-            objOItem.setTmd(dateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+            objOItem.setTmd(dateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
             objOItem.setSeq("3"); // set DGAction specific seq = 3
             objOItem.setWn2qtyneed(upperOItem.getWn2qtyneed() * partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"));
 
@@ -986,7 +1001,8 @@ public class FlowServiceImpl implements FlowService {
         //////////////////// if this Item has part, go into dgProc
         if (!id_P.equals(""))
         {
-        Prod thisProd = coupaUtil.getProdByListKey(id_P, Arrays.asList("_id","part","info"));
+//        Prod thisProd = coupaUtil.getProdByListKey(id_P, Arrays.asList("_id","part","info"));
+        Prod thisProd = qt.getMDContent(id_P, "_id, part, info", Prod.class);
 
         if (thisProd != null && thisProd.getPart() != null && thisProd.getPart().getJSONArray("objItem").size() > 0 &&
                 thisProd.getInfo().getId_C().equals(myCompId))
@@ -995,7 +1011,6 @@ public class FlowServiceImpl implements FlowService {
                 objAction.setBmdpt(2);
                 // the first item's bmdpt != 6, if ==6 then ALL parts in that part will == 6, then need pick by igura
                 if (partArrayNext.getJSONObject(0).getInteger("bmdpt") != 6) {
-                    if (partArrayNext != null) {
 //                        partArrayNext.sort((o1, o2) -> {
 //                            // 获取第一个的wn0prior
 //                            JSONObject o1O = JSON.parseObject(JSON.toJSONString(o1));
@@ -1020,7 +1035,7 @@ public class FlowServiceImpl implements FlowService {
                                     pidActionCollection,
                                     thisProd.getId(),oDates,oTasks,mergeJ,csStaN,csId_P,isJsLj);
                         }
-                    }
+
                 }
             }
         } else {
@@ -1145,7 +1160,7 @@ public class FlowServiceImpl implements FlowService {
 
         int checkPrev = partIndex - 1;
         Integer checkNext = partIndex + 1;
-        Boolean keepGoing = true;
+        boolean keepGoing = true;
 
         // this finO + fin_Ind points to the "repeated" oItem, so you can update
         String finO = pidActionCollection.get(id_P).getId_O();
@@ -1165,13 +1180,16 @@ public class FlowServiceImpl implements FlowService {
                 do {
                     if (checkPrev < 0 || (myPrior - 2) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
                         keepGoing = false;
-                    } else if (myPrior == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                    } else if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                        JSONObject idAndIndex = new JSONObject();
-                        idAndIndex.put("id_O", finO);
-                        idAndIndex.put("index", fin_Ind);
-                        // Here, I put the checking IdIndex into my own list of prtPrev
-                        unitAction.getPrtPrev().add(idAndIndex);
+                    } else {
+                        if (!myPrior.equals(partArray.getJSONObject(checkPrev).getInteger("wn0prior"))) {
+                            if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
+                                JSONObject idAndIndex = new JSONObject();
+                                idAndIndex.put("id_O", finO);
+                                idAndIndex.put("index", fin_Ind);
+                                // Here, I put the checking IdIndex into my own list of prtPrev
+                                unitAction.getPrtPrev().add(idAndIndex);
+                            }
+                        }
                     }
                     checkPrev--;
                 } while (keepGoing);
@@ -1180,7 +1198,7 @@ public class FlowServiceImpl implements FlowService {
 //                keepGoing = true;
 //
 //                do {
-//                    //TODO KEV why nothing happened here? prtNext should fix
+//                    //
 //                        if (checkNext == partArray.size()) {
 //                        keepGoing = false;
 //                    } else if ((myPrior + 2) == partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
@@ -1376,7 +1394,8 @@ public class FlowServiceImpl implements FlowService {
 
     public Object recursionProdPart(JSONArray arrayObjItem, JSONObject recurCheckList, JSONObject stat) {
         JSONArray arrayChildren = new JSONArray();
-        HashSet<String> setId_P = new HashSet();
+//        HashSet<String> setId_P = new HashSet();
+        String setId_P = "";
 
         if (stat.getInteger("count") > stat.getInteger("allCount"))
         {
@@ -1396,11 +1415,11 @@ public class FlowServiceImpl implements FlowService {
             if (arrayObjItem.getJSONObject(i).getString("bmdpt").equals(2)) {
                 recurCheckList.put(id_P, "");
             }
-            setId_P.add(id_P);
+//            setId_P.add(id_P);
+            setId_P = setId_P + "," + id_P;
         }
-        Query query = new Query(new Criteria("_id").in(setId_P).and("part").exists(true));
-        query.fields().include("part");
-        List<Prod> prods = mongoTemplate.find(query, Prod.class);
+
+        List <Prod> prods = (List<Prod>) qt.getMDContentMany(setId_P,"part", Prod.class);
         JSONObject jsonProdPart = new JSONObject();
         for (Prod prod : prods) {
             jsonProdPart.put(prod.getId(), prod.getPart());
@@ -1422,10 +1441,10 @@ public class FlowServiceImpl implements FlowService {
 
     /**
      * 递归验证 - 注释完成
-     * ##param id_P 产品编号
+     * @param id_P 产品编号
      * @return java.lang.String  返回结果: 递归结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2020/8/6 9:03
      * DONE Check Kev
      */
@@ -1464,7 +1483,8 @@ public class FlowServiceImpl implements FlowService {
             if (isRecurred.size() == 0 && isEmpty.size() == 0) {
                 JSONObject probKey = new JSONObject();
                 probKey.put("part.wn0Count", stat.getInteger("count"));
-                coupaUtil.updateProdByListKeyVal(id_P, probKey);
+//                coupaUtil.updateProdByListKeyVal(id_P, probKey);
+                qt.setMDContent(id_P,probKey,Prod.class);
             }
 
             // 抛出操作成功异常
@@ -1473,15 +1493,14 @@ public class FlowServiceImpl implements FlowService {
 
         /**
          * 递归验证工具 - 注释完成
-         * ##param pidList	产品编号集合
-         * ##param id_P	产品编号
-         * ##param objectMap	零件信息
-         * ##param isRecurred	产品状态存储map
-         * ##param layer	层级
-         * ##param isEmpty	异常信息存储集合
+         * @param pidList	产品编号集合
+         * @param id_P	产品编号
+         * @param objectMap	零件信息
+         * @param isRecurred	产品状态存储map
+         * @param isEmpty	异常信息存储集合
          * @return void  返回结果: 结果
          * @author tang
-         * @version 1.0.0
+         * @ver 1.0.0
          * @date 2020/11/16 9:25
          * DONE Check Kev
 
@@ -1490,7 +1509,9 @@ public class FlowServiceImpl implements FlowService {
                 ,JSONArray isRecurred,JSONArray isEmpty, JSONObject stat){
 
             // 根据父编号获取父产品信息
-            Prod thisItem = coupaUtil.getProdByListKey(id_P, Arrays.asList("part","info"));
+//            Prod thisItem = coupaUtil.getProdByListKey(id_P, Arrays.asList("part","info"));
+            Prod thisItem = qt.getMDContent(id_P, "info, part", Prod.class);
+
             // 层级加一
             stat.put("layer", stat.getInteger("layer") + 1 );
 
@@ -1567,18 +1588,19 @@ public class FlowServiceImpl implements FlowService {
 
     /**
      * 根据请求参数，获取更新后的订单oitem
-     * ##param id_P 产品编号
-     * ##param id_C 公司编号
+     * @param id_P 产品编号
+     * @param id_C 公司编号
      * @return java.lang.String  返回结果: 日志结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2020/8/6 9:08
      * KEV Checked
      */
     @Override
     public ApiResponse dgUpdatePartInfo(String id_P,String id_C) {
-        Prod prod = coupaUtil.getProdByListKey(
-                id_P,Arrays.asList("info","part"));
+//        Prod prod = coupaUtil.getProdByListKey(
+//                id_P,Arrays.asList("info","part"));
+        Prod prod = qt.getMDContent(id_P, "info, part", Prod.class);
         if (null == prod) {
             // 返回错误信息
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
@@ -1614,10 +1636,10 @@ public class FlowServiceImpl implements FlowService {
 
     /**
      * 根据id_C，判断prod是什么类型
-     * ##param id_C	公司编号
+     * @param id_C	公司编号
      * @return int  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2020/9/17 16:52
      * DONE Check Kev
      */
@@ -1636,8 +1658,9 @@ public class FlowServiceImpl implements FlowService {
 
             JSONArray partDataES = dbUtils.getEsKey("id_P",thisItem.getString("id_P"), "id_CB",id_C, "lBProd");
 
-            Prod thisProd = coupaUtil.getProdByListKey(
-                    thisItem.getString("id_P"), Arrays.asList("part","info"));
+//            Prod thisProd = coupaUtil.getProdByListKey(
+//                    thisItem.getString("id_P"), Arrays.asList("part","info"));
+            Prod thisProd = qt.getMDContent(id_P, "info, part", Prod.class);
 
             int bmdptValue;
             if (null == thisProd) {
@@ -1646,7 +1669,8 @@ public class FlowServiceImpl implements FlowService {
                 // 获取id的信息
                 ProdInfo prodInfo = thisProd.getInfo();
                 JSONObject part = thisProd.getPart();
-                Comp compById = coupaUtil.getCompByListKey(id_C, Arrays.asList("info"));
+//                Comp compById = coupaUtil.getCompByListKey(id_C, Arrays.asList("info"));
+                Comp compById = qt.getMDContent(id_C, "info", Comp.class);
 
                 if (null == compById || null == compById.getInfo() || !prodInfo.getId_C().equals(id_C)) {
                     //没有公司 = 物料
@@ -1698,15 +1722,16 @@ public class FlowServiceImpl implements FlowService {
         }
         JSONObject partData = new JSONObject();
         partData.put("part.objItem",partItem);
-        coupaUtil.updateProdByListKeyVal(id_P,partData);
+        qt.setMDContent(id_P, partData,Prod.class);
+//        coupaUtil.updateProdByListKeyVal(id_P,partData);
     }
 
         /**
          * 检查part是否为空 - 注释完成
-         * ##param id_P 产品编号
+         * @param id_P 产品编号
          * @return java.lang.String  返回结果: 结果
          * @author tang
-         * @version 1.0.0
+         * @ver 1.0.0
          * @date 2021/1/19 10:05
          * @Checked kev 2021/11/15
          * DONE Check Kev
@@ -1716,8 +1741,10 @@ public class FlowServiceImpl implements FlowService {
         public ApiResponse getPartIsNull(String id_P) {
 
             // 根据id获取产品信息
-            Prod prod = coupaUtil.getProdByListKey(
-                    id_P,Arrays.asList("info","part"));
+//            Prod prod = coupaUtil.getProdByListKey(
+//                    id_P,Arrays.asList("info","part"));
+            Prod prod = qt.getMDContent(id_P, "info, part", Prod.class);
+
             // 判断产品为空
             if (null == prod) {
                 // 返回错误信息
@@ -1745,7 +1772,7 @@ public class FlowServiceImpl implements FlowService {
      * 删除指定list的redis键 - 注释完成
      * @return java.lang.String  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2021/6/16 14:32
      */
     @Override
@@ -1821,7 +1848,7 @@ public class FlowServiceImpl implements FlowService {
                     System.out.println("删除es出现错误:" + e.getMessage());
                 }
 
-                coupaUtil.removeOrderById(subOrderId);
+                qt.delMD(subOrderId, Order.class);
             }
         }
 
@@ -1848,7 +1875,7 @@ public class FlowServiceImpl implements FlowService {
      * @param teStart	开始时间
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2022/5/19 10:30
      */
     @Override

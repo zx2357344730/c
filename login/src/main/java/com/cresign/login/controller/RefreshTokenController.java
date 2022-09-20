@@ -12,9 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/9/5 14:37
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/9/5 14:37
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("refreshToken")
@@ -27,6 +27,7 @@ public class RefreshTokenController {
     private RefreshTokenService refreshTokenService;
 
 
+    //real login
     @SecurityParameter
     @PostMapping("/v1/login")
     public ApiResponse refreshTokenLogin(@RequestBody JSONObject reqJson) {
@@ -39,8 +40,8 @@ public class RefreshTokenController {
 
     @SecurityParameter
     @PostMapping("/v1/logout")
-    public ApiResponse loginOut(@RequestBody JSONObject reqJson) {
-        return refreshTokenService.loginOut(
+    public ApiResponse logout(@RequestBody JSONObject reqJson) {
+        return refreshTokenService.logout(
                 reqJson.getString("refreshToken"),
                 request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName()));
     }

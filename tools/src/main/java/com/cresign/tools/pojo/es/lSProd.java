@@ -16,8 +16,8 @@ import java.io.Serializable;
 /**
  * ##class: lSProd
  * ##description: 产品类
- * ##author: jackson
- * ##updated: 2019-07-16 15:25
+ * @author jackson
+ * @updated 2019-07-16 15:25
  **/
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
@@ -42,8 +42,8 @@ public class lSProd implements Serializable {
         this.pic = pic  == null ? "": pic;
         this.lDC = lDC  == null ? 0: lDC;
         this.lUT = lUT  == null ? 0: lUT;
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmk = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
     }
 
     private String id_P;

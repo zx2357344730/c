@@ -12,7 +12,7 @@ import java.io.Serializable;
 /**
  * google验证token工具类
  *
- * ##Author: sy
+ * @author sy
  * ##Updated: 2019/8/27 14:10
  */
 public class GoogleCheckTokenUtils implements Serializable {

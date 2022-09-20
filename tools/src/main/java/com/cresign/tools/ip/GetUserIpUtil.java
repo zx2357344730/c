@@ -1,7 +1,7 @@
 package com.cresign.tools.ip;/**
- * ##Author: JackSon
+ * @author JackSon
  * ##Updated: 2020/5/12 9:07
- * ##version: 1.0
+ * @ver 1.0
  */
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,9 +10,9 @@ import java.net.UnknownHostException;
 
 /**
  *##description: 获取用户ip工具类
- *##Author: JackSon
- *##updated: 2020-05-12 09:07
- *##version: 1.0
+ *@author JackSon
+ *@updated 2020-05-12 09:07
+ *@ver 1.0
  */
 public class GetUserIpUtil {
 
@@ -20,8 +20,8 @@ public class GetUserIpUtil {
      * 获取用户真实IP地址，不使用request.getRemoteAddr();的原因是有可能用户使用了代理软件方式避免真实IP地址。
      * 可是，如果通过了多级反向代理的话，X-Forwarded-For的值并不止一个，而是一串IP值，究竟哪个才是真正的用户端的真实IP呢？
      * 答案是取X-Forwarded-For中第一个非unknown的有效IP字符串
-     * ##Params: request
-     * ##return:
+     * @param request
+     * @return
      */
     public static String getIpAddress(HttpServletRequest request) {
 

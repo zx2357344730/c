@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * ##author: tangzejin
- * ##updated: 2019/8/23
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/8/23
+ * @ver 1.0.0
  * ##description: 日志接口提供类
  */
 @RestController
@@ -38,10 +38,10 @@ public class LogController {
 
     /**
      * 发送
-     * ##param can 请求参数
+     * @param can 请求参数
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2021/6/30 16:13
      */
     @PostMapping("/v1/sendLoginDesc")
@@ -55,7 +55,7 @@ public class LogController {
      * 发送
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2021/6/30 16:13
      */
     @PostMapping("/v1/sendWS")
@@ -67,7 +67,7 @@ public class LogController {
      * 发送
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2021/6/30 16:13
      */
     @PostMapping("/v1/sendWSPi")
@@ -79,10 +79,10 @@ public class LogController {
 
     /**
      * 根据reqJson获取单个用户信息
-     * ##Params: reqJson	请求参数
-     * ##return: java.lang.String  返回结果:用户信息
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param reqJson	请求参数
+     * @return java.lang.String  返回结果:用户信息
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 8:21
      */
     @SecurityParameter
@@ -103,10 +103,10 @@ public class LogController {
 
     /**
      * 根据reqJson获取单个用户信息
-     * ##Params: reqJson	请求参数
-     * ##return: java.lang.String  返回结果:用户信息
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param reqJson	请求参数
+     * @return java.lang.String  返回结果:用户信息
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 8:21
      */
     @SecurityParameter
@@ -126,10 +126,10 @@ public class LogController {
 
 //    /**
 //     * 根据reqJson获取单个用户信息
-//     * ##Params: reqJson	请求参数
-//     * ##return: java.lang.String  返回结果:用户信息
-//     * ##Author: tang
-//     * ##version: 1.0.0
+//     * @param reqJson	请求参数
+//     * @return java.lang.String  返回结果:用户信息
+//     * @author tang
+//     * @ver 1.0.0
 //     * ##Updated: 2020/8/6 8:21
 //     */
 //    @SecurityParameter
