@@ -1130,8 +1130,8 @@ public class ModuleServicelmpl implements ModuleService {
      */
     private void getUserAndUp(String id_U,JSONArray resultArr,String id_C
             ,JSONObject users,Integer operation,String modName,Integer bcdStatus){
-        // 根据用户编号获取用户的rolex卡片信息
-        User user = coupaUtil.getUserById(id_U, Collections.singletonList("rolex"));
+//        // 根据用户编号获取用户的rolex卡片信息
+//        User user = coupaUtil.getUserById(id_U, Collections.singletonList("rolex"));
         // 创建返回结果对象
 //        User user = coupaUtil.getUserById(id_U, Collections.singletonList("rolex"));
         User user = qt.getMDContent(id_U, "rolex", User.class);

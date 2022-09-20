@@ -83,8 +83,8 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     @Override
     public ApiResponse setAppId(String appId,String id_U) {
 //        System.out.println("id_U:"+id_U);
-        // 根据用户编号获取rolex卡片和info卡片信息
-        User user = coupaUtil.getUserById(id_U, Arrays.asList("rolex","info"));
+//        // 根据用户编号获取rolex卡片和info卡片信息
+//        User user = coupaUtil.getUserById(id_U, Arrays.asList("rolex","info"));
         // 判断用户数据为空
         System.out.println("id_U:"+id_U);
 //        User user = coupaUtil.getUserById(id_U, Arrays.asList("rolex","info"));
@@ -115,8 +115,8 @@ public class AccountLoginServiceImpl implements AccountLoginService {
             JSONObject mapKeyUser = new JSONObject();
             // 设置字段数据
             mapKeyUser.put("info",info);
-            // 更新数据库
-            coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKeyUser);
+//            // 更新数据库
+//            coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKeyUser);
             // 获取rolex卡片信息
 //            coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKeyUser);
             qt.setMDContent(id_U, mapKeyUser, User.class);
