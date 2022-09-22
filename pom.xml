@@ -12,7 +12,7 @@
         <module>gateway</module>
         <!-- 目前在用 -->
         <module>login</module>
-        <module>details</module>
+<!--        <module>details</module>-->
 <!--        <module>search</module>-->
 <!--        <module>file</module>-->
         <!-- 目前在用 -->

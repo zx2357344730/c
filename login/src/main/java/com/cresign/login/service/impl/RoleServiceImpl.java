@@ -312,6 +312,15 @@ public class RoleServiceImpl implements RoleService {
 
         result.put("card", grpJson.getJSONArray("card"));
         result.put("batch", grpJson.getJSONArray("batch"));
+        result.put("log", grpJson.getJSONArray("log"));
+//        result.put("data",asset.getRole());
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("grp",grp);
+//        jsonObject.put("grpU",grpU);
+//        jsonObject.put("listType",listType);
+//        jsonObject.put("id_A",id_A);
+//        jsonObject.put("id_C",id_C);
+//        result.put("data2",jsonObject);
 
 
         // mod的键

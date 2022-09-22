@@ -43,10 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -75,6 +72,23 @@ public class ModuleServicelmpl implements ModuleService {
 
     private static final String secretId = "AKIDwjMl15uUt53mFUVGk39zaw4ydAWfaS8a";
     private static final String secretKey = "HLEsHSRChx1sTtELCpFXfZGk14tVw97w";
+
+    private void testZ(){
+        test(new String[]{"info","data"},new String[]{"",""});
+        test(new HashMap<String, String>(){{put("1","1");put("2","2");}});
+        test(new JSONObject());
+
+//        JSONObject jsonObject = qt.setJson(new String[]{"info", "data"}, new Object[]{"info", "data"});
+//        System.out.println(jsonObject);
+    }
+
+    private void test(String[] s,String[] s2){
+        for (int i = 0; i < s.length; i++) {
+
+        }
+    }
+    private void test(Map<String,String> s){ }
+    private void test(JSONObject s){ }
 
     /**
      * 更新a-auth内日志权限信息，更新全部
@@ -1277,14 +1291,14 @@ public class ModuleServicelmpl implements ModuleService {
                         mod.put("bcdStatus",bcdStatus);
                         // 修改当前模块
                         modAuth.put(modName,mod);
-                        c_role.put("modAuth",modAuth);
-                        objComp.put(id_C,c_role);
-                        rolex.put("objComp",objComp);
-                        // 定义存储flowControl字典
-                        JSONObject mapKey = new JSONObject();
-                        // 设置字段数据
-                        mapKey.put("rolex",rolex);
-                        qt.setMDContent(id_U,mapKey,User.class);
+//                        c_role.put("modAuth",modAuth);
+//                        objComp.put(id_C,c_role);
+//                        rolex.put("objComp",objComp);
+//                        // 定义存储flowControl字典
+//                        JSONObject mapKey = new JSONObject();
+//                        // 设置字段数据
+//                        mapKey.put("rolex",rolex);
+                        qt.setMDContent("rolex.objComp."+id_C+".modAuth",modAuth,User.class);
 //                        coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKey);
                     }
                 }
