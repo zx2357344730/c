@@ -70,16 +70,20 @@ public class GetUserIdByToken {
                 return result;
             } else {
                 JSONObject modAuth = result.getJSONObject("modAuth");
-                JSONObject modJ = modAuth.getJSONObject(mod);
-                if (null == modJ) {
-                    throw new ErrorResponseException(HttpStatus.OK, "01117", "该公司没有这个模块功能");
+                if (null == modAuth) {
+                    throw new ErrorResponseException(HttpStatus.OK, "01119", "该公司没有modAuth");
                 } else {
-                    Integer bcdLevel = modJ.getInteger("bcdLevel");
-                    // 1 < 4 4=4
-                    if (lev <= bcdLevel) {
-                        return result;
+                    JSONObject modJ = modAuth.getJSONObject(mod);
+                    if (null == modJ) {
+                        throw new ErrorResponseException(HttpStatus.OK, "01117", "该公司没有这个模块功能");
                     } else {
-                        throw new ErrorResponseException(HttpStatus.OK, "01118", "当前用户这个模块功能权限不够");
+                        Integer bcdLevel = modJ.getInteger("bcdLevel");
+                        // 1 < 4 4=4
+                        if (lev <= bcdLevel) {
+                            return result;
+                        } else {
+                            throw new ErrorResponseException(HttpStatus.OK, "01118", "当前用户这个模块功能权限不够");
+                        }
                     }
                 }
             }

@@ -199,7 +199,7 @@ public class RpiServiceImpl implements RpiService {
         Integer statusInside = rpiNameData.getInteger("status");
         if (statusInside == 0) {
             JSONObject rnames = rpiNameData.getJSONObject("rnames");
-            JSONObject rpi = rpiNameData.getJSONObject("rpi");
+//            JSONObject rpi = rpiNameData.getJSONObject("rpi");
             String assetId = rpiNameData.getString("assetId");
             // 根据rname获取公司内的对应信息
             JSONObject rnameData = rnames.getJSONObject(rname);
@@ -248,30 +248,14 @@ public class RpiServiceImpl implements RpiService {
             // 设置树莓派信息
             redisTemplate1.opsForValue().set(PI + rname,JSON.toJSONString(piData));
             rnames.put(rname,rnameData);
-            rpi.put("rnames",rnames);
-            // 定义存储flowControl字典
-            JSONObject mapKey = new JSONObject();
-            // 设置字段数据
-            mapKey.put("rpi",rpi);
-            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//            rpi.put("rnames",rnames);
+//            // 定义存储flowControl字典
+//            JSONObject mapKey = new JSONObject();
+//            // 设置字段数据
+//            mapKey.put("rpi",rpi);
+//            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+            qt.setMDContent(assetId,qt.setJson("rpi.rnames",rnames),Asset.class);
             return retResult.ok(CodeEnum.OK.getCode(), resultArr);
-
-//            if (null == gpioStr || "".equals(gpioStr)) {
-//                String token = "rpi_"+ UUID19.uuid();
-//                String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_RPI_T + token;
-//                r.put(gpio,token);
-//                rnames.put(rname,r);
-//                rpi.put("rnames",rnames);
-//                // 定义存储flowControl字典
-//                JSONObject mapKey = new JSONObject();
-//                // 设置字段数据
-//                mapKey.put("rpi",rpi);
-//                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
-//                redisTemplate1.opsForValue().set(token,JSON.toJSONString(redisJ));
-//                return retResult.ok(CodeEnum.OK.getCode(), url);
-//            } else {
-//                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_Y_BIND.getCode(), "已经生成token");
-//            }
         } else {
             return errResult(statusInside);
         }
@@ -555,7 +539,8 @@ public class RpiServiceImpl implements RpiService {
             return result;
         }
         // 根据公司资产编号获取对应的资产信息
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("rpi"));
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("rpi"));
+        Asset asset = qt.getMDContent(assetId,"rpi",Asset.class);
         if (null == asset) {
             result.put("status",2);
             return result;

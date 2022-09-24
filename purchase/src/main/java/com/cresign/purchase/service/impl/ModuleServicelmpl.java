@@ -73,23 +73,6 @@ public class ModuleServicelmpl implements ModuleService {
     private static final String secretId = "AKIDwjMl15uUt53mFUVGk39zaw4ydAWfaS8a";
     private static final String secretKey = "HLEsHSRChx1sTtELCpFXfZGk14tVw97w";
 
-    private void testZ(){
-        test(new String[]{"info","data"},new String[]{"",""});
-        test(new HashMap<String, String>(){{put("1","1");put("2","2");}});
-        test(new JSONObject());
-
-//        JSONObject jsonObject = qt.setJson(new String[]{"info", "data"}, new Object[]{"info", "data"});
-//        System.out.println(jsonObject);
-    }
-
-    private void test(String[] s,String[] s2){
-        for (int i = 0; i < s.length; i++) {
-
-        }
-    }
-    private void test(Map<String,String> s){ }
-    private void test(JSONObject s){ }
-
     /**
      * 更新a-auth内日志权限信息，更新全部
      * @param id_C	公司编号
@@ -104,48 +87,6 @@ public class ModuleServicelmpl implements ModuleService {
      */
     @Override
     public ApiResponse modifyLogAuthAll(String id_C, String grpU, String listType, String grp, Integer auth) {
-//        JSONObject compAssetRole = getCompAssetRole(id_C);
-//        JSONObject result = new JSONObject();
-//        // 获取错误状态，为0是没有错误
-//        Integer statusRole = compAssetRole.getInteger("status");
-//        if (0 == statusRole) {
-//            JSONObject role = compAssetRole.getJSONObject("role");
-//            String assetIdRole = compAssetRole.getString("assetId");
-//
-//            JSONArray errRole = new JSONArray();
-//            JSONObject objAuth = role.getJSONObject("objAuth");
-//            boolean isOk = getLogAuth(objAuth,errRole,grpU,listType,grp);
-//            result.put("errRole",errRole);
-//            result.put("type",0);
-//            if (isOk) {
-//                JSONObject authGrpU = objAuth.getJSONObject(grpU);
-//                JSONObject authListType = authGrpU.getJSONObject(listType);
-//                JSONObject listTypeGrp = authListType.getJSONObject(grp);
-//                JSONArray logAuthList = listTypeGrp.getJSONArray("log");
-//
-//                for (int i = 0; i < logAuthList.size(); i++) {
-//                    JSONObject jsonObject = logAuthList.getJSONObject(i);
-//                    jsonObject.put("auth",auth);
-//                    logAuthList.set(i,jsonObject);
-//                }
-//
-//                listTypeGrp.put("log",logAuthList);
-//                authListType.put(grp,listTypeGrp);
-//                authGrpU.put(listType,authListType);
-//                objAuth.put(grpU,authGrpU);
-//
-//                role.put("objAuth",objAuth);
-//                // 定义存储flowControl字典
-//                JSONObject mapKey = new JSONObject();
-//                // 设置字段数据
-//                mapKey.put("role",role);
-//                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
-//                result.put("type",1);
-//            }
-//            return retResult.ok(CodeEnum.OK.getCode(), result);
-//        } else {
-//            return errResult(statusRole,1);
-//        }
         return getObjAuth(id_C,grpU,listType,grp,auth,null,true);
     }
 
@@ -164,56 +105,6 @@ public class ModuleServicelmpl implements ModuleService {
      */
     @Override
     public ApiResponse modifyLogAuth(String id_C, String grpU, String listType, String grp, Integer auth, String modRef) {
-//        JSONObject compAssetRole = getCompAssetRole(id_C);
-//        JSONObject result = new JSONObject();
-//        // 获取错误状态，为0是没有错误
-//        Integer statusRole = compAssetRole.getInteger("status");
-//        if (0 == statusRole) {
-//            JSONObject role = compAssetRole.getJSONObject("role");
-//            String assetIdRole = compAssetRole.getString("assetId");
-//
-//            JSONArray errRole = new JSONArray();
-//            JSONObject objAuth = role.getJSONObject("objAuth");
-//            boolean isOk = getLogAuth(objAuth,errRole,grpU,listType,grp);
-//            result.put("errRole",errRole);
-//            result.put("type",0);
-//            if (isOk) {
-//                JSONObject authGrpU = objAuth.getJSONObject(grpU);
-//                JSONObject authListType = authGrpU.getJSONObject(listType);
-//                JSONObject listTypeGrp = authListType.getJSONObject(grp);
-//                JSONArray logAuthList = listTypeGrp.getJSONArray("log");
-//                int updateInd = -1;
-//                for (int i = 0; i < logAuthList.size(); i++) {
-//                    JSONObject jsonObject = logAuthList.getJSONObject(i);
-//                    String modRefLog = jsonObject.getString("modRef");
-//                    if (modRefLog.equals(modRef)) {
-//                        updateInd = i;
-//                    }
-//                }
-//                if (updateInd != -1) {
-//                    JSONObject jsonObject = logAuthList.getJSONObject(updateInd);
-//                    jsonObject.put("auth",auth);
-//                    logAuthList.set(updateInd,jsonObject);
-//                    listTypeGrp.put("log",logAuthList);
-//                    authListType.put(grp,listTypeGrp);
-//                    authGrpU.put(listType,authListType);
-//                    objAuth.put(grpU,authGrpU);
-//
-//                    role.put("objAuth",objAuth);
-//                    // 定义存储flowControl字典
-//                    JSONObject mapKey = new JSONObject();
-//                    // 设置字段数据
-//                    mapKey.put("role",role);
-//                    coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
-//                    result.put("type",1);
-//                } else {
-//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_MATCHING_MOD_REF.getCode(), "无匹配的modRef");
-//                }
-//            }
-//            return retResult.ok(CodeEnum.OK.getCode(), result);
-//        } else {
-//            return errResult(statusRole,1);
-//        }
         return getObjAuth(id_C,grpU,listType,grp,auth,modRef,false);
     }
 
@@ -298,16 +189,6 @@ public class ModuleServicelmpl implements ModuleService {
                     // 根据键获取对应的模组信息
                     JSONObject jsonObject = logInit.getJSONObject(k);
                     if (null != jsonObject) {
-//                        Integer auth = jsonObject.getInteger("auth");
-//                        if (auth == 0) {
-//                            JSONObject errSon = new JSONObject();
-//                            errSon.put("modKey",k);
-//                            errSon.put("desc","init内该mod已被禁用");
-//                            errMod.add(errSon);
-//                        } else {
-//                            modList.put(k,objMod.getJSONObject(k));
-//                            modListNew.put(k,jsonObject);
-//                        }
                         // 添加模组信息
                         modList.put(k,objMod.getJSONObject(k));
                         modListNew.add(jsonObject);
@@ -337,49 +218,10 @@ public class ModuleServicelmpl implements ModuleService {
                         JSONObject authGrpU = objAuth.getJSONObject(grpU);
                         JSONObject authListType = authGrpU.getJSONObject(listType);
                         JSONObject listTypeGrp = authListType.getJSONObject(grp);
-//                        listTypeGrp.put("log",modListNew);
-//                        authListType.put(grp,listTypeGrp);
-//                        authGrpU.put(listType,authListType);
-//                        objAuth.put(grpU,authGrpU);
-//
-////                        System.out.println("后:");
-//                        role.put("objAuth",objAuth);
-////                        System.out.println(JSON.toJSONString(role));
-//                        // 定义存储flowControl字典
-//                        JSONObject mapKey = new JSONObject();
-//                        // 设置字段数据
-//                        mapKey.put("role",role);
-//                        // 更新数据库
-//                        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
                         // 调用方法更新数据
                         setAndUpdateAuth(listTypeGrp,modListNew,authListType,authGrpU
                                 ,objAuth,role,assetIdRole,grpU,listType,grp);
                     }
-
-//                    objAuth.keySet().forEach(k -> {
-//                        JSONObject objAuthSon = objAuth.getJSONObject(k);
-//                        JSONObject lSProd = objAuthSon.getJSONObject("lSProd");
-//                        if (null == lSProd) {
-//                            JSONObject errRoleSon = new JSONObject();
-//                            errRoleSon.put("key",k);
-//                            errRoleSon.put("desc","该键的lSProd为空");
-//                            errRole.add(errRoleSon);
-//                        } else {
-////                            System.out.println("lSProd:");
-////                            System.out.println(JSON.toJSONString(lSProd));
-//                            lSProd.keySet().forEach(sonKey -> {
-//                                JSONObject lSProdSon = lSProd.getJSONObject(sonKey);
-////                                lSProdSon.put("log",modList);
-//                                lSProdSon.put("log",modListNew);
-//                                lSProd.put(sonKey,lSProdSon);
-//                            });
-//                            objAuthSon.put("lSProd",lSProd);
-//                            objAuth.put(k,objAuthSon);
-//                        }
-//                    });
-
-//                    System.out.println("role异常:");
-//                    System.out.println(JSON.toJSONString(errRole));
                     result.put("errRole",errRole);
                 }
 //                System.out.println("modInit异常:");
@@ -666,12 +508,13 @@ public class ModuleServicelmpl implements ModuleService {
                     errList.add(re);
                 }
             });
-            control.put("objMod",objMod);
-            // 定义存储flowControl字典
-            JSONObject mapKey = new JSONObject();
-            // 设置字段数据
-            mapKey.put("control",control);
-            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//            control.put("objMod",objMod);
+//            // 定义存储flowControl字典
+//            JSONObject mapKey = new JSONObject();
+//            // 设置字段数据
+//            mapKey.put("control",control);
+//            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+            qt.setMDContent(assetId,qt.setJson("control.objMod",objMod),Asset.class);
             JSONObject result = new JSONObject();
             if (errList.size() > 0) {
                 result.put("type",1);
@@ -889,18 +732,19 @@ public class ModuleServicelmpl implements ModuleService {
     private void setAndUpdateAuth(JSONObject listTypeGrp,JSONArray logAuthList,JSONObject authListType
             ,JSONObject authGrpU,JSONObject objAuth,JSONObject role,String assetIdRole,String grpU
             ,String listType,String grp){
-        listTypeGrp.put("log",logAuthList);
-        authListType.put(grp,listTypeGrp);
-        authGrpU.put(listType,authListType);
-        objAuth.put(grpU,authGrpU);
-
-        role.put("objAuth",objAuth);
-        // 定义存储flowControl字典
-        JSONObject mapKey = new JSONObject();
-        // 设置字段数据
-        mapKey.put("role",role);
+//        listTypeGrp.put("log",logAuthList);
+//        authListType.put(grp,listTypeGrp);
+//        authGrpU.put(listType,authListType);
+//        objAuth.put(grpU,authGrpU);
+//
+//        role.put("objAuth",objAuth);
+//        // 定义存储flowControl字典
+//        JSONObject mapKey = new JSONObject();
+//        // 设置字段数据
+//        mapKey.put("role",role);
         // 更新数据库
-        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+//        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetIdRole,mapKey);
+        qt.setMDContent(assetIdRole,qt.setJson("role.objAuth."+grpU+"."+listType+"."+grp+".log",logAuthList),Asset.class);
     }
 
     /**
@@ -1075,7 +919,8 @@ public class ModuleServicelmpl implements ModuleService {
             result.put("status",1);
             return result;
         }
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(card));
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(card));
+        Asset asset = qt.getMDContent(assetId, card, Asset.class);
         if (null == asset) {
             result.put("status",2);
             return result;
@@ -1149,14 +994,16 @@ public class ModuleServicelmpl implements ModuleService {
         // 创建返回结果对象
 //        User user = coupaUtil.getUserById(id_U, Collections.singletonList("rolex"));
         User user = qt.getMDContent(id_U, "rolex", User.class);
-        JSONObject result = new JSONObject();
+        JSONObject result;
         if (null == user) {
+            result = new JSONObject();
             result.put("id_U",id_U);
             result.put("desc","用户信息为空");
             resultArr.add(result);
         } else {
             JSONObject rolex = user.getRolex();
             if (null == rolex) {
+                result = new JSONObject();
                 result.put("id_U",id_U);
                 result.put("desc","用户权限卡片为空");
                 resultArr.add(result);
@@ -1166,6 +1013,7 @@ public class ModuleServicelmpl implements ModuleService {
                 // 获取当前处理公司权限信息
                 JSONObject c_role = objComp.getJSONObject(id_C);
                 if (null == c_role) {
+                    result = new JSONObject();
                     result.put("id_U",id_U);
                     result.put("desc","用户权限卡片内当前公司信息为空");
                     resultArr.add(result);
@@ -1191,26 +1039,27 @@ public class ModuleServicelmpl implements ModuleService {
                             JSONObject modAuth = getModAuth(c_role.getJSONObject("modAuth"));
                             // 遍历修改当前用户的模块信息
                             u_role.keySet().forEach(k -> {
-                                // 根据键获取修改的模块信息
-                                JSONObject mod = u_role.getJSONObject(k);
-                                // 获取操作类型
-                                String type = mod.getString("type");
-                                // 定义存储是否为空，默认为空
-                                boolean isNull = false;
+//                                // 定义存储是否为空，默认为空
+//                                boolean isNull = false;
                                 // 获取卡片的模块信息
                                 JSONObject jsonObject = objMod.getJSONObject(k);
-                                // 定义存储模块用户信息
-                                JSONArray jsonArray = null;
+//                                // 定义存储模块用户信息
+//                                JSONArray jsonArray;
                                 if (null != jsonObject) {
-                                    isNull = true;
-                                    jsonArray = jsonObject.getJSONArray("id_U");
-                                }
-                                // 判断为删除状态
-                                if ("del".equals(type) && modAuth.containsKey(k)) {
-                                    // 删除当前模块
-                                    modAuth.remove(k);
-                                    if (isNull) {
-//                                        JSONArray jsonArray = jsonObject.getJSONArray("id_U");
+//                                    isNull = true;
+                                    // 获取操作类型
+                                    String type = u_role.getString(k);
+                                    JSONArray jsonArray = jsonObject.getJSONArray("id_U");
+                                    JSONObject val = new JSONObject();
+                                    val.put("tfin",jsonObject.getString("tfin"));
+                                    val.put("bcdStatus",jsonObject.getInteger("bcdState"));
+                                    val.put("bcdLevel",jsonObject.getInteger("bcdLevel"));
+                                    val.put("ref",jsonObject.getString("ref"));
+
+                                    // 判断为删除状态
+                                    if ("del".equals(type) && modAuth.containsKey(k)) {
+                                        // 删除当前模块
+                                        modAuth.remove(k);
                                         // 定义存储要删除的下标，默认-1
                                         int currentUser = -1;
                                         // 遍历用户集合
@@ -1229,61 +1078,190 @@ public class ModuleServicelmpl implements ModuleService {
                                             jsonObject.put("id_U",jsonArray);
                                             objMod.put(k,jsonObject);
                                         }
-                                    }
-                                } else {
-                                    // 获取当前模块键是否存在
-                                    boolean isModAuth = modAuth.containsKey(k);
-                                    // 修改当前模块
-                                    modAuth.put(k,mod.getJSONObject("val"));
+//                                        if (isNull) {
+////                                        JSONArray jsonArray = jsonObject.getJSONArray("id_U");
+//
+//                                        }
+                                    } else {
+                                        // 获取当前模块键是否存在
+                                        boolean isModAuth = modAuth.containsKey(k);
+                                        // 修改当前模块
+                                        modAuth.put(k,val);
 //                                    JSONObject jsonObject = objMod.getJSONObject(k);
-                                    // 判断模块键不存在
-                                    if (!isModAuth && isNull) {
+                                        // 判断模块键不存在
+                                        if (!isModAuth
+//                                                && isNull
+                                        ) {
 //                                        JSONArray jsonArray = jsonObject.getJSONArray("id_U");
-                                        // 定义存储，当前用户是否存在，默认不存在
-                                        boolean isExistence = false;
-                                        // 遍历用户集合
-                                        for (int i = 0; i < jsonArray.size(); i++) {
-                                            // 根据下标获取用户id
-                                            String id_UN = jsonArray.getString(i);
-                                            // 判断等于当前用户id
-                                            if (id_UN.equals(id_U)) {
-                                                isExistence = true;
-                                                break;
+                                            // 定义存储，当前用户是否存在，默认不存在
+                                            boolean isExistence = false;
+                                            // 遍历用户集合
+                                            for (int i = 0; i < jsonArray.size(); i++) {
+                                                // 根据下标获取用户id
+                                                String id_UN = jsonArray.getString(i);
+                                                // 判断等于当前用户id
+                                                if (id_UN.equals(id_U)) {
+                                                    isExistence = true;
+                                                    break;
+                                                }
+                                            }
+                                            // 判断不存在
+                                            if (!isExistence) {
+                                                // 添加用户id
+                                                jsonArray.add(id_U);
+                                                jsonObject.put("id_U",jsonArray);
+                                                objMod.put(k,jsonObject);
                                             }
                                         }
-                                        // 判断不存在
-                                        if (!isExistence) {
-                                            // 添加用户id
-                                            jsonArray.add(id_U);
-                                            jsonObject.put("id_U",jsonArray);
-                                            objMod.put(k,jsonObject);
-                                        }
                                     }
+                                } else {
+                                    JSONObject resultErr = new JSONObject();
+                                    resultErr.put("id_U",id_U);
+                                    resultErr.put("desc","该公司当前模块为空，模块名称:"+k);
+                                    resultArr.add(resultErr);
                                 }
                             });
-                            control.put("objMod",objMod);
-                            // 定义存储flowControl字典
-                            JSONObject mapKey = new JSONObject();
-                            // 设置字段数据
-                            mapKey.put("control",control);
-                            // 更新数据库
-                            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//                            control.put("objMod",objMod);
+//                            // 定义存储flowControl字典
+//                            JSONObject mapKey = new JSONObject();
+//                            // 设置字段数据
+//                            mapKey.put("control",control);
+//                            // 更新数据库
+//                            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+                            qt.setMDContent(assetId,qt.setJson("control.objMod",objMod),Asset.class);
 
-                            c_role.put("modAuth",modAuth);
-                            objComp.put(id_C,c_role);
-                            rolex.put("objComp",objComp);
-                            // 定义存储flowControl字典
-                            mapKey = new JSONObject();
-                            // 设置字段数据
-                            mapKey.put("rolex",rolex);
+//                            c_role.put("modAuth",modAuth);
+//                            objComp.put(id_C,c_role);
+//                            rolex.put("objComp",objComp);
+//                            // 定义存储flowControl字典
+//                            mapKey = new JSONObject();
+//                            // 设置字段数据
+//                            mapKey.put("rolex",rolex);
                             // 更新数据库
-                            qt.setMDContent(id_U, mapKey, User.class);
+//                            qt.setMDContent(id_U, mapKey, User.class);
+                            qt.setMDContent(id_U, qt.setJson("rolex.objComp."+id_C+".modAuth",modAuth), User.class);
 //                            coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKey);
                         } else {
+                            result = new JSONObject();
                             result.put("id_U",id_U);
                             result.put("desc","获取公司信息异常");
                             resultArr.add(result);
                         }
+//                        if (0 == status) {
+//                            // 获取卡片信息
+//                            JSONObject control = compAssetMod.getJSONObject("control");
+//                            // 获取资产编号
+//                            String assetId = compAssetMod.getString("assetId");
+//                            // 获取模块信息
+//                            JSONObject objMod = control.getJSONObject("objMod");
+//
+//                            // 获取修改当前用户的模块信息
+//                            JSONObject u_role = users.getJSONObject(id_U);
+//                            // 获取当前公司的模块信息
+//                            JSONObject modAuth = getModAuth(c_role.getJSONObject("modAuth"));
+//                            // 遍历修改当前用户的模块信息
+//                            u_role.keySet().forEach(k -> {
+//                                // 根据键获取修改的模块信息
+//                                JSONObject mod = u_role.getJSONObject(k);
+//                                // 获取操作类型
+//                                String type = mod.getString("type");
+//                                // 定义存储是否为空，默认为空
+//                                boolean isNull = false;
+//                                // 获取卡片的模块信息
+//                                JSONObject jsonObject = objMod.getJSONObject(k);
+//                                JSONObject val = new JSONObject();
+//                                // 定义存储模块用户信息
+//                                JSONArray jsonArray = null;
+//                                if (null != jsonObject) {
+//                                    isNull = true;
+//                                    jsonArray = jsonObject.getJSONArray("id_U");
+//
+//                                    val.put("tfin",jsonObject.getString("tfin"));
+//                                    val.put("bcdStatus",jsonObject.getInteger("bcdState"));
+//                                    val.put("bcdLevel",jsonObject.getInteger("bcdLevel"));
+//                                    val.put("ref",jsonObject.getString("ref"));
+//                                }
+//                                // 判断为删除状态
+//                                if ("del".equals(type) && modAuth.containsKey(k)) {
+//                                    // 删除当前模块
+//                                    modAuth.remove(k);
+//                                    if (isNull) {
+////                                        JSONArray jsonArray = jsonObject.getJSONArray("id_U");
+//                                        // 定义存储要删除的下标，默认-1
+//                                        int currentUser = -1;
+//                                        // 遍历用户集合
+//                                        for (int i = 0; i < jsonArray.size(); i++) {
+//                                            // 根据下标获取用户id
+//                                            String id_UN = jsonArray.getString(i);
+//                                            // 判断等于当前用户
+//                                            if (id_UN.equals(id_U)) {
+//                                                // 赋值下标
+//                                                currentUser = i;
+//                                            }
+//                                        }
+//                                        if (currentUser != -1) {
+//                                            // 根据下标删除信息
+//                                            jsonArray.remove(currentUser);
+//                                            jsonObject.put("id_U",jsonArray);
+//                                            objMod.put(k,jsonObject);
+//                                        }
+//                                    }
+//                                } else {
+//                                    // 获取当前模块键是否存在
+//                                    boolean isModAuth = modAuth.containsKey(k);
+//                                    // 修改当前模块
+//                                    modAuth.put(k,mod.getJSONObject("val"));
+////                                    JSONObject jsonObject = objMod.getJSONObject(k);
+//                                    // 判断模块键不存在
+//                                    if (!isModAuth && isNull) {
+////                                        JSONArray jsonArray = jsonObject.getJSONArray("id_U");
+//                                        // 定义存储，当前用户是否存在，默认不存在
+//                                        boolean isExistence = false;
+//                                        // 遍历用户集合
+//                                        for (int i = 0; i < jsonArray.size(); i++) {
+//                                            // 根据下标获取用户id
+//                                            String id_UN = jsonArray.getString(i);
+//                                            // 判断等于当前用户id
+//                                            if (id_UN.equals(id_U)) {
+//                                                isExistence = true;
+//                                                break;
+//                                            }
+//                                        }
+//                                        // 判断不存在
+//                                        if (!isExistence) {
+//                                            // 添加用户id
+//                                            jsonArray.add(id_U);
+//                                            jsonObject.put("id_U",jsonArray);
+//                                            objMod.put(k,jsonObject);
+//                                        }
+//                                    }
+//                                }
+//                            });
+////                            control.put("objMod",objMod);
+////                            // 定义存储flowControl字典
+////                            JSONObject mapKey = new JSONObject();
+////                            // 设置字段数据
+////                            mapKey.put("control",control);
+////                            // 更新数据库
+////                            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//                            qt.setMDContent(assetId,qt.setJson("control.objMod",objMod),Asset.class);
+//
+////                            c_role.put("modAuth",modAuth);
+////                            objComp.put(id_C,c_role);
+////                            rolex.put("objComp",objComp);
+////                            // 定义存储flowControl字典
+////                            mapKey = new JSONObject();
+////                            // 设置字段数据
+////                            mapKey.put("rolex",rolex);
+//                            // 更新数据库
+////                            qt.setMDContent(id_U, mapKey, User.class);
+//                            qt.setMDContent(id_U, qt.setJson("rolex.objComp."+id_C+".modAuth",modAuth), User.class);
+////                            coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKey);
+//                        } else {
+//                            result.put("id_U",id_U);
+//                            result.put("desc","获取公司信息异常");
+//                            resultArr.add(result);
+//                        }
                     } else {
                         // 获取当前公司的模块信息
                         JSONObject modAuth = c_role.getJSONObject("modAuth");
@@ -1298,7 +1276,8 @@ public class ModuleServicelmpl implements ModuleService {
 //                        JSONObject mapKey = new JSONObject();
 //                        // 设置字段数据
 //                        mapKey.put("rolex",rolex);
-                        qt.setMDContent("rolex.objComp."+id_C+".modAuth",modAuth,User.class);
+//                        qt.setMDContent("rolex.objComp."+id_C+".modAuth",modAuth,User.class);
+                        qt.setMDContent(id_U, qt.setJson("rolex.objComp."+id_C+".modAuth",modAuth),User.class);
 //                        coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKey);
                     }
                 }

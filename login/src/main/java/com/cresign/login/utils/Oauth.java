@@ -59,7 +59,7 @@ public class Oauth {
 
     /**
      *##description:      根据uuid 生成token
-     *@param            uid : 用户id， clientType : 客户端类型
+//     *@param            uid : 用户id， clientType : 客户端类型
      *@return           token and refreshToken
      *@author           JackSon
      *@updated             2020/5/15 13:28
@@ -91,20 +91,30 @@ public class Oauth {
 //        dataSet.put("modAuth",moduleData);
         JSONObject moduleDataX = new JSONObject();
         JSONObject modAuth = user.getRolex().getJSONObject("objComp").getJSONObject(cid).getJSONObject("modAuth");
+        JSONObject test = new JSONObject();
+        test.put("bcdState",1);
+        test.put("tfin","2022/8/1");
+        test.put("bcdLevel",1);
+        test.put("ref","测试-为空专属");
         if (null == modAuth) {
-            JSONObject test = new JSONObject();
-            test.put("bcdState",1);
-            test.put("tfin","2022/8/1");
-            test.put("bcdLevel",1);
-            test.put("ref","测试-为空专属");
             moduleDataX.put("core",test);
         } else {
-            modAuth.keySet().forEach(k -> {
-                JSONObject modZ = modAuth.getJSONObject(k);
-                if (modZ.getInteger("bcdState").equals(1)) {
-                    moduleDataX.put(k, modZ);
+            boolean isCore = false;
+            for (String k : modAuth.keySet()) {
+                moduleDataX.put(k, modAuth.getJSONObject(k));
+                if ("core".equals(k)) {
+                    isCore = true;
                 }
-            });
+            }
+            if (!isCore) {
+                moduleDataX.put("core",test);
+            }
+//            modAuth.keySet().forEach(k -> {
+//                JSONObject modZ = modAuth.getJSONObject(k);
+//                if (modZ.getInteger("bcdState").equals(1)) {
+//                    moduleDataX.put(k, modZ);
+//                }
+//            });
         }
         dataSet.put("modAuth",moduleDataX);
         //KEV - here need to grab grpU's auth info into token
