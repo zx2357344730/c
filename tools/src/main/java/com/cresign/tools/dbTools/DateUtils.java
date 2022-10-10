@@ -70,7 +70,7 @@ public class DateUtils {
      * ##Updated: 2020/8/6 11:18
      */
     public static String dateAdd(String day, int hour){
-        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_TWO.getDate());
+        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate());
         Date date = null;
         try {
             date = format.parse(day);
@@ -158,7 +158,7 @@ public class DateUtils {
      * ##Updated: 2020/8/6 11:26
      */
     public static List<String> getMonthFullDay(int year, int month, int day) {
-        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
+        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
         List<String> fullDayList = new ArrayList<>();
         if (day <= 0) {
             day = 1;
@@ -194,7 +194,7 @@ public class DateUtils {
      * ##Updated: 2020/8/6 11:20
      */
     public static String splitDateString(String date, int shu, int addOrReduce) {
-        String[] split = date.split(Constants.COLON);
+        String[] split = date.split(":");
         int h = Integer.parseInt(split[0]);
         int m = Integer.parseInt(split[Constants.INT_ONE]);
         StringBuilder sb = new StringBuilder();
@@ -204,26 +204,26 @@ public class DateUtils {
         if (addOrReduce == 0) {
             if (m >= shu) {
                 sb.append(Ut.addZero(h));
-                sb.append(Constants.COLON);
+                sb.append(":");
                 sb.append(Ut.addZero((m - shu)));
             } else {
                 sb.append(Ut.addZero((h - Constants.INT_ONE)));
-                sb.append(Constants.COLON);
+                sb.append(":");
                 sb.append(Ut.addZero(((m + Constants.DATE_SIXTY) - shu)));
             }
         } else {
             int l = m + shu;
             if (l >= Constants.DATE_SIXTY) {
                 sb.append(Ut.addZero((h + Constants.INT_ONE)));
-                sb.append(Constants.COLON);
+                sb.append(":");
                 sb.append(Ut.addZero((l - Constants.DATE_SIXTY)));
             } else {
                 sb.append(Ut.addZero(h));
-                sb.append(Constants.COLON);
+                sb.append(":");
                 sb.append(Ut.addZero(l));
             }
         }
-        sb.append(Constants.COLON);
+        sb.append(":");
         sb.append(split[Constants.INT_TWO]);
         return sb.toString();
     }
@@ -250,7 +250,7 @@ public class DateUtils {
         // 返回的日期集合
         List<String> days = new ArrayList<>();
 
-        DateFormat dateFormat = new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
+        DateFormat dateFormat = new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
         try {
             Date start = dateFormat.parse(startTime);
             Date end = dateFormat.parse(endTime);
@@ -446,7 +446,7 @@ public class DateUtils {
     public static Map<String, Long> getDatePoor(String endDate, String nowDate) {
 
 //        //创建日期格式化对象
-//        SimpleDateFormat sDateFormat=new SimpleDateFormat(DateEnum.DATE_TWO.getDate()); //加上时间
+//        SimpleDateFormat sDateFormat=new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate()); //加上时间
 //            // 计算差多少天
 //            long day = diff / nd;
 
@@ -454,7 +454,7 @@ public class DateUtils {
 //            map.put("day",day);
 
         //加上时间
-        SimpleDateFormat sDateFormat = new SimpleDateFormat(DateEnum.DATE_H_M_S.getDate());
+        SimpleDateFormat sDateFormat = new SimpleDateFormat(DateEnum.TIME_ONLY.getDate());
 
         String[] str1 = endDate.split(Constants.STRING_BLANK_SPACE);
         String[] str2 = nowDate.split(Constants.STRING_BLANK_SPACE);
@@ -563,7 +563,7 @@ public class DateUtils {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR) - past);
         Date today = calendar.getTime();
-        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
+        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
         return format.format(today);
     }
 
@@ -588,7 +588,7 @@ public class DateUtils {
         //得到前3月的时间
         dBefore = calendar.getTime();
         //设置时间格式
-        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
+        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
         return sdf.format(dBefore);
     }
 
@@ -604,7 +604,7 @@ public class DateUtils {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR) + past);
         Date today = calendar.getTime();
-        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
+        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
         return format.format(today);
     }
 
@@ -618,7 +618,7 @@ public class DateUtils {
      * ##Updated: 2020/8/6 11:30
      */
     public static int differentDays(String str1,String str2) throws ParseException {
-        SimpleDateFormat sdf=new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
+        SimpleDateFormat sdf=new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
         Calendar cal1 = Calendar.getInstance();
         cal1.setTime(sdf.parse(str1));
 
@@ -662,7 +662,7 @@ public class DateUtils {
      * Jevon
      */
     public static String getStringDate1(String date) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateEnum.DATE_TWO.getDate());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate());
         Date dates = null;
         try {
             dates = simpleDateFormat.parse(date);

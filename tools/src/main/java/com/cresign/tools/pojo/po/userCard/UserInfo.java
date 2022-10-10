@@ -17,32 +17,28 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserInfo {
 
-    public UserInfo(String id_WX, String id_APP, JSONObject wrdN, JSONObject wrdNReal, JSONObject wrddesc, JSONObject wrdTag,
-                    String def_C, String lNGdef, String lCRdef, String pic, String cnty, String cem,
+    public UserInfo(String id_WX, String id_APP, JSONObject wrdN, JSONObject wrdNReal, JSONObject wrddesc,
+                    String def_C, String defNG, String defCR, String pic, String cnty, String cem,
                     String mbn, Integer phoneType) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn", "");
-
-        JSONObject jsonTag = new JSONObject();
-        jsonTag.put("cn", new JSONArray());
 
         this.id_WX = id_WX == null ? "": id_WX;
         this.id_APP = id_APP == null ? "": id_APP;
         this.wrdN = wrdN == null ? (JSONObject) wrdEmpty.clone(): wrdN;
         this.wrdNReal = wrdNReal == null ? (JSONObject) wrdEmpty.clone(): wrdNReal;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
-        this.wrdTag = wrdTag == null ? jsonTag: wrdTag;
         this.def_C = def_C == null ? "5f2a2502425e1b07946f52e9": def_C;
-        this.lNGdef = lNGdef == null ? "": lNGdef;
-        this.lCRdef = lCRdef == null ? "": lCRdef;
+        this.defNG = defNG == null ? "": defNG;
+        this.defCR = defCR == null ? "": defCR;
         this.pic = pic == null ? "": pic;
         this.cnty = cnty == null ? "": cnty;
         this.cem = cem == null ? "": cem;
         this.mbn = mbn == null ? "": mbn;
         this.phoneType = phoneType == null ? 86: phoneType;
-        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     private String id_WX;
@@ -61,13 +57,9 @@ public class UserInfo {
 
     private String def_C;
 
-    private String lNGdef;
-
-    private String lCRdef;
-
     private String defNG;
-    private String defCR; // a big problem
 
+    private String defCR;
 
     private String pic;
 

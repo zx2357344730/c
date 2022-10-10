@@ -32,8 +32,8 @@ public class CompInfo {
         this.wrdTag = wrdTag == null ? jsonTag: wrdTag;
         this.ref = ref == null ? "": ref;
         this.pic = pic == null ? "": pic;
-        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     private String id_C;

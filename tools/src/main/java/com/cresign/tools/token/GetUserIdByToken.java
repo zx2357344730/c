@@ -1,11 +1,10 @@
 package com.cresign.tools.token;
 
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
-import com.cresign.tools.jwt.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -19,10 +18,7 @@ import org.springframework.stereotype.Component;
 public class GetUserIdByToken {
 
     @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private Qt qt;
 
     /**
      *##description:      获取token从redis中拿取id_U
@@ -33,27 +29,17 @@ public class GetUserIdByToken {
      */
     public String getTokenOfUserId(String jwtStr, String clientType) {
 
-
-        boolean token_is = jwtUtil.validJWT(clientType, jwtStr);
-        if(token_is) {
-
-            JSONObject result = new JSONObject();
-            result = JSONObject.parseObject(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
-
-            return result.getString("id_U");
-        }
+        if(qt.hasRDKey(clientType+"Token", jwtStr)) {
+            return  qt.getRDSet(clientType+"Token",jwtStr).getString("id_U");
+       }
 
         throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), "");
     }
 
     public JSONObject getTokenData(String jwtStr, String clientType) {
 
-
-        boolean token_is = jwtUtil.validJWT(clientType, jwtStr);
-        if(token_is) {
-            JSONObject result = JSONObject.parseObject(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
-            return result;
-
+        if(qt.hasRDKey(clientType+"Token", jwtStr)) {
+            return qt.getRDSet(clientType+"Token",jwtStr);
         }
 
         throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), "");
@@ -61,19 +47,20 @@ public class GetUserIdByToken {
 
     public JSONObject getTokenDataX(String jwtStr, String clientType,String mod,Integer lev) {
 
+        if(qt.hasRDKey(clientType+"Token", jwtStr)) {
+            //            System.out.println(redisTemplate0.opsForValue().get(clientType + "Token:" + jwtStr));
+            JSONObject result = new JSONObject();
+            result = qt.getRDSet(clientType+"Token",jwtStr);
 
-        boolean token_is = jwtUtil.validJWT(clientType, jwtStr);
-        if(token_is) {
-            //            System.out.println(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
-            JSONObject result = JSONObject.parseObject(redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr));
             if ("core".equals(mod) && lev == 1) {
-                return result;
+                    return result;
             } else {
                 JSONObject modAuth = result.getJSONObject("modAuth");
+                JSONObject modJ = modAuth.getJSONObject(mod);
                 if (null == modAuth) {
                     throw new ErrorResponseException(HttpStatus.OK, "01119", "该公司没有modAuth");
                 } else {
-                    JSONObject modJ = modAuth.getJSONObject(mod);
+                    modJ = modAuth.getJSONObject(mod);
                     if (null == modJ) {
                         throw new ErrorResponseException(HttpStatus.OK, "01117", "该公司没有这个模块功能");
                     } else {
@@ -87,8 +74,6 @@ public class GetUserIdByToken {
                     }
                 }
             }
-//            return redisTemplate1.opsForValue().get(clientType + "Token-" + jwtStr);
-//            return result;
         }
 
         throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), "");

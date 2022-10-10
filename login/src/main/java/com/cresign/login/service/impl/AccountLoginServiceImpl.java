@@ -59,7 +59,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     private RetResult retResult;
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
 
     @Resource
     private CoupaUtil coupaUtil;
@@ -67,7 +67,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     @Autowired
     private Qt qt;
 
-    public static final String SCANCODE_LOGINCOMP = "scancode:logincomp-";
+    public static final String SCANCODE_LOGINCOMP = "scancode_login:";
 
     public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_LOGIN_COMP_T = "https://www.cresign.cn/qrCodeTest?qrType=logincomp&t=";
 
@@ -88,7 +88,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 //        // 判断用户数据为空
 //        System.out.println("id_U:"+id_U);
 ////        User user = coupaUtil.getUserById(id_U, Arrays.asList("rolex","info"));
-//        User user = qt.getMDContent(id_U, "rolex,info", User.class);
+//        User user = qt.getMDContent(id_U, "rolex, info", User.class);
 //        if (null == user) {
 //            throw new ErrorResponseException(HttpStatus.FORBIDDEN, "tang", "当前用户为空，不存在");
 //        }
@@ -111,15 +111,15 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 //        if (isSetId_App) {
 //            // 写入appId
 //            info.setId_APP(appId);
-////            // 定义存储flowControl字典
-////            JSONObject mapKeyUser = new JSONObject();
-////            // 设置字段数据
-////            mapKeyUser.put("info",info);
+//            // 定义存储flowControl字典
+//            JSONObject mapKeyUser = new JSONObject();
+//            // 设置字段数据
+//            mapKeyUser.put("info",info);
 ////            // 更新数据库
 ////            coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKeyUser);
 //            // 获取rolex卡片信息
 ////            coupaUtil.updateUserByKeyAndListKeyVal("id",id_U,mapKeyUser);
-//            qt.setMDContent(id_U, qt.setJson("info",info), User.class);
+//            qt.setMDContent(id_U, mapKeyUser, User.class);
 //            JSONObject rolex = user.getRolex();
 //            // 定义存储返回结果对象
 //            JSONObject result = new JSONObject();
@@ -129,12 +129,11 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 //            rolex.getJSONObject("objComp").keySet().forEach(id_C -> {
 ////            if (id_C.equals("6076a1c7f3861e40c87fd294")) {
 //                // 指定测试公司id
-//                if (id_C.equals("6141b6797e8ac90760913fd0")||id_C.equals("6076a1c7f3861e40c87fd294")) {
+//                if (id_C.equals("6141b6797e8ac90760913fd0")) {
 //                    // 根据公司编号获取对应ref的assetId
 //                    String aId = coupaUtil.getAssetId(id_C, "a-auth");
 //                    // 根据assetId获取asset的flowControl信息
-////                    Asset asset = coupaUtil.getAssetById(aId, Collections.singletonList("flowControl"));
-//                    Asset asset = qt.getMDContent(aId,"flowControl",Asset.class);
+//                    Asset asset = coupaUtil.getAssetById(aId, Collections.singletonList("flowControl"));
 //                    // 定义存储异常信息，默认无异常
 //                    boolean isErr = true;
 //                    // 定义字段
@@ -198,15 +197,14 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 //                        }
 //                        // 判断无异常
 //                        if (isErr2) {
-////                            // 写入日志flowControl
-////                            flowControl.put("objData",objData);
-////                            // 定义存储flowControl字典
-////                            JSONObject mapKey = new JSONObject();
-////                            // 设置字段数据
-////                            mapKey.put("flowControl",flowControl);
+//                            // 写入日志flowControl
+//                            flowControl.put("objData",objData);
+//                            // 定义存储flowControl字典
+//                            JSONObject mapKey = new JSONObject();
+//                            // 设置字段数据
+//                            mapKey.put("flowControl",flowControl);
 //                            // 更新数据库
-////                            coupaUtil.updateAssetByKeyAndListKeyVal("id",aId,mapKey);
-//                            qt.setMDContent(aId,qt.setJson("flowControl.objData",objData),Asset.class);
+//                            coupaUtil.updateAssetByKeyAndListKeyVal("id",aId,mapKey);
 //                        }
 //                    }
 //                } else {
@@ -225,21 +223,21 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 //        }
 //        return retResult.ok(CodeEnum.OK.getCode(),"无需修改");
 //    }
-//
-//    /**
-//     * 写入异常信息到err集合
-//     * @param err   异常信息集合
-//     * @param id_C  公司编号
-//     * @param id_A  asset编号
-//     * @param desc  错误信息
-//     */
-//    private void setErrJson(JSONArray err,String id_C,String id_A,String desc){
-//        JSONObject reZ = new JSONObject();
-//        reZ.put("id_C",id_C);
-//        reZ.put("id_A",id_A);
-//        reZ.put("desc",desc);
-//        err.add(reZ);
-//    }
+
+    /**
+     * 写入异常信息到err集合
+     * @param err   异常信息集合
+     * @param id_C  公司编号
+     * @param id_A  asset编号
+     * @param desc  错误信息
+     */
+    private void setErrJson(JSONArray err,String id_C,String id_A,String desc){
+        JSONObject reZ = new JSONObject();
+        reZ.put("id_C",id_C);
+        reZ.put("id_A",id_A);
+        reZ.put("desc",desc);
+        err.add(reZ);
+    }
 
 //    @Override
 //    public ApiResponse getKey(String qdKey) {
@@ -270,7 +268,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
      * ##Return: java.lang.String
      */
     @Override
-    public ApiResponse doNumberLogin(String clientType) {
+    public ApiResponse unregLogin(String clientType) {
 
         // 声明转换后结果存放
         JSONObject result = new JSONObject();
@@ -292,18 +290,20 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     public ApiResponse generateLoginCode(String id) {
 
         String token = UUID19.uuid();
+//
+//        JSONObject qrObject = new JSONObject();
+//
+//        qrObject.put("id", id);
+//        qrObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//        String keyName = SCANCODE_LOGINCOMP + token;
+//
+//        qrObject.put("endTimeSec", "300");
+//        redisTemplate0.opsForHash().putAll(keyName, qrObject);
+//        redisTemplate0.expire(keyName, 300, TimeUnit.SECONDS);
 
-        JSONObject qrObject = new JSONObject();
-
-        qrObject.put("id", id);
-        qrObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
-
-        String keyName = SCANCODE_LOGINCOMP + token;
-
-        qrObject.put("endTimeSec", "300");
-        redisTemplate1.opsForHash().putAll(keyName, qrObject);
-        redisTemplate1.expire(keyName, 300, TimeUnit.SECONDS);
-
+        qt.putRDHashMany("scancode_login", token, qt.setJson("id", id, "tmk",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()),
+        "tdur", "300"), 300L);
         String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_LOGIN_COMP_T + token;
         System.out.println(token);
         return retResult.ok(CodeEnum.OK.getCode(), url);
@@ -314,7 +314,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     public ApiResponse scanLoginCode( String token, String id_U) {
 
         String keyName = SCANCODE_LOGINCOMP + token;
-        Boolean hasKey = redisTemplate1.hasKey(keyName);
+        Boolean hasKey = redisTemplate0.hasKey(keyName);
 
         if (!hasKey) {
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
@@ -322,7 +322,7 @@ LOGIN_CODE_OVERDUE.getCode(),null);
         }
 
         // 获取到整个hash
-        Map<Object, Object> entries = redisTemplate1.opsForHash().entries(keyName);
+        Map<Object, Object> entries = redisTemplate0.opsForHash().entries(keyName);
 
         Query query = new Query(Criteria.where("_id").is(id_U));
 

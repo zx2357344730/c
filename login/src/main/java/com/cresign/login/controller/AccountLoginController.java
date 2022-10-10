@@ -34,9 +34,9 @@ public class AccountLoginController {
 
     @SecurityParameter
     @PostMapping("/v1/login")
-    public ApiResponse doNumberLogin(@RequestBody JSONObject reqJson) {
+    public ApiResponse unregLogin(@RequestBody JSONObject reqJson) {
 
-        return accountLoginService.doNumberLogin(
+        return accountLoginService.unregLogin(
 //                reqJson.getString("usn"),
 //                reqJson.getString("pwd"),
                 request.getHeader("clientType"));

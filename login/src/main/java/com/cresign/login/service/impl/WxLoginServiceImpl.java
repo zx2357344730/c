@@ -86,7 +86,7 @@ public class WxLoginServiceImpl implements WxLoginService {
     private LoginResult loginResult;
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private RetResult retResult;
@@ -276,7 +276,7 @@ WX_NOT_BIND.getCode(),unionid);
                 userInfo.put("countryCode", userInfoJSON.getString("countryCode"));
                 userInfo.put("unionId", unionId);
 
-//                redisTemplate1.opsForValue().set("wxSession_key_" + userInfoJSON.get("unionId"), session_key);
+//                redisTemplate0.opsForValue().set("wxSession_key_" + userInfoJSON.get("unionId"), session_key);
 
             } else {
 
@@ -412,10 +412,10 @@ REGISTER_USER_IS_HAVE.getCode(), null);
 
 
         // 判断是否存在这个 key
-        if (redisTemplate1.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-            if (smsNum.equals(redisTemplate1.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
 
                 Query id_WXQue = new Query(new Criteria("info.id_WX").is(id_WX));
 
@@ -438,15 +438,15 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                     // 设置info信息
 //                    JSONObject infoJson = new JSONObject();
 //                    infoJson.put("id_WX", id_WX);
-//                    infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+//                    infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 //
                     Update update = new Update();
                     update.set("info.id_WX", id_WX);
-                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
                     mongoTemplate.updateFirst(mbnQue, update, User.class);
 
-//                    redisTemplate1.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 1, TimeUnit.MINUTES);
+//                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 1, TimeUnit.MINUTES);
 
 
                     return retResult.ok(CodeEnum.OK.getCode(), null);
@@ -462,8 +462,8 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                 infoJson.put("mbn", phone);
                 infoJson.put("id_WX", id_WX);
                 infoJson.put("phoneType", phoneType);
-                infoJson.put("tmk", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-                infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                infoJson.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
                 // 判断
                 if (ClientEnum.APP_CLIENT.getClientType().equals(clientType)) {
@@ -479,7 +479,7 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                 // 调用注册用户方法
                 registerUserUtils.registerUser(infoJson);
 
-                redisTemplate1.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
                 return retResult.ok(CodeEnum.OK.getCode(), null);
             } else {
                 throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
@@ -572,7 +572,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
 
         String id_U = MongoUtils.GetObjectId();
         user.setId(id_U);
-        UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,null, null, null, "5f2a2502425e1b07946f52e9","cn","",
+        UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,null, null, "5f2a2502425e1b07946f52e9","cn","CNY",
                 avatarUrl,"China","",phoneNumber,countryCode);
         user.setInfo(userInfo);
         user.setView(viewArray);

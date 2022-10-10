@@ -27,8 +27,7 @@ public class LoginResult {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate1;
+
 
 
     /**
@@ -75,8 +74,11 @@ public class LoginResult {
             newAssignRFToken = oauth.setRefreshToken(user.getId(), clientType);
         }
 
-        if (null != user.getInfo().getLCRdef())
-            infoData.put("defNG", user.getInfo().getLNGdef());
+        if (null != user.getInfo().getDefNG())
+            infoData.put("defNG", user.getInfo().getDefNG());
+
+        if (null != user.getInfo().getDefCR())
+            infoData.put("defCR", user.getInfo().getDefCR());
 
         if (null != user.getInfo().getId_WX())
             infoData.put("id_WX", user.getInfo().getId_WX());

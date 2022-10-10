@@ -99,8 +99,7 @@ public class RoleController {
 
         return roleService.getRoleDataByGrpUAndGrp(
                 tokData.getString("id_U"),
-//                tokData.getString("id_C"),
-                null==reqJson.getString("id_C")?tokData.getString("id_C"):reqJson.getString("id_C"),
+                tokData.getString("id_C"),
                 reqJson.getString("listType"),
                 reqJson.getString("grp"),
                 reqJson.getString("grpU"));

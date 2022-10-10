@@ -30,7 +30,7 @@
 //     */
 ////    public static void addES(JSONObject infoObject, String indexes,RestHighLevelClient restHighLevelClient) throws IOException {
 ////
-////        infoObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+////        infoObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 ////        //指定ES索引
 ////        IndexRequest request = new IndexRequest(indexes);
 ////        //ES列表

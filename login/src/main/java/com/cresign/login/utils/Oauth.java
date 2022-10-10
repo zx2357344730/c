@@ -2,6 +2,7 @@ package com.cresign.login.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.jwt.JwtUtil;
 import com.cresign.tools.pojo.po.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,42 +25,42 @@ import java.util.concurrent.TimeUnit;
 public class Oauth {
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
 
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private Qt qt;
 
     @Autowired
     private JwtUtil jwtUtil;
 
-    /**
-     *##description:      设置该用户的基本信息存入到redis中
-     *@param            user : 用户对象
-     *@return
-     *@author           Kevin
-     *@updated             2020/5/15 13:29
-     */
-    public void setOauth(User user) {
-
-        // 截取uid 用户编号
-        //List<Map<String, Object>> objCompList = (List<Map<String, Object>>) user.getRolex().get("objComp");
-        JSONArray objCompList = user.getRolex().getJSONArray("objComp");
-        // 生成hashMap 存入redis
-        //Map<String, Object> map = new HashMap<>();
-        JSONObject map = new JSONObject();
-        for (int i = 0; i < objCompList.size(); i++) {
-            map.put(objCompList.getJSONObject(i).getString("id_C"), objCompList.getJSONObject(i).get("lrefRole"));
-        }
-
-
-        redisTemplate1.opsForHash().putAll("oauth-" + user.getId(), map);
-//        redisTemplate1.expire("oauth-" + UIDSubstring, 7, TimeUnit.DAYS);
-
-    }
+//    /**
+//     *##description:      设置该用户的基本信息存入到redis中
+//     *@param            user : 用户对象
+//     *@return
+//     *@author           Kevin
+//     *@updated             2020/5/15 13:29
+//     */
+//    public void setOauth(User user) {
+//
+//        // 截取uid 用户编号
+//        //List<Map<String, Object>> objCompList = (List<Map<String, Object>>) user.getRolex().get("objComp");
+//        JSONArray objCompList = user.getRolex().getJSONArray("objComp");
+//        // 生成hashMap 存入redis
+//        //Map<String, Object> map = new HashMap<>();
+//        JSONObject map = new JSONObject();
+//        for (int i = 0; i < objCompList.size(); i++) {
+//            map.put(objCompList.getJSONObject(i).getString("id_C"), objCompList.getJSONObject(i).get("lrefRole"));
+//        }
+//
+//
+//        redisTemplate0.opsForHash().putAll("oauth-" + user.getId(), map);
+////        redisTemplate1.expire("oauth-" + UIDSubstring, 7, TimeUnit.DAYS);
+//
+//    }
 
     /**
      *##description:      根据uuid 生成token
-//     *@param            uid : 用户id， clientType : 客户端类型
+     *                      clientType : 客户端类型
      *@return           token and refreshToken
      *@author           JackSon
      *@updated             2020/5/15 13:28
@@ -67,9 +68,6 @@ public class Oauth {
     public  String setToken(User user, String cid, String grpU, String dep,  String clientType) {
 
         String token = "";
-
-        //KEV can put module's restriction here
-
 
         JSONObject dataSet = new JSONObject();
         dataSet.put("id_U", user.getId());
@@ -92,10 +90,10 @@ public class Oauth {
         JSONObject moduleDataX = new JSONObject();
         JSONObject modAuth = user.getRolex().getJSONObject("objComp").getJSONObject(cid).getJSONObject("modAuth");
         JSONObject test = new JSONObject();
-        test.put("bcdState",1);
-        test.put("tfin","2022/8/1");
-        test.put("bcdLevel",1);
-        test.put("ref","测试-为空专属");
+            test.put("bcdState",1);
+            test.put("tfin","2022/8/1");
+            test.put("bcdLevel",1);
+            test.put("ref","测试-为空专属");
         if (null == modAuth) {
             moduleDataX.put("core",test);
         } else {
@@ -117,35 +115,18 @@ public class Oauth {
 //            });
         }
         dataSet.put("modAuth",moduleDataX);
-        //KEV - here need to grab grpU's auth info into token
 
         String uid = user.getId();
 
-//        System.out.println("setting Token"+ dataSet.toJSONString());
+        System.out.println("setting Token"+ dataSet.toJSONString());
 
 
-        /*
-            判断不同的客户端类型存入key名称不同
-         */
-        if ("wx".equals(clientType)) {
+        token = jwtUtil.createJWT(uid, clientType);
 
-            token = jwtUtil.createJWT(uid, "wx");
+        qt.setRDSet(clientType+"Token", token, dataSet, 1800L);
 
-            redisTemplate1.opsForValue().set("wxToken-" + token, dataSet.toJSONString(), 30, TimeUnit.MINUTES);
 
-        } else if ("app".equals(clientType)) {
-
-            token = jwtUtil.createJWT(uid, "app");
-
-            redisTemplate1.opsForValue().set("appToken-" + token, dataSet.toJSONString(), 30, TimeUnit.MINUTES);
-
-        } else {
-
-            token = jwtUtil.createJWT(uid, "web");
-
-            redisTemplate1.opsForValue().set("webToken-" + token, dataSet.toJSONString(), 30, TimeUnit.MINUTES);
-
-        }
+//        }
 
         return token;
     }
@@ -159,32 +140,8 @@ public class Oauth {
      */
     public  String setRefreshToken(String uid, String clientType) {
 
-        String refreshToken = "";
-
-        // 生成 uuid
-        String reFreshTokenUUid = UUID.randomUUID().toString();
-
-        /*
-            判断不同的客户端类型存入key名称不同
-         */
-        if ("wx".equals(clientType)) {
-
-            refreshToken = jwtUtil.createJWT(reFreshTokenUUid, "wx");
-            redisTemplate1.opsForValue().set("wxRefreshToken-" + refreshToken, uid, 60, TimeUnit.DAYS);
-
-
-        } else if ("app".equals(clientType)) {
-
-            refreshToken = jwtUtil.createJWT(reFreshTokenUUid, "app");
-            redisTemplate1.opsForValue().set("appRefreshToken-" + refreshToken, uid, 60, TimeUnit.DAYS);
-
-
-        } else {
-
-            refreshToken = jwtUtil.createJWT(reFreshTokenUUid, "web");
-            redisTemplate1.opsForValue().set("webRefreshToken-" + refreshToken, uid, 7, TimeUnit.DAYS);
-
-        }
+        String refreshToken = jwtUtil.createJWT(UUID.randomUUID().toString(), clientType);
+        qt.setRDSet(clientType + "RefreshToken", refreshToken,uid, 604800L);
 
         return refreshToken;
     }
@@ -202,7 +159,7 @@ public class Oauth {
 //
 //        if (StringUtils.isNotEmpty(cid)) {
 //
-//            if (!redisTemplate1.opsForHash().hasKey("compMenu", cid)) {
+//            if (!redisTemplate0.opsForHash().hasKey("compMenu", cid)) {
 //
 //                String id_A = dbUtils.getId_A(cid, "a-auth");
 //                Query query = new Query(new Criteria("_id").is(id_A));
@@ -221,7 +178,7 @@ public class Oauth {
 //
 //                }
 //
-//                redisTemplate1.opsForHash().put("compMenu", cid, JSONObject.toJSONString(assetResult));
+//                redisTemplate0.opsForHash().put("compMenu", cid, JSONObject.toJSONString(assetResult));
 //
 //
 //            }

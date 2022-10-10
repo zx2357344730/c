@@ -43,7 +43,7 @@ public class FaceBookLoginServiceImpl implements FaceBookLoginService {
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private RegisterUserUtils registerUserUtils;
@@ -87,10 +87,10 @@ WX_NOT_BIND.getCode(), null);
     @Override
     public ApiResponse faceBookRegister(String id_fb, String wcnN, String email, String pic, String phone, String phoneType, String smsNum, String clientID, String clientType) throws IOException {
         // 判断是否存在这个 key
-        if (redisTemplate1.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-            if (smsNum.equals(redisTemplate1.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
 
                 Query id_WXQue = new Query(new Criteria("info.id_fb").is(id_fb));
 
@@ -110,11 +110,11 @@ REGISTER_USER_IS_HAVE.getCode(), null);
 
                     Update update = new Update();
                     update.set("info.id_fb", id_fb);
-                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
                     mongoTemplate.updateFirst(mbnQue, update, User.class);
 
-                    redisTemplate1.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
 
                     return retResult.ok(CodeEnum.OK.getCode(), null);
                 }
@@ -129,8 +129,8 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                 infoJson.put("email", email);
                 infoJson.put("mbn", phone);
                 infoJson.put("phoneType", phoneType);
-                infoJson.put("tmk", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-                infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                infoJson.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
                 // 判断
                 if (ClientEnum.APP_CLIENT.getClientType().equals(clientType)) {
@@ -146,7 +146,7 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                 // 调用注册用户方法
                 registerUserUtils.registerUser(infoJson);
 
-                redisTemplate1.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
 
                 return retResult.ok(CodeEnum.OK.getCode(), null);
 

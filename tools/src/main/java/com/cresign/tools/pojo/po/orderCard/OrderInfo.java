@@ -46,8 +46,8 @@ public class OrderInfo implements Cloneable{
         this.pic = pic  == null? "": pic;
         this.lST = lST  == null? 4: lST;
         this.lCR = lCR  == null? 0: lCR;
-        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
 

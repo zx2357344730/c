@@ -26,19 +26,16 @@ import java.io.Serializable;
 public class lNUser implements Serializable {
 
     public lNUser(String id_U, JSONObject wrdN, JSONObject wrddesc, JSONObject wrdNReal, JSONObject wrdTag, String pic,
-                  String id_APP, String id_WX, String cem, String mbn, String cnty, String defNG) {
+                  String id_APP, String id_WX, String cem, String mbn, String cnty, String defNG, String defCR) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn", "");
-
-        JSONObject jsonTag = new JSONObject();
-        jsonTag.put("cn", new JSONArray());
 
         this.id_U = id_U;
         this.wrdN = wrdN == null ? (JSONObject) wrdEmpty.clone(): wrdN;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
         this.wrdNReal = wrdNReal == null ? (JSONObject) wrdEmpty.clone(): wrdNReal;
-        this.wrdTag = wrdTag == null ? jsonTag: wrdTag;
+        this.wrdTag = wrdTag == null ? wrdEmpty: wrdTag;
         this.pic = pic == null ? "" : pic;
         this.id_APP = id_APP == null ? "" : id_APP;
         this.id_WX = id_WX == null ? "" : id_WX;
@@ -46,8 +43,9 @@ public class lNUser implements Serializable {
         this.mbn = mbn == null ? "" : mbn;
         this.cnty = cnty == null ? "" : cnty;
         this.defNG = defNG == null ? "" : defNG;
-        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.defCR = defCR == null ? "" : defCR;
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     private String id_U;

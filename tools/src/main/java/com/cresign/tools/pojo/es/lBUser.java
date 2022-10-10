@@ -42,8 +42,8 @@ public class lBUser implements Serializable {
         this.refU = refU == null ? "" : refU;
         this.id_WX = id_WX == null ? "" : id_WX;
         this.pic = pic == null ? "" : pic;
-        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     private String id_U;

@@ -14,10 +14,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @AllArgsConstructor//全参构造
 @NoArgsConstructor//无参构造
-@Document(collection = "lSAsset")
-public class lSAsset {
+@Document(collection = "lBAsset")
+public class lBAsset {
 
-    public lSAsset(String id_A, String id_C, String id_CP, String id_P, Double wn2qty, JSONObject wrdN, JSONObject wrddesc, String grp,
+    public lBAsset(String id_A, String id_C,  String id_CB,String id_CP, String id_P, Double wn2qty, JSONObject wrdN, JSONObject wrddesc, String grp,String grpB,
                    String pic, String ref, Integer lAT) {
 
         JSONObject wrdEmpty = new JSONObject();
@@ -25,11 +25,15 @@ public class lSAsset {
 
         this.id_A = id_A;
         this.id_C = id_C;
+        this.id_CB = id_CB;
+
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
         this.id_P = id_P == null ? "": id_P;
         this.wrdN = wrdN == null ? (JSONObject) wrdEmpty.clone() : wrdN;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
         this.grp = grp == null ? "1000" : grp;
+        this.grpB = grpB == null ? "1000" : grpB;
+
         this.ref = ref == null ? "" : ref;
         this.pic = pic == null ? "" : pic;
         this.lAT = lAT == null ? 0 : lAT;
@@ -43,6 +47,9 @@ public class lSAsset {
 
     private String id_C;
 
+    private String id_CB;
+
+
     private String id_CP;
 
     private String id_P;
@@ -52,6 +59,9 @@ public class lSAsset {
     private JSONObject wrddesc;
 
     private String grp;
+
+    private String grpB;
+
 
     private String ref;
 

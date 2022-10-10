@@ -18,6 +18,8 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.mongo.MongoUtils;
 import com.cresign.tools.pojo.es.lBProd;
+import com.cresign.tools.pojo.es.lBUser;
+import com.cresign.tools.pojo.es.lNComp;
 import com.cresign.tools.pojo.es.lSBComp;
 import com.cresign.tools.pojo.po.*;
 import com.tencentcloudapi.common.Credential;
@@ -592,8 +594,8 @@ public class ModuleServicelmpl implements ModuleService {
 //                , can.getString("refCB")
 //                , can.getString("picC")
 //                , can.getString("picCB")
-//                , DateUtils.getDateNow(DateEnum.DATE_TWO.getDate())
-//                , DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+//                , DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())
+//                , DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         lSBComp lsbcomp = new lSBComp(
                 id_C
                 , id_CP
@@ -609,8 +611,8 @@ public class ModuleServicelmpl implements ModuleService {
                 , refCB
                 , picC
                 , picCB
-                , DateUtils.getDateNow(DateEnum.DATE_TWO.getDate())
-                , DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+                , DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())
+                , DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 //        coupaUtil.updateES_lSBComp(comp);
         qt.addES("lsbcomp", lsbcomp);
         return retResult.ok(CodeEnum.OK.getCode(), "连接关系成功");
@@ -1549,8 +1551,8 @@ public class ModuleServicelmpl implements ModuleService {
 
         comp.getInfo().setId_CP(new_id_C);
         comp.getInfo().setId_C(new_id_C);
-        comp.getInfo().setTmk(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-        comp.getInfo().setTmd(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        comp.getInfo().setTmk(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        comp.getInfo().setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         //真公司标志
         comp.setBcdNet(1);
@@ -1568,8 +1570,8 @@ public class ModuleServicelmpl implements ModuleService {
         //a-module
         JSONObject moduleObject = newComp.getJSONObject("a-module");
         moduleObject.getJSONObject("info").put("id_C",new_id_C);
-        moduleObject.getJSONObject("info").put("tmk", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
-        moduleObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        moduleObject.getJSONObject("info").put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        moduleObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         //control.id_U
         JSONArray objDataList = moduleObject.getJSONObject("control").getJSONArray("objData");
 
@@ -1616,22 +1618,15 @@ public class ModuleServicelmpl implements ModuleService {
 
         User user = mongoTemplate.findOne(infoQ, User.class);
 
-        //Map<String, Object> infoData = new HashMap<>();
-        JSONObject infoData = new JSONObject();
-        infoData.put("id_U",uid);
-        infoData.put("wrdN",user.getInfo().getWrdN());
-        infoData.put("pic",user.getInfo().getPic());
-        infoData.put("tmd",DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-        infoData.put("tmk",DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-        infoData.put("id_CB",new_id_C);
-        infoData.put("wrdNReal",user.getInfo().getWrdNReal());
-        infoData.put("refU","");
-        infoData.put("grpU","1001");
-        infoData.put("refC",comp.getInfo().getRef());
-        infoData.put("wrdNC",comp.getInfo().getWrdN());
+        lBUser lbuser = new lBUser(uid,new_id_C,user.getInfo().getWrdN(),comp.getInfo().getWrdN(),
+                user.getInfo().getWrdNReal(),user.getInfo().getWrddesc(),"1001",user.getInfo().getMbn(),
+                "",user.getInfo().getId_WX(),user.getInfo().getPic());
 
+        qt.addES( "lbuser", lbuser);
 
-        dbUtils.addES( infoData, "lbuser");
+        lNComp lncomp = new lNComp(new_id_C,new_id_C,comp.getInfo().getWrdN(),comp.getInfo().getWrddesc(),comp.getInfo().getRef(),comp.getInfo().getPic());
+
+        qt.addES("lncomp", lncomp);
 
 
         //a-auth
@@ -1639,8 +1634,8 @@ public class ModuleServicelmpl implements ModuleService {
         authObject.getJSONObject("role").getJSONObject("objAuth").putAll(setRole(new_id_C));
 //        authObject.getJSONObject("def").put("id_UM",uid);//添加root id_U
         authObject.getJSONObject("info").put("id_C",new_id_C);
-        authObject.getJSONObject("info").put("tmk", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
-        authObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        authObject.getJSONObject("info").put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        authObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
 
 
@@ -1665,8 +1660,8 @@ public class ModuleServicelmpl implements ModuleService {
 //        //a-core
 //        JSONObject coreObject = newComp.getJSONObject("a-core");
 //        coreObject.getJSONObject("info").put("id_C",new_id_C);
-//        coreObject.getJSONObject("info").put("tmk", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
-//        coreObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+//        coreObject.getJSONObject("info").put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//        coreObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 //
 //        //coreObject.getJSONObject("info").put("wrdNC",comp.getInfo().get("wrdN"));
 //
@@ -1863,8 +1858,8 @@ public class ModuleServicelmpl implements ModuleService {
             JSONObject listObject = new  JSONObject();
             listObject.putAll( objData.getJSONObject("info"));
             listObject.put("id_A", id);
-            listObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
-            listObject.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+            listObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+            listObject.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             listObject.put("id_CP", objComp.getInfo().getId_CP());
 
             request.source(listObject, XContentType.JSON);
@@ -1905,8 +1900,8 @@ public class ModuleServicelmpl implements ModuleService {
 //                assetflow.put("wn4price",infoObject.getDouble("wn4price"));
 //                assetflow.put("wn2qc",infoObject.get("wn2qc"));//hashMap.put("refSpace", infoObject.get("refSpace"));
 //                assetflow.put("grpU","");assetflow.put("grpUB",id_U);
-//                assetflow.put("tmk",DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
-//                assetflow.put("tmd",DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+//                assetflow.put("tmk",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//                assetflow.put("tmd",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 //
 //
 //                dbUtils.addES(assetflow,"assetflow");

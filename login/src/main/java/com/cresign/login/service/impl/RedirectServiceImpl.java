@@ -54,20 +54,20 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class RedirectServiceImpl implements RedirectService {
 
-    public static final String SCANCODE_SHAREPROD = "scancode:shareprod-";
+    public static final String SCANCODE_SHAREPROD = "scancode_shareprod";
     public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T = "https://www.cresign.cn/qrCodeTest?qrType=shareprod&t=";
-    public static final String SCANCODE_JOINCOMP = "scancode:joincomp-";
-    public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_JOIN_COMP_T = "https://www.cresign.cn/qrCodeTest?qrType=joinComp&t=";
+    public static final String SCANCODE_JOINCOMP = "scancode_joincomp";
+    public static final String HTTP_JOINCOMP = "https://www.cresign.cn/qrCodeTest?qrType=joinComp&t=";
 
 
     @Autowired
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
 
-    @Autowired
-    private RestHighLevelClient restHighLevelClient;
+//    @Autowired
+//    private RestHighLevelClient restHighLevelClient;
 
     @Autowired
     private RetResult retResult;
@@ -98,7 +98,7 @@ public class RedirectServiceImpl implements RedirectService {
             if (StringUtils.isNotEmpty(prod.getQrShareCode().getString("token"))) {
                 JSONObject qrShareCode = prod.getQrShareCode();
                 String code_token = qrShareCode.getString("token");
-                if (redisTemplate1.hasKey(SCANCODE_SHAREPROD + code_token)) {
+                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                     throw new ErrorResponseException(HttpStatus.OK, SearchEnum.PROD_CODE_IS_EXIT.getCode(), code_token);
                 }
             }
@@ -111,7 +111,7 @@ public class RedirectServiceImpl implements RedirectService {
         jsonObject.put("id_P", id_P);
         jsonObject.put("grp", prod.getInfo().getGrp());
         jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -120,12 +120,12 @@ public class RedirectServiceImpl implements RedirectService {
             jsonObject.put("mode", mode);
             jsonObject.put("count", data.getString("count"));
             jsonObject.put("used_count", "0");
-            redisTemplate1.opsForHash().putAll(keyName, jsonObject);
+            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
         } else if ("time".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("endTimeSec", data.getString("endTimeSec"));
-            redisTemplate1.opsForHash().putAll(keyName, jsonObject);
-            redisTemplate1.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
+            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -165,7 +165,7 @@ public class RedirectServiceImpl implements RedirectService {
             if (StringUtils.isNotEmpty(user.getQrShareCode().getString("token"))) {
                 JSONObject qrShareCode = user.getQrShareCode();
                 String code_token = qrShareCode.getString("token");
-                if (redisTemplate1.hasKey(SCANCODE_SHAREPROD + code_token)) {
+                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                     throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
 PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
@@ -183,7 +183,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 //        jsonObject.put("grp",rolexMap.get("grpU"));
         jsonObject.put("grp","1099");
         jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -192,12 +192,12 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
             jsonObject.put("mode", mode);
             jsonObject.put("count", data.getString("count"));
             jsonObject.put("used_count", "0");
-            redisTemplate1.opsForHash().putAll(keyName, jsonObject);
+            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
         } else if ("time".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("endTimeSec", data.getString("endTimeSec"));
-            redisTemplate1.opsForHash().putAll(keyName, jsonObject);
-            redisTemplate1.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
+            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -235,7 +235,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
             if (StringUtils.isNotEmpty(comp.getQrShareCode().getString("token"))) {
                 JSONObject qrShareCode = comp.getQrShareCode();
                 String code_token = qrShareCode.getString("token");
-                if (redisTemplate1.hasKey(SCANCODE_SHAREPROD + code_token)) {
+                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                     throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
 PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
@@ -249,7 +249,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         jsonObject.put("id", id_C);
         jsonObject.put("grp","1099");
         jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -258,12 +258,12 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
             jsonObject.put("mode", mode);
             jsonObject.put("count", data.getString("count"));
             jsonObject.put("used_count", "0");
-            redisTemplate1.opsForHash().putAll(keyName, jsonObject);
+            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
         } else if ("time".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("endTimeSec", data.getString("endTimeSec"));
-            redisTemplate1.opsForHash().putAll(keyName, jsonObject);
-            redisTemplate1.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
+            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -302,7 +302,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
             if (StringUtils.isNotEmpty(order.getQrShareCode().getString("token"))) {
                 JSONObject qrShareCode = order.getQrShareCode();
                 String code_token = qrShareCode.getString("token");
-                if (redisTemplate1.hasKey(SCANCODE_SHAREPROD + code_token)) {
+                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                     throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
 PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
@@ -324,7 +324,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
 
         jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -333,12 +333,12 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
             jsonObject.put("mode", mode);
             jsonObject.put("count", data.getString("count"));
             jsonObject.put("used_count", "0");
-            redisTemplate1.opsForHash().putAll(keyName, jsonObject);
+            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
         } else if ("time".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("endTimeSec", data.getString("endTimeSec"));
-            redisTemplate1.opsForHash().putAll(keyName, jsonObject);
-            redisTemplate1.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
+            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -374,9 +374,9 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
                 JSONObject qrShareCode = comp.getJoinCode();
                 String code_token = qrShareCode.getString("token");
                 System.out.println("code_token"+ code_token);
-                if (redisTemplate1.hasKey(SCANCODE_JOINCOMP + code_token)) {
+                if (qt.hasRDKey(SCANCODE_JOINCOMP, code_token)) {
                     System.out.println("code_token2"+ code_token);
-                    String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_JOIN_COMP_T + code_token;
+                    String url = HTTP_JOINCOMP + code_token;
                     return retResult.ok(CodeEnum.OK.getCode(), url);
                 }
             }
@@ -386,19 +386,22 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id_C", id_C);
         jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         String token = UUID19.uuid();
         // 2.
         if ("frequency".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("count", data.getString("count"));
             jsonObject.put("used_count", "0");
-            redisTemplate1.opsForHash().putAll(SCANCODE_JOINCOMP + token, jsonObject);
+//            redisTemplate0.opsForHash().putAll(SCANCODE_JOINCOMP + token, jsonObject);
+            qt.putRDHashMany(SCANCODE_JOINCOMP,token, jsonObject, 600000L);
         } else if ("time".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("endTimeSec", data.getString("endTimeSec"));
-            redisTemplate1.opsForHash().putAll(SCANCODE_JOINCOMP + token, jsonObject);
-            redisTemplate1.expire(SCANCODE_JOINCOMP + token, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
+//            redisTemplate0.opsForHash().putAll(SCANCODE_JOINCOMP + token, jsonObject);
+//            redisTemplate0.expire(SCANCODE_JOINCOMP + token, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
+            qt.putRDHashMany(SCANCODE_JOINCOMP,token, jsonObject, data.getLong("endTimeSec"));
+
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -410,7 +413,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         mongoTemplate.updateFirst(compQ, update, Comp.class);
 
         // 4.
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_JOIN_COMP_T + token;
+        String url = HTTP_JOINCOMP + token;
         return retResult.ok(CodeEnum.OK.getCode(), url);
     }
 
@@ -419,17 +422,16 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
     @Transactional
     public ApiResponse scanJoinCompCode(String token, String join_user) throws IOException {
 
-        String keyName = SCANCODE_JOINCOMP + token;
-        Boolean hasKey = redisTemplate1.hasKey(keyName);
+//        String keyName = SCANCODE_JOINCOMP + token;
+//        Boolean hasKey = redisTemplate0.hasKey(keyName);
 
-        if (!hasKey) {
+        if (!qt.hasRDKey(SCANCODE_JOINCOMP, token)) {
             throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
                     JOIN_COMP_CODE_OVERDUE.getCode(),null);
         }
 
         // 获取到整个hash
-        Map<Object, Object> entries = redisTemplate1.opsForHash().entries(keyName);
-
+        Map<Object, Object> entries = qt.getRDHashAll(SCANCODE_JOINCOMP, token);
 
         /**
          如果是 frequency 次数模式,则需要拿出已经使用的次数和当前要限制的次数对比
@@ -439,6 +441,8 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
             // 限制的次数
             int count = Integer.parseInt(entries.get("count").toString());
+
+            ApiResponse apiResponse = null;
 
             // 已使用次数
             int used_count = Integer.parseInt(entries.get("used_count").toString());
@@ -450,13 +454,13 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
              */
             if (used_count +1 == count) {
                 System.out.println("进来 used_count +1 == count");
-
-                ApiResponse apiResponse = null;
                 //try {
                 apiResponse = joinAddData(join_user, entries);
-                redisTemplate1.delete(keyName);
+//                redisTemplate0.delete(SCANCODE_JOINCOMP, token);
                 //} catch (RuntimeException e) {
-                redisTemplate1.opsForHash().putAll(keyName, entries);
+//                redisTemplate0.opsForHash().putAll(keyName, entries);
+                qt.delRD(SCANCODE_JOINCOMP, token);
+                qt.putRDHashMany(SCANCODE_JOINCOMP,token, qt.toJson(entries), 600000L);
                 //throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
                 //}
                 return apiResponse;
@@ -464,18 +468,21 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
             } else if (used_count > count) {
                 System.out.println("进来 used_count > count");
 
-                redisTemplate1.delete(keyName);
+//                redisTemplate0.delete(keyName);
+                qt.delRD(SCANCODE_JOINCOMP, token);
+
                 throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
                         JOIN_COMP_CODE_OVERDUE.getCode(), null);
             } else {
                 System.out.println("进来 used_count < count");
                 // 累加
-                ApiResponse apiResponse = null;
                 //try {
                 apiResponse = joinAddData(join_user, entries);
-                redisTemplate1.opsForHash().increment(keyName, "used_count", 1);
+//                redisTemplate0.opsForHash().increment(keyName, "used_count", 1);
+                Integer inc = Integer.parseInt(entries.get("used_count").toString()) + 1;
+                qt.putRDHash(SCANCODE_JOINCOMP,token, "used_count", inc);
                 //} catch (RuntimeException e) {
-                redisTemplate1.opsForHash().put(keyName, "used_count", String.valueOf(used_count));
+//                redisTemplate0.opsForHash().put(keyName, "used_count", String.valueOf(used_count));
                 //throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
                 //}
                 return apiResponse;
@@ -508,7 +515,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
         // 2.
         JSONObject dataJson = comp.getJoinCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_JOINCOMP + token;
@@ -516,10 +523,10 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         String mode = dataJson.getString("mode");
 
         if ("frequency".equals(mode)) {
-            redisTemplate1.opsForHash().putAll(keyName, dataJson);
+            redisTemplate0.opsForHash().putAll(keyName, dataJson);
         } else if ("time".equals(mode)) {
-            redisTemplate1.opsForHash().putAll(keyName, dataJson);
-            redisTemplate1.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -529,14 +536,14 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         // 3.
         if (StringUtils.isNotEmpty(comp.getJoinCode().getString("token"))) {
             String code_token = comp.getJoinCode().getString("token");
-            if (redisTemplate1.hasKey(SCANCODE_JOINCOMP + code_token)) {
-                redisTemplate1.delete(SCANCODE_JOINCOMP + code_token);
+            if (redisTemplate0.hasKey(SCANCODE_JOINCOMP + code_token)) {
+                redisTemplate0.delete(SCANCODE_JOINCOMP + code_token);
             }
         }
 
 
         // 4.
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_JOIN_COMP_T + token;
+        String url = HTTP_JOINCOMP + token;
         return retResult.ok(CodeEnum.OK.getCode(), url);
     }
 
@@ -599,27 +606,29 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         mongoTemplate.updateFirst(upUserQ, update, User.class);
 
 
-        /*
-            查询ES这个用户在列表中是否有数据
-         */
+//        /*
+//            查询ES这个用户在列表中是否有数据
+//         */
+//
+//        SearchRequest searchRequest = new SearchRequest("lbuser");
+//
+//        // 查询条件初始化
+//        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+//
+//
+//        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+//
+//        boolQueryBuilder.must(QueryBuilders.termQuery("id_CB", entries.get("id_C")));
+//
+//        boolQueryBuilder.must(QueryBuilders.termQuery("id_U", join_user));
+//
+//        searchSourceBuilder.query(boolQueryBuilder);
+//
+//        SearchResponse search = restHighLevelClient.search(searchRequest.source(searchSourceBuilder), RequestOptions.DEFAULT);
+//
+        JSONArray searchResult = qt.getES("lbuser", qt.setESFilt("id_CB", entries.get("id_C"), "id_U", join_user ),1);
 
-        SearchRequest searchRequest = new SearchRequest("lbuser");
-
-        // 查询条件初始化
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-
-
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-
-        boolQueryBuilder.must(QueryBuilders.termQuery("id_CB", entries.get("id_C")));
-
-        boolQueryBuilder.must(QueryBuilders.termQuery("id_U", join_user));
-
-        searchSourceBuilder.query(boolQueryBuilder);
-
-        SearchResponse search = restHighLevelClient.search(searchRequest.source(searchSourceBuilder), RequestOptions.DEFAULT);
-
-        if (search.getHits().getHits().length <= 0) {
+        if (searchResult.size() <= 0) {
 
             // 查询要加入公司的数据
             Query joinCompQ = new Query(new Criteria("_id").is(entries.get("id_C")));
@@ -631,15 +640,17 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
                     compOne.getInfo().getWrdN(), userJson.getInfo().getWrdNReal(),userJson.getInfo().getWrddesc(), "1009",
                     userJson.getInfo().getMbn(), "", userJson.getInfo().getId_WX(), userJson.getInfo().getPic());
 
-            IndexRequest indexRequest = new IndexRequest("lbuser");
-            indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
-            try {
-                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+            qt.addES("lbuser",qt.toJson(addLBUser));
 
-            } catch (IOException e) {
-
-                throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_JOIN_COMP_ERROR.getCode(), null);
-            }
+//            IndexRequest indexRequest = new IndexRequest("lbuser");
+//            indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
+//            try {
+//                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+//
+//            } catch (IOException e) {
+//
+//                throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_JOIN_COMP_ERROR.getCode(), null);
+//            }
             return retResult.ok(CodeEnum.OK.getCode(), null);
 
         }
@@ -653,12 +664,12 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
         String keyName = SCANCODE_SHAREPROD + token;
 
-        Boolean hasKey = redisTemplate1.hasKey(keyName);
+        Boolean hasKey = redisTemplate0.hasKey(keyName);
         if (!hasKey) {
             throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
 PROD_CODE_OVERDUE.getCode(),null);
         }
-        Map<Object, Object> entries = redisTemplate1.opsForHash().entries(keyName);
+        Map<Object, Object> entries = redisTemplate0.opsForHash().entries(keyName);
         JSONObject prodJson = (JSONObject) JSONObject.toJSON(entries);
 
         /**
@@ -693,9 +704,9 @@ PROD_CODE_OVERDUE.getCode(),null);
                         apiResponse = shareOrderCode(id_U, prodJson,listType);
                     }
 
-                    redisTemplate1.delete(keyName);
+                    redisTemplate0.delete(keyName);
                 } catch (RuntimeException e) {
-                    redisTemplate1.opsForHash().putAll(keyName, entries);
+                    redisTemplate0.opsForHash().putAll(keyName, entries);
                     throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
                 }
                 return apiResponse;
@@ -703,7 +714,7 @@ PROD_CODE_OVERDUE.getCode(),null);
             } else if (used_count > count) {
                 System.out.println("进来 used_count > count");
 
-                redisTemplate1.delete(keyName);
+                redisTemplate0.delete(keyName);
                 throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
 PROD_CODE_OVERDUE.getCode(), null);
             } else {
@@ -721,9 +732,9 @@ PROD_CODE_OVERDUE.getCode(), null);
                         apiResponse = shareOrderCode(id_U, prodJson,listType);
                     }
                     //使用次数+1
-                    redisTemplate1.opsForHash().increment(keyName, "used_count", 1);
+                    redisTemplate0.opsForHash().increment(keyName, "used_count", 1);
                 } catch (RuntimeException e) {
-                    redisTemplate1.opsForHash().put(keyName, "used_count", String.valueOf(used_count));
+                    redisTemplate0.opsForHash().put(keyName, "used_count", String.valueOf(used_count));
                     throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
                 }
                 return apiResponse;
@@ -768,7 +779,7 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         // 2.
         JSONObject dataJson = prod.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -777,10 +788,10 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         if ("frequency".equals(mode)) {
             dataJson.put("used_count","0");
-            redisTemplate1.opsForHash().putAll(keyName, dataJson);
+            redisTemplate0.opsForHash().putAll(keyName, dataJson);
         } else if ("time".equals(mode)) {
-            redisTemplate1.opsForHash().putAll(keyName, dataJson);
-            redisTemplate1.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -788,8 +799,8 @@ PROD_CODE_OVERDUE.getCode(), null);
         // 3.
         if (StringUtils.isNotEmpty(prod.getQrShareCode().getString("token"))) {
             String code_token = prod.getQrShareCode().getString("token");
-            if (redisTemplate1.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                redisTemplate1.delete(SCANCODE_SHAREPROD + code_token);
+            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
             }
         }
 
@@ -825,7 +836,7 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         // 2.
         JSONObject dataJson = user.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -834,10 +845,10 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         if ("frequency".equals(mode)) {
             dataJson.put("used_count","0");
-            redisTemplate1.opsForHash().putAll(keyName, dataJson);
+            redisTemplate0.opsForHash().putAll(keyName, dataJson);
         } else if ("time".equals(mode)) {
-            redisTemplate1.opsForHash().putAll(keyName, dataJson);
-            redisTemplate1.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -845,8 +856,8 @@ PROD_CODE_OVERDUE.getCode(), null);
         // 3.
         if (StringUtils.isNotEmpty(user.getQrShareCode().getString("token"))) {
             String code_token = user.getQrShareCode().getString("token");
-            if (redisTemplate1.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                redisTemplate1.delete(SCANCODE_SHAREPROD + code_token);
+            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
             }
         }
 
@@ -881,7 +892,7 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         // 2.
         JSONObject dataJson = comp.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -890,10 +901,10 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         if ("frequency".equals(mode)) {
             dataJson.put("used_count","0");
-            redisTemplate1.opsForHash().putAll(keyName, dataJson);
+            redisTemplate0.opsForHash().putAll(keyName, dataJson);
         } else if ("time".equals(mode)) {
-            redisTemplate1.opsForHash().putAll(keyName, dataJson);
-            redisTemplate1.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -901,8 +912,8 @@ PROD_CODE_OVERDUE.getCode(), null);
         // 3.
         if (StringUtils.isNotEmpty(comp.getQrShareCode().getString("token"))) {
             String code_token = comp.getQrShareCode().getString("token");
-            if (redisTemplate1.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                redisTemplate1.delete(SCANCODE_SHAREPROD + code_token);
+            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
             }
         }
 
@@ -934,7 +945,7 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         // 2.
         JSONObject dataJson = order.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         String token = UUID19.uuid();
         String keyName = SCANCODE_SHAREPROD + token;
@@ -943,10 +954,10 @@ PROD_CODE_OVERDUE.getCode(), null);
 
         if ("frequency".equals(mode)) {
             dataJson.put("used_count","0");
-            redisTemplate1.opsForHash().putAll(keyName, dataJson);
+            redisTemplate0.opsForHash().putAll(keyName, dataJson);
         } else if ("time".equals(mode)) {
-            redisTemplate1.opsForHash().putAll(keyName, dataJson);
-            redisTemplate1.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -954,8 +965,8 @@ PROD_CODE_OVERDUE.getCode(), null);
         // 3.
         if (StringUtils.isNotEmpty(order.getQrShareCode().getString("token"))) {
             String code_token = order.getQrShareCode().getString("token");
-            if (redisTemplate1.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                redisTemplate1.delete(SCANCODE_SHAREPROD + code_token);
+            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
             }
         }
 

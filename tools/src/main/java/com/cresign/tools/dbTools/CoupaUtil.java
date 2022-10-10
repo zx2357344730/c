@@ -1,29 +1,11 @@
 package com.cresign.tools.dbTools;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.common.Constants;
-import com.cresign.tools.pojo.es.lBProd;
-import com.cresign.tools.pojo.es.lSBComp;
-import com.cresign.tools.pojo.es.lSBOrder;
-import com.cresign.tools.pojo.es.lSProd;
-import com.cresign.tools.pojo.po.*;
-import com.mongodb.client.result.DeleteResult;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.support.WriteRequest;
-import org.elasticsearch.client.RequestOptions;
+import com.cresign.tools.pojo.po.Asset;
+import com.cresign.tools.pojo.po.Init;
+import com.cresign.tools.pojo.po.Order;
+import com.cresign.tools.pojo.po.User;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -33,9 +15,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 
 @Service
 public class CoupaUtil {

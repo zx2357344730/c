@@ -7,6 +7,7 @@ import com.cresign.login.utils.LoginResult;
 import com.cresign.login.utils.Oauth;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.manavalue.ClientEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -34,13 +35,16 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private MongoTemplate mongoTemplate;
 
     @Autowired
     private LoginResult loginResult;
+
+    @Autowired
+    private Qt qt;
 
     @Autowired
     private Oauth oauth;
@@ -56,10 +60,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         if (StringUtils.isNoneEmpty(refreshToken) || StringUtils.isNotEmpty(clientType)) {
 
             // 判断在redis中用户是否还存在RefreshToken
-            if (redisTemplate1.hasKey(clientType + "RefreshToken-" + refreshToken)) {
-
-                // 获取到redis中的id_U值
-                String id_U = redisTemplate1.opsForValue().get(clientType + "RefreshToken-" + refreshToken);
+            if (qt.hasRDKey(clientType+ "RefreshToken", refreshToken))
+            {
+                String id_U = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
 
                 // 通过id_U查询该用户
                 Query query = new Query(new Criteria("_id").is(id_U));
@@ -70,7 +73,6 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 JSONObject allResult = loginResult.allResult(user, clientType, "refreshToken");
 
                 return retResult.ok(CodeEnum.OK.getCode(), allResult);
-
             }
 
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
@@ -86,17 +88,15 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
         // 判断参数是否为空
         if (StringUtils.isNoneEmpty(refreshToken) || StringUtils.isNotEmpty(clientType)) {
 
-            // 判断在redis中用户是否还存在RefreshToken
-            if (redisTemplate1.hasKey(clientType + "RefreshToken-" + refreshToken)) {
+            if (qt.hasRDKey(clientType + "RefreshToken", refreshToken))
+            {
+                try {
+                    qt.delRD(clientType + "RefreshToken", refreshToken);
 
-                // 获取删除是否成功返回结果
-                boolean deleteResult = redisTemplate1.delete(clientType + "RefreshToken-" + refreshToken);
-
-                if (!deleteResult) {
+                } catch(Exception e) {
                     throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGOUT_ERROR.getCode(), null);
                 }
-               throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-LOGOUT_SUCCESS.getCode(), null);
+                return retResult.ok(CodeEnum.OK.getCode(), "");
             }
 
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
@@ -116,22 +116,23 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
         // 判断 传过来的参数是否为空
         if (StringUtils.isNotEmpty(refreshToken)) {
 
-            // 从redis 中查询出该用户的 refreshToken
+//            // 从redis 中查询出该用户的 refreshToken
             String refreshTokenResult = null;
+//
+//            if (clientType.equals(ClientEnum.WX_CLIENT.getClientType())) {
+//
+//                refreshTokenResult = redisTemplate0.opsForValue().get("wxRefreshToken:" + refreshToken);
+//
+//            } else if (clientType.equals(ClientEnum.APP_CLIENT.getClientType())) {
+//
+//                refreshTokenResult = redisTemplate0.opsForValue().get("appRefreshToken:" + refreshToken);
+//
+//            } else {
 
-            if (clientType.equals(ClientEnum.WX_CLIENT.getClientType())) {
+//                refreshTokenResult = redisTemplate0.opsForValue().get("webRefreshToken:" + refreshToken);
+                refreshTokenResult = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
 
-                refreshTokenResult = redisTemplate1.opsForValue().get("wxRefreshToken-" + refreshToken);
-
-            } else if (clientType.equals(ClientEnum.APP_CLIENT.getClientType())) {
-
-                refreshTokenResult = redisTemplate1.opsForValue().get("appRefreshToken-" + refreshToken);
-
-            } else {
-
-                refreshTokenResult = redisTemplate1.opsForValue().get("webRefreshToken-" + refreshToken);
-
-            }
+//            }
 
             // 判断 refreshToken 是否为空
             if (StringUtils.isNotEmpty(refreshTokenResult)) {

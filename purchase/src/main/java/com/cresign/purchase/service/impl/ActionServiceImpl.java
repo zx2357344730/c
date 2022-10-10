@@ -86,7 +86,7 @@ public class ActionServiceImpl implements ActionService {
 //     * 注入redis数据库下标1模板
 //     */
 //    @Resource
-//    private StringRedisTemplate redisTemplate1;
+//    private StringRedisTemplate redisTemplate0;
 //    public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_RPI_T = "https://www.cresign.cn/qrCodeTest?qrType=rpi&t=";
 
     /**
@@ -107,7 +107,7 @@ public class ActionServiceImpl implements ActionService {
         qt.setMDContent(id_O, qt.setJson("action.grpBGroup.", grpBNew), Order.class);
         //2. get Order's oItem+action
 //        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info","oItem", "action"));
-        Order order = qt.getMDContent(id_O, "action, oItem, info", Order.class);
+        Order order = qt.getMDContent(id_O, Arrays.asList("action, oItem, info"), Order.class);
 
         JSONArray objItem = order.getOItem().getJSONArray("objItem");
         JSONArray objAction = order.getAction().getJSONArray("objAction");

@@ -269,10 +269,10 @@
 //        });
 //        map.keySet().forEach(k -> {
 //            List<LogFlow> list = map.get(k);
-//            ut.sortIs(2,list, DateEnum.DATE_TWO.getDate());
+//            ut.sortIs(2,list, DateEnum.DATE_TIME_FULL.getDate());
 //            resultZon.addAll(list);
 //        });
-//        ut.sortIs(2,resultZon,DateEnum.DATE_TWO.getDate());
+//        ut.sortIs(2,resultZon,DateEnum.DATE_TIME_FULL.getDate());
 //        return resultZon;
 //    }
 //
@@ -468,7 +468,7 @@
 //                    updateRequest.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
 //                    client.update(updateRequest,RequestOptions.DEFAULT);
 //
-//                    LogFlow.setTmd(dateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+//                    LogFlow.setTmd(dateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 //                    JSONObject data1 = LogFlow.getData();
 //                    data1.put("score",score);
 //                    data1.put("bcdStatus", Constants.INT_SIX);

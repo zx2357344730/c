@@ -50,7 +50,7 @@ public class LogFlow {
         this.lang = "cn";
         this.zcndesc = zcndesc;
         this.tzone = 8;
-        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     public LogFlow(String logType, String id_FC, String id_FS,  String subType,
@@ -79,7 +79,7 @@ public class LogFlow {
         this.lang = "cn";
         this.zcndesc = zcndesc;
         this.tzone = 8;
-        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     /**

@@ -11,23 +11,17 @@ public enum  DateEnum {
     /**
      * 定义常用日期
      */
-    DATE_H_M_S("HH:mm:ss","日期格式：时/分/秒"),
+    TIME_ONLY("HH:mm:ss","日期格式：时/分/秒"),
 
-    DATE_H_M("HH:mm","日期格式：时/分"),
+    TIME_MIN("HH:mm","日期格式：时/分"),
 
-    DATE_ONE("yyyy/MM/dd","日期格式：年/月/日"),
+    DATE_ONLY("yyyy/MM/dd","日期格式：年/月/日"),
 
-    ONE_DATE("yyyy-MM-dd","日期格式：年-月-日"),
+    DATE_FOLDER("yyyy-MM-dd","日期格式：年-月-日"),
 
-    DATE_TWO("yyyy/MM/dd HH:mm:ss","日期格式：年/月/日 时:分:秒"),
+    DATE_TIME_SSS("yyyy/MM/dd HH:mm:ss SSS","日期格式：年/月/日 时:分:秒 毫秒"),
 
-    DATE_S_S_S("yyyy/MM/dd HH:mm:ss SSS","日期格式：年/月/日 时:分:秒 毫秒"),
-
-    DATE_ONE_H("yyyy/MM/dd","日期格式：年/月/日"),
-
-//    DATE_YYYYMMMDDHHMMSS("yyyy/MM/dd HH:mm:ss SSS","日期格式：年/月/日 时:分:秒 毫秒"),
-
-    DATE_YYYYMMMDDHHMMSS("yyyy/MM/dd HH:mm:ss","日期格式：年/月/日 时:分:秒");
+    DATE_TIME_FULL("yyyy/MM/dd HH:mm:ss","日期格式：年/月/日 时:分:秒");
 
     private String date;
 

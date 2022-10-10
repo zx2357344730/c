@@ -4,11 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.mongo.MongoUtils;
 import com.cresign.tools.pojo.es.lBUser;
+import com.cresign.tools.pojo.es.lNUser;
 import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.InitJava;
 import com.cresign.tools.pojo.po.User;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -40,17 +43,15 @@ import java.util.Map;
 public class RegisterUserUtils {
 
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+//    @Autowired
+//    private MongoTemplate mongoTemplate;
+//
+//    @Autowired
+//    private RestHighLevelClient restHighLevelClient;
 
     @Autowired
-    private RestHighLevelClient restHighLevelClient;
+    private Qt qt;
 
-    /**
-     * 注入redis数据库下标1模板
-     */
-    @Resource
-    private StringRedisTemplate redisTemplate1;
 
 //    private static final String QD_Key = "qdKey";
 
@@ -59,19 +60,21 @@ public class RegisterUserUtils {
 
         //try {
 
-            Query initQuery = new Query(new Criteria("_id").is("cn_java"));
-            initQuery.fields().include("newUser");
-            InitJava initJava = mongoTemplate.findOne(initQuery, InitJava.class);
+//            Query initQuery = new Query(new Criteria("_id").is("cn_java"));
+//            initQuery.fields().include("newUser");
+//            InitJava initJava = mongoTemplate.findOne(initQuery, InitJava.class);
+
+            InitJava initJava = qt.getMDContent("cn_java", "newUser", InitJava.class);
 
             // objectId
-            String addID = MongoUtils.GetObjectId();
+            String addID = qt.GetObjectId();
 
             User addUser = new User();
 
             addUser.setId(addID);
             addUser.setRolex(initJava.getNewUser().getJSONObject("rolex"));
 
-            UserInfo infoJson =  JSONObject.parseObject(JSON.toJSONString(initJava.getNewUser().getJSONObject("info")), UserInfo.class);
+            UserInfo infoJson =  qt.jsonTo(initJava.getNewUser().getJSONObject("info"), UserInfo.class);
             infoJson.setMbn(info.get("mbn").toString());
             if (null != info.get("id_APP")) {
                 infoJson.setId_APP(info.get("id_APP").toString());
@@ -81,32 +84,38 @@ public class RegisterUserUtils {
             addUser.setView(initJava.getNewUser().getJSONArray("view"));
             System.out.println("新增注册:");
             System.out.println(JSON.toJSONString(addUser));
-            mongoTemplate.insert(addUser);
+//            mongoTemplate.insert(addUser);
 
+            qt.addMD(addUser);
+
+            lNUser lnuser = new lNUser(addID,infoJson.getWrdN(),infoJson.getWrddesc(),
+                    infoJson.getWrdNReal(),null, infoJson.getPic(), "","", infoJson.getCem(), "",infoJson.getCnty(), infoJson.getDefNG(), infoJson.getDefCR());
+
+            qt.addES("lnuser", lnuser);
             // 查询公司
-            Query compQuery = new Query(new Criteria("_id").is("5f2a2502425e1b07946f52e9"));
-            compQuery.fields().include("info");
-            Comp comp = mongoTemplate.findOne(compQuery, Comp.class);
+//            Query compQuery = new Query(new Criteria("_id").is("5f2a2502425e1b07946f52e9"));
+//            compQuery.fields().include("info");
+//            Comp comp = mongoTemplate.findOne(compQuery, Comp.class);
             //JSONObject compOne = (JSONObject) JSON.toJSON(mongoTemplate.findOne(compQuery, Comp.class));
 
-            lBUser addLBUser = new lBUser();
-            addLBUser.setId_CB(comp.getId());
-            addLBUser.setId_U(addID);
-            addLBUser.setGrpU("1000");
-            addLBUser.setPic(info.get("pic").toString());
-            addLBUser.setTmd(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-            addLBUser.setTmk(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-            addLBUser.setWrdN(infoJson.getWrdN());
-            addLBUser.setWrdNCB(comp.getInfo().getWrdN());
-
-            IndexRequest indexRequest = new IndexRequest("lbuser");
-            indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
-            try {
-                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
-
-            } catch (IOException e) {
-
-            }
+//            lBUser addLBUser = new lBUser();
+//            addLBUser.setId_CB(comp.getId());
+//            addLBUser.setId_U(addID);
+//            addLBUser.setGrpU("1000");
+//            addLBUser.setPic(info.get("pic").toString());
+//            addLBUser.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//            addLBUser.setTmk(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//            addLBUser.setWrdN(infoJson.getWrdN());
+//            addLBUser.setWrdNCB(comp.getInfo().getWrdN());
+//
+//            IndexRequest indexRequest = new IndexRequest("lbuser");
+//            indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
+//            try {
+//                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+//
+//            } catch (IOException e) {
+//
+//            }
             return RetResult.jsonResultEncrypt(HttpStatus.OK, CodeEnum.OK.getCode(), null);
 
 
@@ -185,8 +194,8 @@ public class RegisterUserUtils {
 //            addLBUser.setGrpU("1000");
 //            addLBUser.setPic(info.get("pic").toString());
 //            addLBUser.setRefC(comp.getInfo().getString("ref"));
-//            addLBUser.setTmd(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-//            addLBUser.setTmk(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+//            addLBUser.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//            addLBUser.setTmk(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 //            addLBUser.setWrdN(info.getJSONObject("wrdN"));
 //            addLBUser.setWrdNC(comp.getInfo().getJSONObject("wrdN"));
 //

@@ -91,7 +91,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     /**
      * 注入redis数据库下标1模板
      */
-    private static StringRedisTemplate redisTemplate1;
+    private static StringRedisTemplate redisTemplate0;
     /**
      * 注入RocketMQ模板
      */
@@ -114,7 +114,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * 注入的时候，给类的 service 注入
      * @param qt	DB工具类
      * @param logService	日志接口
-     * @param redisTemplate1	redis下标为1的数据库模板
+     * @param redisTemplate0	redis下标为1的数据库模板
      * @param rocketMQTemplate	rocketMQ模板
      * @return void  返回结果: 结果
      * @author tang
@@ -123,10 +123,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      */
     @Autowired
     public void setWebSocketUserServer(Qt qt, LogService logService
-            , StringRedisTemplate redisTemplate1, RocketMQTemplate rocketMQTemplate, MqToEs mqToEs) {
+            , StringRedisTemplate redisTemplate0, RocketMQTemplate rocketMQTemplate, MqToEs mqToEs) {
         WebSocketUserServer.logService = logService;
         WebSocketUserServer.qt = qt;
-        WebSocketUserServer.redisTemplate1 = redisTemplate1;
+        WebSocketUserServer.redisTemplate0 = redisTemplate0;
         WebSocketUserServer.rocketMQTemplate = rocketMQTemplate;
 
         WebSocketUserServer.mqToEs = mqToEs;
@@ -172,13 +172,11 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             JSONObject keyM = new JSONObject();
             keyM.put("privateKeyJava",privateKeyJava);
             keyM.put("publicKeyJava",publicKeyJava);
-            System.out.println("....dfdsfdsafsd.");
 
             // 根据聊天室存储后端钥匙
             System.out.println("session start"+this.session.getId());
             WebSocketUserServer.keyJava.put(this.session.getId(),keyM);
         }
-        System.out.println("....dfdsfdsafsd.");
 
 //        WebSocketUserServerQ.webSocketSet.put(uId,this);
         if (WebSocketUserServer.webSocketSet.containsKey(uId)) {
@@ -193,10 +191,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             WebSocketUserServer.clients.put(uId,map1);
         }
         System.out.println("test-2");
-        System.out.println("token-j:"+token);
-        String s1 = redisTemplate1.opsForValue().get(token);
+        System.out.println("Token:j:"+token);
+        String s1 = redisTemplate0.opsForValue().get(token);
         System.out.println("token:"+s1);
-        System.out.println("token-u:"+uId);
+        System.out.println("Token:u:"+uId);
         if (!uId.equals(s1)) {
             // 创建回应前端日志
             LogFlow logContent = LogFlow.getInstance();
@@ -325,7 +323,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         System.out.println("logContent:");
         System.out.println(JSON.toJSONString(logContent));
         // 设置日志时间
-        logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
 //        //每次响应之前随机获取AES的key，加密data数据
 //        String key = AesUtil.getKey();
@@ -400,7 +398,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             }
 //            // 127.0.0.1 local test switching
 //            localSending(id_Us, logContent);
-            // 调用检测id_U在不在本服务并发送信息方法
+//             调用检测id_U在不在本服务并发送信息方法
             sendMsgToMQ(id_Us,logContent);
             //4. regular send to ES 1 time
               sendMsgToEs(logContent);
@@ -591,7 +589,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //     * @date 2022/6/23
 //     */
 //    public static void setWsU(String id_U,String state){
-//        redisTemplate1.opsForValue().set(id_U+"_ws",state);
+//        redisTemplate0.opsForValue().set(id_U+"_ws",state);
 //    }
 //
 //    /**
@@ -603,7 +601,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //     * @date 2022/6/23
 //     */
 //    public static String getWsU(String id_U){
-//        return redisTemplate1.opsForValue().get(id_U+"_ws");
+//        return redisTemplate0.opsForValue().get(id_U+"_ws");
 //    }
 
     /**

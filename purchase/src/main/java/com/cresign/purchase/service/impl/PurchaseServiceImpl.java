@@ -75,8 +75,6 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Resource
     private StringRedisTemplate redisTemplate0;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate1;
 
 
     @Autowired
@@ -701,12 +699,12 @@ public class PurchaseServiceImpl implements PurchaseService {
                 calculation.put("amk", id_U);
 
                 //开始时间
-                calculation.put("tmk", DateUtils.getDateNow(DateEnum.DATE_ONE.getDate()));
+                calculation.put("tmk", DateUtils.getDateNow(DateEnum.DATE_ONLY.getDate()));
                 //结束时间
-                calculation.put("tfin", dateUtils.getEndTime(DateUtils.getDateNow(DateEnum.DATE_ONE.getDate()), (Integer) data.get("tdurMonth")));
+                calculation.put("tfin", dateUtils.getEndTime(DateUtils.getDateNow(DateEnum.DATE_ONLY.getDate()), (Integer) data.get("tdurMonth")));
 
-//                int tdurDay = DateUtils.nDaysBetweenTwoDate(DateUtils.getDateNow(DateEnum.DATE_ONE.getDate()),
-//                        commUtils.getEndTime(DateUtils.getDateNow(DateEnum.DATE_ONE.getDate()), (Integer) data.get("tdurMonth")));
+//                int tdurDay = DateUtils.nDaysBetweenTwoDate(DateUtils.getDateNow(DateEnum.DATE_ONLY.getDate()),
+//                        commUtils.getEndTime(DateUtils.getDateNow(DateEnum.DATE_ONLY.getDate()), (Integer) data.get("tdurMonth")));
 //                //购买天数
 //                data.put("tdurDay", tdurDay);
 
@@ -1148,13 +1146,13 @@ public class PurchaseServiceImpl implements PurchaseService {
         int resultNum = selectCompDefOFUser(id_U, id_C);
 
         if (resultNum == 0) {
-            if (redisTemplate1.hasKey(SMSTypeEnum.PURCHASE.getSmsType() + phone)) {
+            if (redisTemplate0.hasKey(SMSTypeEnum.PURCHASE.getSmsType() + phone)) {
 
-                String smsNum = redisTemplate1.opsForValue().get(SMSTypeEnum.PURCHASE.getSmsType() + phone);
+                String smsNum = redisTemplate0.opsForValue().get(SMSTypeEnum.PURCHASE.getSmsType() + phone);
 
                 if (smsNum.equals(smsCode)) {
 
-                    redisTemplate1.delete(SMSTypeEnum.PURCHASE.getSmsType() + phone);
+                    redisTemplate0.delete(SMSTypeEnum.PURCHASE.getSmsType() + phone);
 
                     return retResult.ok(CodeEnum.OK.getCode(),null);
                 }
@@ -2260,7 +2258,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
 
             // 获取旧数据的开始时间(开始时间要拿当前日期)
-            Date startDate = dateUtils.strTurnDate(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+            Date startDate = dateUtils.strTurnDate(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             // 获取旧数据的结束时间
             Date endDate = dateUtils.strTurnDate(dataJson.getString("tfin"));
             // 计算出两个时间差多少个月

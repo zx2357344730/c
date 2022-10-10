@@ -32,7 +32,7 @@ public class InitServiceImpl implements InitService {
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private RetResult retResult;
@@ -58,7 +58,7 @@ public class InitServiceImpl implements InitService {
         assert stringMap != null;
         re.put("privateKey",stringMap.get("privateKey"));
         re.put("publicKey",stringMap.get("publicKey"));
-        redisTemplate1.opsForValue().set((RED_KEY + uuId),JSON.toJSONString(re),3, TimeUnit.DAYS);//过期时间3天
+        redisTemplate0.opsForValue().set((RED_KEY + uuId),JSON.toJSONString(re),3, TimeUnit.DAYS);//过期时间3天
 
         if (ver.equals(initVerCheck.getVer()))
         {
@@ -66,9 +66,9 @@ public class InitServiceImpl implements InitService {
         }
 
         // 判断 redis 中是否有这个键
-        if (redisTemplate1.opsForHash().hasKey("initData", lang)) {
+        if (redisTemplate0.opsForHash().hasKey("initData", lang)) {
 
-            String initData = (String)redisTemplate1.opsForHash().get("initData", lang);
+            String initData = (String)redisTemplate0.opsForHash().get("initData", lang);
 
             JSONObject init = JSONObject.parseObject(initData);
 
@@ -78,7 +78,7 @@ public class InitServiceImpl implements InitService {
 //
 //                Init init = mongoTemplate.findOne(new Query(new Criteria("_id").is(lang)), Init.class);
 //
-//                redisTemplate1.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
+//                redisTemplate0.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
 
 //            if (isDecrypt.equals("false")) {
 //                init.put("hdKey", HD_KEY);
@@ -96,7 +96,7 @@ public class InitServiceImpl implements InitService {
 
             Init init = mongoTemplate.findOne(new Query(new Criteria("_id").is(lang)), Init.class);
 
-            redisTemplate1.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
+            redisTemplate0.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
 
             assert init != null;
 //            if (isDecrypt.equals("false")) {

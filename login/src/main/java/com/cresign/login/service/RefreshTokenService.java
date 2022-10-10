@@ -36,7 +36,7 @@ public interface RefreshTokenService {
 
     /**
      *##description:      获取 refreshToken 重新给前端生成 token
-     *@param            refreshToken:刷新token, clientType: 客户端类型, id_U: 用户id
+     *@param            RefreshToken:刷新token, clientType: 客户端类型, id_U: 用户id
      *@return           返回token或者状态码信息
      *@author           JackSon
      *@updated             2020/5/15 19:00

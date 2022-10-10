@@ -1,5 +1,6 @@
 package com.cresign.tools.pojo.po.orderCard;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -30,8 +31,11 @@ public class OrderAction {
                    JSONArray subParts, JSONArray upPrnts, JSONArray prtNext, JSONArray prtPrev,
                    JSONObject wrdNP, JSONObject wrdN) {
 
+//        Lang wrdEmpty = new Lang();
+//        wrdEmpty.setCn("");
+
         JSONObject wrdEmpty = new JSONObject();
-        wrdEmpty.put("cn","");
+        wrdEmpty.put("cn", "");
 
         this.bcdStatus = bcdStatus;
         this.bisPush = bisPush;
@@ -44,15 +48,26 @@ public class OrderAction {
         this.bmdpt = bmdpt;
         this.sumChild = sumChild;
         this.sumPrev = sumPrev;
-        this.wrdNP = wrdNP  == null? (JSONObject) wrdEmpty.clone(): wrdNP;
-
-        this.wrdN = wrdN  == null? (JSONObject) wrdEmpty.clone(): wrdN;
+        this.wrdNP = wrdNP  == null? JSON.parseObject(JSON.toJSONString(wrdEmpty)) : wrdNP;
+//        this.wrdN = wrdN  == null? wrdEmpty : wrdN;
+        this.wrdN = wrdN == null? JSON.parseObject(JSON.toJSONString(wrdEmpty)) : wrdN;
         this.priority = priority;
 
         this.subParts = subParts == null? new JSONArray( ): subParts;
         this.upPrnts = upPrnts == null? new JSONArray( ): upPrnts;
         this.prtNext = prtNext == null? new JSONArray( ): prtNext;
         this.prtPrev = prtPrev == null? new JSONArray( ): prtPrev;
+    }
+
+    public JSONObject upPrnt(String id_O, Integer index, JSONObject wrdN, Double wn2qtyneed)
+    {
+        JSONObject upItem = new JSONObject();
+        upItem.put("id_O", id_O);
+        upItem.put("index",index);
+        upItem.put("wn2qtyneed", wn2qtyneed);
+        upItem.put("wrdN", wrdN);
+
+        return upItem;
     }
 
 
@@ -131,6 +146,7 @@ public class OrderAction {
      * 所有父产品名称拼接存放
      */
     private JSONObject wrdNP;
+//    private Lang wrdN;
     private JSONObject wrdN;
 
 
@@ -152,17 +168,11 @@ public class OrderAction {
     /**
      * subPart = parts, upPrnts = myParent[], Next[] next process, prev Process
      */
-    private JSONArray subParts = new JSONArray();;
-    private JSONArray upPrnts = new JSONArray();;
+    private JSONArray subParts = new JSONArray();
+    private JSONArray upPrnts = new JSONArray();
 
     private JSONArray prtNext = new JSONArray();
     private JSONArray prtPrev = new JSONArray();
-
-
-    /**
-     * 是否合并: 0 : 未合并，1 : 合并，2 : 被合并
-     */
-//    private Integer merge = 0;
 
     /**
      * prob

@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.enumeration.LoginEnum;
-import com.cresign.login.service.AuthFilterService;
+//import com.cresign.login.service.AuthFilterService;
 import com.cresign.login.service.SetAuthService;
 import com.cresign.login.utils.Oauth;
 import com.cresign.tools.advice.RetResult;
@@ -50,8 +50,8 @@ public class SetAuthServicelmpl implements SetAuthService {
     @Autowired
     private Qt qt;
 
-    @Autowired
-    private AuthFilterService authFilterService;
+//    @Autowired
+//    private AuthFilterService authFilterService;
 
 
     @Override
@@ -206,7 +206,7 @@ public class SetAuthServicelmpl implements SetAuthService {
 
         System.out.println("user is"+ user);
         //  here delete old Token,
-        //  boolean deleteResult = redisTemplate1.delete(clientType + "RefreshToken-" + refreshToken);
+        //  boolean deleteResult = redisTemplate0.delete(clientType + "RefreshToken:" + refreshToken);
         JSONObject userRolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
 
         // if user actually exists in this company

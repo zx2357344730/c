@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.common.Constants;
 import com.cresign.tools.enumeration.DateEnum;
-import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.LogFlow;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +12,10 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
@@ -27,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static sun.net.www.protocol.http.HttpURLConnection.userAgent;
 
 /**
  * @author tangzejin
@@ -480,7 +474,7 @@ public class Ut {
      */
     public static void listSort(List<LogFlow> list) {
 
-        sortIs(Constants.INT_ONE, list, DateEnum.DATE_TWO.getDate());
+        sortIs(Constants.INT_ONE, list, DateEnum.DATE_TIME_FULL.getDate());
 
     }
 
@@ -573,7 +567,7 @@ public class Ut {
      * ##Updated: 2020/8/6 11:33
      */
     public static void listSort2(List<LogFlow> list) {
-        sortIs(Constants.INT_TWO, list, DateEnum.DATE_TWO.getDate());
+        sortIs(Constants.INT_TWO, list, DateEnum.DATE_TIME_FULL.getDate());
     }
 
     /**

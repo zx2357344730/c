@@ -10,17 +10,6 @@ import com.cresign.tools.apires.ApiResponse;
  */
 public interface AccountLoginService {
 
-//    /**
-//     * 根据id_U修改appId
-//     * @param appId 应用编号
-//     * @param id_U  用户编号
-//     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
-//     * @author tang
-//     * @version 1.0.0
-//     * @date 2022/9/19
-//     */
-//    ApiResponse setAppId(String appId,String id_U);
-
 //    ApiResponse getKey(String qdKey);
 //
 //    String getHdAndQdKey(String qdKey);
@@ -32,8 +21,7 @@ public interface AccountLoginService {
      * @updated 2020/7/25 10:10
      * @return java.lang.String
      */
-//    ApiResponse doNumberLogin(String usn, String pwd, String clientType);
-    ApiResponse doNumberLogin(String clientType);
+    ApiResponse unregLogin(String clientType);
 
     //1.前端给 WebSocket_id  后端生成二维码  带着唯一id  放redis 并  生成一个Token返回给前端
     //2.前端扫码带着Token来验证（或者是进来我验证它的WebSocket_id？）

@@ -428,7 +428,9 @@ public class DbUtils {
             if (type.equals("insert")) {
                 bulk.add(new IndexRequest(logType).source(jsonBulk.getJSONObject("insert")));
             } else if (type.equals("update")) {
-                bulk.add(new UpdateRequest(logType, jsonBulk.getString("id")).doc(jsonBulk.getJSONObject("update"), XContentType.JSON));
+                JSONObject jsonEs = jsonBulk.getJSONObject("update");
+                jsonEs.remove("id_ES");
+                bulk.add(new UpdateRequest(logType, jsonBulk.getString("id")).doc(jsonEs, XContentType.JSON));
             } else if (type.equals("delete")) {
                 bulk.add(new DeleteRequest(logType, jsonBulk.getString("id")));
             }
@@ -444,7 +446,9 @@ public class DbUtils {
             if (type.equals("insert")) {
                 bulk.add(new IndexRequest(logType).source(jsonBulk.getJSONObject("insert")));
             } else if (type.equals("update")) {
-                bulk.add(new UpdateRequest(logType, jsonBulk.getString("id")).doc(jsonBulk.getJSONObject("update"), XContentType.JSON));
+                JSONObject jsonEs = jsonBulk.getJSONObject("update");
+                jsonEs.remove("id_ES");
+                bulk.add(new UpdateRequest(logType, jsonBulk.getString("id")).doc(jsonEs, XContentType.JSON));
             } else if (type.equals("delete")) {
                 bulk.add(new DeleteRequest(logType, jsonBulk.getString("id")));
             }
@@ -494,7 +498,7 @@ public class DbUtils {
         LogFlow newestLog = JSONObject.parseObject(hit.getSourceAsString(), LogFlow.class);
 //        newestLog.putAll(jsonLog);
         //Setup who and when
-        newestLog.setTmd(DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        newestLog.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         newestLog.setId_U(tokData.getString("id_U"));
         newestLog.setDep(tokData.getString("dep"));
         newestLog.setGrpU(tokData.getString("grpU"));
@@ -502,7 +506,7 @@ public class DbUtils {
 
 
 //        
-//        newestLog.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+//        newestLog.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 //        newestLog.put("id_U", tokData.getString("id_U"));
 //        newestLog.put("dep", tokData.getString("dep"));
 //        newestLog.put("grpU", tokData.getString("grpU"));
@@ -685,7 +689,7 @@ public class DbUtils {
     public  void addES(JSONObject infoObject , String indexes ) throws IOException {
 
         //8-1 indexes = indexes + "-write";
-        infoObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        infoObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         //指定ES索引 "assetflow" / "assetflow-write / assetflow-read
         IndexRequest request = new IndexRequest(indexes);
         //ES列表
@@ -773,7 +777,7 @@ public class DbUtils {
 
     public UpdateResponse updateEs(String logType, String id, JSONObject logInfo) throws IOException {
         UpdateRequest updateRequest = new UpdateRequest(logType, id);
-        logInfo.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        logInfo.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         updateRequest.doc(logInfo, XContentType.JSON);
         UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
         return updateResponse;
@@ -794,7 +798,7 @@ public class DbUtils {
         for (SearchHit hit : search.getHits().getHits()) {
             UpdateRequest updateRequest = new UpdateRequest();
 
-            hit.getSourceAsMap().put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+            hit.getSourceAsMap().put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             hit.getSourceAsMap().putAll(listCol);
 
             updateRequest.index(listType);
@@ -851,7 +855,7 @@ public class DbUtils {
         String id_A = getId_A(id_C, "a-auth");
         Update update = new Update();
         update.inc("refAuto.objSize.nowSize", fileSize);
-        update.set("refAuto.objSize.tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+        update.set("refAuto.objSize.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         updateMongoValues(id_A, update, Asset.class);
     }
 }

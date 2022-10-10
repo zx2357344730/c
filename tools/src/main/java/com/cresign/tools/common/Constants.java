@@ -20,12 +20,6 @@ public class Constants {
     // 微信查询订单api地址
     public static final String WX_QUERY_ORDER_URL = "https://api.mch.weixin.qq.com/pay/orderquery";
 
-
-    /**
-     *  格式化使用
-     */
-    public static final String DIGIT_ROUNDING = "#.00";
-
     /**
      *  定义后缀
      */
@@ -39,13 +33,6 @@ public class Constants {
     public static final int DATE_TWENTY_FOUR = 24;
     public static final int DATE_ONE_THOUSAND = 1000;
 
-    /**
-     * 定义符号：+
-     */
-    public static final String PLUS = "+";
-    public static final String SPOT = ".";
-    public static final String COLON = ":";
-    public static final String UNDERLINE = "_";
 
 
     public static final String STRING_EMPTY = "";
@@ -89,10 +76,6 @@ public class Constants {
 
 
 
-    public static final String REQUEST_OID = "oId";
-
-
-
     public static final String GET_CUSMSG = "cusmsg";
 
     public static final String GET_PAGING_ROW = "pagingRow";
@@ -127,10 +110,6 @@ public class Constants {
     public static final String GET_LPT = "lPT";
     public static final String GET_ID = "id";
     public static final String GET_ID_C = "id_C";
-
-    public static final String GET_INDEX_ONLY = "indexOnly";
-
-    public static final String GET_TYPE = "type";
 
     public static final String GET_NAME = "name";
     public static final String GET_ALL_CHK_IN = "allChkIn";

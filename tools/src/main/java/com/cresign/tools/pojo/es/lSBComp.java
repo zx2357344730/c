@@ -43,8 +43,8 @@ public class lSBComp {
         this.refCB = refCB == null ? "": refCB;
         this.picC = picC == null ? "": picC;
         this.picCB = picCB == null ? "": picCB;
-        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
 
     }
 

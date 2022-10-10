@@ -39,7 +39,7 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
      * 注入redis数据库下标1模板
      */
     @Resource
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
 
     public static final String RED_KEY = "key:k_";
 
@@ -149,7 +149,7 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                     System.out.println(JSON.toJSONString(requestMap));
                     String content ;
                     String aesKey;
-                    JSONObject re = JSONObject.parseObject(redisTemplate1.opsForValue().get(RED_KEY+uuId));
+                    JSONObject re = JSONObject.parseObject(redisTemplate0.opsForValue().get(RED_KEY+uuId));
                     if (null == re) {
                         throw  new RuntimeException("id对应秘钥为空!");
                     }

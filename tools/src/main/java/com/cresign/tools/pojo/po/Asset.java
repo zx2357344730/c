@@ -17,6 +17,8 @@ public class Asset {
 
     private String id;
 
+    private String id_A;
+
     private AssetInfo info; // JSONObject
 
     private JSONObject file00s;

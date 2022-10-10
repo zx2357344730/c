@@ -35,16 +35,16 @@ public class RetResult {
 //     * 注入redis数据库下标1模板
 //     */
 //    @Resource
-//    private StringRedisTemplate redisTemplate1;
+//    private StringRedisTemplate redisTemplate0;
 
     public static HttpServletRequest request;
 
-    public static StringRedisTemplate redisTemplate1;
+    public static StringRedisTemplate redisTemplate0;
 
     @Autowired
-    public void setRetResult(HttpServletRequest request,StringRedisTemplate redisTemplate1){
+    public void setRetResult(HttpServletRequest request,StringRedisTemplate redisTemplate0){
         RetResult.request = request;
-        RetResult.redisTemplate1 = redisTemplate1;
+        RetResult.redisTemplate0 = redisTemplate0;
     }
 
 //    @Value("${encyptKey.public_key}")
@@ -180,7 +180,7 @@ public class RetResult {
         if (ObjectUtils.isNotEmpty(message)) {
             System.out.println("code:"+code);
             System.out.println("message:"+message);
-//            JSONObject re = JSONObject.parseObject(redisTemplate1.opsForValue().get(RED_KEY+"e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb"));
+//            JSONObject re = JSONObject.parseObject(redisTemplate0.opsForValue().get(RED_KEY+"e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb"));
 //            System.out.println(JSON.toJSONString(re));
             return new ApiResponse(code, JSONObject.toJSONString(encodeAesRsa(message
 //                    ,re.getString("qdKey")
@@ -195,7 +195,7 @@ public class RetResult {
 //        if (ObjectUtils.isNotEmpty(message)) {
 //            System.out.println("code:"+code);
 //            System.out.println("message:"+message);
-////            JSONObject re = JSONObject.parseObject(redisTemplate1.opsForValue().get(RED_KEY+"e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb"));
+////            JSONObject re = JSONObject.parseObject(redisTemplate0.opsForValue().get(RED_KEY+"e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb"));
 ////            System.out.println(JSON.toJSONString(re));
 //            return new ApiResponse(code, JSONObject.toJSONString(encodeAesRsa(message,uuId
 ////                    ,re.getString("qdKey")
@@ -237,7 +237,7 @@ public class RetResult {
 //            System.out.println("加密的=uuId:");
 //            System.out.println(uuId);
 //            uuId = "e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb";
-            String s = redisTemplate1.opsForValue().get(RED_KEY + uuId);
+            String s = redisTemplate0.opsForValue().get(RED_KEY + uuId);
 //            System.out.println("s:");
 //            System.out.println(s);
             JSONObject re = JSONObject.parseObject(s);
@@ -339,7 +339,7 @@ public class RetResult {
 //            }
 //
 //            // 新增日志信息
-//            logService.addLog2(log,TY.getDateNow(DateEnum.DATE_ONE.getDate()));
+//            logService.addLog2(log,TY.getDateNow(DateEnum.DATE_ONLY.getDate()));
 //
 //        }
 //

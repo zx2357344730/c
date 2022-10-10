@@ -306,7 +306,7 @@ public class WebSocketServerPi {
      */
     public static void sendInfo(LogFlow log) {
         // 设置日志时间
-        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         //每次响应之前随机获取AES的key，加密data数据
         String key = AesUtil.getKey();
         // 加密log1数据

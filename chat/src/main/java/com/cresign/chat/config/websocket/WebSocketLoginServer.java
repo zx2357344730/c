@@ -62,10 +62,7 @@ public class WebSocketLoginServer {
     /**
      * 连接建立成功调用的方法
      * @param session	连接用户的session
-     * @param orderId	当前连接的订单id
-     * @param wxOrderId	微信订单id
-     * @param id_C  连接公司id
-     * @param id_U	连接用户id
+
      * @return void    返回结果
      * @author tang
      * @ver 1.0.0
@@ -109,10 +106,7 @@ public class WebSocketLoginServer {
 
     /**
      * 连接关闭调用的方法
-     * @param orderId	订单编号
-     * @param wxOrderId	微信订单编号
-     * @param id_C	公司编号
-     * @param id_U	用户编号
+
      * @return void    返回结果
      * @author tang
      * @ver 1.0.0
@@ -158,7 +152,6 @@ public class WebSocketLoginServer {
 
     /**
      * 实现服务器主动推送
-     * @param stats	推送状态
      * @return void    返回结果
      * @author tang
      * @ver 1.0.0
@@ -177,8 +170,6 @@ public class WebSocketLoginServer {
 
     /**
      * 群发自定义消息
-     * @param orderId	订单编号
-     * @param stats	订单状态
      * @return void    返回结果
      * @author tang
      * @ver 1.0.0

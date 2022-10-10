@@ -23,7 +23,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "lNComp")
 public class lNComp {
 
-    public lNComp(String id_C, String id_CP,  JSONObject wrdN, JSONObject wrddesc, JSONObject wrdTag, String ref, String pic) {
+    public lNComp(String id_C, String id_CP,  JSONObject wrdN, JSONObject wrddesc, String ref, String pic) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn", "");
@@ -35,11 +35,11 @@ public class lNComp {
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
         this.wrdN = wrdN == null ? (JSONObject) wrdEmpty.clone(): wrdN;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
-        this.wrdTag = wrdTag == null ? jsonTag: wrdTag;
+//        this.wrdTag = wrdTag == null ? jsonTag: wrdTag;
         this.ref = ref == null ? "": ref;
         this.pic = pic == null ? "": pic;
-        this.tmk = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmd = DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
 
     }
 

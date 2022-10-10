@@ -90,10 +90,12 @@ public class FlowController {
         @PostMapping("/v2/getDg")
         public ApiResponse getDgResult(@RequestBody JSONObject reqJson){
             System.out.println("进入接口？？？");
+
+            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
             return flowService.getDgResult(
                     reqJson.getString("id_O"),
-                    getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                    reqJson.getString("id_C"),
+                    tokData.getString("id_U"),
+                    tokData.getString("id_C"),
                     reqJson.getLong("teStart"));
         }
 

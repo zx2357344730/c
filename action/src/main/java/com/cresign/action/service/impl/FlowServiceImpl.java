@@ -86,7 +86,8 @@ public class FlowServiceImpl implements FlowService {
                 throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
             }
 
-            if (!salesOrderData.getInfo().getId_C().equals(myCompId))
+
+        if (!salesOrderData.getInfo().getId_C().equals(myCompId))
             {
                 throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
             }
@@ -121,7 +122,8 @@ public class FlowServiceImpl implements FlowService {
             }
 
 
-            // 第一次把action卡创建出来
+
+        // 第一次把action卡创建出来
             if (null == salesOrderData.getAction()) {
                 JSONObject newEmptyAction = new JSONObject();
                 salesOrderData.setAction(newEmptyAction);
@@ -256,13 +258,19 @@ public class FlowServiceImpl implements FlowService {
                 if (!targetCompId.equals(myCompId))
                 {
 //                    aId = dbUtils.getId_A(targetCompId, "a-auth");
+
                     asset = qt.getConfig(targetCompId,"a-auth","def");
-                    if  (asset.equals(null))
+
+
+                    if  (asset.getId_A().equals("none")) {
                         asset = myDef;
+                    }
                 } else {
 //                    aId = myDef.getId();
                     asset = myDef;
                 }
+                System.out.println("otherDeff"+targetCompId);
+
 
                 // if it is a real Company get grpB setting from objlBProd by ref, else do nothing now, later can do extra
 //                if (!aId.equals("none")) {
@@ -286,37 +294,39 @@ public class FlowServiceImpl implements FlowService {
                         }
                     }
                     // get GrpB and grpS of id_CB
-                    if (prodCompId.equals(targetCompId))
-                    {   // I am both
-                        grpOB = "1010";
-                    } else {
-                        String compGrpB = listData.getString("grpB");
-
-                        grpOB = defResultBC.getJSONObject(compGrpB).getString("grpO");
-//                        for (int k = 0; k < defResultBC.size(); k++)
-//                        {
-//                            String grpRef = defResultBC.getJSONObject(k).getString("ref");
-//                            if (compGrpB.equals(grpRef))
-//                            {
-//                                grpOB =  defResultBC.getJSONObject(k).getString("grpO");
-//                                break;
-//                            }
-//                        }
-//                    }
-                }
+//                    if (prodCompId.equals(targetCompId))
+//                    {   // I am both
+//                        grpOB = "1010";
+//                    } else {
+//                        String compGrpB = listData.getString("grpB");
+//
+//                        grpOB = defResultBC.getJSONObject(compGrpB).getString("grpO");
+////                        for (int k = 0; k < defResultBC.size(); k++)
+////                        {
+////                            String grpRef = defResultBC.getJSONObject(k).getString("ref");
+////                            if (compGrpB.equals(grpRef))
+////                            {
+////                                grpOB =  defResultBC.getJSONObject(k).getString("grpO");
+////                                break;
+////                            }
+////                        }
+////                    }
+//                }
 
 //                String aId2;
 
                 Asset asset2 = null;
+                System.out.println("whynot");
 
                 if (!prodCompId.equals(myCompId))
                 {
-//                    aId = dbUtils.getId_A(targetCompId, "a-auth");
                     asset2 = qt.getConfig(prodCompId,"a-auth","def");
-                    if  (asset.equals(null))
+                    if  (asset2.getId_A().equals("none")) {
+
                         asset2 = myDef;
+                    }
+
                 } else {
-//                    aId = myDef.getId();
                     asset2 = myDef;
                 }
 
@@ -339,24 +349,33 @@ public class FlowServiceImpl implements FlowService {
 //                    } else {
 //                        asset = myDef;
 //                    }
-                    JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
-                    JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
+
+
+                JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
+
+                JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
 
                     for (OrderOItem orderOItem : unitOItem) {
                         String grp = orderOItem.getGrp();
+                        System.out.println("whynot");
+
 
                         if (grpGroup.getJSONObject(grp) == null) {
+                            System.out.println("whynot");
+
                             grpGroup.put(grp, defResultSP.getJSONObject(grp));
                         }
                     }
-                    // get GrpB and grpS of id_CB
+                System.out.println("otherDeff"+targetCompId);
+
+                // get GrpB and grpS of id_CB
 //                    if (prodCompId.equals(targetCompId))
 //                    {   // I am both
 //                        grpO = "1010";
 //                    } else
 //                    {
-                        String compGrpB = listData.getString("grp");
-                        grpOB = defResultSC.getJSONObject(compGrpB).getString("grpO");
+//                        String compGrpB = listData.getString("grp");
+//                        grpOB = defResultSC.getJSONObject(compGrpB).getString("grpO");
 
 //                    for (int k = 0; k < defResultSC.size(); k++)
 //                        {
@@ -370,6 +389,8 @@ public class FlowServiceImpl implements FlowService {
 //                    }
 
 //                  }
+                grpO = "1000";
+                grpOB = "1000";
 
                 System.out.print("got all ok");
 
@@ -388,13 +409,16 @@ public class FlowServiceImpl implements FlowService {
                 // else make Purchase Order
 //                // 创建订单
                 Order newPO = new Order();
+                    System.out.println("sales order");
 
-                // 根据键设置订单id
+
+                    // 根据键设置订单id
                 newPO.setId(thisOrderId);
                     System.out.print("got1"+thisOrderId);
 
                 // priority is BY order, get from info and write into ALL oItem
                 OrderInfo newPO_Info = new OrderInfo(prodCompId,targetCompId,unitOItem.get(0).getId_CP(),"", id_OParent,"","",grpO,grpOB,oParent_prior,unitOItem.get(0).getPic(),4,0,orderNameCas,null);
+                    System.out.println("sales order");
 
                 // 设置订单info信息
                 newPO.setInfo(newPO_Info);
@@ -406,28 +430,33 @@ public class FlowServiceImpl implements FlowService {
                 view.add("oItem");
                 view.add("oStock");
                 newPO.setView(view);
+                    System.out.println("sales order");
+
+                JSONArray objCard = new JSONArray();
+                objCard.add("action");
+                objCard.add("oStock");
 
                 Double wn2qty = 0.0;
                 Double wn4price = 0.0;
                 JSONArray arrayId_P = new JSONArray();
+                    System.out.println("sales order");
 
-
-                    for (OrderOItem orderOItem : unitOItem) {
-                        wn2qty += orderOItem.getWn2qtyneed();
-                        wn4price += orderOItem.getWn4price();
-                        System.out.println("u " + orderOItem);
-                        if (!arrayId_P.contains(orderOItem.getId_P())) {
-                            arrayId_P.add(orderOItem.getId_P());
-                        }
-                    }
+                for (OrderOItem orderOItem : unitOItem) {
+                    wn2qty += orderOItem.getWn2qtyneed();
+                    wn4price += orderOItem.getWn4price();
+                    System.out.println("u " + orderOItem);
+                    arrayId_P.add(orderOItem.getId_P());
+                }
 
                 // 添加OItem信息
                 JSONObject newPO_OItem = new JSONObject();
                 newPO_OItem.put("objItem", unitOItem);
                 newPO_OItem.put("wn2qty", wn2qty);
-                newPO_OItem.put("id_P", arrayId_P);
+                newPO_OItem.put("arrP", arrayId_P);
                 newPO_OItem.put("wn4price", wn4price);
+                newPO_OItem.put("objCard", objCard);
                 newPO.setOItem(newPO_OItem);
+                    System.out.println("sales order");
 
                 // 创建采购单的Action
                 JSONObject newPO_Action = new JSONObject();
@@ -455,33 +484,38 @@ public class FlowServiceImpl implements FlowService {
                 newPO.setAction(newPO_Action);
                 // 新增订单
 //                coupaUtil.saveOrder(newPO);
-                qt.addMD(newPO);
+System.out.println("saving now");
+                    qt.addMD(newPO);
+                    System.out.println("sales order SAVED "+ newPO.getInfo().getWrdN().getString("cn"));
+
 
 //              // 创建lSBOrder订单
                 lSBOrder lsbOrder = new lSBOrder(prodCompId,targetCompId,"","",id_OParent,thisOrderId, arrayId_P,
                             "","",null,"1000",unitOItem.get(0).getPic(),4,0,orderNameCas,null,null);
                     // 新增lsbOrder信息
-                qt.addES("lsborder", lsbOrder);
+
+                    qt.addES("lsborder", lsbOrder);
 //                coupaUtil.updateES_lSBOrder(lsbOrder);
-            }
+
+                }
         }
             System.out.println("all finished...");
             // END FOR
 
 
-            // 创建返回结果存储集合
-            JSONObject result = new JSONObject();
-
-            // 添加返回信息
-           // result.put("compIds",compIds);
-           // result.put("orderIds",orderIds);
-//            result.put("action",objActionCollection);
-//            result.put("oitem",objOItemCollection);
-//            result.put("grpBGroup",grpBGroup);
-//            result.put("grpGroup",grpGroup);
+//            // 创建返回结果存储集合
+//            JSONObject result = new JSONObject();
+//
+//            // 添加返回信息
+//           // result.put("compIds",compIds);
+//           // result.put("orderIds",orderIds);
+////            result.put("action",objActionCollection);
+////            result.put("oitem",objOItemCollection);
+////            result.put("grpBGroup",grpBGroup);
+////            result.put("grpGroup",grpGroup);
 
         // 抛出操作成功异常
-            return retResult.ok(CodeEnum.OK.getCode(), result);
+            return retResult.ok(CodeEnum.OK.getCode(), "");
         }
 
         /**
@@ -515,14 +549,23 @@ public class FlowServiceImpl implements FlowService {
             salesOrder_Action.put("oTasks",oTasks);
             //ZJ
 
+            JSONObject salesOrder_OItem;
+            JSONArray objCard = new JSONArray();
+            objCard.add("action");
+            objCard.add("oStock");
+            salesOrder_OItem = orderParentData.getOItem();
+            salesOrder_OItem.put("objCard", objCard);
+
 
             // 设置action信息
             orderParentData.setAction(salesOrder_Action);
             // 设置订单的递归结果map
             orderParentData.setCasItemx(casItemx);
+            // 设置oItem.objCard信息
+            orderParentData.setOItem(salesOrder_OItem);
 
             JSONArray view = orderParentData.getView();
-            System.out.print("got all ok Sales");
+            System.out.println("got all ok Sales");
 
             //Create oStock
             JSONObject newPO_oStock = new JSONObject();
@@ -546,11 +589,17 @@ public class FlowServiceImpl implements FlowService {
                 view.add("oStock");
             }
             // 设置view值
+
             orderParentData.setView(view);
 
             // 新增订单
 //            coupaUtil.saveOrder(orderParentData);
-            qt.addMD(orderParentData);
+            System.out.println("saving Sales"+orderParentData);
+
+
+            qt.saveMD(orderParentData);
+            System.out.println("sales order SAVED Parent "+ orderParentData.getInfo().getWrdN().getString("cn"));
+
         }
 
 
@@ -654,7 +703,7 @@ public class FlowServiceImpl implements FlowService {
             if (partIndex.equals(0))
             {
                 //if I am the first one, make new Order
-                newOrderId = (MongoUtils.GetObjectId());
+                newOrderId = MongoUtils.GetObjectId();
 
                 //same detail into casItemx
                 JSONObject thisOrderData = new JSONObject();
@@ -713,11 +762,6 @@ public class FlowServiceImpl implements FlowService {
             //ZJ
 
 
-
-
-
-
-
 //            partInfo.put("fin_O", pidActionCollection.get(id_P).getId_O());
 //            partInfo.put("fin_Ind", pidActionCollection.get(id_P).getIndex());
 
@@ -760,7 +804,7 @@ public class FlowServiceImpl implements FlowService {
             if (isNew) {
 
                 // 赋值随机id
-                newOrderId = (MongoUtils.GetObjectId());
+                newOrderId = MongoUtils.GetObjectId();
                 newOrderIndex = 0;
 
                 // 递归订单map添加随机id
@@ -825,6 +869,7 @@ public class FlowServiceImpl implements FlowService {
                             upperOItem.getWrdN(), unitTask.getJSONObject("wrdN"),unitTask.getJSONObject("wrddesc"),unitTask.getJSONObject("wrdprep"));
 
             objOItem.setSeq(unitTask.getString("seq"));
+
             objAction = new OrderAction(100,0,1,1,id_OParent,upperAction.getRefOP(),"",newOrderId,partIndex,
                     unitTask.getInteger("wn0prior"),0,0,null, null,null, null,
                     upperOItem.getWrdN(),unitTask.getJSONObject("wrdN"));
@@ -832,11 +877,13 @@ public class FlowServiceImpl implements FlowService {
             System.out.println("oItem"+objOItem);
 
 
-            JSONObject upPrntsData = new JSONObject();
-            upPrntsData.put("id_O", upperOItem.getId_O());
-            upPrntsData.put("index", upperOItem.getIndex());
-            upPrntsData.put("wrdN", upperOItem.getWrdN());
-            upPrntsData.put("wn2qtyneed",1);
+//            JSONObject upPrntsData = new JSONObject();
+//            upPrntsData.put("id_O", upperOItem.getId_O());
+//            upPrntsData.put("index", upperOItem.getIndex());
+//            upPrntsData.put("wrdN", upperOItem.getWrdN());
+//            upPrntsData.put("wn2qtyneed",1);
+
+            JSONObject upPrntsData = objAction.upPrnt(upperOItem.getId_O(), upperOItem.getIndex(),  upperOItem.getWrdN(),1.0);
 //            upPrntsData.put("wn2qtyall",upperOItem.getWn2qtyneed());
             objAction.getUpPrnts().add(upPrntsData);
 
@@ -853,7 +900,7 @@ public class FlowServiceImpl implements FlowService {
                     partInfo.getDouble("wn4price"),upperOItem.getWrdN(),partInfo.getJSONObject("wrdN"),
                     partInfo.getJSONObject("wrddesc"),partInfo.getJSONObject("wrdprep"));
 
-            objOItem.setTmd(dateUtils.getDateNow(DateEnum.DATE_TWO.getDate()));
+            objOItem.setTmd(dateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             objOItem.setSeq("3"); // set DGAction specific seq = 3
             objOItem.setWn2qtyneed(upperOItem.getWn2qtyneed() * partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"));
 
@@ -1002,7 +1049,9 @@ public class FlowServiceImpl implements FlowService {
         if (!id_P.equals(""))
         {
 //        Prod thisProd = coupaUtil.getProdByListKey(id_P, Arrays.asList("_id","part","info"));
-        Prod thisProd = qt.getMDContent(id_P, "_id, part, info", Prod.class);
+        Prod thisProd = qt.getMDContent(id_P, Arrays.asList("_id","part","info"), Prod.class);
+
+        System.out.println("thisProd"+thisProd);
 
         if (thisProd != null && thisProd.getPart() != null && thisProd.getPart().getJSONArray("objItem").size() > 0 &&
                 thisProd.getInfo().getId_C().equals(myCompId))
@@ -1235,6 +1284,8 @@ public class FlowServiceImpl implements FlowService {
                     upPrntsData.put("wn2qtyneed", upperOItem.getWn2qtyneed() * partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"));
                     upPrntsData.put("wrdN", upperOItem.getWrdN());
 
+
+
                     unitAction.getUpPrnts().add(upPrntsData);
                     System.out.println(unitAction);
                     objActionCollection.get(finO).set(fin_Ind, unitAction);
@@ -1394,8 +1445,7 @@ public class FlowServiceImpl implements FlowService {
 
     public Object recursionProdPart(JSONArray arrayObjItem, JSONObject recurCheckList, JSONObject stat) {
         JSONArray arrayChildren = new JSONArray();
-//        HashSet<String> setId_P = new HashSet();
-        String setId_P = "";
+        HashSet<String> setId_P = new HashSet();
 
         if (stat.getInteger("count") > stat.getInteger("allCount"))
         {
@@ -1415,13 +1465,13 @@ public class FlowServiceImpl implements FlowService {
             if (arrayObjItem.getJSONObject(i).getString("bmdpt").equals(2)) {
                 recurCheckList.put(id_P, "");
             }
-//            setId_P.add(id_P);
-            setId_P = setId_P + "," + id_P;
+            setId_P.add(id_P);
+//            setId_P = setId_P + "," + id_P;
         }
-
-        List <Prod> prods = (List<Prod>) qt.getMDContentMany(setId_P,"part", Prod.class);
+        List <Prod> prods = (List<Prod>) qt.getMDContentMany(setId_P,Arrays.asList("part"), Prod.class);
         JSONObject jsonProdPart = new JSONObject();
         for (Prod prod : prods) {
+            System.out.println("prod in prods"+prod);
             jsonProdPart.put(prod.getId(), prod.getPart());
         }
         for (int i = 0; i < arrayObjItem.size(); i++) {
@@ -1510,7 +1560,8 @@ public class FlowServiceImpl implements FlowService {
 
             // 根据父编号获取父产品信息
 //            Prod thisItem = coupaUtil.getProdByListKey(id_P, Arrays.asList("part","info"));
-            Prod thisItem = qt.getMDContent(id_P, "info, part", Prod.class);
+            Prod thisItem = qt.getMDContent(id_P, Arrays.asList("_id","part","info"), Prod.class);
+            System.out.println("thiItem"+thisItem);
 
             // 层级加一
             stat.put("layer", stat.getInteger("layer") + 1 );
@@ -1600,7 +1651,7 @@ public class FlowServiceImpl implements FlowService {
     public ApiResponse dgUpdatePartInfo(String id_P,String id_C) {
 //        Prod prod = coupaUtil.getProdByListKey(
 //                id_P,Arrays.asList("info","part"));
-        Prod prod = qt.getMDContent(id_P, "info, part", Prod.class);
+        Prod prod = qt.getMDContent(id_P, Arrays.asList("_id","part","info"), Prod.class);
         if (null == prod) {
             // 返回错误信息
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
@@ -1660,7 +1711,7 @@ public class FlowServiceImpl implements FlowService {
 
 //            Prod thisProd = coupaUtil.getProdByListKey(
 //                    thisItem.getString("id_P"), Arrays.asList("part","info"));
-            Prod thisProd = qt.getMDContent(id_P, "info, part", Prod.class);
+            Prod thisProd = qt.getMDContent(id_P, Arrays.asList("_id","part","info"), Prod.class);
 
             int bmdptValue;
             if (null == thisProd) {
@@ -1670,7 +1721,7 @@ public class FlowServiceImpl implements FlowService {
                 ProdInfo prodInfo = thisProd.getInfo();
                 JSONObject part = thisProd.getPart();
 //                Comp compById = coupaUtil.getCompByListKey(id_C, Arrays.asList("info"));
-                Comp compById = qt.getMDContent(id_C, "info", Comp.class);
+                Comp compById = qt.getMDContent(id_C,"info", Comp.class);
 
                 if (null == compById || null == compById.getInfo() || !prodInfo.getId_C().equals(id_C)) {
                     //没有公司 = 物料
@@ -1743,7 +1794,7 @@ public class FlowServiceImpl implements FlowService {
             // 根据id获取产品信息
 //            Prod prod = coupaUtil.getProdByListKey(
 //                    id_P,Arrays.asList("info","part"));
-            Prod prod = qt.getMDContent(id_P, "info, part", Prod.class);
+            Prod prod = qt.getMDContent(id_P, Arrays.asList("_id","part","info"), Prod.class);
 
             // 判断产品为空
             if (null == prod) {
@@ -1778,27 +1829,8 @@ public class FlowServiceImpl implements FlowService {
     @Override
     public ApiResponse dgRemove(String id_O,String id_C,String id_U) {
 
-
-        // KEV here it can only remove "action" flows
-        // need remake
-
-
-
-
-        // **** check if orders are final, if need request Cancel, send request
-        // if ok, open order
-        // **** check isPush, if true send a Cancel msg statusChg (bcdStatus != 100)
-        // send log by action's grpGroup/grpBGroup @ 1 log 2 id_FC?
-        // delete that order
-        // **** do not delete action
-        // batch delete mdb, es
-        // delete that order's lsborder
-        // delete main orders' casItemx + action
-
-        // **** later go to prob, check all id+ind and send cancel to each of those
-        // set oItem's bcdStatus to ? (id_OProb is cancelled) cascade cancel...........
-
-        Order orderParent = coupaUtil.getOrderByListKey(id_O, Arrays.asList());
+//        Order orderParent = coupaUtil.getOrderByListKey(id_O, Arrays.asList());
+        Order orderParent = qt.getMDContent(id_O, Arrays.asList("action", "oItem", "casItemx", "view"),Order.class);
 
         if (orderParent == null)
         {
@@ -1826,12 +1858,15 @@ public class FlowServiceImpl implements FlowService {
             String subOrderId = casList.getJSONObject(i).getString("id_O");
 
                 try {
-                    // 创建es删除请求
-                    DeleteByQueryRequest requestAct = new DeleteByQueryRequest("action");
-                    // 设置删除信息
-                    requestAct.setQuery(new TermQueryBuilder("data.id_O.keyword", subOrderId));
-                    // 请求方法
-                    client.deleteByQuery(requestAct, RequestOptions.DEFAULT);
+//                    // 创建es删除请求
+//                    DeleteByQueryRequest requestAct = new DeleteByQueryRequest("action");
+//                    // 设置删除信息
+//                    requestAct.setQuery(new TermQueryBuilder("data.id_O.keyword", subOrderId));
+//                    // 请求方法
+//                    client.deleteByQuery(requestAct, RequestOptions.DEFAULT);
+                    qt.delES("action", qt.setESFilt("data.id_O.keyword", subOrderId));
+                    qt.delES("assetflow", qt.setESFilt("data.id_O.keyword", subOrderId));
+
                 } catch (Exception e) {
                     System.out.println("删除es出现错误:" + e.getMessage());
                 }
@@ -1839,11 +1874,13 @@ public class FlowServiceImpl implements FlowService {
             if (!subOrderId.equals(id_O)) {
                 // 创建es删除请求
                 try {
-                    DeleteByQueryRequest requestLB = new DeleteByQueryRequest("lsborder");
-                // 设置删除信息
-                    requestLB.setQuery(new TermQueryBuilder("id_O", subOrderId));
-                    // 请求方法
-                    client.deleteByQuery(requestLB, RequestOptions.DEFAULT);
+//                    DeleteByQueryRequest requestLB = new DeleteByQueryRequest("lsborder");
+//                // 设置删除信息
+//                    requestLB.setQuery(new TermQueryBuilder("id_O", subOrderId));
+//                    // 请求方法
+//                    client.deleteByQuery(requestLB, RequestOptions.DEFAULT);
+                    qt.delES("lsborder", qt.setESFilt("id_O", "exact",subOrderId));
+
                 } catch (Exception e) {
                     System.out.println("删除es出现错误:" + e.getMessage());
                 }
@@ -1857,11 +1894,17 @@ public class FlowServiceImpl implements FlowService {
         orderData.put("action", null);
         JSONArray view = orderParent.getView();
 
+        JSONObject oItem = orderParent.getOItem();
+
+        oItem.getJSONArray("objCard").remove("action");
+        orderData.put("oItem", oItem);
+
         view.remove("casItemx");
         view.remove("action");
         orderData.put("view", view);
 
-        coupaUtil.updateOrderByListKeyVal(id_O,orderData);
+//        coupaUtil.updateOrderByListKeyVal(id_O,orderData);
+        qt.setMDContent(id_O,orderData, Order.class);
 
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "删除成功！！!!!");

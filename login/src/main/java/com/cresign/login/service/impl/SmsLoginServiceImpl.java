@@ -47,7 +47,7 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -88,10 +88,10 @@ public class SmsLoginServiceImpl implements SmsLoginService {
     public ApiResponse smsLogin(String phone, String smsNum, String clientType) {
 
         // 判断是否存在这个 key
-        if (redisTemplate1.hasKey(SMSTypeEnum.LOGIN.getSmsType() + phone)) {
+        if (redisTemplate0.hasKey(SMSTypeEnum.LOGIN.getSmsType() + phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-            if (smsNum.equals(redisTemplate1.opsForValue().get(SMSTypeEnum.LOGIN.getSmsType() + phone))) {
+            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.LOGIN.getSmsType() + phone))) {
 
                 Query query = new Query(new Criteria("info.mbn").is(phone));
 
@@ -139,10 +139,10 @@ SMS_CODE_NOT_FOUND.getCode(), null);
     public ApiResponse smsRegister(String phone, Integer phoneType, String smsNum,
                                    String clientType, String id_APP, String pic, JSONObject wrdN) throws IOException {
         // 判断是否存在这个 key
-        if (redisTemplate1.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-            if (smsNum.equals(redisTemplate1.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
 
                 Query mbnQue = new Query(new Criteria("info.mbn").is(phone));
 
@@ -276,8 +276,8 @@ SMS_CODE_NOT_FOUND.getCode(), null);
                 info.put("pic",pic);
                 info.put("mbn", phone);
                 info.put("phoneType", phoneType);
-                info.put("tmk", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-                info.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                info.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                info.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
                 // 判断
                 if (ClientEnum.APP_CLIENT.getClientType().equals(clientType)) {
@@ -293,7 +293,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
                 // 调用注册用户方法
                 registerUserUtils.registerUser(info);
 
-                redisTemplate1.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
+                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
 
                 return retResult.ok(CodeEnum.OK.getCode(), null);
 

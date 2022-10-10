@@ -2,14 +2,13 @@ package com.cresign.gateway.filter;
 
 
 //import com.cresign.gateway.config.GatewayAuthConfig;
-import com.cresign.gateway.utils.jwt.JwtUtil;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,7 @@ public class GatewayFilter implements GlobalFilter, Ordered {
 //    private String jwtBlacklistKeyFormat;
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private StringRedisTemplate redisTemplate0;
 
 //    @Autowired
 //    private GatewayAuthConfig gatewayAuthConfig;
@@ -75,7 +74,7 @@ public class GatewayFilter implements GlobalFilter, Ordered {
                 || url.equals("/login/wx/v1/wechatRegister")
                 || url.equals("/login/facebook/v1/faceBookLogin")
                 || url.equals("/login/facebook/v1/faceBookRegister")
-                || url.equals("/file/picture/v1/picUpload")
+//                || url.equals("/file/picture/v1/picUpload")
         ){
             return chain.filter(exchange);
         }
@@ -102,8 +101,7 @@ public class GatewayFilter implements GlobalFilter, Ordered {
 
         String clientType = exchange.getRequest().getHeaders().getFirst("clientType");
 
-        // 校验token是否正确
-        boolean valid_is = jwtUtil.validJWT(clientType, token);
+        boolean valid_is = redisTemplate0.hasKey(clientType+"Token:"+token);
 
         // 校验成功
         if (valid_is) {

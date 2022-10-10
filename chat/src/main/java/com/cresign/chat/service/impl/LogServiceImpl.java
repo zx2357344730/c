@@ -64,7 +64,7 @@ public class LogServiceImpl  implements LogService {
      */
     @Override
     public void sendPush(String clientId,String title,String body,String token){
-        String request_id = MongoUtils.GetObjectId();
+        String request_id = qt.GetObjectId();
         JSONObject settings = new JSONObject();
         int ttl = 3600000;
         settings.put("ttl",ttl);
@@ -111,7 +111,7 @@ public class LogServiceImpl  implements LogService {
 
 
         String group_name = "任务组名";
-        String request_id = MongoUtils.GetObjectId();
+        String request_id = qt.GetObjectId();
         JSONObject settings = new JSONObject();
         int ttl = 3600000;
         settings.put("ttl",ttl);

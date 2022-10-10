@@ -61,11 +61,11 @@ public class SMSTencent {
     }
 
     @Autowired
-    public void setRedisTemplate1(StringRedisTemplate redisTemplate1) {
-        SMSTencent.redisTemplate1 = redisTemplate1;
+    public void setredisTemplate0(StringRedisTemplate redisTemplate0) {
+        SMSTencent.redisTemplate0 = redisTemplate0;
     }
 
-    private static StringRedisTemplate redisTemplate1;
+    private static StringRedisTemplate redisTemplate0;
 
 
 
@@ -113,7 +113,7 @@ public class SMSTencent {
             smsClient.SendSms(sendSmsRequest);
 
             for (int i = 0; i < phones.length; i++) {
-                redisTemplate1.opsForValue().set(smsType + phones[i], smsNum, 3, TimeUnit.MINUTES);
+                redisTemplate0.opsForValue().set(smsType + phones[i], smsNum, 3, TimeUnit.MINUTES);
             }
 
         } catch (TencentCloudSDKException e) {

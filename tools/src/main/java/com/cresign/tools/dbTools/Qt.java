@@ -11,14 +11,15 @@ package com.cresign.tools.dbTools;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.ToolEnum;
 import com.cresign.tools.exception.ErrorResponseException;
-import com.cresign.tools.pojo.po.*;
-
+import com.cresign.tools.pojo.po.Asset;
+import com.cresign.tools.pojo.po.LogFlow;
+import com.cresign.tools.pojo.po.User;
 import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.lang.StringUtils;
+import org.bson.types.ObjectId;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -39,10 +40,8 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Field;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -52,10 +51,25 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
     @Service
     public class Qt {
+
+        /**
+         * 1。 MDB
+         * 2。 ES
+         * 3. RD
+         * get = read, add = + , set / inc/ push/pull = update, del = delete
+         * Many (批量修改/ 批量Get）
+         *
+         *
+         * 1。 MD - id 来查， 修改 =》 JSONObject
+         * 2。 ES - get (filterArray - filter 条件)
+         * queryBuilder XXX - 只能传JSONOvbject
+         * 结果 = 》 只能是 JSONArray
+         *
+         *
+         */
 
         @Autowired
         private MongoTemplate mongoTemplate;
@@ -77,6 +91,9 @@ import java.util.regex.Pattern;
         //Other - done: toJson, jsonTo, list2Map, getConfig, filterBuilder
         //Other - need: getRecentLog, judgeComp, chkUnique,, checkOrder, updateSize
 
+        public static String GetObjectId() {
+            return new ObjectId().toString();
+        }
 
         /**
          * 根据id查询mongo
@@ -87,13 +104,26 @@ import java.util.regex.Pattern;
          * @Return java.lang.Object
          * @Card
          **/
-        public <T> T  getMDContent(String id, String field, Class<T> classType) {
+        public <T> T  getMDContent(String id,  List<String>  fields, Class<T> classType) {
+            Query query = new Query(new Criteria("_id").is(id));
+            if (fields != null) {
+
+                fields.forEach(query.fields()::include);
+                System.out.println("query "+query);
+            }
+            T result;
+            try {
+                result = mongoTemplate.findOne(query, classType);
+            } catch (Exception e){
+                throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
+            }
+            return result;
+        }
+
+        public <T> T  getMDContent(String id,  String field, Class<T> classType) {
             Query query = new Query(new Criteria("_id").is(id));
             if (field != null && !field.equals("")) {
-                String[] fields = field.split(",");
-                for (String s : fields) {
-                    query.fields().include(s);
-                }
+                query.fields().include(field);
             }
             T result;
             try {
@@ -109,23 +139,27 @@ import java.util.regex.Pattern;
          * 根据多个id查询mongo
          * @author Rachel
          * @Date 2022/01/14
-         * @param setId many MDB IDs
-         * @param field 返回字段
+
          * @param classType 表对应的实体类
          * @Return java.util.List<?>
          * @Card
          **/
 
-        public List<?> getMDContentMany(String setId, String field, Class<?> classType) {
-            String [] setIds = setId.split(",");
+        public List<?> getMDContentMany(HashSet setIds, List<String> fields, Class<?> classType) {
+//            String [] setIds = setId.split(",");
             Query query = new Query(new Criteria("_id").in(setIds));
-            if (field != null && !field.equals("")) {
-                String [] fields = field.split(",");
-                for (String s : fields) {
-                    query.fields().include(s);
-                }
+            if (fields != null && !fields.equals("")) {
+                fields.forEach(query.fields()::include);
             }
             
+            return mongoTemplate.find(query, classType);
+        }
+
+        public List<?> getMDContentMany(HashSet setId, String field, Class<?> classType) {
+            Query query = new Query(new Criteria("_id").in(setId));
+            if (field != null && !field.equals("")) {
+                query.fields().include(field);
+            }
             return mongoTemplate.find(query, classType);
         }
 
@@ -258,7 +292,9 @@ import java.util.regex.Pattern;
         public void setMDContent(String id, JSONObject keyVal, Class<?> classType) {
             Query query = new Query(new Criteria("_id").is(id));
             Update update = new Update();
-            keyVal.forEach(update::set);
+//            keyVal.forEach(update::set);
+            System.out.println("refixed setMDContent");
+            keyVal.keySet().forEach(k -> update.set(k,keyVal.get(k)));
             update.inc("tvs", 1);
             UpdateResult updateResult =  mongoTemplate.updateFirst(query, update, classType);
             if (updateResult.getModifiedCount() == 0) {
@@ -282,7 +318,45 @@ import java.util.regex.Pattern;
 
         public void addMD( Object obj) {
             // 新增order信息
+
             mongoTemplate.insert(obj);
+            System.out.println("got all ok Sales");
+
+        }
+
+        public void saveMD( Object obj) {
+            // 新增order信息
+
+            mongoTemplate.save(obj);
+
+        }
+
+        public JSONObject setJson(Object... val) {
+            JSONObject json = new JSONObject();
+            int length = val.length;
+            System.out.println("length=" + length);
+            for (int i = 0; i < length; i+=2) {
+                json.put(val[i].toString(), val[i + 1]);
+            }
+            return json;
+        }
+
+        public Map setMap(Object... val) {
+            Map<String, Object> map = new HashMap<>();
+            int length = val.length;
+            System.out.println("length=" + length);
+            for (int i = 0; i < length; i+=2) {
+                map.put(val[i].toString(), val[i + 1]);
+            }
+            return map;
+        }
+
+        public JSONArray setArray(Object... val) {
+            JSONArray array = new JSONArray();
+            for (Object o : val) {
+                array.add(o);
+            }
+            return array;
         }
 
         public JSONObject setJson(String key, Object val)
@@ -321,25 +395,37 @@ import java.util.regex.Pattern;
          **/
 
         public Asset getConfig(String id_C, String ref, String listField) {
+
             if(this.hasRDHashItem("login:module_id","compId-"+ id_C, ref))
             {
                 String id_A = this.getRDHashStr("login:module_id","compId-" + id_C, ref);
+                System.out.println("id_A"+id_A);
                 return this.getMDContent(id_A, listField, Asset.class);
 
             } else {
+                System.out.println("getConfig1"+id_C+ "   "+ref);
                 JSONArray result = this.getES("lSAsset", this.setESFilt("id_C",id_C,"ref",ref), 1);
-                String id_A = result.getJSONObject(0).getString("id_A");
 
-                Asset asset = this.getMDContent(id_A, listField, Asset.class);
-                this.putRDHash("login:module_id", "compId-"+id_C, ref, asset.getId());
+                if (result.size() == 1) {
+                    String id_A = result.getJSONObject(0).getString("id_A");
+                    System.out.println("getConfig1"+id_A);
 
-                return asset;
+                    Asset asset = this.getMDContent(id_A, listField, Asset.class);
+                    this.putRDHash("login:module_id", "compId-" + id_C, ref, asset.getId());
 
+                    return asset;
+                }
+                System.out.println("Result here"+result.size());
+                Asset nothing = new Asset();
+                nothing.setId_A("none");
+
+                return nothing;
             }
 
         }
 
-        public  JSONObject list2Obj(List<?> list, String key) 
+        //////////////-----------------------------------------------
+        public  JSONObject list2Obj(List<?> list, String key) // key = "id_O"
             {
             JSONObject mapResult = new JSONObject();
             list.forEach(l ->{
@@ -360,7 +446,10 @@ import java.util.regex.Pattern;
             JSONObject mapResult = new JSONObject();
             list.forEach(l ->{
                 JSONObject json = (JSONObject) JSON.toJSON(l);
-                mapResult.put(json.getString(idKey), l);
+                if (json.getString(idKey) != null)
+                {
+                    mapResult.put(json.getString(idKey), l);
+                }
             });
             return mapResult;
         }
@@ -375,6 +464,7 @@ import java.util.regex.Pattern;
             return JSONObject.parseObject(JSON.toJSONString(data));
         }
 
+        /////////////////-------------------------------------------
         public LogFlow getLogRecent(String id_O, Integer index, String id_C, boolean isSL) {
 
             JSONArray filt = new JSONArray();
@@ -453,7 +543,7 @@ import java.util.regex.Pattern;
             try {
                 IndexRequest request = new IndexRequest(index);
                 JSONObject data = this.toJson(infoObject);
-                data.put("tmk", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                data.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
                 request.source(data, XContentType.JSON);
 
@@ -490,8 +580,11 @@ import java.util.regex.Pattern;
                 request.indices(indices);
                 request.source(sourceBuilder);
                 SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+                System.out.println(response);
 
-                return this.hit2Array(response);
+                JSONArray abc = this.hit2Array(response);
+
+                return abc;
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -502,10 +595,13 @@ import java.util.regex.Pattern;
         private JSONArray hit2Array(SearchResponse response)
         {
             JSONArray result = new JSONArray();
-            for (SearchHit hit : response.getHits().getHits()) {
-                JSONObject mapHit = (JSONObject) hit.getSourceAsMap();
-                mapHit.put("id_ES", hit.getId());
-                result.add(mapHit);
+            if (response.getHits().getHits().length > 0)
+            {
+                for (SearchHit hit : response.getHits().getHits()) {
+                    JSONObject mapHit = this.toJson(hit.getSourceAsMap());
+                    mapHit.put("id_ES", hit.getId());
+                    result.add(mapHit);
+                }
             }
             return result;
         }
@@ -558,7 +654,7 @@ import java.util.regex.Pattern;
 
                 for (SearchHit hit : response.getHits().getHits()) {
 
-                    hit.getSourceAsMap().put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                    hit.getSourceAsMap().put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
                     hit.getSourceAsMap().putAll(listCol);
 
                     bulk.add(new UpdateRequest(listType, hit.getId()).doc(hit.getSourceAsMap()));
@@ -574,7 +670,9 @@ import java.util.regex.Pattern;
 
         public void setES(String listType, String id, JSONObject listCol) {
             UpdateRequest updateRequest = new UpdateRequest(listType, id);
-            listCol.put("tmd", DateUtils.getDateNow(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+            listCol.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+            listCol.remove("id_ES");
+
             updateRequest.doc(listCol, XContentType.JSON);
             try {
                 client.update(updateRequest, RequestOptions.DEFAULT);
@@ -621,7 +719,7 @@ import java.util.regex.Pattern;
             JSONArray filterArray = new JSONArray();
             JSONObject newFilt = new JSONObject();
             newFilt.put("filtKey", key);
-            newFilt.put("method", "exact");
+            newFilt.put("method", "eq");
             newFilt.put("filtVal", val);
 
             filterArray.add(newFilt);
@@ -634,13 +732,13 @@ import java.util.regex.Pattern;
 
             JSONObject newFilt = new JSONObject();
             newFilt.put("filtKey", key);
-            newFilt.put("method", "exact");
+            newFilt.put("method", "eq");
             newFilt.put("filtVal", val);
 
             JSONObject newFilt2 = new JSONObject();
 
             newFilt2.put("filtKey", key2);
-            newFilt2.put("method", "exact");
+            newFilt2.put("method", "eq");
             newFilt2.put("filtVal", val2);
             filterArray.add(newFilt);
             filterArray.add(newFilt2);
@@ -654,18 +752,18 @@ import java.util.regex.Pattern;
 
             JSONObject newFilt = new JSONObject();
             newFilt.put("filtKey", key);
-            newFilt.put("method", "exact");
+            newFilt.put("method", "eq");
             newFilt.put("filtVal", val);
 
             JSONObject newFilt2 = new JSONObject();
 
             newFilt2.put("filtKey", key2);
-            newFilt2.put("method", "exact");
+            newFilt2.put("method", "eq");
             newFilt2.put("filtVal", val2);
             JSONObject newFilt3 = new JSONObject();
 
             newFilt3.put("filtKey", key3);
-            newFilt3.put("method", "exact");
+            newFilt3.put("method", "eq");
             newFilt3.put("filtVal", val3);
 
             filterArray.add(newFilt);
@@ -686,6 +784,34 @@ import java.util.regex.Pattern;
         }
 
 
+        public void setRefAuto(String id_C, String type, JSONObject jsonRefAuto)
+        {
+            Asset asset = this.getConfig(id_C, "a-core", "refAuto");
+            this.setMDContent(asset.getId(), this.setJson("refAuto."+type,jsonRefAuto), Asset.class);
+        }
+
+        public JSONObject getRefAuto(String id_C, String type) {
+            Asset asset = this.getConfig(id_C, "a-core", "refAuto."+type);
+            if (asset.getRefAuto().getJSONObject(type)  == null )
+            {
+                this.setMDContent(asset.getId(),this.setJson("refAuto."+type, new JSONObject()), Asset.class);
+                return new JSONObject();
+            } else {
+                return asset.getRefAuto().getJSONObject(type);
+            }
+        }
+
+        public void setCookiex(String id_U, String id_C, String type, Object cookieData) {
+
+            this.setMDContent(id_U, this.setJson("cookiex." + id_C + "." + type,  cookieData), User.class);
+
+        }
+
+        public Object getCookiex(String id_U, String id_C, String type) {
+            User user = this.getMDContent(id_U,  "cookiex." + id_C + "." + type, User.class);
+
+            return  user.getCookiex().getJSONObject(id_C).get(type);
+        }
 
         public void filterBuilder (JSONArray filterArray, BoolQueryBuilder queryBuilder)
         {
@@ -768,15 +894,18 @@ import java.util.regex.Pattern;
                         }
                         case "contain":
                             //设定条件  OR    contain：包含
-                            String joinStr = StringUtils.join((List<Integer>) conditionMap.get("filtVal"), " OR ");
+                            String joinStr = StringUtils.join((List<String>) conditionMap.get("filtVal"), " OR ");
                             queryBuilder.must(QueryBuilders.queryStringQuery(joinStr).field(conditionMap.getString("filtKey")));
                             break;
                         case "timeRange":
                             JSONArray filtList = conditionMap.getJSONArray("filtVal");
                             //.from（）是时间格式，.gte（）.lte（）  时间范围
+//                            queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey"))
+//                                    .from(DateEnum.DATE_TIME_FULL.getDate()).gte(filtList.get(0))
+//                                    .lte(filtList.get(1)));
+
                             queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey"))
-                                    .from(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()).gte(filtList.get(0))
-                                    .lte(filtList.get(1)));
+                                    .from(filtList.get(0), true).to(filtList.get(1),false));
                             break;
                         case "sheq": {
                             BoolQueryBuilder shouldQueryBuilder = new BoolQueryBuilder();
@@ -787,15 +916,15 @@ import java.util.regex.Pattern;
                             queryBuilder.must(shouldQueryBuilder);
                             break;
                         }
-                        case "shex": {
-                            BoolQueryBuilder shouldQueryBuilder = new BoolQueryBuilder();
-                            JSONArray arrayFiltKey = conditionMap.getJSONArray("filtKey");
-                            for (int j = 0; j < arrayFiltKey.size(); j++) {
-                                shouldQueryBuilder.should(QueryBuilders.termQuery(arrayFiltKey.getString(j), conditionMap.get("filtVal")));
-                            }
-                            queryBuilder.must(shouldQueryBuilder);
-                            break;
-                        }
+//                        case "shex": {
+//                            BoolQueryBuilder shouldQueryBuilder = new BoolQueryBuilder();
+//                            JSONArray arrayFiltKey = conditionMap.getJSONArray("filtKey");
+//                            for (int j = 0; j < arrayFiltKey.size(); j++) {
+//                                shouldQueryBuilder.should(QueryBuilders.termQuery(arrayFiltKey.getString(j), conditionMap.get("filtVal")));
+//                            }
+//                            queryBuilder.must(shouldQueryBuilder);
+//                            break;
+//                        }
                         case "shne": {
                             BoolQueryBuilder shouldQueryBuilder = new BoolQueryBuilder();
                             JSONArray arrayFiltKey = conditionMap.getJSONArray("filtKey");
@@ -818,7 +947,7 @@ import java.util.regex.Pattern;
 
         public boolean hasRDKey(String collection, String key)
         {
-            return redisTemplate0.hasKey(collection + ":" + key);
+            return Boolean.TRUE.equals(redisTemplate0.hasKey(collection + ":" + key));
         }
 
         public boolean hasRDHashItem(String collection, String hash, String key)
@@ -829,10 +958,21 @@ import java.util.regex.Pattern;
                 return false;
         }
 
+
+        // 1. put -Hash, set - Set, get
+        // Collection : Hash
+        // Set Collection:Key
+
         public void putRDHash(String collection, String hash, String key, Object val)
         {
             redisTemplate0.opsForHash().put(collection + ":" + hash, key, val.toString());
             redisTemplate0.expire(collection + ":" + hash, 1000, TimeUnit.HOURS);
+        }
+
+        public void putRDHashMany(String collection, String hash, JSONObject data,  Long second)
+        {
+            redisTemplate0.opsForHash().putAll(collection + ":" + hash, data);
+            redisTemplate0.expire(collection + ":" + hash, second, TimeUnit.SECONDS);
         }
         public void putRDHash(String collection, String hash, String key, Object val, Long second)
         {
@@ -858,18 +998,26 @@ import java.util.regex.Pattern;
         public JSONObject getRDHash(String collection, String hash, String key)
         {
             String result = (String) redisTemplate0.opsForHash().get(collection + ":" + hash, key);
-            return this.toJson(result);
+            return JSONObject.parseObject(result);
+        }
+
+        public Map <Object, Object> getRDHashAll(String collection, String hash)
+        {
+            Map<Object,Object> result = redisTemplate0.opsForHash().entries(collection + ":" + hash);
+            return result;
         }
 
         public JSONObject getRDSet(String collection, String key)
         {
             String result = redisTemplate0.opsForValue().get(collection + ":" + key);
-            return this.toJson(result);
+
+            System.out.println("result:"+result);
+            return JSONObject.parseObject(result);
         }
 
         public String getRDSetStr(String collection, String key)
         {
-            return redisTemplate0.opsForValue().get(collection + ":" + key);
+            return (String) redisTemplate0.opsForValue().get(collection + ":" + key);
         }
 
         public String getRDHashStr(String collection, String hash, String key)
@@ -889,7 +1037,17 @@ import java.util.regex.Pattern;
 
 
 
+        public JSONObject cloneJSONObject(JSONObject json) {
+            String jsonString = json.toJSONString();
+            JSONObject jsonObject = JSON.parseObject(jsonString);
+            return jsonObject;
+        }
 
+        public JSONArray cloneJSONArray(JSONArray json) {
+            String jsonString = json.toJSONString();
+            JSONArray jsonArray = JSON.parseArray(jsonString);
+            return jsonArray;
+        }
 
 
 
