@@ -18,7 +18,7 @@ import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
-import com.cresign.tools.mongo.MongoUtils;
+
 import com.cresign.tools.pojo.es.lSBOrder;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Comp;
@@ -262,7 +262,7 @@ public class FlowServiceImpl implements FlowService {
                     asset = qt.getConfig(targetCompId,"a-auth","def");
 
 
-                    if  (asset.getId_A().equals("none")) {
+                    if  (asset.getId().equals("none")) {
                         asset = myDef;
                     }
                 } else {
@@ -284,7 +284,6 @@ public class FlowServiceImpl implements FlowService {
 //                    }
                     JSONObject defResultBP = asset.getDef().getJSONObject("objlBP");
                     JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
-
 
                     for (OrderOItem orderOItem : unitOItem) {
                         System.out.println(orderOItem.getGrpB());
@@ -316,12 +315,11 @@ public class FlowServiceImpl implements FlowService {
 //                String aId2;
 
                 Asset asset2 = null;
-                System.out.println("whynot");
 
                 if (!prodCompId.equals(myCompId))
                 {
                     asset2 = qt.getConfig(prodCompId,"a-auth","def");
-                    if  (asset2.getId_A().equals("none")) {
+                    if  (asset2.getId().equals("none")) {
 
                         asset2 = myDef;
                     }
@@ -357,18 +355,14 @@ public class FlowServiceImpl implements FlowService {
 
                     for (OrderOItem orderOItem : unitOItem) {
                         String grp = orderOItem.getGrp();
-                        System.out.println("whynot");
-
 
                         if (grpGroup.getJSONObject(grp) == null) {
-                            System.out.println("whynot");
 
                             grpGroup.put(grp, defResultSP.getJSONObject(grp));
                         }
                     }
-                System.out.println("otherDeff"+targetCompId);
 
-                // get GrpB and grpS of id_CB
+//                 get GrpB and grpS of id_CB
 //                    if (prodCompId.equals(targetCompId))
 //                    {   // I am both
 //                        grpO = "1010";
@@ -376,7 +370,7 @@ public class FlowServiceImpl implements FlowService {
 //                    {
 //                        String compGrpB = listData.getString("grp");
 //                        grpOB = defResultSC.getJSONObject(compGrpB).getString("grpO");
-
+//
 //                    for (int k = 0; k < defResultSC.size(); k++)
 //                        {
 //                            String grpRef = defResultSC.getJSONObject(k).getString("ref");
@@ -703,7 +697,7 @@ System.out.println("saving now");
             if (partIndex.equals(0))
             {
                 //if I am the first one, make new Order
-                newOrderId = MongoUtils.GetObjectId();
+                newOrderId = qt.GetObjectId();
 
                 //same detail into casItemx
                 JSONObject thisOrderData = new JSONObject();
@@ -792,7 +786,7 @@ System.out.println("saving now");
                 // 2 cases: prod is mine, check only if casItemx Type =2 and not 4
                 if(prodCompId.equals(myCompId)&&
                         prodCompId.equals(casItemData.getJSONObject(k).getString("id_C")) &&
-                        casItemData.getJSONObject(k).getString("type").equals(2) ||
+                        casItemData.getJSONObject(k).getString("type").equals("2") ||
                         prodCompId.equals(casItemData.getJSONObject(k).getString("id_C"))) {
 
                     newOrderId = casItemData.getJSONObject(k).getString("id_O");
@@ -804,7 +798,7 @@ System.out.println("saving now");
             if (isNew) {
 
                 // 赋值随机id
-                newOrderId = MongoUtils.GetObjectId();
+                newOrderId = qt.GetObjectId();
                 newOrderIndex = 0;
 
                 // 递归订单map添加随机id
@@ -1218,30 +1212,40 @@ System.out.println("saving now");
 
         partArray.getJSONObject(partIndex).put("fin_O", finO);
         partArray.getJSONObject(partIndex).put("fin_Ind", fin_Ind);
+        System.out.println("DGType");
 
         // this is my Action::
         OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(objOItemCollection.get(finO).get(fin_Ind)),OrderOItem.class);
 
         OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(objActionCollection.get(finO).get(fin_Ind)),OrderAction.class);
 
+        try {
+//            System.out.println("DGType" + partArray.getJSONObject(3).getString("dsafsvncksfsd"));
 
 
-                do {
-                    if (checkPrev < 0 || (myPrior - 2) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                        keepGoing = false;
-                    } else {
-                        if (!myPrior.equals(partArray.getJSONObject(checkPrev).getInteger("wn0prior"))) {
-                            if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                                JSONObject idAndIndex = new JSONObject();
-                                idAndIndex.put("id_O", finO);
-                                idAndIndex.put("index", fin_Ind);
-                                // Here, I put the checking IdIndex into my own list of prtPrev
-                                unitAction.getPrtPrev().add(idAndIndex);
-                            }
+            do {
+                //***** part getIntwn0prior Null pointer
+                if (checkPrev < 0 || (myPrior - 2) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
+                    keepGoing = false;
+                } else {
+                    if (!myPrior.equals(partArray.getJSONObject(checkPrev).getInteger("wn0prior"))) {
+                        if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
+                            JSONObject idAndIndex = new JSONObject();
+                            idAndIndex.put("id_O", finO);
+                            idAndIndex.put("index", fin_Ind);
+                            // Here, I put the checking IdIndex into my own list of prtPrev
+                            unitAction.getPrtPrev().add(idAndIndex);
                         }
                     }
-                    checkPrev--;
-                } while (keepGoing);
+                }
+                checkPrev--;
+            } while (keepGoing);
+
+        } catch (Exception e)
+        {
+            System.out.println(e);
+            e.printStackTrace();
+        }
 
                 unitAction.setSumPrev(unitAction.getPrtPrev().size());
 //                keepGoing = true;
@@ -1316,6 +1320,7 @@ System.out.println("saving now");
 
 
                 // 加时间 oDate 时间
+        System.out.println("DGType");
 
                 // Loop into all subParts to make sure all qty is added correctly
                 this.dgMergeQtySet(finO, qtyNeed, partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"),
@@ -1420,73 +1425,80 @@ System.out.println("saving now");
 
     @Override
     public ApiResponse prodPart(String id_P) {
-        JSONObject jsonPart = new JSONObject();
-        JSONObject recurCheckList = new JSONObject();
-        recurCheckList.put(id_P, "");
-        Prod prod = (Prod) dbUtils.getMongoOneFields(id_P, Arrays.asList("info", "part"), Prod.class);
-        JSONArray arrayObjItem = prod.getPart().getJSONArray("objItem");
+            JSONObject jsonPart = new JSONObject();
+            JSONObject recurCheckList = new JSONObject();
+            recurCheckList.put(id_P, "");
+            Prod prod = (Prod) dbUtils.getMongoOneFields(id_P, Arrays.asList("info", "part"), Prod.class);
+            JSONArray arrayObjItem = prod.getPart().getJSONArray("objItem");
 
-        JSONObject stat = new JSONObject();
-        stat.put("count", 1);
-        stat.put("allCount", prod.getPart().getInteger("wn0Count") == null ?
-                300 : prod.getPart().getInteger("wn0Count"));
+            JSONObject stat = new JSONObject();
+            stat.put("count", 1);
+            stat.put("allCount", prod.getPart().getInteger("wn0Count") == null ?
+                    300 : prod.getPart().getInteger("wn0Count"));
 
-        System.out.println("stat"+stat);
+            System.out.println("stat" + stat);
+            System.out.println("recur"+recurCheckList);
+            System.out.println(jsonPart);
 
-        jsonPart.put("name", prod.getInfo().getWrdN().getString("cn"));
-        jsonPart.putAll(JSON.parseObject(JSON.toJSONString(prod.getInfo())));
+            jsonPart.put("name", prod.getInfo().getWrdN().getString("cn"));
+            jsonPart.putAll(JSON.parseObject(JSON.toJSONString(prod.getInfo())));
 
-        jsonPart.put("children", recursionProdPart(arrayObjItem, recurCheckList, stat));
+            jsonPart.put("children", recursionProdPart(arrayObjItem, recurCheckList, stat));
 
-        System.out.println("stat"+stat);
+            return retResult.ok(CodeEnum.OK.getCode(), jsonPart);
 
-        return retResult.ok(CodeEnum.OK.getCode(), jsonPart);
     }
 
     public Object recursionProdPart(JSONArray arrayObjItem, JSONObject recurCheckList, JSONObject stat) {
-        JSONArray arrayChildren = new JSONArray();
-        HashSet<String> setId_P = new HashSet();
 
-        if (stat.getInteger("count") > stat.getInteger("allCount"))
-        {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), "产品需要重新检查");
-        }
-        stat.put("count", stat.getInteger("count") + 1 );
-        System.out.println("stat"+stat);
+            JSONArray arrayChildren = new JSONArray();
+            HashSet<String> setId_P = new HashSet();
 
-        // Here if it is already loop too much by over the checked wn0Count by our dgCheck
-        // throw error, and ask for redg
-
-        for (int i = 0; i < arrayObjItem.size(); i++) {
-            String id_P = arrayObjItem.getJSONObject(i).getString("id_P");
-            if (recurCheckList.getString(id_P) != null) {
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), null);
+            if (stat.getInteger("count") > stat.getInteger("allCount")) {
+                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), "产品需要重新检查");
             }
-            if (arrayObjItem.getJSONObject(i).getString("bmdpt").equals(2)) {
-                recurCheckList.put(id_P, "");
-            }
-            setId_P.add(id_P);
+            stat.put("count", stat.getInteger("count") + 1);
+            System.out.println("stat" + stat);
+
+
+            // Here if it is already loop too much by over the checked wn0Count by our dgCheck
+            // throw error, and ask for redg
+
+            for (int i = 0; i < arrayObjItem.size(); i++) {
+                String id_P = arrayObjItem.getJSONObject(i).getString("id_P");
+
+                System.out.println(id_P);
+                System.out.println(recurCheckList);
+                if (recurCheckList.getString(id_P) != null) {
+                    throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "");
+                }
+                if (arrayObjItem.getJSONObject(i).getInteger("bmdpt").equals(2)) {
+                    recurCheckList.put(id_P, "");
+                }
+                setId_P.add(id_P);
 //            setId_P = setId_P + "," + id_P;
-        }
-        List <Prod> prods = (List<Prod>) qt.getMDContentMany(setId_P,Arrays.asList("part"), Prod.class);
-        JSONObject jsonProdPart = new JSONObject();
-        for (Prod prod : prods) {
-            System.out.println("prod in prods"+prod);
-            jsonProdPart.put(prod.getId(), prod.getPart());
-        }
-        for (int i = 0; i < arrayObjItem.size(); i++) {
-            JSONObject jsonObjItem = arrayObjItem.getJSONObject(i);
-            JSONObject jsonChildren = new JSONObject();
-            jsonChildren.put("name", jsonObjItem.getJSONObject("wrdN").getString("cn"));
-            jsonChildren.putAll(jsonObjItem);
-            //有下一层
-            if (jsonProdPart.getJSONObject(jsonObjItem.getString("id_P")) != null) {
-                JSONArray arrayPartObjItem = jsonProdPart.getJSONObject(jsonObjItem.getString("id_P")).getJSONArray("objItem");
-                jsonChildren.put("children", recursionProdPart(arrayPartObjItem, recurCheckList, stat));
             }
-            arrayChildren.add(jsonChildren);
-        }
-        return arrayChildren;
+            List<Prod> prods = (List<Prod>) qt.getMDContentMany(setId_P, "part", Prod.class);
+            JSONObject jsonProdPart = new JSONObject();
+            for (Prod prod : prods) {
+                System.out.println("prod in prods" + prod);
+                jsonProdPart.put(prod.getId(), prod.getPart());
+            }
+            for (int i = 0; i < arrayObjItem.size(); i++) {
+                JSONObject jsonObjItem = arrayObjItem.getJSONObject(i);
+                JSONObject jsonChildren = new JSONObject();
+                jsonChildren.put("name", jsonObjItem.getJSONObject("wrdN").getString("cn"));
+                jsonChildren.putAll(jsonObjItem);
+                //有下一层
+                if (jsonProdPart.getJSONObject(jsonObjItem.getString("id_P")) != null) {
+                    JSONArray arrayPartObjItem = jsonProdPart.getJSONObject(jsonObjItem.getString("id_P")).getJSONArray("objItem");
+                    jsonChildren.put("children", recursionProdPart(arrayPartObjItem, recurCheckList, stat));
+                }
+                arrayChildren.add(jsonChildren);
+            }
+
+            return arrayChildren;
+
     }
 
     /**
@@ -1560,7 +1572,7 @@ System.out.println("saving now");
 
             // 根据父编号获取父产品信息
 //            Prod thisItem = coupaUtil.getProdByListKey(id_P, Arrays.asList("part","info"));
-            Prod thisItem = qt.getMDContent(id_P, Arrays.asList("_id","part","info"), Prod.class);
+            Prod thisItem = qt.getMDContent(id_P, qt.strList("info", "part"), Prod.class);
             System.out.println("thiItem"+thisItem);
 
             // 层级加一
@@ -1651,7 +1663,8 @@ System.out.println("saving now");
     public ApiResponse dgUpdatePartInfo(String id_P,String id_C) {
 //        Prod prod = coupaUtil.getProdByListKey(
 //                id_P,Arrays.asList("info","part"));
-        Prod prod = qt.getMDContent(id_P, Arrays.asList("_id","part","info"), Prod.class);
+
+        Prod prod = qt.getMDContent(id_P, qt.strList("info","part"), Prod.class);
         if (null == prod) {
             // 返回错误信息
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
@@ -1697,50 +1710,55 @@ System.out.println("saving now");
     private void updatePartInfo(String id_C,JSONArray partItem,String id_P, JSONObject stat){
         for (int item = 0; item < partItem.size(); item++)
         {
-            JSONObject thisItem = partItem.getJSONObject(item);
-            if (stat.getInteger("count") > stat.getInteger("allCount"))
-            {
-                System.out.println("it's MORE than that"+ stat.getInteger("count"));
+                JSONObject thisItem = partItem.getJSONObject(item);
+                if (stat.getInteger("count") > stat.getInteger("allCount")) {
 
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
-            }
-            stat.put("count", stat.getInteger("count") + 1 );
+                    throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+                }
+                stat.put("count", stat.getInteger("count") + 1);
 
 
-            JSONArray partDataES = dbUtils.getEsKey("id_P",thisItem.getString("id_P"), "id_CB",id_C, "lBProd");
+//                JSONArray partDataES = dbUtils.getEsKey("id_P", thisItem.getString("id_P"), "id_CB", id_C, "lBProd");
 
+                JSONArray partDataES = qt.getES("lBProd", qt.setESFilt("id_P", thisItem.getString("id_P"), "id_CB", id_C));
+
+                System.out.println(partDataES);
 //            Prod thisProd = coupaUtil.getProdByListKey(
 //                    thisItem.getString("id_P"), Arrays.asList("part","info"));
-            Prod thisProd = qt.getMDContent(id_P, Arrays.asList("_id","part","info"), Prod.class);
+                Prod thisProd = qt.getMDContent(thisItem.getString("id_P"), qt.strList("info", "part"), Prod.class);
 
-            int bmdptValue;
-            if (null == thisProd) {
-                bmdptValue = 1;
-            } else {
-                // 获取id的信息
-                ProdInfo prodInfo = thisProd.getInfo();
-                JSONObject part = thisProd.getPart();
-//                Comp compById = coupaUtil.getCompByListKey(id_C, Arrays.asList("info"));
-                Comp compById = qt.getMDContent(id_C,"info", Comp.class);
+                int bmdptValue =0;
 
-                if (null == compById || null == compById.getInfo() || !prodInfo.getId_C().equals(id_C)) {
-                    //没有公司 = 物料
-                    bmdptValue = 3;
+                if (null == thisProd) {
+                    bmdptValue = 1;
                 } else {
-                    // 是自己的part 才可以进去查改bmdpt
-                    if (null == part) {
-                        bmdptValue = 1;
+                    // 获取id的信息
+                    ProdInfo prodInfo = thisProd.getInfo();
+                    System.out.println("prodInfo");
+                    System.out.println(prodInfo);
+                    JSONObject part = thisProd.getPart();
+//                Comp compById = coupaUtil.getCompByListKey(id_C, Arrays.asList("info"));
+                    Comp compById = qt.getMDContent(id_C, "info", Comp.class);
+
+                    if (null == compById || null == compById.getInfo() || !prodInfo.getId_C().equals(id_C)) {
+                        //没有公司 = 物料
+                        bmdptValue = 3;
                     } else {
-                        JSONArray nextPart = part.getJSONArray("objItem");
-                        if (null == nextPart || nextPart.size() == 0) {
+                        // 是自己的part 才可以进去查改bmdpt
+                        if (null == part) {
                             bmdptValue = 1;
                         } else {
-                            this.updatePartInfo(id_C, nextPart, thisItem.get("id_P").toString(), stat);
-                            bmdptValue = 2;
+                            JSONArray nextPart = part.getJSONArray("objItem");
+                            if (null == nextPart || nextPart.size() == 0) {
+                                bmdptValue = 1;
+                            } else {
+                                this.updatePartInfo(id_C, nextPart, thisItem.get("id_P").toString(), stat);
+                                bmdptValue = 2;
+                            }
                         }
                     }
                 }
-            }
+
             // saving updated Key info into part
 
                 thisItem.put("grp", partDataES.getJSONObject(0).getString("grp"));
@@ -1771,9 +1789,9 @@ System.out.println("saving now");
                 System.out.println("thisItem"+JSON.toJSONString(partItem.getJSONObject(item)));
 
         }
-        JSONObject partData = new JSONObject();
-        partData.put("part.objItem",partItem);
-        qt.setMDContent(id_P, partData,Prod.class);
+//        JSONObject partData = new JSONObject();
+//        partData.put("part.objItem",partItem);
+        qt.setMDContent(id_P, qt.setJson("part.objItem", partItem),Prod.class);
 //        coupaUtil.updateProdByListKeyVal(id_P,partData);
     }
 

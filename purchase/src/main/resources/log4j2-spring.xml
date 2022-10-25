@@ -135,7 +135,7 @@
         </AsyncRoot>
         <!-- additivity=true：接着log上次位置继续打印，false：直接清空log重新打印       -->
         <!-- 自定义 - 只开启本项目的debug级别日志 -->
-        <AsyncLogger level="debug" name="com.cresign.login" additivity="false" includeLocation="true">
+        <AsyncLogger level="debug" name="com.cresign.purchase" additivity="false" includeLocation="true">
             <appender-ref ref="FILE-INFO"/>
             <appender-ref ref="STDOUT"/>
             <!-- 4.添加自定义级别 -->

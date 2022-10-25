@@ -31,7 +31,7 @@ public class InitController {
     /**
      * 根据id(语言)获取init的数据
      * @author JackSon
-     * @param language      语言
+     * @param lang      语言
      * @param ver           版本号
      * @ver 1.0
      * @updated 2020/8/8 11:07
@@ -41,18 +41,17 @@ public class InitController {
     public ApiResponse getInit(
             @RequestParam("lang") String lang,
             @RequestParam(value = "ver", required = false) Integer ver
-            ,@RequestParam("qdKey") String qdKey
-            ,@RequestParam("uuId") String uuId){
+            ,@RequestParam("qdKey") String qdKey){
         // 字符串转换
         String s = qdKey.replaceAll(",", "/");
         s = s.replaceAll("%0A","\n");
         s = s.replaceAll("%2C","/");
         s = s.replaceAll("%2B","+");
         s = s.replaceAll("%3D","=");
-        System.out.println("进入这里:"+lang+" - "+ver);
-        System.out.println(s);
-        System.out.println(uuId);
-        System.out.println(request.getHeader("uuId"));
+//        System.out.println("进入这里:"+lang+" - "+ver);
+//        System.out.println(s);
+//        System.out.println(uuId);
+//        System.out.println(request.getHeader("uuId"));
 //        RetResult.setClient_Public_Key(s);
         return initService.getInitById(lang, ver,s,request.getHeader("uuId"));
     }

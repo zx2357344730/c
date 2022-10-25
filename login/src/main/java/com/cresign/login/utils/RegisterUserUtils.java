@@ -8,7 +8,7 @@ import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ResponseException;
-import com.cresign.tools.mongo.MongoUtils;
+
 import com.cresign.tools.pojo.es.lBUser;
 import com.cresign.tools.pojo.es.lNUser;
 import com.cresign.tools.pojo.po.Comp;
@@ -136,7 +136,7 @@ public class RegisterUserUtils {
 //
 //        try {
 //            // objectId
-//            String addID = MongoUtils.GetObjectId();
+//            String addID = qt.GetObjectId();
 //
 //            User addUser = new User();
 //

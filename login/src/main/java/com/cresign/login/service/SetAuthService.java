@@ -72,7 +72,7 @@ public interface SetAuthService {
      * @return java.lang.String
      * @return
      */
-    ApiResponse updateDefCard(String id_U, String id_C, JSONObject defData);
+//    ApiResponse updateDefCard(String id_U, String id_C, JSONObject defData);
 
     /**
      * 更新id_AUN卡数据

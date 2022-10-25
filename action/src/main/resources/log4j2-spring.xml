@@ -25,17 +25,17 @@
 
         <!--Console:日志输出到控制台标准输出 -->
         <!-- 控制台的配置 -->
-        <Console name="STDOUT">
-            <!-- 控制台只输出level及以上级别的信息 -->
-            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
-            <!--pattern:日期,线程名,日志级别,日志名称,日志信息,换行 -->
-            <!-- 输出日志的格式-->
-            <PatternLayout pattern="${format}" charset="UTF-8"/>
-            <!--  改成JSON格式 官方說明：https://logging.apache.org/log4j/2.x/log4j-core/apidocs/org/apache/logging/log4j/core/layout/JsonLayout.html -->
-            <!--<JsonLayout compact="true" locationInfo="true" complete="false" eventEol="true" pattern="${format}" charset="UTF-8"/>-->
-            <!--<JsonLayout compact="true" locationInfo="true" complete="false" eventEol="true"  charset="UTF-8"/>-->
+<!--        <Console name="STDOUT">-->
+<!--            &lt;!&ndash; 控制台只输出level及以上级别的信息 &ndash;&gt;-->
+<!--            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>-->
+<!--            &lt;!&ndash;pattern:日期,线程名,日志级别,日志名称,日志信息,换行 &ndash;&gt;-->
+<!--            &lt;!&ndash; 输出日志的格式&ndash;&gt;-->
+<!--            <PatternLayout pattern="${format}" charset="UTF-8"/>-->
+<!--            &lt;!&ndash;  改成JSON格式 官方說明：https://logging.apache.org/log4j/2.x/log4j-core/apidocs/org/apache/logging/log4j/core/layout/JsonLayout.html &ndash;&gt;-->
+<!--            &lt;!&ndash;<JsonLayout compact="true" locationInfo="true" complete="false" eventEol="true" pattern="${format}" charset="UTF-8"/>&ndash;&gt;-->
+<!--            &lt;!&ndash;<JsonLayout compact="true" locationInfo="true" complete="false" eventEol="true"  charset="UTF-8"/>&ndash;&gt;-->
 
-        </Console>
+<!--        </Console>-->
         <!--RollingFile:日志输出到文件,下面的文件都使用相对路径 -->
         <!--fileName:当前日志输出的文件名称 -->
         <!--filePattern:备份日志文件名称，备份目录为logs下面以年月命名的目录，备份时使用gz格式压缩 -->
@@ -101,24 +101,24 @@
     </appenders>
 
     <!--Loggers:定义日志级别和使用的Appenders -->
-    <loggers>
-        <!--Root:日志默认打印到控制台 -->
-        <!--level日志级别: ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
-        <!--AsyncRoot：异步模式        -->
-        <!-- root -->
-        <AsyncRoot level="info" includeLocation="true">
-            <AppenderRef ref="FILE-INFO"/>
-            <AppenderRef ref="FILE-WARN"/>
-            <AppenderRef ref="FILE-ERROR"/>
-            <AppenderRef ref="STDOUT"/>
+<!--    <loggers>-->
+<!--        &lt;!&ndash;Root:日志默认打印到控制台 &ndash;&gt;-->
+<!--        &lt;!&ndash;level日志级别: ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF &ndash;&gt;-->
+<!--        &lt;!&ndash;AsyncRoot：异步模式        &ndash;&gt;-->
+<!--        &lt;!&ndash; root &ndash;&gt;-->
+<!--        <AsyncRoot level="info" includeLocation="true">-->
+<!--            <AppenderRef ref="FILE-INFO"/>-->
+<!--            <AppenderRef ref="FILE-WARN"/>-->
+<!--            <AppenderRef ref="FILE-ERROR"/>-->
+<!--            <AppenderRef ref="STDOUT"/>-->
 
-        </AsyncRoot>
-        <!-- additivity=true：接着log上次位置继续打印，false：直接清空log重新打印       -->
-        <!-- 自定义 - 只开启本项目的debug级别日志 -->
-        <AsyncLogger level="debug" name="com.cresign.login" additivity="false" includeLocation="true">
-            <appender-ref ref="FILE-INFO"/>
-            <appender-ref ref="STDOUT"/>
-            <!-- 4.添加自定义级别 -->
-        </AsyncLogger>
-    </loggers>
+<!--        </AsyncRoot>-->
+<!--        &lt;!&ndash; additivity=true：接着log上次位置继续打印，false：直接清空log重新打印       &ndash;&gt;-->
+<!--        &lt;!&ndash; 自定义 - 只开启本项目的debug级别日志 &ndash;&gt;-->
+<!--        <AsyncLogger level="debug" name="com.cresign.action" additivity="false" includeLocation="true">-->
+<!--            <appender-ref ref="FILE-INFO"/>-->
+<!--            <appender-ref ref="STDOUT"/>-->
+<!--            &lt;!&ndash; 4.添加自定义级别 &ndash;&gt;-->
+<!--        </AsyncLogger>-->
+<!--    </loggers>-->
 </configuration>

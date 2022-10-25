@@ -2,12 +2,16 @@ package com.cresign.action.controller;
 
 
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.action.common.ActionEnum;
 import com.cresign.action.service.FlowService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.common.Constants;
+import com.cresign.tools.exception.ErrorResponseException;
+import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.token.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,18 +72,30 @@ public class FlowController {
         public ApiResponse dgUpdatePartInfo(@RequestBody JSONObject map){
             String id_P = map.getString("id_P");
             String id_C = map.getString(Constants.GET_ID_C);
-            return flowService.dgUpdatePartInfo(id_P,id_C);
+//            try {
+                return flowService.dgUpdatePartInfo(id_P, id_C);
+//            } catch (Exception e)
+//            {
+//                e.printStackTrace();
+//                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+//            }
         }
 
         @SecurityParameter
         @PostMapping("/v1/prodPart")
         public ApiResponse prodPart(@RequestBody JSONObject json) {
-            return flowService.prodPart(json.getString("id_P"));
+
+            try {
+                return flowService.prodPart(json.getString("id_P"));
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+            }
         }
 
         /**
          * 根据prodID进行递归,Es数据库2
-         * @param map	请求参数
          * @return java.lang.String  返回结果: 递归结果
          * @author tang
          * @ver 1.0.0
@@ -89,14 +105,22 @@ public class FlowController {
         @SecurityParameter
         @PostMapping("/v2/getDg")
         public ApiResponse getDgResult(@RequestBody JSONObject reqJson){
-            System.out.println("进入接口？？？");
 
             JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+
+            try {
             return flowService.getDgResult(
                     reqJson.getString("id_O"),
                     tokData.getString("id_U"),
                     tokData.getString("id_C"),
                     reqJson.getLong("teStart"));
+
+
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+            }
         }
 
 
@@ -117,14 +141,14 @@ public class FlowController {
             return flowService.dgCheck(id_P, id_C);
         }
 
-    /**
-     * 递归发日志 改isPush
-     * @param map	请求参数
-     * @return java.lang.String  返回结果: 递归结果
-     * @author tang
-     * @ver 1.0.0
-     * ##Updated: 2020/8/6 9:03
-     */
+//    /**
+//     * 递归发日志 改isPush
+//     * @param map	请求参数
+//     * @return java.lang.String  返回结果: 递归结果
+//     * @author tang
+//     * @ver 1.0.0
+//     * ##Updated: 2020/8/6 9:03
+//     */
 //    @SecurityParameter
 //    @PostMapping("/v1/dgActivate")
 //    public ApiResponse dgActivate(@RequestBody JSONObject reqJson) {

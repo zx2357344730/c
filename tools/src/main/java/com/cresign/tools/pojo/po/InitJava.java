@@ -43,6 +43,8 @@ public class InitJava {
 
     private JSONObject batchInit;
 
+    private JSONObject logInit;
+
     private JSONObject listTypeInit;
 
     private JSONObject cardListAllow;

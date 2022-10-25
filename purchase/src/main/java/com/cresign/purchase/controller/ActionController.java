@@ -2,11 +2,14 @@ package com.cresign.purchase.controller;
 
 
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.purchase.enumeration.PurchaseEnum;
 import com.cresign.purchase.service.ActionService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.token.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +40,6 @@ public class ActionController {
 
     /**
      * 递归发日志 改isPush
-     * @param map	请求参数
      * @return java.lang.String  返回结果: 递归结果
      * @author tang
      * @ver 1.0.0
@@ -131,6 +133,8 @@ public class ActionController {
     public ApiResponse dgActivateAll(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
 
+        try {
+
         return actionService.dgActivateAll(
                 reqJson.getString("id_O"),
                 reqJson.getString("id_C"),
@@ -138,13 +142,18 @@ public class ActionController {
                 tokData.getString("grpU"),
                 tokData.getString("dep"),
                 tokData.getJSONObject("wrdNU"));
+
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.ASSET_NOT_FOUND.getCode(), "产品需要更新");
+        }
     }
 
 
 
     /**
      * 双方确认订单
-     * @param map	请求参数
      * @return java.lang.String  返回结果: 结果
      * @author tang
      * @ver 1.0.0
@@ -152,7 +161,7 @@ public class ActionController {
      */
     @SecurityParameter
     @PostMapping("/v1/confirmOrder")
-    public ApiResponse confirmOrder(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse confirmOrder(@RequestBody JSONObject reqJson){
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return actionService.confirmOrder(
                 tokData.getString("id_C"),
@@ -180,7 +189,6 @@ public class ActionController {
     }
     /**
      * 通用日志方法(action,prob,msg)
-     * @param map	请求参数
      * @return java.lang.String  返回结果: 日志结果
      * @author tang
      * @ver 1.0.0
@@ -291,7 +299,6 @@ public class ActionController {
 
         /**
          * 更新Order的grpBGroup字段
-         * @param map	请求参数
          * @return java.lang.String  返回结果: 结果
          * @author tang
          * @ver 1.0.0

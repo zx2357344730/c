@@ -32,9 +32,6 @@ public interface ActionService {
 
     /**
      * 根据oId修改grpBGroup字段
-     * @param oId	   订单编号
-     * @param grpBGroup	旧grpB分组信息
-     * @param grpBGroupX 新的grpB分组信息
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
      * @ver 1.0.0
@@ -74,7 +71,7 @@ public interface ActionService {
 
     ApiResponse dgConfirmOrder(String id_C, JSONArray casList) throws IOException;
 
-    ApiResponse confirmOrder(String cId, String id_O) throws IOException;
+    ApiResponse confirmOrder(String cId, String id_O);
     ApiResponse cancelOrder(String cId, String id_O);
 
     ApiResponse actionChart(String id_O);

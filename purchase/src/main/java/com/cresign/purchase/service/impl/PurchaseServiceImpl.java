@@ -21,7 +21,7 @@ import com.cresign.tools.enumeration.SMSTemplateEnum;
 import com.cresign.tools.enumeration.SMSTypeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
-import com.cresign.tools.mongo.MongoUtils;
+
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.InitJava;
 import com.cresign.tools.pojo.po.Prod;
@@ -57,8 +57,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class PurchaseServiceImpl implements PurchaseService {
 
-    @Autowired
-    private RestHighLevelClient restHighLevelClient;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -74,8 +72,6 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     @Resource
     private StringRedisTemplate redisTemplate0;
-
-
 
     @Autowired
     private CoupaUtil coupaUtil;
@@ -162,7 +158,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         // 查询订单id
         reDataMap.put("out_trade_no", orderId);
         // 随机字符串
-        reDataMap.put("nonce_str", MongoUtils.GetObjectId());
+        reDataMap.put("nonce_str", qt.GetObjectId());
 
         // 创建签名
         String sign = null;

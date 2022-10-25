@@ -17,7 +17,7 @@ public class Asset {
 
     private String id;
 
-    private String id_A;
+//    private String id_A;
 
     private AssetInfo info; // JSONObject
 
@@ -30,6 +30,10 @@ public class Asset {
     private JSONObject text00s;
 
     private JSONObject picroll00s;
+
+    private JSONObject table00s;
+
+    private JSONObject grid;
 
     private JSONObject link00s;
 
@@ -77,14 +81,11 @@ public class Asset {
 
     private JSONObject summ00s;
 
-    private JSONObject grpDetail;
+//    private JSONObject grpDetail;
 
     private JSONObject summx;
 
     private JSONObject chgSupp;
-
-    private JSONObject tempa;
-
 
     private Integer tvs = 1;
 

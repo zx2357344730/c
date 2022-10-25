@@ -16,7 +16,7 @@ import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
-import com.cresign.tools.mongo.MongoUtils;
+
 import com.cresign.tools.pojo.es.lBProd;
 import com.cresign.tools.pojo.es.lBUser;
 import com.cresign.tools.pojo.es.lNComp;
@@ -1378,7 +1378,7 @@ public class ModuleServicelmpl implements ModuleService {
             object.getJSONObject("info").put("id_C",id_C);
 
             //调用
-            this.createAsset(id_C, MongoUtils.GetObjectId(), ref, JSON.toJSONString(object));
+            this.createAsset(id_C, qt.GetObjectId(), ref, JSON.toJSONString(object));
 
 
             //生成order订单  未做
@@ -1529,7 +1529,7 @@ public class ModuleServicelmpl implements ModuleService {
     @Transactional(noRollbackFor = ResponseException.class)
     public ApiResponse addBlankComp(String uid, JSONObject reqJson) throws IOException {
 
-        String new_id_C = MongoUtils.GetObjectId();
+        String new_id_C = qt.GetObjectId();
 
         //获取模块信息
         Query query = new Query(new Criteria("_id").is("cn_java"));
@@ -1597,7 +1597,7 @@ public class ModuleServicelmpl implements ModuleService {
             objMod.add(module);
         }
 
-        String id_A_aModule = MongoUtils.GetObjectId();
+        String id_A_aModule = qt.GetObjectId();
         System.out.println("amod_ID  :"+id_A_aModule);
 
         //调用.createAsset
@@ -1655,7 +1655,7 @@ public class ModuleServicelmpl implements ModuleService {
         //authObject.getJSONObject("info").put("wrdNC",comp.getInfo().get("wrdN"));
 
         //调用
-        this.createAsset(new_id_C, MongoUtils.GetObjectId() ,"a-auth",JSON.toJSONString(authObject));
+        this.createAsset(new_id_C, qt.GetObjectId() ,"a-auth",JSON.toJSONString(authObject));
 
 //        //a-core
 //        JSONObject coreObject = newComp.getJSONObject("a-core");
@@ -1666,7 +1666,7 @@ public class ModuleServicelmpl implements ModuleService {
 //        //coreObject.getJSONObject("info").put("wrdNC",comp.getInfo().get("wrdN"));
 //
 //        //调用
-//        this.createAsset(new_id_C, MongoUtils.GetObjectId() ,"a-core",JSON.toJSONString(coreObject));
+//        this.createAsset(new_id_C, qt.GetObjectId() ,"a-core",JSON.toJSONString(coreObject));
 //
 
 

@@ -104,11 +104,10 @@ public class ActionServiceImpl implements ActionService {
 //        JSONObject mapKey = new JSONObject();
 //        mapKey.put("action.grpBGroup."+grpB,grpBNew);
 //        coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
-        qt.setMDContent(id_O, qt.setJson("action.grpBGroup.", grpBNew), Order.class);
+        qt.setMDContent(id_O, qt.setJson("action.grpBGroup."+grpB, grpBNew), Order.class);
         //2. get Order's oItem+action
 //        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info","oItem", "action"));
-        Order order = qt.getMDContent(id_O, Arrays.asList("action, oItem, info"), Order.class);
-
+        Order order = qt.getMDContent(id_O,qt.strList("action", "oItem","info"), Order.class);
         JSONArray objItem = order.getOItem().getJSONArray("objItem");
         JSONArray objAction = order.getAction().getJSONArray("objAction");
         //3. Loop check grpB==oItem(i).grpB and objAction(i).isPUshed == 1
@@ -998,90 +997,91 @@ public class ActionServiceImpl implements ActionService {
             JSONObject grpGroup = orderData.getAction().getJSONObject("grpGroup");
             System.out.println("orderData"+orderData);
 
-            for (Integer j = 0; j < objAction.size(); j++) {
-                OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(objAction.getJSONObject(j)), OrderAction.class);
-                OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(objOItem.getJSONObject(j)), OrderOItem.class);
-                if (unitAction.getBisPush() != 1) {
+            try {
+                for (Integer j = 0; j < objAction.size(); j++) {
+                    OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(objAction.getJSONObject(j)), OrderAction.class);
+                    OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(objOItem.getJSONObject(j)), OrderOItem.class);
+                    if (unitAction.getBisPush() != 1) {
 
-                    // if bmdpt == 4, && sumPrev == 0, my subParts [prior == 0] starts
-                    // for each subParts
-                    // check if wn0prior == 0, if so dgActivate
-                    if (unitAction.getBmdpt() == 4 && unitAction.getSumPrev() == 0)
-                    {
-                        for (int k = 0; k < unitAction.getSubParts().size(); k++)
-                        {
-                            JSONObject subOrderData = this.getActionData(unitAction.getSubParts().getJSONObject(k).getString("id_O"),
-                                    unitAction.getSubParts().getJSONObject(k).getInteger("index"));
+                        // if bmdpt == 4, && sumPrev == 0, my subParts [prior == 0] starts
+                        // for each subParts
+                        // check if wn0prior == 0, if so dgActivate
+                        if (unitAction.getBmdpt() == 4 && unitAction.getSumPrev() == 0) {
+                            for (int k = 0; k < unitAction.getSubParts().size(); k++) {
+                                JSONObject subOrderData = this.getActionData(unitAction.getSubParts().getJSONObject(k).getString("id_O"),
+                                        unitAction.getSubParts().getJSONObject(k).getInteger("index"));
 
-                            OrderOItem subOItem = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderOItem")),OrderOItem.class);
-                            OrderAction subAction = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderAction")),OrderAction.class);
+                                OrderOItem subOItem = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderOItem")), OrderOItem.class);
+                                OrderAction subAction = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderAction")), OrderAction.class);
 
-                            if (subAction.getPriority() == 1)
-                            {
-                                subAction.setBcdStatus(0);
-                                subAction.setBisPush(1);
+                                if (subAction.getPriority() == 1) {
+                                    subAction.setBcdStatus(0);
+                                    subAction.setBisPush(1);
 
-                                JSONObject mapKey = new JSONObject();
-                                mapKey.put("action.objAction."+unitAction.getSubParts().getJSONObject(k).getInteger("index"),subAction);
-                                coupaUtil.updateOrderByListKeyVal(unitAction.getSubParts().getJSONObject(k).getString("id_O"),mapKey);
+                                    JSONObject mapKey = new JSONObject();
+                                    mapKey.put("action.objAction." + unitAction.getSubParts().getJSONObject(k).getInteger("index"), subAction);
+                                    coupaUtil.updateOrderByListKeyVal(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey);
 
-                                System.out.println("unit "+subOItem.getGrpB()+subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
-                                String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
+                                    System.out.println("unit " + subOItem.getGrpB() + subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
+                                    String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
 
-                                LogFlow logLP = new LogFlow(logType,subOrderData.getString("id_FC"),
-                                        subOrderData.getString("id_FS"),"stateChg",
-                                        id_U,grpU, subOItem.getId_P(),subOItem.getGrpB(),subOItem.getGrp(),
-                                        id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
-                                        unitAction.getSubParts().getJSONObject(k).getInteger("index"),
-                                        myCompId,subOItem.getId_C(),
-                                        "",dep,"准备开始",3,subOItem.getWrdN(),wrdNU);
-                                logLP.setLogData_action(subAction,subOItem);
+                                    LogFlow logLP = new LogFlow(logType, subOrderData.getString("id_FC"),
+                                            subOrderData.getString("id_FS"), "stateChg",
+                                            id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
+                                            id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
+                                            unitAction.getSubParts().getJSONObject(k).getInteger("index"),
+                                            myCompId, subOItem.getId_C(),
+                                            "", dep, "准备开始", 3, subOItem.getWrdN(), wrdNU);
+                                    logLP.setLogData_action(subAction, subOItem);
 
-                                ws.sendWS(logLP);
-                            } else {
-                                System.out.println("break @ "+k);
-                                break;
+                                    ws.sendWS(logLP);
+                                } else {
+                                    System.out.println("break @ " + k);
+                                    break;
+                                }
                             }
+                        } else if (unitAction.getBmdpt() == 3 && unitAction.getSumPrev() == 0) {
+                            //                // 根据零件递归信息获取零件信息，并且制作日志
+                            unitAction.setBcdStatus(0);
+                            unitAction.setBisPush(1);
+
+                            JSONObject mapKey = new JSONObject();
+                            mapKey.put("action.objAction." + j, unitAction);
+                            coupaUtil.updateOrderByListKeyVal(orderList.getJSONObject(i).getString("id_O"), mapKey);
+
+                            JSONObject fcCheck = grpBGroup.getJSONObject(unitOItem.getGrpB());
+                            JSONObject fsCheck = grpGroup.getJSONObject(unitOItem.getGrp());
+                            String id_FS = "";
+                            String id_FC = "";
+
+                            if (fcCheck != null) {
+                                id_FC = fcCheck.getString("id_Flow") != null
+                                        && !unitOItem.getId_C().equals(myCompId) ?
+                                        fcCheck.getString("id_Flow") : "";
+                            }
+
+                            if (fsCheck != null) {
+                                id_FS = fsCheck.getString("id_Flow") != null
+                                        && !unitOItem.getId_C().equals(myCompId) ?
+                                        fsCheck.getString("id_Flow") : "";
+                            }
+
+                            LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
+                                    id_FC,
+                                    id_FS, "stateChg", id_U, grpU,
+                                    unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(), id_O, unitAction.getId_O(), unitAction.getIndex(),
+                                    myCompId, unitOItem.getId_C(), "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
+                            logLP.setLogData_action(unitAction, unitOItem);
+
+                            System.out.println(logLP);
+                            ws.sendWS(logLP);
+                            // 发送日志
                         }
-                    }
-                    else if (unitAction.getBmdpt() == 3 && unitAction.getSumPrev() == 0) {
-                        //                // 根据零件递归信息获取零件信息，并且制作日志
-                        unitAction.setBcdStatus(0);
-                        unitAction.setBisPush(1);
-
-                        JSONObject mapKey = new JSONObject();
-                        mapKey.put("action.objAction."+j,unitAction);
-                        coupaUtil.updateOrderByListKeyVal(orderList.getJSONObject(i).getString("id_O"),mapKey);
-
-                        JSONObject fcCheck = grpBGroup.getJSONObject(unitOItem.getGrpB());
-                        JSONObject fsCheck = grpGroup.getJSONObject(unitOItem.getGrp());
-                        String id_FS = "";
-                        String id_FC = "";
-
-                        if (fcCheck != null)
-                        {
-                            id_FC = fcCheck.getString("id_Flow") != null
-                                    && !unitOItem.getId_C().equals(myCompId) ?
-                                    fcCheck.getString("id_Flow") : "";
-                        }
-
-                        if (fsCheck != null)
-                        {
-                            id_FS = fsCheck.getString("id_Flow") != null
-                                    && !unitOItem.getId_C().equals(myCompId) ?
-                                    fsCheck.getString("id_Flow") : "";
-                        }
-
-                        LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
-                                id_FC,
-                                id_FS, "stateChg", id_U, grpU,
-                                unitOItem.getId_P(), unitOItem.getGrpB(),unitOItem.getGrp(),id_O, unitAction.getId_O(), unitAction.getIndex(),
-                                myCompId, unitOItem.getId_C(), "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
-                        logLP.setLogData_action(unitAction, unitOItem);
-                        ws.sendWS(logLP);
-                        // 发送日志
                     }
                 }
+            } catch (Exception e)
+            {
+                e.printStackTrace();
             }
         }
         return retResult.ok(CodeEnum.OK.getCode(), "doneAll");
@@ -1161,8 +1161,12 @@ public class ActionServiceImpl implements ActionService {
         mapKey.put("oItem.objItem."+index,unitOItem);
         coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
 
-        ws.sendWS(logLP);
-
+        try {
+            ws.sendWS(logLP);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
         return retResult.ok(CodeEnum.OK.getCode(), "done");
     }
 
@@ -1412,16 +1416,17 @@ public class ActionServiceImpl implements ActionService {
      * @date 2021/6/16 14:49
      */
     @Override
-    public ApiResponse confirmOrder(String id_C,String id_O) throws IOException {
-        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info"));
-        QueryBuilder queryBuilder;
+    public ApiResponse confirmOrder(String id_C,String id_O) {
+
+        Order order = qt.getMDContent(id_O, "info",Order.class);
+//        QueryBuilder queryBuilder;
 
         // if I am both buyer and seller, internal order, whatever side I am, set it to both final
         if (order.getInfo().getId_C().equals(id_C) && order.getInfo().getId_C().equals(order.getInfo().getId_CB())) { //Check C== CB
             order.getInfo().setLST(7);
-            queryBuilder = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.termQuery("id_O", id_O))
-                    .must(QueryBuilders.termQuery("id_CB", id_C));
+//            queryBuilder = QueryBuilders.boolQuery()
+//                    .must(QueryBuilders.termQuery("id_O", id_O))
+//                    .must(QueryBuilders.termQuery("id_CB", id_C));
         } // I am id_CB Buyer
         else if (id_C.equals(order.getInfo().getId_CB())) { //if Seller is REAL
             if (dbUtils.judgeComp(id_C, order.getInfo().getId_C()) == 1) {
@@ -1434,9 +1439,9 @@ public class ActionServiceImpl implements ActionService {
                 // if otherComp is fake, set to both confirm
                 order.getInfo().setLST(7);
             }
-            queryBuilder = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.termQuery("id_O", id_O))
-                    .must(QueryBuilders.termQuery("id_CB", id_C));
+//            queryBuilder = QueryBuilders.boolQuery()
+//                    .must(QueryBuilders.termQuery("id_O", id_O))
+//                    .must(QueryBuilders.termQuery("id_CB", id_C));
         } else // I am Seller
         { //if Buyer is REAL
             if (dbUtils.judgeComp(id_C, order.getInfo().getId_CB()) == 1) {
@@ -1449,18 +1454,22 @@ public class ActionServiceImpl implements ActionService {
                 // if otherComp is fake, set to both confirm
                 order.getInfo().setLST(7);
             }
-            queryBuilder = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.termQuery("id_O", id_O))
-                    .must(QueryBuilders.termQuery("id_C", id_C));
+//            queryBuilder = QueryBuilders.boolQuery()
+//                    .must(QueryBuilders.termQuery("id_O", id_O))
+//                    .must(QueryBuilders.termQuery("id_C", id_C));
         }
-        JSONObject mapKey = new JSONObject();
-        mapKey.put("info.lST", order.getInfo().getLST());
-        coupaUtil.updateOrderByListKeyVal(id_O, mapKey);
+//        JSONObject mapKey = new JSONObject();
+//        mapKey.put("info.lST", order.getInfo().getLST());
+//        coupaUtil.updateOrderByListKeyVal(id_O, mapKey);
+
+        qt.setMDContent(id_O, qt.setJson("info.lST", order.getInfo().getLST()), Order.class);
 
         //Save MDB above, then update ES here
-        JSONObject listCol = new JSONObject();
-        listCol.put("lST", order.getInfo().getLST());
-        dbUtils.updateListCol(queryBuilder, "lsborder", listCol);
+//        JSONObject listCol = new JSONObject();
+//        listCol.put("lST", order.getInfo().getLST());
+//        dbUtils.updateListCol(queryBuilder, "lsborder", listCol);
+
+        qt.setES("lsborder", qt.setESFilt("id_O", id_O), qt.setJson("lST", order.getInfo().getLST()));
 
         return retResult.ok(CodeEnum.OK.getCode(), order.getInfo().getLST());
     }

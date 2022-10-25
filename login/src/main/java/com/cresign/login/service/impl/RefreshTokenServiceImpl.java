@@ -99,8 +99,7 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
                 return retResult.ok(CodeEnum.OK.getCode(), "");
             }
 
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-REFRESHTOKEN_NOT_FOUND.getCode(), null);
+            return retResult.ok(CodeEnum.OK.getCode(), "");
 
         }
         throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);

@@ -11,6 +11,7 @@ package com.cresign.tools.dbTools;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.ToolEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -18,7 +19,9 @@ import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.User;
 import com.mongodb.client.result.UpdateResult;
+import lombok.var;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.bson.types.ObjectId;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -82,7 +85,7 @@ import java.util.concurrent.TimeUnit;
 
         @Autowired
         private StringRedisTemplate redisTemplate0;
-        
+
         //MDB - done: get, getMany, del, new, inc, set, push, pull
         //MDB - need: ops, opsExec 
         //ESS - done: get, getFilt, del, add, set
@@ -105,11 +108,12 @@ import java.util.concurrent.TimeUnit;
          * @Card
          **/
         public <T> T  getMDContent(String id,  List<String>  fields, Class<T> classType) {
+            System.out.println("inMDC-sl");
+
             Query query = new Query(new Criteria("_id").is(id));
             if (fields != null) {
 
                 fields.forEach(query.fields()::include);
-                System.out.println("query "+query);
             }
             T result;
             try {
@@ -121,6 +125,8 @@ import java.util.concurrent.TimeUnit;
         }
 
         public <T> T  getMDContent(String id,  String field, Class<T> classType) {
+            System.out.println("inMDC-s");
+
             Query query = new Query(new Criteria("_id").is(id));
             if (field != null && !field.equals("")) {
                 query.fields().include(field);
@@ -146,21 +152,69 @@ import java.util.concurrent.TimeUnit;
          **/
 
         public List<?> getMDContentMany(HashSet setIds, List<String> fields, Class<?> classType) {
-//            String [] setIds = setId.split(",");
+            System.out.println("inMDCM");
             Query query = new Query(new Criteria("_id").in(setIds));
             if (fields != null && !fields.equals("")) {
-                fields.forEach(query.fields()::include);
+                for (Object field : fields)
+                {
+                    query.fields().include(field.toString());
+                }
             }
-            
-            return mongoTemplate.find(query, classType);
+            try {
+                return mongoTemplate.find(query, classType);
+            } catch (Exception e)
+            {
+                System.out.println("error"+e);
+                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            }
         }
 
-        public List<?> getMDContentMany(HashSet setId, String field, Class<?> classType) {
-            Query query = new Query(new Criteria("_id").in(setId));
+        public List<?> getMDContentMany(HashSet setIds, String field, Class<?> classType) {
+            System.out.println("inMDCM");
+
+            Query query = new Query(new Criteria("_id").in(setIds));
             if (field != null && !field.equals("")) {
                 query.fields().include(field);
             }
+            try {
             return mongoTemplate.find(query, classType);
+            } catch (Exception e)
+            {
+                System.out.println("error"+e);
+                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            }
+        }
+
+        public List<String> strList(String... str)
+        {
+            List<String> result = new ArrayList<>();
+            for (String s : str) {
+                result.add(s);
+            }
+            return result;
+        }
+
+        public HashSet str(String... str)
+        {
+            HashSet result = new HashSet();
+            for (String s : str) {
+                result.add(s);
+            }
+            return result;
+        }
+
+        public void errPrint(Exception e, Object... vars)
+        {
+            for (Object item : vars)
+            {
+                if (item!= null) {
+                    System.out.println(item);
+                } else {
+                    System.out.println("null");
+                }
+            }
+            if (e != null)
+                e.printStackTrace();
         }
 
 //        public void opsMDSet(JSONObject map, String id, String type, String key, Object value)
@@ -214,10 +268,14 @@ import java.util.concurrent.TimeUnit;
             jsonUpdate.forEach((k, v) -> update.inc(k, (Number) v));
 
             update.inc("tvs", 1);
-            UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-            if (updateResult.getModifiedCount() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), "");
+            try {
+                mongoTemplate.updateFirst(query, update, classType);
+            } catch (Exception e)
+            {
+                System.out.println("error"+e);
+                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
             }
+
         }
         
         public void incMDContent(String id, String updateKey, Number updateValue, Class<?> classType) {
@@ -225,9 +283,12 @@ import java.util.concurrent.TimeUnit;
             Update update = new Update();
             update.inc(updateKey, updateValue);
             update.inc("tvs", 1);
-            UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-            if (updateResult.getModifiedCount() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), "");
+            try {
+                mongoTemplate.updateFirst(query, update, classType);
+            } catch (Exception e)
+            {
+                System.out.println("error"+e);
+                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
             }
         }
 
@@ -290,44 +351,74 @@ import java.util.concurrent.TimeUnit;
          * @Card
          **/
         public void setMDContent(String id, JSONObject keyVal, Class<?> classType) {
-            Query query = new Query(new Criteria("_id").is(id));
-            Update update = new Update();
-//            keyVal.forEach(update::set);
-            System.out.println("refixed setMDContent");
-            keyVal.keySet().forEach(k -> update.set(k,keyVal.get(k)));
-            update.inc("tvs", 1);
-            UpdateResult updateResult =  mongoTemplate.updateFirst(query, update, classType);
-            if (updateResult.getModifiedCount() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), "");
+            try {
+                Query query = new Query(new Criteria("_id").is(id));
+                Update update = new Update();
+
+//                keyVal.keySet().forEach(k -> update.set(k, keyVal.get(k)));
+                for (String key : keyVal.keySet())
+                {
+                    update.set(key,keyVal.get(key));
+                }
+                update.inc("tvs", 1);
+                UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+                System.out.println("inSetMD" + updateResult);
+            } catch (Exception e)
+            {
+                e.printStackTrace();
             }
+//            if (updateResult.getModifiedCount() == 0) {
+//                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), "");
+//            }
         }
 
         public void delMD(String id,  Class<?> classType) {
             // 创建查询，并且添加查询条件
             Query query = new Query(new Criteria("_id").is(id));
             // 根据查询删除信息
-            mongoTemplate.remove(query,classType);
+            try {
+                mongoTemplate.remove(query,classType);
+            } catch (Exception e)
+            {
+                System.out.println("error"+e);
+                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            }
         }
 
         public void delMD(HashSet<String> setId,  Class<?> classType) {
             // 创建查询，并且添加查询条件
             Query query = new Query(new Criteria("_id").in(setId));
             // 根据查询删除信息
-            mongoTemplate.remove(query,classType);
+            try {
+                mongoTemplate.remove(query,classType);
+            } catch (Exception e)
+            {
+                System.out.println("error"+e);
+                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            }
         }
 
         public void addMD( Object obj) {
             // 新增order信息
-
-            mongoTemplate.insert(obj);
-            System.out.println("got all ok Sales");
+            try {
+                mongoTemplate.insert(obj);
+            } catch (Exception e)
+            {
+                System.out.println("error"+e);
+                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            }
 
         }
 
         public void saveMD( Object obj) {
             // 新增order信息
-
+            try {
             mongoTemplate.save(obj);
+            } catch (Exception e)
+            {
+                System.out.println("error"+e);
+                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            }
 
         }
 
@@ -396,12 +487,26 @@ import java.util.concurrent.TimeUnit;
 
         public Asset getConfig(String id_C, String ref, String listField) {
 
+            return getConfig(id_C, ref, this.strList(listField));
+        }
+
+        public String getId_A(String id_C, String ref)
+        {
+            JSONArray result = this.getES("lSAsset", this.setESFilt("id_C",id_C,"ref",ref), 1);
+            if (result.size() == 1) {
+                return result.getJSONObject(0).getString("id_A");
+            } else
+                return "";
+        }
+
+
+        public Asset getConfig(String id_C, String ref, List <String> listField) {
+
             if(this.hasRDHashItem("login:module_id","compId-"+ id_C, ref))
             {
                 String id_A = this.getRDHashStr("login:module_id","compId-" + id_C, ref);
                 System.out.println("id_A"+id_A);
                 return this.getMDContent(id_A, listField, Asset.class);
-
             } else {
                 System.out.println("getConfig1"+id_C+ "   "+ref);
                 JSONArray result = this.getES("lSAsset", this.setESFilt("id_C",id_C,"ref",ref), 1);
@@ -415,13 +520,11 @@ import java.util.concurrent.TimeUnit;
 
                     return asset;
                 }
-                System.out.println("Result here"+result.size());
                 Asset nothing = new Asset();
-                nothing.setId_A("none");
+                nothing.setId("none");
 
                 return nothing;
             }
-
         }
 
         //////////////-----------------------------------------------
@@ -476,7 +579,7 @@ import java.util.concurrent.TimeUnit;
             else
                 this.setESFilt(filt, "id_C","eq",id_C);
 
-            JSONArray result = this.getES("action, assetflow", filt,1, 1, "tmd", "desc");
+            JSONArray result = this.getES("action/assetflow", filt,1, 1, "tmd", "desc");
 
             return this.jsonTo(result.getJSONObject(0), LogFlow.class);
         }
@@ -487,16 +590,6 @@ import java.util.concurrent.TimeUnit;
 
                 //  把id的数据换成id_P的数据
                 JSONObject contentMap = (JSONObject) JSONObject.toJSON(o);
-//
-//            if (contentMap.getJSONObject("wrdN") != null){
-//                contentMap.put("wrdN", contentMap.getJSONObject("wrdN").getString(request.getHeader("lang")));
-//            } if (contentMap.getJSONObject("wrddesc") != null){
-//                contentMap.put("wrddesc", contentMap.getJSONObject("wrddesc").getString(request.getHeader("lang")));
-//            } if (null != contentMap.getJSONObject("wrdNC")) {
-//                contentMap.put("wrdNC", contentMap.getJSONObject("wrdNC").getString(request.getHeader("lang")));
-//            }  if (null != contentMap.getJSONObject("wrdNCB")){
-//                contentMap.put("wrdNCB", contentMap.getJSONObject("wrdNCB").getString(request.getHeader("lang")));
-//            }
 
                 switch (listType) {
                     case "lBProd":
@@ -526,6 +619,48 @@ import java.util.concurrent.TimeUnit;
 
             return result;
         }
+
+        public Boolean checkOrder(JSONObject jsonObj, String objKey, List<Integer> arrayIndex, List<String> arrayKey) {
+            if (jsonObj == null || jsonObj.getJSONArray(objKey) == null) {
+                return false;
+            }
+            JSONArray array = jsonObj.getJSONArray(objKey);
+            //遍历array
+            if (arrayIndex == null) {
+                for (int i = 0; i < array.size(); i++) {
+                    JSONObject json = array.getJSONObject(i);
+                    if (json == null) {
+                        return false;
+                    } else {
+                        for (int j = 0; j < arrayKey.size(); j++) {
+                            String key = arrayKey.get(j);
+                            if (json.get(key) == null) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+                return true;
+            } else {
+                int size = arrayIndex.size();
+                for (int i = 0; i < size; i++) {
+                    Integer index = arrayIndex.get(i);
+                    if (index >= size || array.getJSONObject(index) == null) {
+                        return false;
+                    } else {
+                        JSONObject json = array.getJSONObject(index);
+                        for (int j = 0; j < arrayKey.size(); j++) {
+                            String key = arrayKey.get(j);
+                            if (json.get(key) == null) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+
 
         //ES////////////////////////////////////////////-------------------------------
 
@@ -576,15 +711,13 @@ import java.util.concurrent.TimeUnit;
             try {
                 SearchRequest request = new SearchRequest();
 
-                String[] indices = index.split(",");
+                String[] indices = index.split("/");
                 request.indices(indices);
                 request.source(sourceBuilder);
                 SearchResponse response = client.search(request, RequestOptions.DEFAULT);
                 System.out.println(response);
 
-                JSONArray abc = this.hit2Array(response);
-
-                return abc;
+                return this.hit2Array(response);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -897,16 +1030,16 @@ import java.util.concurrent.TimeUnit;
                             String joinStr = StringUtils.join((List<String>) conditionMap.get("filtVal"), " OR ");
                             queryBuilder.must(QueryBuilders.queryStringQuery(joinStr).field(conditionMap.getString("filtKey")));
                             break;
-                        case "timeRange":
-                            JSONArray filtList = conditionMap.getJSONArray("filtVal");
-                            //.from（）是时间格式，.gte（）.lte（）  时间范围
+//                        case "timeRange":
+//                            JSONArray filtList = conditionMap.getJSONArray("filtVal");
+//                            //.from（）是时间格式，.gte（）.lte（）  时间范围
+////                            queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey"))
+////                                    .from(DateEnum.DATE_TIME_FULL.getDate()).gte(filtList.get(0))
+////                                    .lte(filtList.get(1)));
+//
 //                            queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey"))
-//                                    .from(DateEnum.DATE_TIME_FULL.getDate()).gte(filtList.get(0))
-//                                    .lte(filtList.get(1)));
-
-                            queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey"))
-                                    .from(filtList.get(0), true).to(filtList.get(1),false));
-                            break;
+//                                    .from(filtList.get(0), true).to(filtList.get(1),false));
+//                            break;
                         case "sheq": {
                             BoolQueryBuilder shouldQueryBuilder = new BoolQueryBuilder();
                             JSONArray arrayFiltKey = conditionMap.getJSONArray("filtKey");
@@ -1011,7 +1144,7 @@ import java.util.concurrent.TimeUnit;
         {
             String result = redisTemplate0.opsForValue().get(collection + ":" + key);
 
-            System.out.println("result:"+result);
+//            System.out.println("result:"+result);
             return JSONObject.parseObject(result);
         }
 
@@ -1037,13 +1170,13 @@ import java.util.concurrent.TimeUnit;
 
 
 
-        public JSONObject cloneJSONObject(JSONObject json) {
+        public JSONObject cloneObj(JSONObject json) {
             String jsonString = json.toJSONString();
             JSONObject jsonObject = JSON.parseObject(jsonString);
             return jsonObject;
         }
 
-        public JSONArray cloneJSONArray(JSONArray json) {
+        public JSONArray cloneArr(JSONArray json) {
             String jsonString = json.toJSONString();
             JSONArray jsonArray = JSON.parseArray(jsonString);
             return jsonArray;

@@ -15,7 +15,7 @@ import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
-import com.cresign.tools.mongo.MongoUtils;
+
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import lombok.extern.slf4j.Slf4j;
@@ -307,7 +307,7 @@ public class LogServiceImpl  implements LogService {
 //    }
 
 //    private String sendPushSingle(String clientId,String title,String body){
-//        String request_id = MongoUtils.GetObjectId();
+//        String request_id = qt.GetObjectId();
 //        JSONObject settings = new JSONObject();
 //        int ttl = 3600000;
 //        settings.put("ttl",ttl);
@@ -339,7 +339,7 @@ public class LogServiceImpl  implements LogService {
 
 
 //    private String getTaskId(){
-//        String request_id = MongoUtils.GetObjectId();
+//        String request_id = qt.GetObjectId();
 //        String group_name = "任务名称";
 //        JSONObject settings = new JSONObject();
 //        int ttl = 3600000;

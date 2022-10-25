@@ -40,7 +40,7 @@ public class ErrorResponseException extends RuntimeException{
     public ErrorResponseException(HttpStatus status, String code, String des) {
         this.status = status;
         this.code = code;
-        this.des = des;
+        this.des = des == null ? "" : des;
         this.tid = TraceContext.traceId();
     }
 

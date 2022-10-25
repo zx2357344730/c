@@ -19,6 +19,8 @@ public enum  DateEnum {
 
     DATE_FOLDER("yyyy-MM-dd","日期格式：年-月-日"),
 
+    DATE_FOLDER_FULL("yyyy-MM-dd-HH-mm-ss","日期格式：年-月-日"),
+
     DATE_TIME_SSS("yyyy/MM/dd HH:mm:ss SSS","日期格式：年/月/日 时:分:秒 毫秒"),
 
     DATE_TIME_FULL("yyyy/MM/dd HH:mm:ss","日期格式：年/月/日 时:分:秒");

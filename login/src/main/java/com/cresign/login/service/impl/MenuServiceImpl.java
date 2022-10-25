@@ -62,7 +62,7 @@ public class MenuServiceImpl implements MenuService {
     public ApiResponse getMenusAndSubMenus(String id_C) {
         //之前是调用login服务的权限API，现在是移到login服务了，直接调用
 
-        Asset asset =  qt.getConfig(id_C, "a-auth", "menu");
+        Asset asset =  qt.getConfig(id_C, "a-auth","menu");
 
         return retResult.ok(CodeEnum.OK.getCode(), asset.getMenu());
     }

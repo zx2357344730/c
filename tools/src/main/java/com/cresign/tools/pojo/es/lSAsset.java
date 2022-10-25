@@ -64,6 +64,10 @@ public class lSAsset {
 
     private Integer lAT; //Asset Type
 
+    private Integer lUT;
+
+    private Integer lCR;
+
     private String locAddr;//
 
     private JSONArray locSpace;//

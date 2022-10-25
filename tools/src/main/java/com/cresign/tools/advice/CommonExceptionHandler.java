@@ -68,7 +68,10 @@ public class CommonExceptionHandler {
 
 //        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
         map.put("des", JSON.toJSONString(map));
-//        log.error(JSON.toJSONString(map));
+        log.error(JSON.toJSONString(map));
+        System.out.println("i am in  exception 1");
+
+        System.out.println(reEx);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(JSON.toJSONString(map));
 
@@ -109,8 +112,11 @@ public class CommonExceptionHandler {
 
 //        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
         map.put("des", JSON.toJSONString(map));
+        System.out.println("i am in  exception 2");
 
-//        log.error(JSON.toJSONString(map));
+        System.out.println(reEx);
+
+        log.error(JSON.toJSONString(map));
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(JSON.toJSONString(map));
 
@@ -147,9 +153,11 @@ public class CommonExceptionHandler {
 
 //        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
         map.put("des", JSON.toJSONString(e));
+        System.out.println("i am in  feignexception 1");
 
 
-//        log.error(JSON.toJSONString(map));
+
+        log.error(JSON.toJSONString(map));
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(JSON.toJSONString(map));
 

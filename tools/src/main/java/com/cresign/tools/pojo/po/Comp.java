@@ -25,6 +25,10 @@ public class Comp {
 
     private JSONObject summ00s;
 
+    private JSONObject table00s;
+
+    private JSONObject grid;
+
     private JSONObject spec;
 
     private JSONObject text00s;
@@ -38,8 +42,6 @@ public class Comp {
     private JSONObject joinCode;
 
     private JSONObject summx;
-
-    private JSONObject tempa;
 
     private Integer bcdNet ;
 

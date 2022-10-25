@@ -34,6 +34,10 @@ public class Prod {
 
     private JSONObject text00s;
 
+    private JSONObject table00s;
+
+    private JSONObject grid;
+
     private JSONObject summ00s;
 
     private JSONObject picroll00s;

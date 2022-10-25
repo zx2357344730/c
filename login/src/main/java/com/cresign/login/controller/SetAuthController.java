@@ -87,15 +87,15 @@ public class SetAuthController {
 //                request.getHeader("lang"));
 //    }
 
-
-    @SecurityParameter
-    @PostMapping("/v1/ud_card_def")
-    public ApiResponse updateDefCard(@RequestBody JSONObject reqJson) {
-        return setAuthService.updateDefCard(
-                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("id_C"),
-                reqJson.getJSONObject("defData")
-        );
-    }
+//
+//    @SecurityParameter
+//    @PostMapping("/v1/ud_card_def")
+//    public ApiResponse updateDefCard(@RequestBody JSONObject reqJson) {
+//        return setAuthService.updateDefCard(
+//                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+//                reqJson.getString("id_C"),
+//                reqJson.getJSONObject("defData")
+//        );
+//    }
 
 }

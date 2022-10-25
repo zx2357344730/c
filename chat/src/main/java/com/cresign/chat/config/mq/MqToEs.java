@@ -42,7 +42,7 @@ public class MqToEs implements RocketMQListener<String> {
     @Override
     public void onMessage(String s) {
         // 转换为json信息
-        JSONObject json = JSONObject.parseObject(s);
+            JSONObject json = JSONObject.parseObject(s);
         LogFlow logData = JSONObject.parseObject(json.getString("logF"), LogFlow.class);
         sendLogByES(logData.getLogType(),logData);
         System.out.println("es:写入完成");

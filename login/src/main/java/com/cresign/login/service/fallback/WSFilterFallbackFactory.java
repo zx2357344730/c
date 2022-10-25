@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.client.WSFilterClient;
 import com.cresign.tools.pojo.po.LogFlow;
 import feign.hystrix.FallbackFactory;
+import feign.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 

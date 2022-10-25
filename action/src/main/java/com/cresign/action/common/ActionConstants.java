@@ -1,6 +1,6 @@
 //package com.cresign.action.common;
 //
-//import com.cresign.tools.mongo.MongoUtils;
+//
 //
 ///**
 // * ##ClassName: ActionConstants
@@ -17,5 +17,5 @@
 //     */
 //    public static final int HASH_MAP_DEFAULT_LENGTH = 16;
 //
-//    public static final String Action_Id = MongoUtils.GetObjectId();
+//    public static final String Action_Id = qt.GetObjectId();
 //}

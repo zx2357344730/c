@@ -21,7 +21,7 @@ public interface RoleService {
      * @updated 2021-03-04 16:16
      * @return java.lang.String
      */
-    ApiResponse getRole(String id_U, String id_C, String grpU);
+//    ApiResponse getRole(String id_U, String id_C, String grpU);
 
     /**
      * 查看role数据
@@ -35,7 +35,7 @@ public interface RoleService {
      * @updated 2020-12-16 15:27
      * @return java.lang.String
      */
-    ApiResponse getRoleData(String id_U, String id_C, String listType, String grp, String grpU);
+//    ApiResponse getRoleData(String id_U, String id_C, String listType, String grp, String grpU);
 
     /**
      * 修改role的权限读写或者不能看
@@ -92,7 +92,7 @@ public interface RoleService {
      * @createDate: 2021/7/5 9:15
      * @return: com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse updateNewestRole(String id_U, String id_C, String listType, String grp, String grpU);
+    ApiResponse updateNewestRole(String id_C, String listType, String grp, String grpU);
 
 
     /**
@@ -109,7 +109,7 @@ public interface RoleService {
      * @updated 2021-02-05 10:32
      * @return java.lang.String
      */
-    ApiResponse upRoleOfAuth(String id_U, String id_C, String listType, String grp, Integer upAuth, String upType, String grpU);
+    ApiResponse upRoleAllAuth(String id_U, String id_C, String listType, String grp, Integer upAuth, String upType, String grpU);
 
 
     /**

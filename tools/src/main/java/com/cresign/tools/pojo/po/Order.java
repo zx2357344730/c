@@ -39,6 +39,10 @@ public class Order {
 
     private JSONObject text00s;
 
+    private JSONObject table00s;
+
+    private JSONObject grid;
+
     private JSONObject picroll00s;
 
     private JSONObject link00s;

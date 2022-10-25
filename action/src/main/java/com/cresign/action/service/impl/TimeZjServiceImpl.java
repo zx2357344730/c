@@ -8,8 +8,9 @@ import com.cresign.action.service.TimeZjService;
 import com.cresign.action.utils.Obj;
 import com.cresign.tools.common.Constants;
 import com.cresign.tools.dbTools.CoupaUtil;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.exception.ErrorResponseException;
-import com.cresign.tools.mongo.MongoUtils;
+
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Order;
 import com.cresign.tools.pojo.po.chkin.Task;
@@ -35,6 +36,9 @@ public class TimeZjServiceImpl implements TimeZjService {
     @Resource
     private CoupaUtil coupaUtil;
 
+    @Autowired
+    private Qt qt;
+
     /* 以下五个是记录时间处理出现的问题,并且使用了全局唯一编号 */
     /**
      * 跳天强制停止参数
@@ -56,6 +60,7 @@ public class TimeZjServiceImpl implements TimeZjService {
      * 是否测试: = true 说明是测试、 = false 说明不是测试
      */
     public static boolean isTest = true;
+
 
     /**
      * 初始化时间处理方法
@@ -119,9 +124,9 @@ public class TimeZjServiceImpl implements TimeZjService {
             Obj.addTasksAndOrder3(teStart,id_C,objTaskAll);
         }
         // 获取唯一下标
-        String random = MongoUtils.GetObjectId();
+        String random = qt.GetObjectId();
         // 获取全局唯一下标
-        String randomAll = MongoUtils.GetObjectId();
+        String randomAll = qt.GetObjectId();
 
         // 设置问题记录的初始值
         yiShu.put(randomAll,0);
@@ -2648,7 +2653,7 @@ public class TimeZjServiceImpl implements TimeZjService {
         // 判断订单信息不为空
         if (null != task) {
             // 获取唯一下标
-            String random = MongoUtils.GetObjectId();
+            String random = qt.GetObjectId();
             // 添加唯一编号状态
             onlyIsDsJ.put(random,1);
             // 根据键获取当前时间戳

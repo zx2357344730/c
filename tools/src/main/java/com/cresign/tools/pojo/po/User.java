@@ -28,16 +28,19 @@ public class User {
 
     private JSONObject rolex;
 
-    private JSONObject sumChkinx;
+//    private JSONObject sumChkinx;
 
     private JSONObject text00s;
 
     private JSONObject task00s;
 
+    private JSONObject table00s;
+
+    private JSONObject grid;
+
     private JSONObject picroll00s;
 
     private JSONObject link00s;
-
 
     private JSONObject qrShareCode;
 

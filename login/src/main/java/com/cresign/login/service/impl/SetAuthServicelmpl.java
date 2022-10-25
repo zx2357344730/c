@@ -15,7 +15,6 @@ import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
-import com.cresign.tools.mongo.MongoUtils;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.User;
@@ -70,26 +69,25 @@ public class SetAuthServicelmpl implements SetAuthService {
                 new Criteria("info.id_C").is(id_C)
                         .and("info.ref").is("a-auth"));
         //batchQ.fields().include("role.objAuth." + grpU + "." + listType + "." + grp + ".batch");
-        batchQ.fields().include("role.objAuth." + grpU + "." + listType);
+        batchQ.fields().include("role.objData." + grpU + "." + listType);
 
         Asset asset = mongoTemplate.findOne(batchQ, Asset.class);
         //JSONObject roleJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(batchQ, Asset.class));
 
         // 没有设置职位权限
-        if (null == asset.getRole().getJSONObject("objAuth").getJSONObject(grpU)) {
+        if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU)) {
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ROLE_NOT_SET.getCode(), null);
         }
         JSONArray batchArray = new JSONArray();
 
-        System.out.println("batch "+asset);
         for (int i = 0; i<grp.size();i++) {
 
             try {
-                JSONArray tempBatch = asset.getRole().getJSONObject("objAuth").getJSONObject(grpU).getJSONObject(listType).getJSONObject(grp.getString(i)).getJSONArray("batch");
-                for (int j = 0; j < tempBatch.size(); j++) {
-                    if (!batchArray.contains(tempBatch.getJSONObject(j).getString("ref"))) {
-                        if (tempBatch.getJSONObject(j).getInteger("auth") == 2) {
-                            batchArray.add(tempBatch.getJSONObject(j).getString("ref"));
+                JSONObject tempBatch = asset.getRole().getJSONObject("objData").getJSONObject(grpU).getJSONObject(listType).getJSONObject(grp.getString(i)).getJSONObject("batch");
+                for (String batchItem : tempBatch.keySet()) {
+                    if (!batchArray.contains(batchItem)) {
+                        if (tempBatch.getInteger(batchItem).equals(2)) {
+                            batchArray.add(batchItem);
                         }
                     }
                 }
@@ -133,21 +131,23 @@ public class SetAuthServicelmpl implements SetAuthService {
         }
         // 用户的role权限
         String grpU = rolex.getString("grpU");
+//
+//        String id_A = dbUtils.getId_A(id_C, "a-auth");
+//        Query query = new Query(new Criteria("_id").is(id_A));
+//        query.fields().include("role.objAuth." + grpU + "." + listType + "." + grp + ".card");
+//        Asset asset = mongoTemplate.findOne(query, Asset.class);
 
-        String id_A = dbUtils.getId_A(id_C, "a-auth");
-        Query query = new Query(new Criteria("_id").is(id_A));
-        query.fields().include("role.objAuth." + grpU + "." + listType + "." + grp + ".card");
-        Asset asset = mongoTemplate.findOne(query, Asset.class);
+        Asset asset = qt.getConfig(id_C, "a-auth", "role.objData." + grpU + "." + listType + "." + grp + ".card");
 
         //JSONObject roleJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(batchQ, Asset.class));
 
         // 没有设置职位权限
-        if (null == asset.getRole().getJSONObject("objAuth").getJSONObject(grpU)) {
+        if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU)) {
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ROLE_NOT_SET.getCode(), null);
         }
 
         // 返回的card列表数据
-        JSONArray cardArray = asset.getRole().getJSONObject("objAuth").getJSONObject(grpU).getJSONObject(listType).getJSONObject(grp).getJSONArray("card");
+        JSONObject cardArray = asset.getRole().getJSONObject("objData").getJSONObject(grpU).getJSONObject(listType).getJSONObject(grp).getJSONObject("card");
 
         if (ObjectUtils.isEmpty(cardArray)) {
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
@@ -156,25 +156,40 @@ public class SetAuthServicelmpl implements SetAuthService {
         // 最终返回batch
         JSONArray result = new JSONArray();
 
-        for (int i = 0; i < cardArray.size(); i++) {
-
-            JSONObject cardJson = cardArray.getJSONObject(i);
-
-            // 判断是可写读才能拿到
-            // IF lBUser, only x (set by vue)
-            // IF lSProd, only non-x (set by vue)
-            if (cardJson.getInteger("auth") == 2) {
-                if (listType == "lBUser" && cardJson.getString("ref").endsWith("x"))
+        for (String cardItem : cardArray.keySet())
+        {
+            if (cardArray.getInteger(cardItem).equals(2))
+            {
+                if (listType == "lBUser" && cardItem.endsWith("x"))
                 {
-                    result.add(cardJson.getString("ref"));
-                } else if (listType == "lSProd" && !cardJson.getString("ref").endsWith("x")) {
-                    result.add(cardJson.getString("ref"));
+                    result.add(cardItem);
+                } else if (listType == "lSProd" && !cardItem.endsWith("x")) {
+                    result.add(cardItem);
                 } else if (listType != "lSProd" && listType != "lBUser" ) {
-                    result.add(cardJson.getString("ref"));
+                    result.add(cardItem);
                 }
             }
-
         }
+
+//        for (int i = 0; i < cardArray.size(); i++) {
+//
+//            JSONObject cardJson = cardArray.getJSONObject(i);
+//
+//            // 判断是可写读才能拿到
+//            // IF lBUser, only x (set by vue)
+//            // IF lSProd, only non-x (set by vue)
+//            if (cardJson.getInteger("auth") == 2) {
+//                if (listType == "lBUser" && cardJson.getString("ref").endsWith("x"))
+//                {
+//                    result.add(cardJson.getString("ref"));
+//                } else if (listType == "lSProd" && !cardJson.getString("ref").endsWith("x")) {
+//                    result.add(cardJson.getString("ref"));
+//                } else if (listType != "lSProd" && listType != "lBUser" ) {
+//                    result.add(cardJson.getString("ref"));
+//                }
+//            }
+//
+//        }
         // need a id_Check
         // KEV: IF lBProd & bcdNet == 1, real comp, Only X
         // IF lBProd/lSBComp & bcdNet == 1, real comp, only X
@@ -321,24 +336,24 @@ public class SetAuthServicelmpl implements SetAuthService {
 //        return retResult.ok(CodeEnum.OK.getCode(), one.getRolex().getJSONObject("objComp").keySet());
 //    }
 
-
-    @Override
-    public ApiResponse updateDefCard(String id_U, String id_C, JSONObject defData) {
-
-
-        authCheck.getUserUpdateAuth(id_U, id_C, "lSAsset", "1003", "card", new JSONArray().fluentAdd("def"));
-
-            Query menuQuery = new Query(
-                    new Criteria("info.id_C").is(id_C)
-                            .and("info.ref").is("a-auth"));
-            menuQuery.fields().include("def");
-            Update mainMenuUd = new Update();
-            mainMenuUd.set("def", defData);
-            mongoTemplate.updateFirst(menuQuery, mainMenuUd, Asset.class);
-
-        return retResult.ok(CodeEnum.OK.getCode(), "");
-
-    }
+//
+//    @Override
+//    public ApiResponse updateDefCard(String id_U, String id_C, JSONObject defData) {
+//
+//
+//        authCheck.getUserUpdateAuth(id_U, id_C, "lSAsset", "1003", "card", new JSONArray().fluentAdd("def"));
+//
+//            Query menuQuery = new Query(
+//                    new Criteria("info.id_C").is(id_C)
+//                            .and("info.ref").is("a-auth"));
+//            menuQuery.fields().include("def");
+//            Update mainMenuUd = new Update();
+//            mainMenuUd.set("def", defData);
+//            mongoTemplate.updateFirst(menuQuery, mainMenuUd, Asset.class);
+//
+//        return retResult.ok(CodeEnum.OK.getCode(), "");
+//
+//    }
 
 
 }

@@ -38,7 +38,6 @@ public class LogController {
 
     /**
      * 发送
-     * @param can 请求参数
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
      * @ver 1.0.0

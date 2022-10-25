@@ -13,13 +13,14 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.SMSTypeEnum;
 import com.cresign.tools.enumeration.manavalue.ClientEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
-import com.cresign.tools.mongo.MongoUtils;
+
 import com.cresign.tools.pojo.es.lBUser;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
@@ -91,6 +92,9 @@ public class WxLoginServiceImpl implements WxLoginService {
     @Autowired
     private RetResult retResult;
 
+    @Autowired
+    private Qt qt;
+
 
     /**
      * 小程序唯一标识 (在微信小程序管理后台获取)
@@ -120,6 +124,7 @@ public class WxLoginServiceImpl implements WxLoginService {
     @Resource
     private CoupaUtil coupaUtil;
 
+
     /**
      * 验证appId，并且返回AUN—ID
      * @param id_APP	应用编号
@@ -131,6 +136,8 @@ public class WxLoginServiceImpl implements WxLoginService {
     @Override
     public ApiResponse verificationAUN(String id_APP) {
         User user = coupaUtil.getUserByKeyAndVal("info.id_APP", id_APP, Collections.singletonList("info"));
+
+
         if (null != user) {
             return retResult.ok(CodeEnum.OK.getCode(),user.getInfo().getId_AUN());
         }
@@ -570,7 +577,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         // 添加到user对象中
         User user = new User();
 
-        String id_U = MongoUtils.GetObjectId();
+        String id_U = qt.GetObjectId();
         user.setId(id_U);
         UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,null, null, "5f2a2502425e1b07946f52e9","cn","CNY",
                 avatarUrl,"China","",phoneNumber,countryCode);
