@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>cresign_java</artifactId>
+        <groupId>com.cresign_java</groupId>
+        <version>1.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>gateway</artifactId>
+
+    <dependencies>
+
+        <!-- Spring Cloud Begin -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+        </dependency>
+        <!-- Spring Cloud End -->
+
+        <!--<dependency>-->
+        <!--<groupId>org.springframework.session</groupId>-->
+        <!--<artifactId>spring-session-data-redis</artifactId>-->
+        <!--</dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- 日志 Log4j2 -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-log4j2</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.15.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.15.0</version>
+        </dependency>
+
+        <!-- Log4j2 异步支持 -->
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <version>3.3.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-web</artifactId>
+            <version>2.15.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+
+        <!-- logback 依赖 start-->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>6.3</version>
+        </dependency>
+        <!-- redis 导入-->
+        <dependency>
+            <groupId>com.cwbase</groupId>
+            <artifactId>logback-redis-appender</artifactId>
+            <version>1.1.6</version>
+        </dependency>
+        <!-- logback 依赖 end-->
+
+        <!--spring切面aop依赖-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--<plugin>-->
+            <!--    <groupId>com.spotify</groupId>-->
+            <!--    <artifactId>docker-maven-plugin</artifactId>-->
+            <!--    <version>1.0.0</version>-->
+            <!--    <configuration>-->
+            <!--        &lt;!&ndash; 镜像名称 guoweixin/exam&ndash;&gt;-->
+            <!--        <imageName>${docker.image.prefix}/${project.artifactId}</imageName>-->
+            <!--        &lt;!&ndash;指定标签&ndash;&gt;-->
+            <!--        <imageTags>-->
+            <!--            <imageTag>latest</imageTag>-->
+            <!--        </imageTags>-->
+            <!--        &lt;!&ndash; 基础镜像jdk 1.8&ndash;&gt;-->
+            <!--        <baseImage>java</baseImage>-->
+            <!--        &lt;!&ndash; 制作者提供本人信息 &ndash;&gt;-->
+            <!--        <maintainer>852649348@qq.com</maintainer>-->
+            <!--        &lt;!&ndash;切换到/ROOT目录 &ndash;&gt;-->
+            <!--        <workdir>/ROOT</workdir>-->
+            <!--        &lt;!&ndash;                    <cmd>["java", "-version"]</cmd>&ndash;&gt;-->
+            <!--        <entryPoint>["java", "-jar", "${project.build.finalName}.jar"]</entryPoint>-->
+            <!--        &lt;!&ndash; 指定 Dockerfile 路径 <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory> &ndash;&gt;&lt;!&ndash;指定远程 docker api地址&ndash;&gt;-->
+            <!--        <dockerHost>http://192.168.1.108:2828</dockerHost>-->
+            <!--        &lt;!&ndash; 这里是复制 jar 包到 docker 容器指定目录配置 &ndash;&gt;-->
+            <!--        <resources>-->
+            <!--            <resource>-->
+            <!--                <targetPath>/ROOT</targetPath>-->
+            <!--                &lt;!&ndash;用于指定需要复制的根目录，${project.build.directory}表示target目 录&ndash;&gt;-->
+            <!--                <directory>${project.build.directory}</directory>-->
+            <!--                &lt;!&ndash;用于指定需要复制的文件。${project.build.finalName}.jar指的是打包 后的jar包文件。&ndash;&gt;-->
+            <!--                <include>${project.build.finalName}.jar</include>-->
+            <!--            </resource>-->
+            <!--        </resources>-->
+            <!--    </configuration>-->
+            <!--    <executions>-->
+            <!--        <execution>-->
+            <!--            <id>build-image</id>-->
+            <!--            <phase>package</phase>-->
+            <!--            <goals>-->
+            <!--                <goal>build</goal>-->
+            <!--            </goals>-->
+            <!--        </execution>-->
+            <!--    </executions>-->
+            <!--</plugin>-->
+        </plugins>
+    </build>
+
+</project>
