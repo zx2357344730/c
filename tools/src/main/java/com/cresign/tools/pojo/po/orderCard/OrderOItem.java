@@ -12,9 +12,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * ##ClassName: ProdOItem
  * ##description: prod的oitem类
- * ##Author: tang
+ * @author tang
  * ##Updated: 2020/10/17 16:49
- * ##version: 1.0.0
+ * @ver 1.0.0
  */
 @Document(collection = "Order")
 @Data
@@ -22,6 +22,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor//注解在类上，为类提供一个无参的构造方法
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrderOItem {
+
 
     public OrderOItem(String id_P, String id_C, String id_CP, String id_CB, JSONObject wrdN,
                       JSONObject wrddesc, JSONObject wrdprep, String grp, String grpB, String ref,
@@ -105,6 +106,7 @@ public class OrderOItem {
      * 零件次序
      */
     private Integer wn0prior = 100;
+    private Integer priority;
 
     /**
      * 零件父公司id

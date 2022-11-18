@@ -4,22 +4,23 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.purchase.enumeration.PurchaseEnum;
-//import com.cresign.purchase.service.AssetService;
 import com.cresign.purchase.service.PurchaseService;
-import com.cresign.purchase.utils.*;
+import com.cresign.purchase.utils.HttpClientUtils;
+import com.cresign.purchase.utils.QRCodeUtil;
+import com.cresign.purchase.utils.SMSTencent;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.common.Constants;
-import com.cresign.tools.dbTools.CommUtils;
-import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.CoupaUtil;
+import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.Qt;
+import com.cresign.tools.dbTools.Ut;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.SMSTemplateEnum;
 import com.cresign.tools.enumeration.SMSTypeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
-import com.cresign.tools.mongo.MongoUtils;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.InitJava;
 import com.cresign.tools.pojo.po.Prod;
@@ -31,7 +32,6 @@ import com.stripe.model.Price;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -55,24 +55,21 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class PurchaseServiceImpl implements PurchaseService {
 
-    @Autowired
-    private RestHighLevelClient restHighLevelClient;
 
     @Autowired
     private MongoTemplate mongoTemplate;
     
     @Autowired
-    private CommUtils commUtils;
+    private Ut ut;
+
+    @Autowired
+    private Qt qt;
 
     @Autowired
     private DateUtils dateUtils;
 
     @Resource
     private StringRedisTemplate redisTemplate0;
-
-    @Autowired
-    private StringRedisTemplate redisTemplate1;
-
 
     @Autowired
     private CoupaUtil coupaUtil;
@@ -83,10 +80,10 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 新增stripe的产品和价格
      *
-     * ##Params: orderId 订单id
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param orderId 订单id
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/25 13:58
      */
     @Override
@@ -140,10 +137,10 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 根据orderId查询微信支付订单结果
      *
-     * ##Params: orderId 订单编号confirmOrder
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param orderId 订单编号confirmOrder
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 8:19
      */
     @Override
@@ -159,7 +156,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         // 查询订单id
         reDataMap.put("out_trade_no", orderId);
         // 随机字符串
-        reDataMap.put("nonce_str", MongoUtils.GetObjectId());
+        reDataMap.put("nonce_str", qt.GetObjectId());
 
         // 创建签名
         String sign = null;
@@ -232,11 +229,10 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 根据orderId和id_C生成微信支付二维码
      *
-     * ##Params: orderId 订单编号
-     * ##Params: id_C    公司编号
-     * ##return: java.lang.String  返回结果: 支付二维码
-     * ##Author: tang
-     * ##version: 1.0.0
+
+     * @return java.lang.String  返回结果: 支付二维码
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 8:19
      */
 
@@ -276,7 +272,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         reDataMap.put("body", orderById.get("wcnN").toString());
         // 商户订单号
         reDataMap.put("out_trade_no", rechargeNo);
-        int price = (int) ((commUtils.getDouble(orderById.get("wn2PaidPrice").toString())) * 100);
+        int price = (int) ((ut.getDouble(orderById.get("wn2PaidPrice").toString())) * 100);
         // 获取支付订单价格
         reDataMap.put("total_fee", price + "");
 
@@ -402,12 +398,12 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * stripe支付成功回调方法
      *
-     * ##Params: orderId 订单编号
-     * ##Params: id_C    公司编号
-     * ##Params: uId     用户编号
-     * ##return: java.lang.String  返回结果: 添加结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param orderId 订单编号
+     * @param id_C    公司编号
+     * @param uId     用户编号
+     * @return java.lang.String  返回结果: 添加结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 8:20
      */
     @Override
@@ -422,7 +418,6 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         if (null == orderById) {
             // 返回处理结果
-//            return RetResult.errorJsonResult(HttpStatus.OK, PurchaseEnum.PR_FAILF.getCode(), "失败:订单已过期，请重新购买！！！");
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, PurchaseEnum.ERR_ORDER_BE_OVERDUE.getCode(), "失败:订单已过期，请重新购买！！！");
         }
 
@@ -430,15 +425,17 @@ public class PurchaseServiceImpl implements PurchaseService {
         String aId_BuyTemp = null;
         String view = null;
         String id_O = null;
-        int optionType = commUtils.objToInteger(orderById.get("optionType"));
+        int optionType = ut.objToInteger(orderById.get("optionType"));
         if (optionType == 0) {
 
         } else if (optionType == 1 || optionType == 2) {
 //            String aId = (SetLogEnum.A_MODULE.getType() + id_C);
-            String assetId = coupaUtil.getAssetId(id_C, "a-module");
+//            String assetId = coupaUtil.getAssetId(id_C, "a-core");
 
-            if (null != assetId) {
-                Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("modList"));
+//            if (null != assetId) {
+//                Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("modList"));
+                Asset asset = qt.getConfig(id_C,"a-core", "objMod");
+
                 if (null == asset) {
                     // 返回处理结果
 //                    return RetResult.errorJsonResult(HttpStatus.OK, PurchaseEnum.PR_GET_NULL.getCode(), "失败:购买信息为空！！！");
@@ -460,16 +457,16 @@ public class PurchaseServiceImpl implements PurchaseService {
 //                }
 
                 if (optionType == 1) {
-                    orderById.put("tdurDay", (commUtils.objToInteger(orderById.get("tdurDay")) + commUtils.objToInteger(mod.get("tdurDay"))));
+                    orderById.put("tdurDay", (ut.objToInteger(orderById.get("tdurDay")) + ut.objToInteger(mod.get("tdurDay"))));
                 }
-                orderById.put("tdurMonth", (commUtils.objToInteger(orderById.get("tdurMonth")) + commUtils.objToInteger(mod.get("tdurMonth"))));
-                orderById.put("wn2PaidPrice", (commUtils.getDouble(orderById.get("wn2PaidPrice").toString()) + commUtils.getDouble(mod.get("wn2PaidPrice").toString())));
-                orderById.put("wn2EstPrice", (commUtils.getDouble(orderById.get("wn2EstPrice").toString()) + commUtils.getDouble(mod.get("wn2EstPrice").toString())));
-            } else {
-                // 返回处理结果
-//                return RetResult.errorJsonResult(HttpStatus.OK, PurchaseEnum.PR_GET_NULL.getCode(), "失败:购买信息为空！！！");
-                throw new ErrorResponseException(HttpStatus.BAD_REQUEST, PurchaseEnum.ERR_PURCHASE_INFO_IS_NULL.getCode(), "失败:购买信息为空！！！");
-            }
+                orderById.put("tdurMonth", (ut.objToInteger(orderById.get("tdurMonth")) + ut.objToInteger(mod.get("tdurMonth"))));
+                orderById.put("wn2PaidPrice", (ut.getDouble(orderById.get("wn2PaidPrice").toString()) + ut.getDouble(mod.get("wn2PaidPrice").toString())));
+                orderById.put("wn2EstPrice", (ut.getDouble(orderById.get("wn2EstPrice").toString()) + ut.getDouble(mod.get("wn2EstPrice").toString())));
+//            } else {
+//                // 返回处理结果
+////                return RetResult.errorJsonResult(HttpStatus.OK, PurchaseEnum.PR_GET_NULL.getCode(), "失败:购买信息为空！！！");
+//                throw new ErrorResponseException(HttpStatus.BAD_REQUEST, PurchaseEnum.ERR_PURCHASE_INFO_IS_NULL.getCode(), "失败:购买信息为空！！！");
+//            }
         }
 
 
@@ -519,7 +516,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 //                ("auth失败");
 //            }
 //            aId_BuyTemp = SetLogEnum.A_MODULE.getType() + id_C;
-//            assetId = assetService.getAssetId(id_C, "a-module");
+//            assetId = assetService.getAssetId(id_C, "a-core");
 //            if (null == assetId) {
 //                // 返回处理结果
 //                return RetResult.errorJsonResult(HttpStatus.OK, PurchaseEnum.PR_GET_NULL.getCode(), "失败:购买信息为空！！！");
@@ -696,12 +693,12 @@ public class PurchaseServiceImpl implements PurchaseService {
                 calculation.put("amk", id_U);
 
                 //开始时间
-                calculation.put("tmk", DateUtils.getDateByT(DateEnum.DATE_ONE.getDate()));
+                calculation.put("tmk", DateUtils.getDateNow(DateEnum.DATE_ONLY.getDate()));
                 //结束时间
-                calculation.put("tfin", dateUtils.getEndTime(DateUtils.getDateByT(DateEnum.DATE_ONE.getDate()), (Integer) data.get("tdurMonth")));
+                calculation.put("tfin", dateUtils.getEndTime(DateUtils.getDateNow(DateEnum.DATE_ONLY.getDate()), (Integer) data.get("tdurMonth")));
 
-//                int tdurDay = DateUtils.nDaysBetweenTwoDate(DateUtils.getDateByT(DateEnum.DATE_ONE.getDate()),
-//                        commUtils.getEndTime(DateUtils.getDateByT(DateEnum.DATE_ONE.getDate()), (Integer) data.get("tdurMonth")));
+//                int tdurDay = DateUtils.nDaysBetweenTwoDate(DateUtils.getDateNow(DateEnum.DATE_ONLY.getDate()),
+//                        commUtils.getEndTime(DateUtils.getDateNow(DateEnum.DATE_ONLY.getDate()), (Integer) data.get("tdurMonth")));
 //                //购买天数
 //                data.put("tdurDay", tdurDay);
 
@@ -732,10 +729,10 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 根据orderId获取redis的订单
      *
-     * ##Params: orderId redis订单id
-     * ##return: java.util.Map<java.lang.String, java.lang.Object>  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param orderId redis订单id
+     * @return java.util.Map<java.lang.String, java.lang.Object>  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 9:43
      */
     private JSONObject getOrderById(String orderId) {
@@ -749,10 +746,10 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 把orderById信息新增到redis数据库
      *
-     * ##Params: orderById 订单信息
-     * ##return: void  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param orderById 订单信息
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 9:43
      */
     private void addOrderById(Map<String, Object> orderById) {
@@ -762,31 +759,30 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 根据aId_Auth删除view指定数据，根据aId_BuyTemp删除id_O指定数据
      *
-     * ##Params: aId_Auth    assetId
-     * ##Params: aId_BuyTemp assetId
-     * ##Params: view        数据
-     * ##Params: id_O        数据
-     * ##return: void  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param aId_Auth    assetId
+     * @param aId_BuyTemp assetId
+     * @param view        数据
+     * @param id_O        数据
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 9:44
      */
-    private void del(String aId_Auth, String aId_BuyTemp, String view, String id_O) {
-        if (null != aId_Auth) {
-            coupaUtil.delAssetAuth(aId_Auth, view);
-        }
-        if (null != aId_BuyTemp) {
-            coupaUtil.delAssetBuyTemp(aId_BuyTemp, id_O);
-        }
-    }
+//    private void del(String aId_Auth, String aId_BuyTemp, String view, String id_O) {
+//        if (null != aId_Auth) {
+//            coupaUtil.delAssetAuth(aId_Auth, view);
+//        }
+//        if (null != aId_BuyTemp) {
+//            coupaUtil.delAssetBuyTemp(aId_BuyTemp, id_O);
+//        }
+//    }
 
     /**
      * 根据map删除订单，和lsb订单
      *
-     * ##Params: map 数据
-     * ##return: void  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/8 9:45
      */
 //    private void delAndIs(Map<String, Object> map) {
@@ -1109,12 +1105,12 @@ public class PurchaseServiceImpl implements PurchaseService {
     /**
      * 查询用户是否是该公司下def的负责人
      *
-     * ##Params: id_U 用户id
-     * ##Params: id_C 公司id
-     * ##author: JackSon
-     * ##version: 1.0
-     * ##updated: 2020/8/24 17:13
-     * ##Return: int 0 : 是，1 : 不是，2 : 公司数据找不到
+     * @param id_U 用户id
+     * @param id_C 公司id
+     * @author JackSon
+     * @ver 1.0
+     * @updated 2020/8/24 17:13
+     * @return int 0 : 是，1 : 不是，2 : 公司数据找不到
      */
     private int selectCompDefOFUser(String id_U, String id_C) {
 
@@ -1144,13 +1140,13 @@ public class PurchaseServiceImpl implements PurchaseService {
         int resultNum = selectCompDefOFUser(id_U, id_C);
 
         if (resultNum == 0) {
-            if (redisTemplate1.hasKey(SMSTypeEnum.PURCHASE.getSmsType() + phone)) {
+            if (redisTemplate0.hasKey(SMSTypeEnum.PURCHASE.getSmsType() + phone)) {
 
-                String smsNum = redisTemplate1.opsForValue().get(SMSTypeEnum.PURCHASE.getSmsType() + phone);
+                String smsNum = redisTemplate0.opsForValue().get(SMSTypeEnum.PURCHASE.getSmsType() + phone);
 
                 if (smsNum.equals(smsCode)) {
 
-                    redisTemplate1.delete(SMSTypeEnum.PURCHASE.getSmsType() + phone);
+                    redisTemplate0.delete(SMSTypeEnum.PURCHASE.getSmsType() + phone);
 
                     return retResult.ok(CodeEnum.OK.getCode(),null);
                 }
@@ -1190,15 +1186,15 @@ public class PurchaseServiceImpl implements PurchaseService {
 //            if (resultNum == 0) {
 
 //                Query query = new Query(
-//                        new Criteria("_id").is("a-module-" + id_C)
+//                        new Criteria("_id").is("a-core-" + id_C)
 //                                .and("modList.data.ref").is(ref));
 //                query.fields().include("modList.data.$");
 
                 Query moduleQ = new Query(Criteria.where("info.id_C").is(id_C)
-                        .and("info.ref").is("a-module").and("control.objData")
+                        .and("info.ref").is("a-core").and("control.objMod")
                             .elemMatch(new Criteria("ref").is(ref).and("bcdLevel").is(bcdLevel)));  //To find matching documents
 
-                moduleQ.fields().include("control.objData.$");
+                moduleQ.fields().include("control.objMod.$");
 
 
 
@@ -1278,10 +1274,10 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         JSONObject stateObject = new JSONObject();
         Query authQ = new Query(Criteria.where("_id").is(id_A)
-                .and("control.objData").elemMatch(new Criteria("ref").is(ref)
+                .and("control.objMod").elemMatch(new Criteria("mod").is(ref)
                         .and("bcdLevel").is(bcdLevel)));  //To find matching documents
 
-        authQ.fields().include("control.objData.$");
+        authQ.fields().include("control.objMod.$");
         //查询模块基本资料
         Asset moduleInit = mongoTemplate.findOne(authQ, Asset.class);
         if (moduleInit == null) {
@@ -1315,7 +1311,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
                 //修改模块
                 Update controlupdate = new Update();
-                controlupdate.set("control.objData.$", indexObj);
+                controlupdate.set("control.objMod.$", indexObj);
                 if (!ObjectUtils.isEmpty(controlupdate.getUpdateObject())) {
                     mongoTemplate.updateFirst(authQ, controlupdate, Asset.class);
                 }
@@ -1494,10 +1490,10 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         JSONObject stateObject = new JSONObject();
         Query authQ = new Query(Criteria.where("_id").is(id_A)
-                .and("control.objData").elemMatch(new Criteria("ref").is(ref)
+                .and("control.objMod").elemMatch(new Criteria("ref").is(ref)
                     .and("bcdLevel").is(bcdLevel)));
 
-        authQ.fields().include("control.objData.$");
+        authQ.fields().include("control.objMod.$");
         //查询模块基本资料
         Asset moduleInit = mongoTemplate.findOne(authQ, Asset.class);
         if (moduleInit == null) {
@@ -1532,7 +1528,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                 indexObj.put("id_U", usersArray);
                 //修改模块
                 Update controlupdate = new Update();
-                controlupdate.set("control.objData.$", indexObj);
+                controlupdate.set("control.objMod.$", indexObj);
                 if (!ObjectUtils.isEmpty(controlupdate.getUpdateObject())) {
                     mongoTemplate.updateFirst(authQ, controlupdate, Asset.class);
                 }
@@ -1637,10 +1633,10 @@ public class PurchaseServiceImpl implements PurchaseService {
 //        authQ.fields().include("control.$");
 
         Query authQ = new Query(Criteria.where("_id").is(id_A)
-                .and("control.objData").elemMatch(new Criteria("ref").is(ref)
+                .and("control.objMod").elemMatch(new Criteria("ref").is(ref)
                         .and("bcdLevel").is(bcdLevel)));
 
-        authQ.fields().include("control.objData.$");
+        authQ.fields().include("control.objMod.$");
 
         //查询模块基本资料
         Asset moduleInit = mongoTemplate.findOne(authQ, Asset.class);
@@ -1691,7 +1687,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                             //修改模块
                             Update controlupdate = new Update();
                             //controlupdate.set("control.$", moduleInit.getControl().get(0));
-                            controlupdate.set("control.objData.$", indexObj);
+                            controlupdate.set("control.objMod.$", indexObj);
                             if (!ObjectUtils.isEmpty(controlupdate.getUpdateObject())) {
                                 mongoTemplate.updateFirst(authQ, controlupdate, Asset.class);
                             }
@@ -1725,7 +1721,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
                     //修改模块
                     Update controlupdate = new Update();
-                    controlupdate.set("control.objData.$", indexObj);
+                    controlupdate.set("control.objMod.$", indexObj);
                     //controlupdate.set("control.$", moduleInit.getControl().get(0));
                     if (!ObjectUtils.isEmpty(controlupdate.getUpdateObject())) {
                         mongoTemplate.updateFirst(authQ, controlupdate, Asset.class);
@@ -1902,10 +1898,10 @@ public class PurchaseServiceImpl implements PurchaseService {
         //判断用户是创始人
 
         Query authQ = new Query(Criteria.where("_id").is(id_A)
-                .and("control.objData").elemMatch(new Criteria("ref").is(ref)
+                .and("control.objMod").elemMatch(new Criteria("ref").is(ref)
                         .and("bcdLevel").is(bcdLevel)));  //To find matching documents
 
-        authQ.fields().include("control.objData.$");
+        authQ.fields().include("control.objMod.$");
 
         //查询模块基本资料
         Asset moduleInit = mongoTemplate.findOne(authQ, Asset.class);
@@ -1937,7 +1933,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                 //修改模块
                 Update controlupdate = new Update();
 
-                controlupdate.set("control.objData.$", indexObj);
+                controlupdate.set("control.objMod.$", indexObj);
                 if (!ObjectUtils.isEmpty(controlupdate.getUpdateObject())) {
                     mongoTemplate.updateFirst(authQ, controlupdate, Asset.class);
                 }
@@ -2109,14 +2105,14 @@ public class PurchaseServiceImpl implements PurchaseService {
          */
         Query controlQ = new Query(
                 new Criteria("info.id_C").is(id_C)
-                        .and("info.ref").is("a-module")
-                        .and("control.objData").elemMatch(new Criteria("ref").is(ref)
+                        .and("info.ref").is("a-core")
+                        .and("control.objMod").elemMatch(new Criteria("ref").is(ref)
                         .and("bcdLevel").is(bcdLevel)));  //To find matching documents
 
-//                        .and("control.objData.ref").is(ref)
-//                        .and("control.objData.bcdLevel").is(bcdLevel));
+//                        .and("control.objMod.ref").is(ref)
+//                        .and("control.objMod.bcdLevel").is(bcdLevel));
 
-        controlQ.fields().include("control.objData.$");
+        controlQ.fields().include("control.objMod.$");
 
         Asset oldModule = mongoTemplate.findOne(controlQ, Asset.class);
 
@@ -2129,8 +2125,8 @@ public class PurchaseServiceImpl implements PurchaseService {
         JSONObject dataJson = (JSONObject) JSON.toJSON(oldModule.getControl().getJSONArray("objData").get(0));
 
 
-
-        // todo 根据mode再去init拿数据。然后再计算出钱   获取模块下的基本参数
+        //???????
+        // 根据mode再去init拿数据。然后再计算出钱   获取模块下的基本参数
         JSONObject oldModuleInit = getModuleInit(dataJson.getString("ref"), dataJson.getInteger("bcdLevel"),reqJson.getString("id_P"));
 
         //JSONObject oldModuleObj = oldModuleInit.getJSONObject("moduleObj");
@@ -2256,7 +2252,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
 
             // 获取旧数据的开始时间(开始时间要拿当前日期)
-            Date startDate = dateUtils.strTurnDate(DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+            Date startDate = dateUtils.strTurnDate(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             // 获取旧数据的结束时间
             Date endDate = dateUtils.strTurnDate(dataJson.getString("tfin"));
             // 计算出两个时间差多少个月

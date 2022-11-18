@@ -17,12 +17,12 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * ##author: tangzejin
- * ##updated: 2019/8/23
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/8/23
+ * @ver 1.0.0
  * ##description: 微信登录websocket
  */
-@ServerEndpoint("/login/{id}")
+@ServerEndpoint("/wsU/login/{id}")
 @Component
 public class WebSocketLoginServer {
 
@@ -61,14 +61,11 @@ public class WebSocketLoginServer {
 
     /**
      * 连接建立成功调用的方法
-     * ##Params: session	连接用户的session
-     * ##Params: orderId	当前连接的订单id
-     * ##Params: wxOrderId	微信订单id
-     * ##Params: id_C  连接公司id
-     * ##Params: id_U	连接用户id
-     * ##return: void    返回结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param session	连接用户的session
+
+     * @return void    返回结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/5 10:49
      */
     @OnOpen
@@ -109,13 +106,10 @@ public class WebSocketLoginServer {
 
     /**
      * 连接关闭调用的方法
-     * ##Params: orderId	订单编号
-     * ##Params: wxOrderId	微信订单编号
-     * ##Params: id_C	公司编号
-     * ##Params: id_U	用户编号
-     * ##return: void    返回结果
-     * ##Author: tang
-     * ##version: 1.0.0
+
+     * @return void    返回结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/5 10:50
      */
     @OnClose
@@ -143,10 +137,10 @@ public class WebSocketLoginServer {
 
     /**
      * 连接异常回调方法
-     * ##Params: error	异常信息
-     * ##return: void    返回结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param error	异常信息
+     * @return void    返回结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/5 10:51
      */
     @OnError
@@ -158,14 +152,13 @@ public class WebSocketLoginServer {
 
     /**
      * 实现服务器主动推送
-     * ##Params: stats	推送状态
-     * ##return: void    返回结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @return void    返回结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/5 10:51
      */
 
-    private void sendMessage(JSONObject stringMap) {
+    private synchronized void sendMessage(JSONObject stringMap) {
 
         // 向前端推送log消息
         try {
@@ -177,11 +170,9 @@ public class WebSocketLoginServer {
 
     /**
      * 群发自定义消息
-     * ##Params: orderId	订单编号
-     * ##Params: stats	订单状态
-     * ##return: void    返回结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @return void    返回结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/5 10:52
      */
     public static void sendInfo(String id,JSONObject infoData) {
@@ -196,10 +187,10 @@ public class WebSocketLoginServer {
 
 //    /**
 //     * 获取id是否连接成功
-//     * ##param id    连接编号
+//     * @param id    连接编号
 //     * @return boolean  返回结果: 结果
 //     * @author tang
-//     * @version 1.0.0
+//     * @ver 1.0.0
 //     * @date 2021/7/27 18:27
 //     */
 //    public static boolean isConnect(String id){
@@ -209,10 +200,10 @@ public class WebSocketLoginServer {
 
     /**
      * 根据prodID获取该连接的总在线人数
-     * ##Params: key	键
-     * ##return: int    返回结果总在线人数
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param key	键
+     * @return int    返回结果总在线人数
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/5 10:53
      */
     private static synchronized int getOnlineCount(String key) {
@@ -221,10 +212,10 @@ public class WebSocketLoginServer {
 
     /**
      * 根据prodID，把当前人数加一
-     * ##Params: key	键
-     * ##return: void  返回结果:总在线人数
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param key	键
+     * @return void  返回结果:总在线人数
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/5 10:54
      */
     private static synchronized void addOnlineCount(String key) {
@@ -241,10 +232,10 @@ public class WebSocketLoginServer {
 
     /**
      * 根据prodID，把当前人数减一
-     * ##Params: key	键
-     * ##return: void  返回结果:
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param key	键
+     * @return void  返回结果:
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/5 10:54
      */
     private static synchronized void subOnlineCount(String key) {

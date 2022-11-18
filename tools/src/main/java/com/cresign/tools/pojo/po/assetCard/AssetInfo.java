@@ -32,8 +32,8 @@ public class AssetInfo {
         this.ref = ref == null ? "": ref;
         this.pic = pic == null ? "": pic;
         this.lAT = lAT == null ? 0: lAT;
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmk = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     private String id_C;
@@ -52,7 +52,10 @@ public class AssetInfo {
 
     private String pic;
 
-    private Double wn2qty = 0.0;//
+    private Double wn2qty = 0.0;
+
+    private Double wn4price = 0.0;
+
 
     @JsonProperty("lAT")
     private Integer lAT; //Asset Type

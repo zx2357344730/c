@@ -1,107 +1,88 @@
 package com.cresign.login.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.service.InitService;
 import com.cresign.tools.advice.RetResult;
+import com.cresign.tools.advice.RsaUtilF;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Init;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Component
 public class InitServiceImpl implements InitService {
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+//    public static final String RED_KEY = "key:k_";
+//
+//    private static final String HD_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCVF409Bdp1KRLBP/6UPjePTFEd8bFayzfRo6hHrxURlkLSvT2MMVeOD8J9DMbct/Dpju4uWIUBZC75mwERRD+q8G9r4umRUPokDfL29WSGxDZnr13i8NoI7mJl/D+5XeeHauW9+lYhM98ATtLJOEZ4hKFuVBQm5rHNON3L9dPz7wIDAQAB";
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private Qt qt;
 
     @Autowired
     private RetResult retResult;
 
     @Override
-    public ApiResponse getInitById(String lang, Integer ver) {
+    public ApiResponse getInitById(String lang, Integer ver,String qdKey,String uuId) {
 
-        Query query = new Query(new Criteria("_id").is(lang));
+//        Init initVerCheck = qt.getMDContent(lang, "ver", Init.class);
+        Init init = qt.getInitData(lang);
 
-        query.fields().include("ver");
-        //结果
-        Init initVerCheck = mongoTemplate.findOne(query, Init.class);
+                JSONObject re = new JSONObject();
+        re.put("qdKey",qdKey);
+        Map<String, String> stringMap = RsaUtilF.genKeyPairX();
+        assert stringMap != null;
+        re.put("privateKey",stringMap.get("privateKey"));
+        re.put("publicKey",stringMap.get("publicKey"));
 
-        if (ver.equals(initVerCheck.getVer()))
+        qt.setRDSet("key", "k_"+ uuId, JSON.toJSONString(re),259200L);
+
+        if (ver.equals(init.getVer()))
         {
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.ALREADY_LOCAL.getCode(), "");
+            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.ALREADY_LOCAL.getCode(), stringMap.get("publicKey"));
+        } else {
+            JSONObject init2 = qt.toJson(init);
+            init2.put("hdKey", re.getString("publicKey"));
+            return retResult.ok(CodeEnum.OK.getCode(), init2);
         }
 
         // 判断 redis 中是否有这个键
-        if (redisTemplate1.opsForHash().hasKey("initData", lang)) {
-
-            String initData = (String)redisTemplate1.opsForHash().get("initData", lang);
-
-            JSONObject init = JSONObject.parseObject(initData);
-
-//            JSONObject langJson = (JSONObject) jsonObject.get("lang");
-
-//            if (null != ver && !ver.equals(langJson.getInteger("ver"))) {
+//        if (qt.hasRDKey("initData", lang)) {
 //
-//                Init init = mongoTemplate.findOne(new Query(new Criteria("_id").is(lang)), Init.class);
+//            JSONObject init = qt.getRDSet("initData", lang);
+//            init.put("hdKey", re.getString("publicKey"));
 //
-//                redisTemplate1.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
-
-            return retResult.ok(CodeEnum.OK.getCode(), init);
-//            }
+//            return retResult.ok(CodeEnum.OK.getCode(), init);
+//        } else {
+//            System.out.println("no hasKey");
 //
-//            return retResult.ok(CodeEnum.ALREADY_LOCAL.getCode(), null);
-
-        } else {
-
-            Init init = mongoTemplate.findOne(new Query(new Criteria("_id").is(lang)), Init.class);
-
-            redisTemplate1.opsForHash().put("initData", lang, JSONObject.toJSONString(init));
-
-            return retResult.ok(CodeEnum.OK.getCode(), init);
-        }
-
+////            Init init = qt.getMDContent(lang,"", Init.class);
+//
+//            qt.setRDSet("initData", lang, JSON.toJSONString(init));
+//
+//            init.setHdKey(re.getString("publicKey"));
+//
+//            return retResult.ok(CodeEnum.OK.getCode(), init);
+//        }
     }
 
     @Override
     public ApiResponse getPhoneType(String lang) {
 
-        Query query = new Query(new Criteria("_id").is(lang));
-        query.fields().include("list.phoneType");
-
-        Init init = mongoTemplate.findOne(query, Init.class);
+        Init init = qt.getInitData(lang); //= qt.getMDContent(lang,"list.phoneType", Init.class);
 
         JSONArray phoneType = init.getList().getJSONArray("phoneType");
 
         return retResult.ok(CodeEnum.OK.getCode(), phoneType);
     }
 
-
-    public ApiResponse getInitInclude(String lang,Integer ver, String include) {
-
-        Query query = new Query(new Criteria("_id").is(lang));
-
-        query.fields().include(include).include("ver");
-        //结果
-        Init init = mongoTemplate.findOne(query, Init.class);
-
-        if (null != ver && !ver.equals(init.getVer())) {
-
-            return retResult.ok(CodeEnum.OK.getCode(), init);
-        }
-        throw new ErrorResponseException(HttpStatus.OK, CodeEnum.ALREADY_LOCAL.getCode(), "");
-
-
-    }
 
 }

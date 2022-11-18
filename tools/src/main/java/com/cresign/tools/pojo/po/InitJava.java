@@ -39,11 +39,11 @@ public class InitJava {
     private JSONObject newMoneyOrder;
 
 
-
-
     private JSONObject cardInit;
 
     private JSONObject batchInit;
+
+    private JSONObject logInit;
 
     private JSONObject listTypeInit;
 

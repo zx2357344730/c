@@ -6,10 +6,10 @@ import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
 
 /**
- * ##Author: JackSon
- * ##version: 1.0
+ * @author JackSon
+ * @ver 1.0
  * ##description: mongodb事务配置
- * ##updated: 2020-04-13 15:05
+ * @updated 2020-04-13 15:05
  */
 @Configuration
 public class MongodbTransaction {

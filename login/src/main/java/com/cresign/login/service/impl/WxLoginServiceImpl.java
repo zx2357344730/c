@@ -11,14 +11,15 @@ import com.cresign.login.utils.wxlogin.applets.WXAesCbcUtil;
 import com.cresign.login.utils.wxlogin.web.WxAuthUtil;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.SMSTypeEnum;
 import com.cresign.tools.enumeration.manavalue.ClientEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
-import com.cresign.tools.mongo.MongoUtils;
 import com.cresign.tools.pojo.es.lBUser;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
@@ -40,6 +41,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.HashMap;
@@ -48,9 +50,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/7/29 9:28
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/7/29 9:28
+ * @ver 1.0
  */
 @Service
 @RefreshScope
@@ -82,10 +84,13 @@ public class WxLoginServiceImpl implements WxLoginService {
     private LoginResult loginResult;
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private RetResult retResult;
+
+    @Autowired
+    private Qt qt;
 
 
     /**
@@ -113,13 +118,36 @@ public class WxLoginServiceImpl implements WxLoginService {
     @Autowired
     private RestHighLevelClient restHighLevelClient;
 
+    @Resource
+    private CoupaUtil coupaUtil;
+
+
+//    /**
+//     * 验证appId，并且返回AUN—ID
+//     * @param id_APP	应用编号
+//     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+//     * @author tang
+//     * @version 1.0.0
+//     * @date 2022/8/19
+//     */
+//    @Override
+//    public ApiResponse verificationAUN(String id_APP) {
+//        User user = coupaUtil.getUserByKeyAndVal("info.id_APP", id_APP, Collections.singletonList("info"));
+//
+//
+//        if (null != user) {
+//            return retResult.ok(CodeEnum.OK.getCode(),user.getInfo().getId_AUN());
+//        }
+//        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(),"1");
+//    }
+
     /**
      * 微信登录方法
-     * ##author: JackSon
-     * ##Params: code  前端传入的code凭证
-     * ##version: 1.0
-     * ##updated: 2020/8/8 10:03
-     * ##Return: java.lang.String
+     * @author JackSon
+     * @param code  前端传入的code凭证
+     * @ver 1.0
+     * @updated 2020/8/8 10:03
+     * @return java.lang.String
      */
     @Override
     public ApiResponse wxWebLogin(String code) throws IOException {
@@ -184,11 +212,11 @@ WX_NOT_BIND.getCode(),unionid);
 
     /**
      * 解密用户敏感数据
-     * ##author: tangzejin
-     * ##Params: reqJson 前端请求参数
-     * ##version: 1.0
-     * ##updated: 2020/8/8 10:03
-     * ##Return: java.lang.String
+     * @author tangzejin
+     * @param reqJson 前端请求参数
+     * @ver 1.0
+     * @updated 2020/8/8 10:03
+     * @return java.lang.String
      */
     @Override
     public ApiResponse decodeUserInfo(JSONObject reqJson) {
@@ -252,7 +280,7 @@ WX_NOT_BIND.getCode(),unionid);
                 userInfo.put("countryCode", userInfoJSON.getString("countryCode"));
                 userInfo.put("unionId", unionId);
 
-//                redisTemplate1.opsForValue().set("wxSession_key_" + userInfoJSON.get("unionId"), session_key);
+//                redisTemplate0.opsForValue().set("wxSession_key_" + userInfoJSON.get("unionId"), session_key);
 
             } else {
 
@@ -326,7 +354,7 @@ WX_NOT_BIND.getCode(), null);
 
 
     @Override
-    public ApiResponse wxRegisterUser(JSONObject reqJson) {
+    public ApiResponse wxRegisterUser(JSONObject reqJson) throws IOException {
 
         boolean register_Is = false;
 
@@ -384,14 +412,14 @@ REGISTER_USER_IS_HAVE.getCode(), null);
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class,noRollbackFor = ResponseException.class)
-    public ApiResponse wechatRegister(String phone, Integer phoneType, String smsNum, String wcnN, String clientType, String clientID, String pic, String id_WX) {
+    public ApiResponse wechatRegister(String phone, Integer phoneType, String smsNum, String wcnN, String clientType, String clientID, String pic, String id_WX) throws IOException {
 
 
         // 判断是否存在这个 key
-        if (redisTemplate1.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-            if (smsNum.equals(redisTemplate1.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
 
                 Query id_WXQue = new Query(new Criteria("info.id_WX").is(id_WX));
 
@@ -414,15 +442,15 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                     // 设置info信息
 //                    JSONObject infoJson = new JSONObject();
 //                    infoJson.put("id_WX", id_WX);
-//                    infoJson.put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+//                    infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 //
                     Update update = new Update();
                     update.set("info.id_WX", id_WX);
-                    update.set("info.tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
                     mongoTemplate.updateFirst(mbnQue, update, User.class);
 
-//                    redisTemplate1.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 1, TimeUnit.MINUTES);
+//                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 1, TimeUnit.MINUTES);
 
 
                     return retResult.ok(CodeEnum.OK.getCode(), null);
@@ -438,8 +466,8 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                 infoJson.put("mbn", phone);
                 infoJson.put("id_WX", id_WX);
                 infoJson.put("phoneType", phoneType);
-                infoJson.put("tmk", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-                infoJson.put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                infoJson.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
                 // 判断
                 if (ClientEnum.APP_CLIENT.getClientType().equals(clientType)) {
@@ -455,7 +483,7 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                 // 调用注册用户方法
                 registerUserUtils.registerUser(infoJson);
 
-                redisTemplate1.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
                 return retResult.ok(CodeEnum.OK.getCode(), null);
             } else {
                 throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
@@ -546,9 +574,9 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         // 添加到user对象中
         User user = new User();
 
-        String id_U = MongoUtils.GetObjectId();
+        String id_U = qt.GetObjectId();
         user.setId(id_U);
-        UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,null, null, "5f2a2502425e1b07946f52e9","cn","",
+        UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,null, null, "5f2a2502425e1b07946f52e9","cn","CNY",
                 avatarUrl,"China","",phoneNumber,countryCode);
         user.setInfo(userInfo);
         user.setView(viewArray);

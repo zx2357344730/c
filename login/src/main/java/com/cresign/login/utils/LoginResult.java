@@ -1,24 +1,18 @@
 package com.cresign.login.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * ##description: 登录返回工具类
- * ##author: JackSon
- * ##updated: 2020/7/25 10:54
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/7/25 10:54
+ * @ver 1.0
  */
 @Component
 public class LoginResult {
@@ -28,25 +22,21 @@ public class LoginResult {
     private Oauth oauth;
 
     @Autowired
-    private MongoTemplate mongoTemplate;
-
-    @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private Qt qt;
 
 
     /**
      * 返回allList 所有信息方法（账号登录，以及微信登录可用）
      *
-     * ##Params: user       用户对象
-     * ##Params: clientType 客户端类型
-     * ##Params: loginType  登录类型
-     * ##author: JackSon
-     * ##updated: 2020/7/25 11:00
-     * ##Return: java.lang.Object
+     * @param user       用户对象
+     * @param clientType 客户端类型
+     * @param loginType  登录类型
+     * @author JackSon
+     * @updated 2020/7/25 11:00
+     * @return java.lang.Object
      */
-    public JSONObject allResult(User user, String clientType, String loginType) {
+    public JSONObject allResult(User user, String clientType, String loginType){
 
-        //oauth.setOauth(user);
         String token = "";
         String newAssignRFToken = "";
         String def_C = user.getInfo().getDef_C().toString();
@@ -78,8 +68,11 @@ public class LoginResult {
             newAssignRFToken = oauth.setRefreshToken(user.getId(), clientType);
         }
 
-        if (null != user.getInfo().getLCRdef())
-            infoData.put("defNG", user.getInfo().getLNGdef());
+        if (null != user.getInfo().getDefNG())
+            infoData.put("defNG", user.getInfo().getDefNG());
+
+        if (null != user.getInfo().getDefCR())
+            infoData.put("defCR", user.getInfo().getDefCR());
 
         if (null != user.getInfo().getId_WX())
             infoData.put("id_WX", user.getInfo().getId_WX());
@@ -102,13 +95,28 @@ public class LoginResult {
 
         infoData.put("refreshToken", newAssignRFToken);  // 存储 refreshToken
 
+        //TODO ZEJIN
+        // move all these API here and call them
+        // add menuData
+        // add upCardList
+        // add flowControl
+        // add mybatchList
+        // add my Switch List (get_my_switch)
+        // add get cookiex @ flowCount
+
+        // when I update, I send a message to all user with the same grpU, (getES)
+        // a new JSON send to FE, FE get the "type" & "data", and update accordingly
+
+
 
         // 新建 data map 用来获取所有的数据信息
         JSONObject data = new JSONObject();
 
-        Query queryComp = new Query(new Criteria("_id").is(def_C));
-        queryComp.fields().include("info");
-        Comp comp = mongoTemplate.findOne(queryComp, Comp.class);
+//        Query queryComp = new Query(new Criteria("_id").is(def_C));
+//        queryComp.fields().include("info");
+//        Comp comp = mongoTemplate.findOne(queryComp, Comp.class);
+
+        Comp comp = qt.getMDContent(def_C, "info", Comp.class);
 
         if (null != comp) {
 

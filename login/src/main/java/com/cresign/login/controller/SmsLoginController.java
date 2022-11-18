@@ -13,12 +13,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/8/4 10:23
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/8/4 10:23
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("sms")
@@ -66,7 +67,7 @@ public class SmsLoginController {
 
     @SecurityParameter
     @PostMapping("/v1/smsRegister")
-    public ApiResponse smsRegister(@RequestBody JSONObject reqJson) {
+    public ApiResponse smsRegister(@RequestBody JSONObject reqJson) throws IOException {
 
         String id_APP = "";
         if (reqJson.containsKey("id_APP")) {

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * 反射工具类
- * @Author Rachel
+ * @author Rachel
  * @Date 2021/11/08
  **/
 @Service
@@ -22,9 +22,9 @@ public class ApplicationContextTools implements ApplicationContextAware {
 
     /**
      * 获取bean
-     * @Author Rachel
+     * @author Rachel
      * @Date 2021/11/08
-     * ##param clazz
+     * @param clazz
      * @Return T
      **/
     public static <T> T getBean(Class<T> clazz) {

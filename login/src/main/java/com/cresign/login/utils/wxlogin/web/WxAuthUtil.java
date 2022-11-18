@@ -3,8 +3,9 @@ package com.cresign.login.utils.wxlogin.web;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -12,12 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/**
- * ##author: JackSon
- * ##updated: 2019/8/23
- * ##version: 1.0.0
- * ##description: 实现MD5加密
- */
 @RefreshScope
 @Component
 public class WxAuthUtil {
@@ -47,10 +42,10 @@ public class WxAuthUtil {
 
     /**
      * 该方法用来请求微信url，并且返回JSON
-     * ##Params: url
-     * ##author: JackSon
-     * ##updated: 2020/7/29 9:43
-     * ##Return: com.alibaba.fastjson.JSONObject
+     * @param url
+     * @author JackSon
+     * @updated 2020/7/29 9:43
+     * @return com.alibaba.fastjson.JSONObject
      */
     public static JSONObject doGetJson(String url) throws IOException {
 
@@ -58,10 +53,12 @@ public class WxAuthUtil {
         JSONObject jsonObject = null;
 
         // 声明client连接对象
-        DefaultHttpClient client = new DefaultHttpClient();
+//        DefaultHttpClient client = new DefaultHttpClient();
 
         // 什么get请求方式
         HttpGet httpGet = new HttpGet(url);
+
+        HttpClient client = HttpClientBuilder.create().build();
 
         // 声明response返回
         HttpResponse response = client.execute(httpGet);

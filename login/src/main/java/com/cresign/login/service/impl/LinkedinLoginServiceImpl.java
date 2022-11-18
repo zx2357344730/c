@@ -28,15 +28,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/7/29 11:10
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/7/29 11:10
+ * @ver 1.0
  */
 @RefreshScope
 @Service
@@ -55,7 +56,7 @@ public class LinkedinLoginServiceImpl implements LinkedinLoginService {
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private RegisterUserUtils registerUserUtils;
@@ -127,13 +128,13 @@ public class LinkedinLoginServiceImpl implements LinkedinLoginService {
     }
 
     @Override
-    public ApiResponse registerLinked(String code, String phone, String phoneType, String smsNum) {
+    public ApiResponse registerLinked(String code, String phone, String phoneType, String smsNum) throws IOException {
 
         // 判断是否存在这个 key
-        if (redisTemplate1.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-            if (smsNum.equals(redisTemplate1.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
 
 
                 String url = "https://www.linkedin.com/oauth/v2/accessToken";
@@ -176,11 +177,11 @@ public class LinkedinLoginServiceImpl implements LinkedinLoginService {
 
                     Update update = new Update();
                     update.set("info.id_lk", id_lk);
-                    update.set("info.tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
                     mongoTemplate.updateFirst(mbnQue, update, User.class);
 
-                    redisTemplate1.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
 
                     return retResult.ok(CodeEnum.OK.getCode(), null);
                 }
@@ -196,14 +197,14 @@ public class LinkedinLoginServiceImpl implements LinkedinLoginService {
                 infoJson.put("mbn", phone);
                 infoJson.put("pic", "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg");
                 infoJson.put("phoneType", phoneType);
-                infoJson.put("tmk", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-                infoJson.put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+                infoJson.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
 
                 // 调用注册用户方法
                 registerUserUtils.registerUser(infoJson);
 
-                redisTemplate1.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
 
                 return retResult.ok(CodeEnum.OK.getCode(), null);
 

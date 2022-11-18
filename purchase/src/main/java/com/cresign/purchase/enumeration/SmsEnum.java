@@ -4,9 +4,9 @@ import lombok.Getter;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/8/24 18:50
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/8/24 18:50
+ * @ver 1.0
  */
 @Getter
 public enum SmsEnum {
@@ -29,7 +29,7 @@ public enum SmsEnum {
 
     /**
      * 带参构造方法
-     * ##Params: code  异常状态码
+     * @param code  异常状态码
      */
     SmsEnum(String code){
         this.code = code;

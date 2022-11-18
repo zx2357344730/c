@@ -33,8 +33,8 @@ public class ProdInfo {
         this.pic = pic  == null ? "": pic;
         this.lDC = lDC  == null ? 0: lDC;
         this.lUT = lUT  == null ? 0: lUT;
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmk = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     private String id_C;
@@ -47,9 +47,9 @@ public class ProdInfo {
 
     private JSONObject wrddesc;
 
-    private String grp;
+    private String grp;private String grpB;
 
-    private String ref;
+    private String ref;private String refB;
 
     private String pic;
 

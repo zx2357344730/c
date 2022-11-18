@@ -4,7 +4,7 @@ import java.util.UUID;
 
 /**
  * 以62进制（字母加数字）生成19位UUID，最短的UUID
- * ##Author: Jackson
+ * @author Jackson
  * copy from csdn <a href="https://blog.csdn.net/weixin_34034261/article/details/91585357">超短的19位UUID</>
  */
 public class UUID19 {

@@ -6,15 +6,12 @@ import lombok.Data;
 /**
  * @ClassName Task
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2021/9/23 10:54
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 @Data
 public class Task {
-
-
-    //加new
 
     /**
      * 优先级
@@ -36,7 +33,6 @@ public class Task {
      * 预计完成时间
      */
     private Long tePFinish;
-
     /**
      * 等待时间
      */
@@ -61,5 +57,17 @@ public class Task {
      * 延迟总时间
      */
     private Long teDelayDate = 0L;
+    /**
+     * 存储公司编号
+     */
+    private String id_C;
+    /**
+     * 预计操作处理的开始时间
+     */
+    private Long teCsStart;
+    /**
+     * 预计操作处理的第一个子零件的开始时间
+     */
+    private Long teCsSonOneStart;
 
 }

@@ -3,9 +3,9 @@ package com.cresign.login.enumeration;
 import lombok.Getter;
 
 /**
- * ##author: Jeovn
- * ##updated: 2020/5/23
- * ##version: 1.1.0
+ * @author Jeovn
+ * @updated 2020/5/23
+ * @ver 1.1.0
  * ##description: 通用异常枚举类
  */
 @Getter
@@ -23,9 +23,9 @@ public enum LoginEnum {
     //refreshToken过期或者不存在
     REFRESHTOKEN_NOT_FOUND("041005"),
     //登出成功
-    LOGINOUT_SUCCESS("041006"),
+    LOGOUT_SUCCESS("041006"),
     //登出失败
-    LOGINOUT_ERROR("041007"),
+    LOGOUT_ERROR("041007"),
     //您已注册过了
     REGISTER_USER_IS_HAVE("041008"),
     //注册失败
@@ -85,7 +85,7 @@ public enum LoginEnum {
 
     /**
      * 带参构造方法
-     * ##Params: code  异常状态码
+     * @param code  异常状态码
      */
     LoginEnum(String code){
         this.code = code;

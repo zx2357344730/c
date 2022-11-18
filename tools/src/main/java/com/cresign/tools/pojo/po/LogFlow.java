@@ -1,6 +1,5 @@
 package com.cresign.tools.pojo.po;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
@@ -24,6 +23,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class LogFlow {
 
     public LogFlow(JSONObject tokData, JSONObject oItem, JSONObject action, String id_CB, String id_O, Integer index, String logType, String subType, String zcndesc, Integer imp) {
+
         this.id = action.getJSONObject("grpBGroup").getJSONObject(oItem.getString("grpB")) == null ||
                 action.getJSONObject("grpBGroup").getJSONObject(oItem.getString("grpB")).getString("id_Flow") == null ?
                 "" : action.getJSONObject("grpBGroup").getJSONObject(oItem.getString("grpB")).getString("id_Flow");
@@ -39,6 +39,7 @@ public class LogFlow {
         this.id_U = tokData.getString("id_U");
         this.id_P = oItem.getString("id_P");
         this.id_O = id_O;
+        this.id_OP = action.getJSONArray("objAction").getJSONObject(index).getString("id_OP");
         this.index = index;
         this.id_C = logType.endsWith("SL") ? id_CB : tokData.getString("id_C");
         this.id_CS = oItem.getString("id_C");
@@ -49,11 +50,11 @@ public class LogFlow {
         this.lang = "cn";
         this.zcndesc = zcndesc;
         this.tzone = 8;
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     public LogFlow(String logType, String id_FC, String id_FS,  String subType,
-                   String id_U, String grpU, String id_P, String grpPB, String grpPS, String id_O, Integer index, String id_C, String id_CS,
+                   String id_U, String grpU, String id_P, String grpPB, String grpPS, String id_OP, String id_O, Integer index, String id_C, String id_CS,
                    String pic,String dep, String zcndesc, Integer imp,
                    JSONObject wrdN, JSONObject wrdNU) {
         this.id = id_FC == null ? "" : id_FC;
@@ -67,6 +68,7 @@ public class LogFlow {
         this.id_U = id_U;
         this.id_P = id_P;
         this.id_O = id_O;
+        this.id_OP = id_OP;
         this.index = index;
         this.id_C = id_C;
         this.id_CS = id_CS;
@@ -77,45 +79,42 @@ public class LogFlow {
         this.lang = "cn";
         this.zcndesc = zcndesc;
         this.tzone = 8;
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     /**
      * 1、线程安全性保证:线程安全的
      * 2、性能:好
      * 3、延迟加载:延迟加载
-     * ##return:  日志
+     * @return  日志
      */
     public static LogFlow getInstance(){
         return LogFlow.Hod.instance;
     }
+
     private static class Hod{
         private static final LogFlow instance = new LogFlow();
     }
 
-    /**
-     *  如果Log是action / prob，data内加
-     * private String bcdStatus; 现在的状态
-     * private String type; 是普通 0/ 管理员 1/ 自动trigger 2
-     * errId / errIndex / pan
-     */
-    public void setActionData(Integer bisactivate, Integer bcdStatus, JSONArray id_Us, Double priority,String id_P,
-                              String id_OP, Integer ind_OP, Integer bmdpt, JSONObject wrdNP,JSONObject wrdN) {
-        JSONObject data = new JSONObject();
-        data.put("bisactivate",bisactivate);
-        data.put("bcdStatus",bcdStatus);
-        data.put("bmdpt", bmdpt);
-        data.put("id_O", id_OP);
-        data.put("index",ind_OP);
-        data.put("id_OP", ind_OP);
-        data.put("id_P",id_P);
-        data.put("priority",priority);
-        data.put("ex_wrdNP",wrdNP);
-        data.put("ex_wrdN",wrdN);
 
-
-        this.data = data;
-    }
+//    public void setActionData(Integer bisactivate, Integer bcdStatus, JSONArray id_Us, Double priority,String id_P,
+//                              String id_OP, Integer ind_OP, String refOP, Integer bmdpt, JSONObject wrdNP,JSONObject wrdN) {
+//        JSONObject data = new JSONObject();
+//        data.put("bisactivate",bisactivate);
+//        data.put("bcdStatus",bcdStatus);
+//        data.put("bmdpt", bmdpt);
+//        data.put("id_O", id_OP);
+//        data.put("index",ind_OP);
+//        data.put("id_OP", ind_OP);
+//        data.put("refOP", refOP);
+//        data.put("id_P",id_P);
+//        data.put("priority",priority);
+//        data.put("ex_wrdNP",wrdNP);
+//        data.put("ex_wrdN",wrdN);
+//
+//
+//        this.data = data;
+//    }
 
     public void setLogData_action (OrderAction orderAction, OrderOItem orderOItem) {
         JSONObject data = new JSONObject();
@@ -127,15 +126,14 @@ public class LogFlow {
         data.put("id_OP", orderAction.getId_OP());
         data.put("refOP", orderAction.getRefOP());
         data.put("index",orderAction.getIndex());
-        data.put("priority",orderAction.getPriority());
+        data.put("priority",orderOItem.getPriority());
         data.put("ex_wrdNP",orderAction.getWrdNP());
         data.put("ex_wrdN",orderAction.getWrdN());
 
-//        // 添加状态
-//        if (null != orderAction.getId_Us()) {
-//            // 添加返回值
-//            data.put("id_Us",orderAction.getId_Us());
-//        }
+
+        this.id_OP = orderAction.getId_OP();
+        this.setLogType("action");
+
         this.data = data;
     }
 
@@ -147,33 +145,14 @@ public class LogFlow {
 
         this.data = data;
     }
-    public void setLogData_assetflow (Double qtynow, String id_A, JSONObject unitAction) {
+    public void setLogData_assetflow (Double qtynow, Double price, String id_A) {
         JSONObject data = new JSONObject();
         data.put("wn2qtynow",qtynow);
-        data.put("bcdStatus",unitAction.getInteger("bcdStatus"));
-
+        data.put("wn4price", price);
+//        data.put("bcdStatus",bcdStatus);
         data.put("id_A", id_A);
 
-        this.data = data;
-    }
-    public void setLogData_usage (OrderAction orderAction, OrderOItem orderOItem) {
-        JSONObject data = new JSONObject();
-        data.put("bisactivate",orderAction.getBisactivate());
-        data.put("bcdStatus",orderAction.getBcdStatus());
-        data.put("bmdpt", orderOItem.getBmdpt());
-        data.put("id_O", orderAction.getId_O());
-        data.put("index",orderAction.getIndex());
-        data.put("priority",orderAction.getPriority());
-        data.put("wn2qtyneed",orderOItem.getWn2qtyneed());
-        data.put("ex_wrdNP",orderAction.getWrdNP());
-        data.put("ex_wrdN",orderAction.getWrdN());
-
-        // 添加状态
-//        data.put("isOk",0);
-        if (null != orderAction.getId_Us()) {
-            // 添加返回值
-            data.put("id_Us",orderAction.getId_Us());
-        }
+        this.setLogType("assetflow");
         this.data = data;
     }
 
@@ -189,9 +168,6 @@ public class LogFlow {
      */
     private String id_C;
     private String id_CS;
-
-//    private String grpC;
-//    private String grpCS;
 
     /**
      * 发送日志的用户id+grp
@@ -209,10 +185,9 @@ public class LogFlow {
      * 有可能为空
      */
     private String id_O;
-    private Integer index;
-//    private String grpO;
-//    private String grpOS;
+    private String id_OP;
 
+    private Integer index;
 
     /**
      * oItem内对应的id_P
@@ -221,8 +196,6 @@ public class LogFlow {
     private String id_P;
     private String grpB;
     private String grp;
-
-
 
     /**
      * 日志副类别 ： msg / statusChg / dataChg / manageChg / file(pic/video/voice/file) / link(COUPA) / addOItem(新任务)

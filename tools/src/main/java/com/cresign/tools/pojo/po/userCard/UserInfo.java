@@ -17,11 +17,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class UserInfo {
 
     public UserInfo(String id_WX, String id_APP, JSONObject wrdN, JSONObject wrdNReal, JSONObject wrddesc,
-                    String def_C, String lNGdef, String lCRdef, String pic, String cnty, String cem,
+                    String def_C, String defNG, String defCR, String pic, String cnty, String cem,
                     String mbn, Integer phoneType) {
 
         JSONObject wrdEmpty = new JSONObject();
-        wrdEmpty.put("cn","");
+        wrdEmpty.put("cn", "");
 
         this.id_WX = id_WX == null ? "": id_WX;
         this.id_APP = id_APP == null ? "": id_APP;
@@ -29,15 +29,15 @@ public class UserInfo {
         this.wrdNReal = wrdNReal == null ? (JSONObject) wrdEmpty.clone(): wrdNReal;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
         this.def_C = def_C == null ? "5f2a2502425e1b07946f52e9": def_C;
-        this.lNGdef = lNGdef == null ? "": lNGdef;
-        this.lCRdef = lCRdef == null ? "": lCRdef;
+        this.defNG = defNG == null ? "": defNG;
+        this.defCR = defCR == null ? "": defCR;
         this.pic = pic == null ? "": pic;
         this.cnty = cnty == null ? "": cnty;
         this.cem = cem == null ? "": cem;
         this.mbn = mbn == null ? "": mbn;
         this.phoneType = phoneType == null ? 86: phoneType;
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmk = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     private String id_WX;
@@ -52,14 +52,13 @@ public class UserInfo {
 
     private JSONObject wrddesc;
 
+    private JSONObject wrdTag; // not here move to tag
+
     private String def_C;
 
-//    private String pwd;
-//    private String usn;
+    private String defNG;
 
-    private String lNGdef;
-
-    private String lCRdef;
+    private String defCR;
 
     private String pic;
 
@@ -70,6 +69,8 @@ public class UserInfo {
     private String mbn;
 
     private Integer phoneType;
+
+    private String authCode; // for Mail service
 
     private String tmd;
 

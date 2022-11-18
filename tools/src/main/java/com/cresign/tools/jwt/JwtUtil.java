@@ -1,6 +1,6 @@
 package com.cresign.tools.jwt;
 
-import io.jsonwebtoken.Claims;
+import com.cresign.tools.dbTools.Qt;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -24,13 +24,16 @@ public class JwtUtil {
     private long ttl = 36000;
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private StringRedisTemplate redisTemplate0;
+
+    @Autowired
+    private Qt qt;
 
 
     /**
      * 生成JWT
      *
-     * ##return:
+     * @return
      */
     public String createJWT(String uuid, String audience) {
 
@@ -47,45 +50,34 @@ public class JwtUtil {
 //            builder.setExpiration( new Date( nowMillis + ttl));
 //        }-------------------------------------------------------------------
 
-//        redisTemplate1.opsForValue().set(keyName + builder.compact(),id_U, 2, TimeUnit.HOURS);
+//        redisTemplate0.opsForValue().set(keyName + builder.compact(),id_U, 2, TimeUnit.HOURS);
 
         return builder.compact();
     }
-
-    /**
-     * 解析JWT
-     * ##Params: jwtStr
-     * ##return:
-     */
-    public Claims parseJWT(String jwtStr){
-        return  Jwts.parser()
-                .setSigningKey(key)
-                .parseClaimsJws(jwtStr)
-                .getBody();
-    }
-
-    /**
-    *##description:      校验jwt是否正确
-    *##Params:            
-    *##Return:           
-    *##author:           JackSon
-    *##updated:             2020/5/15 16:45 
-    */
-    public boolean validJWT(String clientType, String jwtStr) {
-
-        // 拼接key
-        String accessToken =  clientType + "Token-" + jwtStr;
-
-        // 去redis中获取key是否匹配
-        Boolean aBoolean = redisTemplate1.hasKey(accessToken);
-        if (aBoolean) {
-
-            return true;
-
-        }
-
-       return false;
-
-    }
+//
+//    /**
+//     * 解析JWT
+//     * @param jwtStr
+//     * @return
+//     */
+//    public Claims parseJWT(String jwtStr){
+//        return  Jwts.parser()
+//                .setSigningKey(key)
+//                .parseClaimsJws(jwtStr)
+//                .getBody();
+//    }
+//
+//    /**
+//    *##description:      校验jwt是否正确
+//    *@param
+//    *@return
+//    *@author           JackSon
+//    *@updated             2020/5/15 16:45
+//    */
+//    public boolean validJWT(String clientType, String jwtStr) {
+//
+//            return qt.hasRDKey(clientType + "Token", jwtStr);
+//
+//    }
 
 }

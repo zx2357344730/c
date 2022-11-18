@@ -2,216 +2,103 @@ package com.cresign.login.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.advice.RetResult;
-import com.cresign.tools.dbTools.RedisUtils;
+import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.Qt;
+import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.jwt.JwtUtil;
-import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.User;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * ##class: Oauth
  * ##description: 设置 token，以及oauth等
- * ##author: jackson
- * ##updated: 2019-07-02 13:54
+ * @author jackson
+ * @updated 2019-07-02 13:54
  **/
 @Component
 @Service
 public class Oauth {
 
     @Autowired
-    private StringRedisTemplate redisTemplate1;
+    private Qt qt;
 
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private DateUtils dt;
 
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
-    private RedisUtils redisUtils;
-
-    /**
-     *##description:      设置该用户的基本信息存入到redis中
-     *##Params:            user : 用户对象
-     *##Return:
-     *##author:           Kevin
-     *##updated:             2020/5/15 13:29
-     */
-    public void setOauth(User user) {
-
-        // 截取uid 用户编号
-        //List<Map<String, Object>> objCompList = (List<Map<String, Object>>) user.getRolex().get("objComp");
-        JSONArray objCompList = user.getRolex().getJSONArray("objComp");
-        // 生成hashMap 存入redis
-        //Map<String, Object> map = new HashMap<>();
-        JSONObject map = new JSONObject();
-        for (int i = 0; i < objCompList.size(); i++) {
-            map.put(objCompList.getJSONObject(i).getString("id_C"), objCompList.getJSONObject(i).get("lrefRole"));
-        }
-
-
-        redisTemplate1.opsForHash().putAll("oauth-" + user.getId(), map);
-//        redisTemplate1.expire("oauth-" + UIDSubstring, 7, TimeUnit.DAYS);
-
-    }
 
     /**
      *##description:      根据uuid 生成token
-     *##Params:            uid : 用户id， clientType : 客户端类型
-     *##Return:           token and refreshToken
-     *##author:           JackSon
-     *##updated:             2020/5/15 13:28
+     *                      clientType : 客户端类型
+     *@return           token and refreshToken
+     *@author           Kevin
+     *@updated             2020/5/15 13:28
      */
-    public  String setToken(User user, String cid, String grpU, String dep,  String clientType) {
+    public  String setToken(User user, String cid, String grpU, String dep,  String clientType){
 
-        String token = "";
+            String token = "";
 
-        //KEV can put module's restriction here
+            JSONObject dataSet = new JSONObject();
+            dataSet.put("id_U", user.getId());
+            dataSet.put("wrdNU", user.getInfo().getWrdN());
+            dataSet.put("pic", user.getInfo().getPic());
+            dataSet.put("id_C", cid);
+            dataSet.put("grpU", grpU);
+            dataSet.put("dep", dep);
 
+            System.out.println("xxx"+user);
 
-        JSONObject dataSet = new JSONObject();
-        dataSet.put("id_U", user.getId());
-        dataSet.put("wrdNU", user.getInfo().getWrdN());
-        dataSet.put("pic", user.getInfo().getPic());
-        dataSet.put("id_C", cid);
-        dataSet.put("grpU", grpU);
-        dataSet.put("dep", dep);
+            JSONArray modArray = new JSONArray();
+            JSONObject modAuth = user.getRolex().getJSONObject("objComp").getJSONObject(cid).getJSONObject("modAuth");
 
-        JSONObject moduleData = new JSONObject();
-        JSONArray objMod = user.getRolex().getJSONObject("objComp").getJSONObject(cid).getJSONArray("objMod");
-        for (int i  = 0; i < objMod.size(); i++)
-        {
-            if (objMod.getJSONObject(i).getInteger("bcdState").equals(1))
-            {
-                moduleData.put(objMod.getJSONObject(i).getString("ref"), objMod.getJSONObject(i).getInteger("bcdLevel"));
+            if (modAuth == null) {
+                modArray.add("a-core-0");
+            } else {
+                for (String refKey : modAuth.keySet()) {
+                    String tfin = modAuth.getJSONObject(refKey).getString("tfin");
+                    String tnow = dt.getDateNow(DateEnum.DATE_ONLY.getDate());
+                    if (tfin.equals(-1) || tfin.equals("-1"))
+                    {
+//                        modArray.add(refKey);
+                        tfin = "2099/12/31";
+                    }
+                    if (dt.differentDays(tnow, tfin) > 0) {
+                        modArray.add(refKey);
+                    }
+                }
             }
-        }
-        dataSet.put("modAuth",moduleData);
-        //KEV - here need to grab grpU's auth info into token
 
-        String uid = user.getId();
+            dataSet.put("modAuth", modArray);
+            String uid = user.getId();
 
-//        System.out.println("setting Token"+ dataSet.toJSONString());
+            System.out.println("setting Token" + dataSet.toJSONString());
 
+            token = jwtUtil.createJWT(uid, clientType);
 
-        /*
-            判断不同的客户端类型存入key名称不同
-         */
-        if ("wx".equals(clientType)) {
+            qt.setRDSet(clientType + "Token", token, dataSet, 1800L);
 
-            token = jwtUtil.createJWT(uid, "wx");
-
-            redisTemplate1.opsForValue().set("wxToken-" + token, dataSet.toJSONString(), 10, TimeUnit.MINUTES);
-
-        } else if ("app".equals(clientType)) {
-
-            token = jwtUtil.createJWT(uid, "app");
-
-            redisTemplate1.opsForValue().set("appToken-" + token, dataSet.toJSONString(), 10, TimeUnit.MINUTES);
-
-        } else {
-
-            token = jwtUtil.createJWT(uid, "web");
-
-            redisTemplate1.opsForValue().set("webToken-" + token, dataSet.toJSONString(), 10, TimeUnit.MINUTES);
-
-        }
-
-        return token;
+            return token;
     }
 
     /**
      *##description:      获取 refreshToken
-     *##Params:
-     *##Return:
-     *##author:           JackSon
-     *##updated:             2020/5/15 15:45
+     *@param
+     *@return
+     *@author           JackSon
+     *@updated             2020/5/15 15:45
      */
     public  String setRefreshToken(String uid, String clientType) {
 
-        String refreshToken = "";
-
-        // 生成 uuid
-        String reFreshTokenUUid = UUID.randomUUID().toString();
-
-        /*
-            判断不同的客户端类型存入key名称不同
-         */
-        if ("wx".equals(clientType)) {
-
-            refreshToken = jwtUtil.createJWT(reFreshTokenUUid, "wx");
-            redisTemplate1.opsForValue().set("wxRefreshToken-" + refreshToken, uid, 60, TimeUnit.DAYS);
-
-
-        } else if ("app".equals(clientType)) {
-
-            refreshToken = jwtUtil.createJWT(reFreshTokenUUid, "app");
-            redisTemplate1.opsForValue().set("appRefreshToken-" + refreshToken, uid, 60, TimeUnit.DAYS);
-
-
-        } else {
-
-            refreshToken = jwtUtil.createJWT(reFreshTokenUUid, "web");
-            redisTemplate1.opsForValue().set("webRefreshToken-" + refreshToken, uid, 7, TimeUnit.DAYS);
-
-        }
+        String refreshToken = jwtUtil.createJWT(UUID.randomUUID().toString(), clientType);
+        qt.setRDSet(clientType + "RefreshToken", refreshToken,uid, 604800L);
 
         return refreshToken;
     }
 
-
-//
-//    /**
-//     *##description:      根据公司id生成 menu 和 role 存入到 redis 中
-//     *##Params:            cid : 公司id
-//     *##Return:
-//     *##author:           JackSon
-//     *##updated:             2020/5/15 13:30
-//     */
-//    public void setCompMenuAndRole(String cid) {
-//
-//        if (StringUtils.isNotEmpty(cid)) {
-//
-//            if (!redisTemplate1.opsForHash().hasKey("compMenu", cid)) {
-//
-//                String id_A = redisUtils.getId_A(cid, "a-auth");
-//                Query query = new Query(new Criteria("_id").is(id_A));
-//                Asset asset = mongoTemplate.findOne(query, Asset.class);
-//
-//                Map<String, Object> assetResult = new HashMap<>();
-//
-//                if (null != asset) {
-//
-//                    assetResult.put("menu", asset.getMenu().get("objMenu"));
-//                    assetResult.put("role", asset.getRole().get("objRole"));
-//
-//                } else {
-//
-//                    RetResult.jsonResultEncrypt(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
-//
-//                }
-//
-//                redisTemplate1.opsForHash().put("compMenu", cid, JSONObject.toJSONString(assetResult));
-//
-//
-//            }
-//
-//        }
-//
-//
-//    }
 }

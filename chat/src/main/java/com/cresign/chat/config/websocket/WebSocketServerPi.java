@@ -3,31 +3,35 @@ package com.cresign.chat.config.websocket;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.chat.service.LogService;
 import com.cresign.chat.utils.AesUtil;
 import com.cresign.chat.utils.RsaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.LogFlow;
+import io.netty.channel.ChannelHandler.Sharable;
 import org.apache.commons.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @ClassName WebSocketServer
  * @Description 作者很懒什么也没写
- * @Author tang
+ * @authortang
  * @Date 2022/3/1 11:28
- * @Version 1.0.0
+ * @ver 1.0.0
  */
-@ServerEndpoint("/pi/{id_C}/{name}/{publicKey}")
+@ServerEndpoint("/wsU/pi/{id_C}/{name}/{publicKey}")
 @Component
-//@Sharable
+@Sharable
 public class WebSocketServerPi {
 
     private int z = 0;
@@ -60,12 +64,124 @@ public class WebSocketServerPi {
     private static final Map<String, JSONObject> piData = new HashMap<>(16);
 
     /**
+     * Details
+     */
+    private static LogService logService;
+
+    @Autowired
+    public void setWebSocketServerPi(LogService logService){
+        WebSocketServerPi.logService = logService;
+    }
+
+//    public void updateOStock(String id_O, Integer index, Double wn2qtynow, JSONObject tokData) {
+//
+//        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info", "oItem", "action", "oStock", "view"));
+//        JSONObject oStock = order.getOStock();
+//
+////        DecimalFormat decimalFormat = new DecimalFormat("#.00");
+//        wn2qtynow = Double.parseDouble(decimalFormat.format(wn2qtynow));
+//
+//        String id_P = order.getOItem().getJSONArray("objItem").getJSONObject(index).getString("id_P");
+//        JSONObject object = new JSONObject();
+//        object.put("resvQty", new JSONObject());
+//        object.put("id_P", id_P == null ? "" : id_P);
+//        object.put("wn2qtynow", wn2qtynow);
+//        object.put("wn2qtymade", wn2qtynow);
+//
+////        JSONObject isObjShip = null;
+//
+//        //rendering objShip here check if bmdpt == 1, if and so...
+//        if (order.getAction().getJSONArray("objAction").getJSONObject(index).getInteger("bmdpt").equals(1)) {
+////            JSONObject objShip = order.getOStock().getJSONArray("objData").getJSONObject(index);
+////            JSONArray objShip = order.getOStock().getJSONArray("objData").getJSONObject(index).getJSONArray("objShip");
+//            System.out.print("in Obj");
+//            if (order.getOStock() == null || order.getOStock().getJSONArray("objData") == null ||
+//                    order.getOStock().getJSONArray("objData").size() - 1 < index ||
+//                    order.getOStock().getJSONArray("objData").getJSONObject(index) == null ||
+//                    order.getOStock().getJSONArray("objData").getJSONObject(index).getJSONArray("objShip") == null) {
+//                JSONArray qtyInit = new JSONArray();
+//                JSONObject qtyContent = new JSONObject();
+//                qtyContent.put("wn2qtyneed", order.getOItem().getJSONArray("objItem").getJSONObject(index).getDouble("wn2qtyneed"));
+//                qtyContent.put("wn2qtynow", wn2qtynow);
+//                qtyContent.put("wn2qtymade", wn2qtynow);
+//                qtyInit.add(qtyContent);
+//                object.put("objShip", qtyInit);
+//            } else {
+//                JSONObject objShip = order.getOStock().getJSONArray("objData").getJSONObject(index).getJSONArray("objShip").getJSONObject(0);
+//                objShip.put("wn2qtynow", wn2qtynow + objShip.getDouble("wn2qtynow"));
+//                objShip.put("wn2qtymade", wn2qtynow + objShip.getDouble("wn2qtymade"));
+//                JSONArray objShipArray = order.getOStock().getJSONArray("objData").getJSONObject(index).getJSONArray("objShip");
+//                objShipArray.set(0, objShip);
+//                object.put("objShip", objShipArray);
+//            }
+//        }
+//
+//        JSONObject oStockItem = new JSONObject();
+//
+//        if (oStock == null) {
+//            //oStock为空，创建objData数组, 添加数组对象
+//            JSONArray array = new JSONArray();
+//            array.set(index, object);
+//
+//            oStockItem.put("oStock.objData", array);
+//            oStockItem.put("view", order.getView().add("oStock"));
+//        } else if (oStock.getJSONArray("objData") == null) {
+//            //oStock.objData为空，创建objData数组, 添加数组对象
+//            System.out.print("in objData=Null");
+//
+//            JSONArray array = new JSONArray();
+//            array.set(index, object);
+//            oStockItem.put("oStock.objData", array);
+//
+//        } else if (oStock.getJSONArray("objData").size() - 1 < index) {
+//            System.out.print("in objData=size - 1");
+//
+//            oStockItem.put("oStock.objData." + index, object);
+//
+//        } else if (oStock.getJSONArray("objData").getJSONObject(index) == null) {
+//            System.out.print("in objData.index == null");
+//
+//            oStockItem.put("oStock.objData." + index, object);
+//
+//        } else {
+//
+//            object.put("wn2qtynow", wn2qtynow + order.getOStock().getJSONArray("objData").getJSONObject(index).getDouble("wn2qtynow"));
+//            object.put("wn2qtymade", wn2qtynow + order.getOStock().getJSONArray("objData").getJSONObject(index).getDouble("wn2qtynow"));
+//
+//            oStockItem.put("oStock.objData." + index, object);
+//        }
+//
+//        coupaUtil.updateOrderByListKeyVal(id_O, oStockItem);
+//
+//
+//        // if bmdpt = 3 it's a process, then directly set oStock.objShip == wn2qtynow, 1:1
+//        System.out.println("bmdpt" + order.getAction().getJSONArray("objAction").getJSONObject(index));
+//
+//        JSONObject oItem = order.getOItem().getJSONArray("objItem").getJSONObject(index);
+//        JSONObject objAction = order.getAction().getJSONArray("objAction").getJSONObject(index);
+//
+//
+//        LogFlow log = new LogFlow(tokData, oItem, order.getAction(), "", id_O, index,
+//                "assetflow", "qtyChg", objAction.getString("refOP") + " - " + oItem.getJSONObject("wrdN").getString("cn") +
+//                " 生产了 " + wn2qtynow, 3);
+//
+//
+//        Double logPrice = oItem.getDouble("wn4price");
+//        Integer logStatus = objAction.getInteger("bcdStatus");
+//        log.setLogData_assetflow(wn2qtynow, logPrice, "", logStatus);
+//
+//        WebSocketServerPi.sendInfo(log);
+////        logUtil.sendLog("assetflow", log);
+//
+//    }
+
+    /**
      * 连接建立成功调用的方法
-     * ##Params: session   连接用户的session
-     * ##Params: id   聊天室id
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param session   连接用户的session
+     * @param id   聊天室id
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnOpen
     public void onOpen(Session session,@PathParam("name") String name,@PathParam("publicKey") String publicKey){
@@ -97,6 +213,9 @@ public class WebSocketServerPi {
 
         // 字符串转换
         String s = publicKey.replaceAll(",", "/");
+        s = s.replaceAll("%0A","\n");
+        s = s.replaceAll("%2C","/");
+        s = s.replaceAll("%2B","+");
 
         // 设置前端公钥
         loginPublicKeyList.put(this.session,s);
@@ -121,13 +240,13 @@ public class WebSocketServerPi {
 
     /**
      * 连接关闭调用的方法
-     * ##Params: id    聊天室连接id
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param id    聊天室连接id
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnClose
-    public void onClose(@PathParam("name") String name){
+    public synchronized void onClose(@PathParam("name") String name){
         System.out.println("关闭-java-WebSocket");
         if (this.z == 2) {
             return;
@@ -142,13 +261,13 @@ public class WebSocketServerPi {
 
     /**
      * websocket异常回调类
-     * ##Params: error 异常信息
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param error 异常信息
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnError
-    public void onError(Throwable error,@PathParam("name") String name) {
+    public synchronized void onError(Throwable error,@PathParam("name") String name) {
 
         // 输出错误信息
 
@@ -167,10 +286,10 @@ public class WebSocketServerPi {
 
     /**
      * websocket消息接收
-     * ##Params: message   接收的消息
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param message   接收的消息
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     @OnMessage
     public void onMessageWeb(String message){
@@ -180,14 +299,14 @@ public class WebSocketServerPi {
 
     /**
      * 群发自定义消息
-     * ##Params: log1   发送消息
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param log1   发送消息
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     public static void sendInfo(LogFlow log) {
         // 设置日志时间
-        log.setTmd(DateUtils.getDateByT(DateEnum.DATE_TWO.getDate()));
+        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         //每次响应之前随机获取AES的key，加密data数据
         String key = AesUtil.getKey();
         // 加密log1数据
@@ -201,13 +320,17 @@ public class WebSocketServerPi {
 
     /**
      * 实现服务器主动推送
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
-    private void sendMessage(JSONObject stringMap,String key) {
+    private synchronized void sendMessage(JSONObject stringMap,String key) {
         //用前端的公钥来解密AES的key，并转成Base64
         try {
+            System.out.println("stringMap:");
+            System.out.println(JSON.toJSONString(stringMap));
+            System.out.println(key);
+            System.out.println(loginPublicKeyList.get(this.session));
             // 使用前端公钥加密key
             String aesKey2 = Base64.encodeBase64String(RsaUtil.
                     encryptByPublicKey(key.getBytes(), loginPublicKeyList.get(this.session)));
@@ -227,11 +350,11 @@ public class WebSocketServerPi {
 
     /**
      * 根据key加密log1数据
-     * ##Params: log1	发送的日志数据
-     * ##Params: key	AES
-     * ##return: java.util.Map<java.lang.String,java.lang.String>  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param log1	发送的日志数据
+     * @param key	AES
+     * @return java.util.Map<java.lang.String,java.lang.String>  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/11/28 16:12
      */
     private static JSONObject aes(String key,LogFlow log){
@@ -267,24 +390,43 @@ public class WebSocketServerPi {
             System.out.println("消息转换之后:");
             System.out.println(JSON.toJSONString(log));
             String type = log.getLogType();
-            if ("piTimer".equals(type)) {
+            if ("piTimer".equals(type) || "piTimerG".equals(type) || "piTimerGK".equals(type)) {
                 System.out.println("pi_type: 2 = pi-数据集-发送pi按键数据");
-                JSONObject jsonObject = piData.get(rname);
-                JSONObject data_all = log.getData();
-                data_all.keySet().forEach(k -> {
-                    JSONArray jsonArray1 = data_all.getJSONArray(k);
-                    JSONObject gpIoObj = jsonObject.getJSONObject(k);
-                    JSONArray li = gpIoObj.getJSONArray("li");
-                    if (null == li) {
-                        li = new JSONArray();
-                    }
-                    li.addAll(jsonArray1);
-                    gpIoObj.put("li",li);
-                    jsonObject.put(k,gpIoObj);
-                });
-                piData.put(rname,jsonObject);
-                System.out.println("输出piData:");
-                System.out.println(JSON.toJSONString(piData));
+                if ("piTimer".equals(type) || "piTimerG".equals(type)) {
+                    JSONObject jsonObject = piData.get(rname);
+                    JSONObject data_all = log.getData();
+                    data_all.keySet().forEach(k -> {
+                        JSONArray jsonArray1 = data_all.getJSONArray(k);
+                        JSONObject gpIoObj = jsonObject.getJSONObject(k);
+                        JSONArray li = gpIoObj.getJSONArray("li");
+                        if (null == li) {
+                            li = new JSONArray();
+                        }
+                        JSONObject info = gpIoObj.getJSONObject("info");
+                        JSONObject re = new JSONObject();
+                        re.put("id_O",info.getString("id_O"));
+                        re.put("id_C",info.getString("id_C"));
+                        re.put("index",info.getInteger("index"));
+                        re.put("wn2qtynow",jsonArray1.size());
+                        re.put("dep", info.getString("dep"));
+                        re.put("grpU", info.getString("grpU"));
+                        re.put("id_U", info.getString("id_U"));
+                        re.put("wrdNU", info.getJSONObject("wrdNU"));
+                        re.put("arrTime",jsonArray1);
+                        logService.getDet(re);
+
+                        li.addAll(jsonArray1);
+                        gpIoObj.put("li",li);
+                        jsonObject.put(k,gpIoObj);
+                    });
+                    piData.put(rname,jsonObject);
+                    System.out.println("输出piData:");
+                    System.out.println(JSON.toJSONString(piData));
+                }
+                if ("piTimerG".equals(type) || "piTimerGK".equals(type)) {
+                    String gpIo = log.getId();
+                    delBind(rname,gpIo);
+                }
             } else if ("piCallback".equals(type)) {
                 System.out.println("pi_type: 0 = pi-打招呼-成功获取后端公钥");
             } else if ("pi_info_put".equals(type)) {
@@ -293,7 +435,7 @@ public class WebSocketServerPi {
                 jsonObject = piData.get(rname) == null ? new JSONObject() : piData.get(rname);
                 JSONObject data1 = log.getData();
                 JSONObject data2 = data1.getJSONObject("data");
-                String gpIo = data2.getString("gpIo");
+                String gpIo = data2.getString("gpio");
                 JSONObject gpIoObj = jsonObject.getJSONObject(gpIo);
                 if (null == gpIoObj) {
                     gpIoObj = new JSONObject();
@@ -303,33 +445,41 @@ public class WebSocketServerPi {
                 piData.put(rname,jsonObject);
                 System.out.println("输出piData:");
                 System.out.println(JSON.toJSONString(piData));
-            } else if ("pi_info_del".equals(type)) {
-                System.out.println("删除gpIo-info信息:");
-                JSONObject jsonObject;
-                jsonObject = piData.get(rname);
-                if (null == jsonObject) {
-                    return;
-                }
-                String gpIo = log.getData().getString("gpIo");
-                JSONObject gpIoObj = jsonObject.getJSONObject(gpIo);
-                gpIoObj.put("info",new JSONObject());
-                jsonObject.put(gpIo,gpIoObj);
-                piData.put(rname,jsonObject);
-                System.out.println("输出piData:");
-                System.out.println(JSON.toJSONString(piData));
+            }
+//            else if ("pi_info_del".equals(type)) {
+//                String gpIo = log.getData().getString("gpio");
+//
+//            }
+            else if ("gx_tz".equals(type)) {
+                sendInfo(log);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    private static void delBind(String rname,String gpIo){
+        System.out.println("删除gpIo-info信息:");
+        JSONObject jsonObject;
+        jsonObject = piData.get(rname);
+        if (null == jsonObject) {
+            return;
+        }
+        JSONObject gpIoObj = jsonObject.getJSONObject(gpIo);
+        gpIoObj.put("info",new JSONObject());
+        jsonObject.put(gpIo,gpIoObj);
+        piData.put(rname,jsonObject);
+        System.out.println("输出piData:");
+        System.out.println(JSON.toJSONString(piData));
+    }
+
     /**
      * 根据prodID获取该连接的总在线人数
-     * ##Params: key    公司id拼接角色
-     * ##return:  总在线人数
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param key    公司id拼接角色
+     * @return  总在线人数
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     private static synchronized int getOnlineCount(String key) {
         return map2.getInteger(key);
@@ -337,10 +487,10 @@ public class WebSocketServerPi {
 
     /**
      * 根据prodID，把当前人数加一
-     * ##Params: key    公司id拼接角色
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param key    公司id拼接角色
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     private static synchronized void addOnlineCount(String key) {
 
@@ -356,10 +506,10 @@ public class WebSocketServerPi {
 
     /**
      * 根据prodID，把当前人数减一
-     * ##Params: key    产品id
-     * ##author: tangzejin
-     * ##version: 1.0.0
-     * ##updated: 2020/8/5 9:14:20
+     * @param key    产品id
+     * @author tangzejin
+     * @ver 1.0.0
+     * @updated 2020/8/5 9:14:20
      */
     private static synchronized void subOnlineCount(String key) {
 

@@ -26,8 +26,8 @@ import java.time.Duration;
 
 /**
  * 用于MessageSource的翻译文件能够外置，把源文件拉出来重写了
- * ##author: JackSon
- * ##updated: 2020/8/3 18:00
+ * @author JackSon
+ * @updated 2020/8/3 18:00
  */
 @Configuration(
         proxyBeanMethods = false

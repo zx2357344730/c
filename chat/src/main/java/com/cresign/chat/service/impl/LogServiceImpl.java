@@ -3,73 +3,77 @@ package com.cresign.chat.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.chat.client.DetailsClient;
 import com.cresign.chat.common.ChatEnum;
 import com.cresign.chat.config.websocket.WebSocketServerPi;
-import com.cresign.chat.config.websocket.WebSocketUserServer;
 import com.cresign.chat.service.LogService;
 import com.cresign.chat.utils.HttpClientUtils;
 import com.cresign.chat.utils.RsaUtil;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.dbTools.CoupaUtil;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
-import com.cresign.tools.logger.LogUtil;
-import com.cresign.tools.mongo.MongoUtils;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-
-
 /**
- * ##author: tangzejin
- * ##updated: 2019/7/16
- * ##version: 1.0.0
+ * @author tangzejin
+ * @updated 2019/7/16
+ * @ver 1.0.0
  * ##description: 日志实现类
  */
 @Service
+@Slf4j
 public class LogServiceImpl  implements LogService {
 
-    @Autowired
-    private LogUtil logUtil;
 
     @Autowired
     private RetResult retResult;
 
     @Autowired
-    private CoupaUtil coupaUtil;
+    private Qt qt;
+
+    @Autowired
+    private DetailsClient detailsClient;
 
     public static final String appId = "KVB0qQq0fRArupojoL4WM9";
 
+    @Override
+    public int getDet(JSONObject reqJson) {
+
+        return detailsClient.updateOStockPi(reqJson);
+    }
 
     /**
      * 推送
-     * ##param clientId	推送id
-     * ##param title	推送标题
-     * ##param body	推送内容
-     * @return void  返回结果: 结果
+     * @param clientId	推送id
+     * @param title	推送标题
+     * @param body	推送内容
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2021/7/12 14:47
      */
-
     @Override
-    public void sendPush(String clientId,String title,String body){
-        String request_id = MongoUtils.GetObjectId();
+    public void sendPush(String clientId,String title,String body,String token){
+        String request_id = qt.GetObjectId();
         JSONObject settings = new JSONObject();
         int ttl = 3600000;
         settings.put("ttl",ttl);
+        JSONObject strategy = new JSONObject();
+        strategy.put("default",4);
+        settings.put("strategy",strategy);
         JSONObject audience = new JSONObject();
         JSONArray cid = new JSONArray();
         cid.add(clientId);
         audience.put("cid",cid);
         JSONObject push_message = new JSONObject();
         JSONObject notification = new JSONObject();
-        notification.put("title",title);
+        notification.put("title",title+"_toD");
         notification.put("body",body);
         notification.put("click_type","startapp");
         notification.put("url","https://www.baidu.com");
@@ -81,35 +85,71 @@ public class LogServiceImpl  implements LogService {
         push.put("audience",audience);
         push.put("push_message",push_message);
         JSONObject heads = new JSONObject();
-        heads.put("token",getToken());
-        HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/single/cid", push, heads);
-        System.out.println(HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/single/cid"
-                , push, heads));
-        System.out.println("推送成功");
+        heads.put("token",token);
+        String s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/single/cid", push, heads);
+        log.info("单推推送结果:");
+        log.info(s);
+//        String s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/single/batch/cid", push, heads);
+//        System.out.println(HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/single/cid", push, heads));
+//        System.out.println(s);
+
+//        getTestToListPush("聊天信息","...");
+//        System.out.println("推送成功");
     }
 
-    /**
-     * 发送logL信息到User-websocket
-     * ##param logData	日志信息
-     * @return void  返回结果: 结果
-     * @author tang
-     * @version 1.0.0
-     * @date 2021/8/4 15:39
-     */
     @Override
-    public void sendLogWSU(LogFlow logData) {
+    public void sendPushBatch(JSONArray cidArray,String title,String body){
+        String s;
+        JSONObject heads = new JSONObject();
+        String token = this.getToken();
+        heads.put("token",token);
+        JSONObject push;
 
-        WebSocketUserServer.sendLog(logData);
 
-        //KEV  COW @ close but send message error
-        //KEV actually this sending bindingInfo move to WSU
-        //https://blog.csdn.net/canot/article/details/52495333
+        String group_name = "任务组名";
+        String request_id = qt.GetObjectId();
+        JSONObject settings = new JSONObject();
+        int ttl = 3600000;
+        settings.put("ttl",ttl);
+        JSONObject strategy = new JSONObject();
+        strategy.put("default",4);
+        settings.put("strategy",strategy);
+        JSONObject push_message = new JSONObject();
+        JSONObject notification = new JSONObject();
+        notification.put("title",title+"_toLP");
+        notification.put("body",body);
+        notification.put("click_type","startapp");
+        notification.put("url","https://www.baidu.com");
+        push_message.put("notification",notification);
+        push = new JSONObject();
+        push.put("request_id",request_id);
+        push.put("group_name",group_name);
+        push.put("settings",settings);
+        push.put("push_message",push_message);
+        s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/message", push, heads);
+//        System.out.println("创建message返回结果:");
+//        System.out.println(s);
+//        log.info("创建message返回结果:");
+//        log.info(s);
 
-        logUtil.sendLog(logData.getLogType(),logData);
 
+        JSONObject re = JSONObject.parseObject(s);
+        String taskid = re.getJSONObject("data").getString("taskid");
+        JSONObject audience = new JSONObject();
+        audience.put("cid",cidArray);
+        push = new JSONObject();
+        push.put("audience",audience);
+        push.put("taskid",taskid);
+        push.put("is_async",true);
+        s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/cid", push, heads);
+//        System.out.println("批量推送创建的message返回结果:");
+//        System.out.println(s);
+//        log.info("批量推送创建的message返回结果:");
+//        log.info(s);
     }
 
-    private String getToken(){
+    @Override
+    public String getToken(){
         String appKey = "ShxgT3kg6s73NbuZeAe3I";
         String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
         long timestamp = System.currentTimeMillis();
@@ -123,6 +163,8 @@ public class LogServiceImpl  implements LogService {
         JSONObject data = tokenResult.getJSONObject("data");
         return data.getString("token");
     }
+    
+    
     @Override
     public ApiResponse setGpio(JSONObject bindingInfo) {
         
@@ -146,8 +188,9 @@ public class LogServiceImpl  implements LogService {
         String gpio = bindingInfo.getString("gpio");
         String rname = bindingInfo.getString("rname");
 
-        String assetId = coupaUtil.getAssetId(cid, "a-core");
-        Asset asset = coupaUtil.getAssetById(assetId, Arrays.asList("rpi"));
+        Asset asset = qt.getConfig(cid,"a-core","rpi");
+
+
         JSONObject rpi = asset.getRpi();
         JSONObject rnames = rpi.getJSONObject("rnames");
         JSONObject r = rnames.getJSONObject(rname);
@@ -169,7 +212,9 @@ public class LogServiceImpl  implements LogService {
         JSONObject mapKey = new JSONObject();
         // 设置字段数据
         mapKey.put("rpi",rpi);
-        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+        qt.setMDContent(asset.getId(),mapKey,Asset.class);
+
+//        coupaUtil.updateAssetByKeyAndListKeyVal("id",asset.getId(),mapKey);
         LogFlow logFlow = LogFlow.getInstance();
         logFlow.setId_C(cid);
         logFlow.setId_U(bindingInfo.getString("id_U"));
@@ -178,9 +223,11 @@ public class LogServiceImpl  implements LogService {
         data.put("gpio",gpio);
         data.put("rname",rname);
         if (isBind) {
+            //TODO ZJ 要用 new logFlow 来做， 在pojo 加个 setLogData_rpi
             logFlow.setLogType("binding");
             logFlow.setZcndesc("绑定gpIo成功");
             logFlow.setGrpU(bindingInfo.getString("grpU"));
+            //TODO ZJ oIndex 不存在了， 改为 index
             logFlow.setIndex(bindingInfo.getInteger("oIndex"));
             logFlow.setWrdNU(bindingInfo.getJSONObject("wrdNU"));
             logFlow.setImp(bindingInfo.getInteger("imp"));
@@ -214,7 +261,7 @@ public class LogServiceImpl  implements LogService {
      * 推送
      * @return java.lang.String  返回结果: 结果
      * @author tang
-     * @version 1.0.0
+     * @ver 1.0.0
      * @date 2021/6/16 15:01
      */
 //    @Override
@@ -250,7 +297,7 @@ public class LogServiceImpl  implements LogService {
 //    }
 
 //    private String sendPushSingle(String clientId,String title,String body){
-//        String request_id = MongoUtils.GetObjectId();
+//        String request_id = qt.GetObjectId();
 //        JSONObject settings = new JSONObject();
 //        int ttl = 3600000;
 //        settings.put("ttl",ttl);
@@ -282,7 +329,7 @@ public class LogServiceImpl  implements LogService {
 
 
 //    private String getTaskId(){
-//        String request_id = MongoUtils.GetObjectId();
+//        String request_id = qt.GetObjectId();
 //        String group_name = "任务名称";
 //        JSONObject settings = new JSONObject();
 //        int ttl = 3600000;

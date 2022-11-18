@@ -1,11 +1,18 @@
 package com.cresign.tools.dbTools;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.pojo.po.Asset;
+import com.cresign.tools.pojo.po.Comp;
+import com.cresign.tools.pojo.po.LogFlow;
+import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
-import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -20,7 +27,9 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -29,8 +38,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DbUtils {
@@ -39,57 +50,79 @@ public class DbUtils {
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private RestHighLevelClient restHighLevelClient;
+    private RestHighLevelClient client;
 
     @Autowired
     private StringRedisTemplate redisTemplate0;
 
     /**
+        ES
+        merge addESs, delESs, updateES
+        updateES, updateESBulk
+        lSBxxxUpdateFields
+        getES-lSBxxx data
+        getES-logFlow data
+        sendLog
+
+        Mdb
+        getCard@COUPA, setCard[]@COUPA, addCard[]@COUPA
+        getCard[]ById
+        delCOUPA saveCOUPA
+
+        redis
+        setRedis0, setRedis1
+        getRedis0, getRedis1
+
+     **/
+
+
+    /**
      * 根据id查询mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param field 返回字段
-     * ##param classType 表对应的实体类
+     * @param id
+     * @param field 返回字段
+     * @param classType 表对应的实体类
      * @Return java.lang.Object
      * @Card
      **/
+    //FIXED
     public Object getMongoOneField(String id, String field, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
         if (field != null) {
             query.fields().include(field);
         }
-        Object one = mongoTemplate.findOne(query, classType);
-        return one;
+        return mongoTemplate.findOne(query, classType);
     }
 
     /**
      * 根据id查询mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param listField 多个返回字段
-     * ##param classType 表对应的实体类
+     * @param id
+     * @param listField 多个返回字段
+     * @param classType 表对应的实体类
      * @Return java.lang.Object
      * @Card
      **/
+    //FIXED
     public Object getMongoOneFields(String id, List<String> listField, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
         listField.forEach(query.fields()::include);
-        Object one = mongoTemplate.findOne(query, classType);
-        return one;
+        return mongoTemplate.findOne(query, classType);
     }
 
     /**
      * 根据多个id查询mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param field 返回字段
-     * ##param classType 表对应的实体类
+     * @param setId
+     * @param field 返回字段
+     * @param classType 表对应的实体类
      * @Return java.util.List<?>
      * @Card
      **/
+    //FIXED
     public List<?> getMongoListField(HashSet setId, String field, Class<?> classType) {
         Query query = new Query(new Criteria("_id").in(setId));
         if (field != null) {
@@ -101,32 +134,73 @@ public class DbUtils {
 
     /**
      * 根据多个id查询mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param listField 多个返回字段
-     * ##param classType 表对应的实体类
+     * @param setId
+     * @param listField 多个返回字段
+     * @param classType 表对应的实体类
      * @Return java.util.List<?>
      * @Card
      **/
-    public List<?> getMongoListFields(HashSet arrayId, List<String> listField, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").in(arrayId));
+    //FIXED
+
+    public List<?> getMongoListFields(HashSet setId, List<String> listField, Class<?> classType) {
+        Query query = new Query(new Criteria("_id").in(setId));
         listField.forEach(query.fields()::include);
         List<?> list = mongoTemplate.find(query, classType);
         return list;
     }
 
+    //FIXED
+
+    public Map<String, ?> getMongoMapField(HashSet setId, String field, Class<?> classType) {
+        Query query = new Query(new Criteria("_id").in(setId));
+        if (field != null) {
+            query.fields().include(field);
+        }
+        List<?> list = mongoTemplate.find(query, classType);
+        System.out.println("list=" + list);
+        Map<String, Object> mapId = new HashMap<>();
+        list.forEach(l ->{
+            System.out.println("l= " + l);
+            JSONObject json = (JSONObject) JSON.toJSON(l);
+            mapId.put(json.getString("id"), l);
+        });
+
+        return mapId;
+    }
+
+
+    //FIXED
+
+    public Map<String, ?> getMongoMapFields(HashSet setId, List<String> listField, Class<?> classType) {
+        Query query = new Query(new Criteria("_id").in(setId));
+        listField.forEach(query.fields()::include);
+        List<?> list = mongoTemplate.find(query, classType);
+        System.out.println("list=" + list);
+        System.out.println("list=" + list);
+        Map<String, Object> mapId = new HashMap<>();
+        list.forEach(l ->{
+            System.out.println("l= " + l);
+            JSONObject json = (JSONObject) JSON.toJSON(l);
+            mapId.put(json.getString("id"), l);
+        });
+        return mapId;
+    }
+
     /**
      * set修改mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param updateKey 修改字段key
-     * ##param updateValue 修改字段value
-     * ##param classType 表对应的实体类
+     * @param id
+     * @param updateKey 修改字段key
+     * @param updateValue 修改字段value
+     * @param classType 表对应的实体类
      * @Return com.mongodb.client.result.UpdateResult
      * @Card
      **/
+    //FIXED
+
     public UpdateResult setMongoValue(String id, String updateKey, Object updateValue, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
         Update update = new Update();
@@ -138,14 +212,15 @@ public class DbUtils {
 
     /**
      * set修改mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param jsonUpdate 多个修改字段
-     * ##param classType 表对应的实体类
+     * @param id
+     * @param jsonUpdate 多个修改字段
+     * @param classType 表对应的实体类
      * @Return com.mongodb.client.result.UpdateResult
      * @Card
      **/
+    //FIXED
     public UpdateResult setMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
         Update update = new Update();
@@ -157,55 +232,58 @@ public class DbUtils {
         return updateResult;
     }
 
-    /**
-     * inc修改mongo
-     * @Author Rachel
-     * @Date 2022/01/14
-     * ##param id
-     * ##param updateKey 修改字段key
-     * ##param updateValue 修改字段value
-     * ##param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    public UpdateResult incMongoValue(String id, String updateKey, Number updateValue, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        update.inc(updateKey, updateValue);
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
-
-    /**
-     * inc修改mongo
-     * @Author Rachel
-     * @Date 2022/01/14
-     * ##param id
-     * ##param jsonUpdate 多个修改对象
-     * ##param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    public UpdateResult incMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        jsonUpdate.forEach((k, v) ->{
-            update.inc(k, (Number) v);
-        });
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
+//    /**
+//     * inc修改mongo
+//     * @author Rachel
+//     * @Date 2022/01/14
+//     * @param id
+//     * @param updateKey 修改字段key
+//     * @param updateValue 修改字段value
+//     * @param classType 表对应的实体类
+//     * @Return com.mongodb.client.result.UpdateResult
+//     * @Card
+//     **/
+//    //FIXED
+//
+//    public UpdateResult incMongoValue(String id, String updateKey, Number updateValue, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").is(id));
+//        Update update = new Update();
+//        update.inc(updateKey, updateValue);
+//        update.inc("tvs", 1);
+//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+//        return updateResult;
+//    }
+//
+//    /**
+//     * inc修改mongo
+//     * @author Rachel
+//     * @Date 2022/01/14
+//     * @param id
+//     * @param jsonUpdate 多个修改对象
+//     * @param classType 表对应的实体类
+//     * @Return com.mongodb.client.result.UpdateResult
+//     * @Card
+//     **/
+    //FIXED
+//    public UpdateResult incMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").is(id));
+//        Update update = new Update();
+//        jsonUpdate.forEach((k, v) ->{
+//            update.inc(k, (Number) v);
+//        });
+//        update.inc("tvs", 1);
+//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+//        return updateResult;
+//    }
 
     /**
      * push修改mongo
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param id
-     * ##param updateKey 修改字段key
-     * ##param updateValue 修改字段value
-     * ##param classType 表对应的实体类
+     * @param id
+     * @param updateKey 修改字段key
+     * @param updateValue 修改字段value
+     * @param classType 表对应的实体类
      * @Return com.mongodb.client.result.UpdateResult
      * @Card
      **/
@@ -217,104 +295,319 @@ public class DbUtils {
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         return updateResult;
     }
-
-    /**
-     * push修改mongo
-     * @Author Rachel
-     * @Date 2022/01/14
-     * ##param id
-     * ##param jsonUpdate 多个修改对象
-     * ##param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    public UpdateResult pushMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        jsonUpdate.forEach((k, v) ->{
-            update.push(k, v);
-        });
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
-
-    /**
-     * pull修改mongo
-     * @Author Rachel
-     * @Date 2022/01/14
-     * ##param id
-     * ##param updateKey 修改字段key
-     * ##param updateValue 修改字段value
-     * ##param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    public UpdateResult pullMongoValue(String id, String updateKey, Object updateValue, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        update.pull(updateKey, updateValue);
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
-
-    /**
-     * pull修改mongo
-     * @Author Rachel
-     * @Date 2022/01/14
-     * ##param id
-     * ##param jsonUpdate 多个修改对象
-     * ##param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    public UpdateResult pullMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        jsonUpdate.forEach((k, v) ->{
-            update.pull(k, v);
-        });
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
-
-
-//    public Object addMongo(Object obj) {
 //
-//        Object insert = mongoTemplate.insert(obj);
+//    /**
+//     * push修改mongo
+//     * @author Rachel
+//     * @Date 2022/01/14
+//     * @param id
+//     * @param jsonUpdate 多个修改对象
+//     * @param classType 表对应的实体类
+//     * @Return com.mongodb.client.result.UpdateResult
+//     * @Card
+//     **/
+//    public UpdateResult pushMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").is(id));
+//        Update update = new Update();
+//        jsonUpdate.forEach((k, v) ->{
+//            update.push(k, v);
+//        });
+//        update.inc("tvs", 1);
+//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+//        return updateResult;
+//    }
+//
+//    /**
+//     * pull修改mongo
+//     * @author Rachel
+//     * @Date 2022/01/14
+//     * @param id
+//     * @param updateKey 修改字段key
+//     * @param updateValue 修改字段value
+//     * @param classType 表对应的实体类
+//     * @Return com.mongodb.client.result.UpdateResult
+//     * @Card
+//     **/
+//    public UpdateResult pullMongoValue(String id, String updateKey, Object updateValue, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").is(id));
+//        Update update = new Update();
+//        update.pull(updateKey, updateValue);
+//        update.inc("tvs", 1);
+//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+//        return updateResult;
+//    }
+//
+//    /**
+//     * pull修改mongo
+//     * @author Rachel
+//     * @Date 2022/01/14
+//     * @param id
+//     * @param jsonUpdate 多个修改对象
+//     * @param classType 表对应的实体类
+//     * @Return com.mongodb.client.result.UpdateResult
+//     * @Card
+//     **/
+//    public UpdateResult pullMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").is(id));
+//        Update update = new Update();
+//        jsonUpdate.forEach((k, v) ->{
+//            update.pull(k, v);
+//        });
+//        update.inc("tvs", 1);
+//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+//        return updateResult;
 //    }
 
     /**
-     * 查询es
-     * @Author Rachel
+     * 修改mongo
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param key 查询key
-     * ##param value 查询value
-     * ##param logType 索引名
+     * @param id
+     * @param update 修改语句
+     * @param classType 表对应的实体类
+     * @Return com.mongodb.client.result.UpdateResult
+     * @Card
+     **/
+    //FIXED
+    public UpdateResult updateMongoValues(String id, Update update, Class<?> classType) {
+        Query query = new Query(new Criteria("_id").is(id));
+        update.inc("tvs", 1);
+        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+        return updateResult;
+    }
+
+    /**
+     * 批量操作mongo
+     * @author Rachel
+     * @Date 2022/05/16
+     * @Param listBulk [新增：{"type":"insert", "insert":Object} / 修改：{"type":"update", "id":"", update:Update} / 删除：{"type":"remove", "id":""}]
+     * @Param classType 表对应的实体类
+     * @Return com.mongodb.bulk.BulkWriteResult
+     * @Card
+     **/
+    public BulkWriteResult bulkMongo(List<Map> listBulk, Class<?> classType) {
+        System.out.println("listBulk=" + listBulk);
+        BulkOperations bulk = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, classType);
+        listBulk.forEach(mapBulk -> {
+            String type = mapBulk.get("type").toString();
+            if (type.equals("insert")) {
+                bulk.insert(mapBulk.get("insert"));
+            } else if (type.equals("update")) {
+                Query query = new Query(new Criteria("_id").is(mapBulk.get("id")));
+                bulk.updateOne(query, (Update) mapBulk.get("update"));
+            } else if (type.equals("delete")) {
+                Query query = new Query(new Criteria("_id").is(mapBulk.get("id")));
+                bulk.remove(query);
+            }
+        });
+        BulkWriteResult execute = bulk.execute();
+        return execute;
+    }
+
+    /**
+     * 批量操作es
+     * @author Rachel
+     * @Date 2022/05/17
+     * @Param arrayBulk 新增：{"type":"insert", "logType":"", "insert":{}} / 修改：{"type":"update", "logType":"", "id":"", update:{}} / 删除：{"type":"remove", "logType":"", "id":""}
+     * @Param logType
+     * @Return java.lang.Object
+     * @Card
+     **/
+    public BulkResponse bulkEs(List<JSONObject> listBulk) throws IOException {
+        System.out.println("listBulk=" + listBulk);
+        BulkRequest bulk = new BulkRequest();
+        listBulk.forEach(jsonBulk ->{
+            String type = jsonBulk.getString("type");
+            String logType = jsonBulk.getString("logType");
+            if (type.equals("insert")) {
+                bulk.add(new IndexRequest(logType).source(jsonBulk.getJSONObject("insert")));
+            } else if (type.equals("update")) {
+                JSONObject jsonEs = jsonBulk.getJSONObject("update");
+                jsonEs.remove("id_ES");
+                bulk.add(new UpdateRequest(logType, jsonBulk.getString("id")).doc(jsonEs, XContentType.JSON));
+            } else if (type.equals("delete")) {
+                bulk.add(new DeleteRequest(logType, jsonBulk.getString("id")));
+            }
+        });
+        BulkResponse bulkResponse = client.bulk(bulk, RequestOptions.DEFAULT);
+        return bulkResponse;
+    }
+    public BulkResponse bulkEs(List<JSONObject> listBulk, String logType) throws IOException {
+        System.out.println("listBulk=" + listBulk);
+        BulkRequest bulk = new BulkRequest();
+        listBulk.forEach(jsonBulk ->{
+            String type = jsonBulk.getString("type");
+            if (type.equals("insert")) {
+                bulk.add(new IndexRequest(logType).source(jsonBulk.getJSONObject("insert")));
+            } else if (type.equals("update")) {
+                JSONObject jsonEs = jsonBulk.getJSONObject("update");
+                jsonEs.remove("id_ES");
+                bulk.add(new UpdateRequest(logType, jsonBulk.getString("id")).doc(jsonEs, XContentType.JSON));
+            } else if (type.equals("delete")) {
+                bulk.add(new DeleteRequest(logType, jsonBulk.getString("id")));
+            }
+        });
+        BulkResponse bulkResponse = client.bulk(bulk, RequestOptions.DEFAULT);
+        return bulkResponse;
+    }
+
+
+    /**
+     * 获取原有日志修改后发日志
+     * @author Rachel
+     * @Date 2022/05/18
+     * @Param queryBuilder es查询语句
+     * @Param sortKey 排序字段
+     * @Param jsonLog 日志修改 / 新增字段
+     * @Param jsonData 日志data修改 / 新增字段
+     * @Param logType 日志类型
+     * @Return org.elasticsearch.action.index.IndexResponse
+     * @Card
+     **/
+    //FIXED
+    public LogFlow getRecentLog(String id_O, Integer index, JSONObject tokData) throws IOException {
+        BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
+        queryBuilder.must(QueryBuilders.termQuery("id_C", tokData.getString("id_C")))
+                .must(QueryBuilders.termQuery("id_O", id_O))
+                .must(QueryBuilders.termQuery("index", index));
+
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        sourceBuilder.query(queryBuilder).from(0).size(1).sort("tmd", SortOrder.DESC);
+        
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("action","assetflow");
+        searchRequest.source(sourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        System.out.println("result");
+        System.out.println(id_O+" "+index+" "+tokData.getString("id_C"));
+
+        System.out.println(searchResponse.getHits().getHits());
+        SearchHit hit = searchResponse.getHits().getHits()[0];
+//        Map<String, Object> newestLog = hit.getSourceAsMap();
+        if (hit == null)
+        {
+            return null;
+        }
+        LogFlow newestLog = JSONObject.parseObject(hit.getSourceAsString(), LogFlow.class);
+//        newestLog.putAll(jsonLog);
+        //Setup who and when
+        newestLog.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        newestLog.setId_U(tokData.getString("id_U"));
+        newestLog.setDep(tokData.getString("dep"));
+        newestLog.setGrpU(tokData.getString("grpU"));
+        newestLog.setWrdNU(tokData.getJSONObject("wrdNU"));
+
+
+//        
+//        newestLog.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//        newestLog.put("id_U", tokData.getString("id_U"));
+//        newestLog.put("dep", tokData.getString("dep"));
+//        newestLog.put("grpU", tokData.getString("grpU"));
+//        newestLog.put("wrdNU", tokData.getJSONObject("wrdNU"));
+//
+//
+//        if (jsonData != null) {
+//            JSONObject jsonHitData = (JSONObject) JSON.toJSON(newestLog.get("data"));
+//            jsonHitData.putAll(jsonData);
+//            newestLog.put("data", jsonHitData);
+//        }
+//        LogFlow log = JSONObject.parseObject(JSON.toJSONString(newestLog),LogFlow.class);
+
+
+//        //no sending, just create?
+//
+//        IndexRequest indexRequest = new IndexRequest(logType);
+//        indexRequest.source(mapHit, XContentType.JSON);
+//        IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
+        return newestLog;
+    }
+
+    /**
+     * 查询es
+     * @author Rachel
+     * @Date 2022/01/14
+     * @param key 查询key
+     * @param value 查询value
+     * @param logType 索引名
      * @Return org.elasticsearch.action.search.SearchResponse
      * @Card
      **/
-    public SearchResponse getEsKey(String key, Object value, String logType) throws IOException {
+    //FIXED
+    public JSONArray getEsKey(String key, Object value, String logType) throws IOException {
+
+        JSONArray result = new JSONArray();
+
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
         queryBuilder.must(QueryBuilders.termQuery(key, value));
         sourceBuilder.query(queryBuilder).from(0).size(1000);
+
+        System.out.println("VA 1 only"+value+"   ");
+
+        try {
         SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
-        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
-        return response;
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+            for (SearchHit hit : response.getHits().getHits()) {
+                Map<String, Object> mapHit = hit.getSourceAsMap();
+//                mapHit.put("esId", hit.getId());
+                result.add(mapHit);
+            }
+
+            return result;
+
+        } catch (
+                IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+    //FIXED
+
+    public JSONArray getEsKey(String key, Object value, String key2, Object value2, String logType) {
+
+        JSONArray result = new JSONArray();
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
+        queryBuilder.must(QueryBuilders.termQuery(key, value))
+                .must(QueryBuilders.termQuery(key2, value2));
+        sourceBuilder.query(queryBuilder).from(0).size(1000);
+
+        System.out.println("value2"+value+"   "+ value2);
+
+        try {
+            SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
+
+            SearchResponse search = client.search(request, RequestOptions.DEFAULT);
+            for (SearchHit hit : search.getHits().getHits()) {
+                System.out.println(hit.getSourceAsMap());
+                result.add(hit.getSourceAsMap());
+            }
+
+            System.out.println("result"+result);
+            return result;
+
+        } catch (
+                IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
      * 查询es
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/01/14
-     * ##param jsonQuery 多个查询对象
-     * ##param logType 索引名
+     * @param jsonQuery 多个查询对象
+     * @param logType 索引名
      * @Return org.elasticsearch.action.search.SearchResponse
      * @Card
      **/
+    //FIXED
+
     public SearchResponse getEsKeys(JSONObject jsonQuery, String logType) throws IOException {
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
@@ -323,106 +616,240 @@ public class DbUtils {
         });
         sourceBuilder.query(queryBuilder).from(0).size(1000);
         SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
-        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
         return response;
     }
 
     /**
      * 查询es
-     * @Author Rachel
+     * @author Rachel
      * @Date 2022/02/27
-     * ##param queryBuilder 查询语句
-     * ##param logType 索引名
+     * @param queryBuilder 查询语句
+     * @param logType 索引名
      * @Return org.elasticsearch.action.search.SearchResponse
      * @Card
      **/
+    //FIXED
+
     public SearchResponse getEsQuery(BoolQueryBuilder queryBuilder, String logType) throws IOException {
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.query(queryBuilder).from(0).size(1000);
+        sourceBuilder.query(queryBuilder).from(0).size(5000);
         SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
-        SearchResponse response = restHighLevelClient.search(request, RequestOptions.DEFAULT);
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
         return response;
     }
 
+    //FIXED
+    public JSONArray getESListByQuery(BoolQueryBuilder queryBuilder, String logType) throws IOException {
+        JSONArray result = new JSONArray();
 
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        sourceBuilder.query(queryBuilder).from(0).size(5000);
+        SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
 
+        for (SearchHit hit : response.getHits().getHits()) {
+            result.add(hit.getSourceAsMap());
+        }
 
-    public IndexResponse addEs(String logType, Object obj) throws IOException {
-//        IndexRequest indexRequest = new IndexRequest(logType);
-//        indexRequest.source(obj, XContentType.JSON);
-//        IndexResponse indexResponse = restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
-//        System.out.println("ES result"+indexResponse);
-//        return indexResponse;
-        return null;
+        return result;
     }
 
+    //FIXED
     public BulkByScrollResponse delES(String listType, String key, String id) throws IOException {
         DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(listType);
         deleteByQueryRequest.setQuery(QueryBuilders.termQuery(key, id));
-        return restHighLevelClient.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
+        return client.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
     }
+    //FIXED
     public BulkByScrollResponse delES(String listType, String key, String id, String key2, String id2) throws IOException {
         DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(listType);
         deleteByQueryRequest.setQuery(QueryBuilders.termQuery(key, id));
         deleteByQueryRequest.setQuery(QueryBuilders.termQuery(key2, id2));
 
-        return restHighLevelClient.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
+        return client.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
     }
 
     /**
      * 新增assetflow日志
-     * ##author: Jevon
-     * ##Params: infoObject
-     * ##version: 1.0
-     * ##updated: 2020/10/26 8:30
-     * ##Return: void
+     * @author Jevon
+     * @param infoObject
+     * @ver 1.0
+     * @updated 2020/10/26 8:30
+     * @return void
      */
+    //Fixed
     public  void addES(JSONObject infoObject , String indexes ) throws IOException {
 
-        infoObject.put("tmk", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-        //指定ES索引
+        //8-1 indexes = indexes + "-write";
+        infoObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        //指定ES索引 "assetflow" / "assetflow-write / assetflow-read
         IndexRequest request = new IndexRequest(indexes);
         //ES列表
         request.source(infoObject, XContentType.JSON);
 
-        restHighLevelClient.index(request, RequestOptions.DEFAULT);
+        client.index(request, RequestOptions.DEFAULT);
 
     }
 
-    public UpdateResponse updateEs(String logType, String id, JSONObject jsonHit) throws IOException {
+
+    /**
+     * 根据id_C和ref获取id_A
+     * @author Rachel
+     * @Date 2022/01/14
+     * @param id_C 公司id
+     * @param ref 编号
+     * @Return java.lang.String
+     * @Card
+     **/
+//    //FIXED
+    public String getId_A(String id_C, String ref) {
+        Boolean bool = redisTemplate0.opsForHash().hasKey("login:module_id:compId-" + id_C, ref);
+        System.out.println("bool=" + bool);
+        if (bool) {
+            String id_A = (String) redisTemplate0.opsForHash().get("login:module_id:compId-" + id_C, ref);
+            System.out.println("id_A=" + id_A);
+            return id_A;
+        } else {
+            Query queryAsset = new Query(new Criteria("info.id_C").is(id_C).and("info.ref").is(ref));
+            queryAsset.fields().include("id");
+            Asset asset = mongoTemplate.findOne(queryAsset, Asset.class);
+            System.out.println("what"+id_C+ref);
+            if (asset == null) {
+//                throw new ErrorResponseException(HttpStatus.FORBIDDEN, ToolEnum.ASSET_NOT_FOUND.getCode(), null);
+                return "none";
+            }
+            redisTemplate0.opsForHash().put("login:module_id:compId-" + id_C, ref, asset.getId());
+            System.out.println("id_A=" + asset.getId());
+            return asset.getId();
+        }
+    }
+
+    /**
+     * 根据aId获取listKey需要的信息
+     * @param aId	aid
+     * @param listKey	需要的数据集合
+     * @return com.cresign.chat.pojo.po.Asset  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
+     * ##Updated: 2020/8/6 9:29
+     */
+//    public Asset getAssetById(String aId, List<String> listKey) {
+//        Query query = new Query(new Criteria("_id").is(aId));
+//        Field fields = query.fields();
+//        listKey.forEach(fields::include);
+//        return mongoTemplate.findOne(query, Asset.class);
+//    }
+
+    /**
+     * 查询公司是真是假  1：真公司    0：假公司，2：都是自己
+     * @author Jevon
+     * @param id_C      自己
+     * @param compOther     对方
+     * @ver 1.0
+     * @updated 2021/1/12 9:33
+     * @return int
+     */
+    public int judgeComp(String id_C,String compOther){
+
+        if (id_C.equals(compOther)){
+            return 2;
+        }else{
+            Query compQ = new Query(
+                    new Criteria("_id").is(compOther).and("bcdNet").is(1));
+            compQ.fields().include("bcdNet");
+            Comp comp = mongoTemplate.findOne(compQ, Comp.class);
+            if (comp != null) {
+                return 1;
+            }else {
+                return 0;
+            }
+        }
+    }
+
+
+    public UpdateResponse updateEs(String logType, String id, JSONObject logInfo) throws IOException {
         UpdateRequest updateRequest = new UpdateRequest(logType, id);
-        jsonHit.put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
-        updateRequest.doc(jsonHit, XContentType.JSON);
-        UpdateResponse updateResponse = restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
+        logInfo.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        updateRequest.doc(logInfo, XContentType.JSON);
+        UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
         return updateResponse;
     }
 
 
-    public void updateES(QueryBuilder query, String searchIndex, JSONObject listCol) throws IOException {
+    public void updateListCol(QueryBuilder query, String listType, JSONObject listCol) throws IOException {
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         searchSourceBuilder.query(query).size(5000);
-        SearchRequest srb = new SearchRequest(searchIndex);
+        SearchRequest srb = new SearchRequest(listType);
 
         srb.source(searchSourceBuilder);
 
-        SearchResponse search = restHighLevelClient.search(srb, RequestOptions.DEFAULT);
+        SearchResponse search = client.search(srb, RequestOptions.DEFAULT);
 
         for (SearchHit hit : search.getHits().getHits()) {
             UpdateRequest updateRequest = new UpdateRequest();
 
-            hit.getSourceAsMap().put("tmd", DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate()));
+            hit.getSourceAsMap().put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             hit.getSourceAsMap().putAll(listCol);
 
-            updateRequest.index(searchIndex);
+            updateRequest.index(listType);
             updateRequest.id(hit.getId());
             updateRequest.doc(hit.getSourceAsMap());
-            restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
+            client.update(updateRequest, RequestOptions.DEFAULT);
 
         }
 
     }
 
+    public Boolean checkOrder(JSONObject jsonObj, String objKey, List<Integer> arrayIndex, List<String> arrayKey) {
+        if (jsonObj == null || jsonObj.getJSONArray(objKey) == null) {
+            return false;
+        }
+        JSONArray array = jsonObj.getJSONArray(objKey);
+        //遍历array
+        if (arrayIndex == null) {
+            for (int i = 0; i < array.size(); i++) {
+                JSONObject json = array.getJSONObject(i);
+                if (json == null) {
+                    return false;
+                } else {
+                    for (int j = 0; j < arrayKey.size(); j++) {
+                        String key = arrayKey.get(j);
+                        if (json.get(key) == null) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        } else {
+            int size = arrayIndex.size();
+            for (int i = 0; i < size; i++) {
+                Integer index = arrayIndex.get(i);
+                if (index >= size || array.getJSONObject(index) == null) {
+                    return false;
+                } else {
+                    JSONObject json = array.getJSONObject(index);
+                    for (int j = 0; j < arrayKey.size(); j++) {
+                        String key = arrayKey.get(j);
+                        if (json.get(key) == null) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+    }
 
+    public void updateSize(String id_C, Long fileSize) {
+        String id_A = getId_A(id_C, "a-auth");
+        Update update = new Update();
+        update.inc("refAuto.objSize.nowSize", fileSize);
+        update.set("refAuto.objSize.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        updateMongoValues(id_A, update, Asset.class);
+    }
 }

@@ -15,9 +15,9 @@ public class MD5Util {
 
 
     /**
-     * ##description:TODO(用来实现MD5加密)
-     * ##return: String
-     * ##Params: inStr 要加密的字符串
+     * ##description:用来实现MD5加密
+     * @return String
+     * @param inStr 要加密的字符串
      *  思路，
      *  实现32位的MD5码
      */
@@ -66,9 +66,9 @@ public class MD5Util {
     }
 
     /**
-     * ##description:TODO(在MD5的基础上在进行一次加密，加盐加密)
-     * ##Params: inStr	要加密的字符串
-     * ##return: String
+     * ##description:在MD5的基础上在进行一次加密，加盐加密
+     * @param inStr	要加密的字符串
+     * @return String
      */
     public static String twoPaswwWord(String inStr) {
 
@@ -83,9 +83,9 @@ public class MD5Util {
     }
 
     /**
-     * ##description:TODO(与kL方法一致，但是是解密的方法，所谓负负得正)
-     * ##Params: inStr 解密字符串
-     * ##return:  结果
+     * ##description:与kL方法一致，但是是解密的方法，所谓负负得正
+     * @param inStr 解密字符串
+     * @return  结果
      */
     public static String jL(String inStr) {
         char[] charArray = inStr.toCharArray();
@@ -99,8 +99,8 @@ public class MD5Util {
 
     /**
      * 把pwd一次性进行两次加密
-     * ##Params: pwd   密码
-     * ##return:  加密后的密码
+     * @param pwd   密码
+     * @return  加密后的密码
      */
     public static String pwdDisposableEncryption(String pwd){
         String password = password(pwd);
@@ -113,8 +113,8 @@ public class MD5Util {
 
     /**
      * 生成md5
-     * ##Params: file 图片文件
-     * ##return: MD5值
+     * @param file 图片文件
+     * @return MD5值
      */
     public static String getFileMD5(File file) throws FileNotFoundException {
 

@@ -4,9 +4,9 @@ import lombok.Getter;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/8/6 10:33
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/8/6 10:33
+ * @ver 1.0
  */
 @Getter
 public enum CodeEnum {
@@ -22,7 +22,6 @@ public enum CodeEnum {
     NOT_FOUND("404"),
 
     INTERNAL_SERVER_ERROR("500"),
-
 
     ;
 

@@ -17,6 +17,8 @@ public class Asset {
 
     private String id;
 
+//    private String id_A;
+
     private AssetInfo info; // JSONObject
 
     private JSONObject file00s;
@@ -27,15 +29,15 @@ public class Asset {
 
     private JSONObject text00s;
 
-    private JSONObject task00s;
-
     private JSONObject picroll00s;
+
+    private JSONObject table00s;
+
+    private JSONObject grid;
 
     private JSONObject link00s;
 
     private JSONObject chkin00s;
-
-    private JSONObject sumChkin;
 
     private JSONObject menu;
 
@@ -57,12 +59,7 @@ public class Asset {
     @JsonProperty("cTrigger")
     private JSONObject cTrigger;
 
-
     private JSONObject powerup;    //限量卡
-
-    private JSONObject excelControl;//Excel
-
-    private JSONObject statCheck;
 
     private JSONObject qtySafe;
 
@@ -72,6 +69,8 @@ public class Asset {
 
     private JSONObject flowControl;
 
+    private JSONObject qrShareCode;
+
     @JsonProperty("aStock")
     private JSONObject aStock;
 
@@ -80,8 +79,14 @@ public class Asset {
 
     private JSONObject refAuto;
 
-    private Integer tvs = 1;
-
     private JSONObject summ00s;
+
+//    private JSONObject grpDetail;
+
+    private JSONObject summx;
+
+    private JSONObject chgSupp;
+
+    private Integer tvs = 1;
 
 }

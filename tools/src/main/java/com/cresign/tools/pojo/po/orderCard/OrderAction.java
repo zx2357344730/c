@@ -1,5 +1,6 @@
 package com.cresign.tools.pojo.po.orderCard;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,9 +12,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * ##ClassName: ProdAction
  * ##description: prod的action类
- * ##Author: tang
+ * @author tang
  * ##Updated: 2020/10/17 16:49
- * ##version: 1.0.0
+ * @ver 1.0.0
  */
 @Data
 @Document(collection = "Order")
@@ -30,29 +31,43 @@ public class OrderAction {
                    JSONArray subParts, JSONArray upPrnts, JSONArray prtNext, JSONArray prtPrev,
                    JSONObject wrdNP, JSONObject wrdN) {
 
+//        Lang wrdEmpty = new Lang();
+//        wrdEmpty.setCn("");
+
         JSONObject wrdEmpty = new JSONObject();
-        wrdEmpty.put("cn","");
+        wrdEmpty.put("cn", "");
 
         this.bcdStatus = bcdStatus;
         this.bisPush = bisPush;
         this.bisactivate = bisactivate;
         this.id_O = id_O;
         this.id_OP = id_OP;
-        this.refOP = refOP;
+        this.refOP = refOP == null || refOP.equals("") ? "": refOP;
         this.id_P = id_P;
         this.index = index;
         this.bmdpt = bmdpt;
         this.sumChild = sumChild;
         this.sumPrev = sumPrev;
-        this.wrdNP = wrdNP  == null? (JSONObject) wrdEmpty.clone(): wrdNP;
-
-        this.wrdN = wrdN  == null? (JSONObject) wrdEmpty.clone(): wrdN;
-        this.priority = priority;
+        this.wrdNP = wrdNP  == null? JSON.parseObject(JSON.toJSONString(wrdEmpty)) : wrdNP;
+//        this.wrdN = wrdN  == null? wrdEmpty : wrdN;
+        this.wrdN = wrdN == null? JSON.parseObject(JSON.toJSONString(wrdEmpty)) : wrdN;
+//        this.priority = priority;
 
         this.subParts = subParts == null? new JSONArray( ): subParts;
         this.upPrnts = upPrnts == null? new JSONArray( ): upPrnts;
         this.prtNext = prtNext == null? new JSONArray( ): prtNext;
         this.prtPrev = prtPrev == null? new JSONArray( ): prtPrev;
+    }
+
+    public JSONObject upPrnt(String id_O, Integer index, JSONObject wrdN, Double wn2qtyneed)
+    {
+        JSONObject upItem = new JSONObject();
+        upItem.put("id_O", id_O);
+        upItem.put("index",index);
+        upItem.put("wn2qtyneed", wn2qtyneed);
+        upItem.put("wrdN", wrdN);
+
+        return upItem;
     }
 
 
@@ -102,36 +117,6 @@ public class OrderAction {
      */
     private Integer bmdpt;
 
-//    /**
-//     * 下一个要处理的产品id
-//     */
-//    private String id_ONext;
-//
-//    /**
-//     * 下一个要处理的产品下标
-//     */
-//    private Integer indONext;
-
-//    /**
-//     * 父产品id
-//     */
-//    private String id_OUpper;
-//
-//    /**
-//     * 父产品下标
-//     */
-//    private Integer indOUpper;
-//
-//    /**
-//     * 下一个兄弟产品id
-//     */
-//    private String id_OWith;
-//
-//    /**
-//     * 下一个兄弟产品下标
-//     */
-//    private Integer indOWith;
-
     /**
      * 子产品数量
      */
@@ -161,27 +146,14 @@ public class OrderAction {
      * 所有父产品名称拼接存放
      */
     private JSONObject wrdNP;
+//    private Lang wrdN;
     private JSONObject wrdN;
 
-    /**
-     * 提问后回复
-     */
-//    private JSONObject nextDesc;
-
-    /**
-     * 负责人备注
-     */
-//    private JSONObject desc;
-
-    /**
-     * 前端传递数量
-     */
-//    private Double wn2qtyneed;
 
     /**
      * 优先级
      */
-    private Integer priority;
+//    private Integer priority;
 
     /**
      * 是否是子任务的bmdpt-4 的父零件
@@ -196,21 +168,11 @@ public class OrderAction {
     /**
      * subPart = parts, upPrnts = myParent[], Next[] next process, prev Process
      */
-    private JSONArray subParts = new JSONArray();;
-    private JSONArray upPrnts = new JSONArray();;
+    private JSONArray subParts = new JSONArray();
+    private JSONArray upPrnts = new JSONArray();
 
     private JSONArray prtNext = new JSONArray();
     private JSONArray prtPrev = new JSONArray();
-
-    /**
-     * 任务备注
-     */
-//    private JSONObject wrdPrep;
-
-    /**
-     * 是否合并: 0 : 未合并，1 : 合并，2 : 被合并
-     */
-//    private Integer merge = 0;
 
     /**
      * prob
@@ -231,5 +193,6 @@ public class OrderAction {
      * 递归时间任务存储的部门下的组别下的日期
      */
     private JSONObject teDate;
+
 
 }

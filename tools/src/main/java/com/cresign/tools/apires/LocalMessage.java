@@ -11,9 +11,9 @@ import java.util.Objects;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2021-04-26 10:57
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2021-04-26 10:57
+ * @ver 1.0
  */
 @Component
 @Slf4j

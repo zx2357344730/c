@@ -14,8 +14,8 @@ import java.io.Serializable;
 /**
  * ##class: lBUser
  * ##description: 买家用户
- * ##author: jackson
- * ##updated: 2019-07-17 09:00
+ * @author jackson
+ * @updated 2019-07-17 09:00
  **/
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
@@ -42,8 +42,8 @@ public class lBUser implements Serializable {
         this.refU = refU == null ? "" : refU;
         this.id_WX = id_WX == null ? "" : id_WX;
         this.pic = pic == null ? "" : pic;
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmk = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     private String id_U;
@@ -52,7 +52,7 @@ public class lBUser implements Serializable {
 
     private JSONObject wrdN;
 
-    private JSONObject wrdNCB;
+    private JSONObject wrdNCB; // need delete
 
     private String grpU;
 
@@ -64,8 +64,6 @@ public class lBUser implements Serializable {
 
     private String tmk;
 
-    //
-
     private JSONObject wrddesc;
 
     private String id_APP;
@@ -75,7 +73,8 @@ public class lBUser implements Serializable {
     private String cem;
 
     private String defNG;
-    
+    private String defCR;
+
     private JSONObject wrdNReal;
 
     private String mbn;

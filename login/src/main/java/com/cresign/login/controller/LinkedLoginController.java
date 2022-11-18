@@ -12,12 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/8/1 10:18
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/8/1 10:18
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("linked")
@@ -47,7 +48,7 @@ public class LinkedLoginController {
 
     @PostMapping("/v1/linkedRegister")
     @SecurityParameter
-    public ApiResponse linkedRegister(@RequestBody JSONObject jsonObject) {
+    public ApiResponse linkedRegister(@RequestBody JSONObject jsonObject) throws IOException {
 
         return linkedinLoginService.registerLinked(
                 jsonObject.getString(CODE),

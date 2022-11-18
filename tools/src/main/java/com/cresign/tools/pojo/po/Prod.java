@@ -8,9 +8,9 @@ import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * ##author: kevin
- * ##updated: 2021/6/1
- * ##version: 1.0.0
+ * @author kevin
+ * @updated 2021/6/1
+ * @ver 1.0.0
  * ##description: 产品实体类
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -34,7 +34,11 @@ public class Prod {
 
     private JSONObject text00s;
 
-    private JSONObject task00s;
+    private JSONObject table00s;
+
+    private JSONObject grid;
+
+    private JSONObject summ00s;
 
     private JSONObject picroll00s;
 
@@ -52,15 +56,17 @@ public class Prod {
 
     private JSONObject ch00s;
 
-
     private JSONObject buyInit;
-
 
     private JSONObject qrShareCode;
 
     private JSONObject testP1;
 
-    private JSONObject testP2;
+    private JSONObject summx;
+
+    private JSONObject tempa;
+
+
 
     private Integer tvs = 1;
 

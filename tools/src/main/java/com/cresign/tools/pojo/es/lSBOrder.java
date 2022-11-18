@@ -1,5 +1,6 @@
 package com.cresign.tools.pojo.es;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
@@ -12,8 +13,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * ##class: lSBComp
  * ##description: 卖买家公司类
- * ##author: jackson
- * ##updated: 2019-08-19 16:41
+ * @author jackson
+ * @updated 2019-08-19 16:41
  **/
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -25,7 +26,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class lSBOrder {
 
     public lSBOrder(String id_C, String id_CB, String id_CP, String id_CBP,
-                    String id_OP, String id_O, String ref, String refB, String grp, String grpB,
+                    String id_OP, String id_O, JSONArray id_P, String ref, String refB, String grp, String grpB,
                     String pic, Integer lST, Integer lCR,
                     JSONObject wrdN, JSONObject wrddesc, JSONObject wrddescB) {
 
@@ -38,6 +39,7 @@ public class lSBOrder {
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
         this.id_CB = id_CB;
         this.id_CBP = id_CBP == null || id_CBP == "" ? id_CB: id_CBP;
+        this.arrP = id_P.size() == 0 ? new JSONArray(): id_P;
         this.wrdN = wrdN  == null? (JSONObject) wrdEmpty.clone(): wrdN;
         this.wrddesc = wrddesc  == null? (JSONObject) wrdEmpty.clone() : wrddesc;
         this.wrddescB = wrddescB == null? (JSONObject) wrdEmpty.clone(): wrddescB;
@@ -48,8 +50,8 @@ public class lSBOrder {
         this.pic = pic  == null? "": pic;
         this.lST = lST  == null? 0: lST;
         this.lCR = lCR  == null? 0: lCR;
-        this.tmk = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
-        this.tmd = DateUtils.getDateByT(DateEnum.DATE_YYYYMMMDDHHMMSS.getDate());
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     public static lSBOrder getInstance(){
@@ -69,6 +71,7 @@ public class lSBOrder {
 
     private String id_C;
     private String id_CP;
+    private JSONArray arrP;
 
     private String grp;
 
@@ -89,7 +92,7 @@ public class lSBOrder {
     private String refB;
 
     private double wn4price;
-    private double wn2qc;
+//    private double wn2qc;
     private double wn2qty;
 
 
@@ -103,8 +106,8 @@ public class lSBOrder {
 
     private String teDur;
 
-    private Integer mNow;
-
-    private Integer sNow;
+//    private Integer mNow;
+//
+//    private Integer sNow;
 
 }

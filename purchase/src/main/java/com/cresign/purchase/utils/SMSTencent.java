@@ -17,10 +17,10 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
- * ##Author: JackSon
- * ##version: 1.0
+ * @author JackSon
+ * @ver 1.0
  * ##description: 腾讯云短信工具类
- * ##updated: 2020-03-16 14:02
+ * @updated 2020-03-16 14:02
  */
 @Component
 public class SMSTencent {
@@ -61,20 +61,20 @@ public class SMSTencent {
     }
 
     @Autowired
-    public void setRedisTemplate1(StringRedisTemplate redisTemplate1) {
-        SMSTencent.redisTemplate1 = redisTemplate1;
+    public void setredisTemplate0(StringRedisTemplate redisTemplate0) {
+        SMSTencent.redisTemplate0 = redisTemplate0;
     }
 
-    private static StringRedisTemplate redisTemplate1;
+    private static StringRedisTemplate redisTemplate0;
 
 
 
     /**
      *##description:
-     *##Params:            phones : 发送的手机号码 ,templateParam : 模版参数，从前往后对应的是模版的{1}、{2}等,见《创建短信签名和模版》小节
-     *##Return:
-     *##author:           JackSon
-     *##updated:             2020/3/16 14:36
+     *@param            phones : 发送的手机号码 ,templateParam : 模版参数，从前往后对应的是模版的{1}、{2}等,见《创建短信签名和模版》小节
+     *@return
+     *@author           JackSon
+     *@updated             2020/3/16 14:36
      */
     public static String sendSMS(String [] phones, int smsCodeSize, String templateId, String smsType) {
 
@@ -113,7 +113,7 @@ public class SMSTencent {
             smsClient.SendSms(sendSmsRequest);
 
             for (int i = 0; i < phones.length; i++) {
-                redisTemplate1.opsForValue().set(smsType + phones[i], smsNum, 3, TimeUnit.MINUTES);
+                redisTemplate0.opsForValue().set(smsType + phones[i], smsNum, 3, TimeUnit.MINUTES);
             }
 
         } catch (TencentCloudSDKException e) {

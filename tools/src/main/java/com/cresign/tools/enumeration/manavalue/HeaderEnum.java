@@ -4,9 +4,9 @@ import lombok.Getter;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/8/5 11:36
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/8/5 11:36
+ * @ver 1.0
  */
 @Getter
 public enum  HeaderEnum {
@@ -26,7 +26,7 @@ public enum  HeaderEnum {
     private final String headerName;
 
     /**
-     * ##Params: headerName 客户端类型
+     * @param headerName 客户端类型
      */
     HeaderEnum(String headerName){
         this.headerName = headerName;

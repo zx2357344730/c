@@ -3,9 +3,9 @@ package com.cresign.purchase.utils;
 /**
  * ##ClassName: alipayUtil
  * ##description: 作者很懒什么也没写
- * ##Author: tang
+ * @author tang
  * ##Updated: 2020/9/23 9:21
- * ##version: 1.0.0
+ * @ver 1.0.0
  */
 public class alipayUtil {
 

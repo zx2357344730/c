@@ -5,9 +5,9 @@ import lombok.Getter;
 /**
  * @ClassName ChatEnum
  * @Description chat服务状态码类
- * @Author tang
+ * @authortang
  * @Date 2021/6/23 15:41
- * @Version 1.0.0
+ * @ver 1.0.0
  */
 @Getter
 public enum ChatEnum {
@@ -145,6 +145,22 @@ public enum ChatEnum {
      * gpIo已经被解绑
      */
     ERR_IO_ALREADY_UNBIND("01102"),
+    /**
+     * 无assetId
+     */
+    ERR_NO_ASSET_ID("01103"),
+    /**
+     * 无asset
+     */
+    ERR_NO_ASSET("01104"),
+    /**
+     * rpi卡片异常
+     */
+    ERR_RPI_K("01105"),
+    /**
+     * rpi的token数据不存在
+     */
+    ERR_RPI_T_DATA_NO("01106"),
     ;
 
 
@@ -155,7 +171,7 @@ public enum ChatEnum {
 
     /**
      * 带参构造方法
-     * ##Params: code  异常状态码
+     * @param code  异常状态码
      */
     ChatEnum(String code){
         this.code = code;

@@ -25,20 +25,20 @@ public class WXAesCbcUtil {
      * AES解密
      *
 
-     * ##return:
+     * @return
      * ##exception:
      */
 
     /**
      *
-     * ##author: tangzhejin
-     * ##Params: data           //密文，被加密的数据
-     * ##Params: key            //秘钥
-     * ##Params: iv             //偏移量
-     * ##Params: encodingFormat //解密后的结果需要进行的编码
-     * ##version: 1.0
-     * ##updated: 2020/8/8 9:58
-     * ##Return: java.lang.String
+     * @author tangzhejin
+     * @param data           //密文，被加密的数据
+     * @param key            //秘钥
+     * @param iv             //偏移量
+     * @param encodingFormat //解密后的结果需要进行的编码
+     * @ver 1.0
+     * @updated 2020/8/8 9:58
+     * @return java.lang.String
      */
     public static String decrypt(String data, String key, String iv, String encodingFormat) throws Exception {
 //        initialize();

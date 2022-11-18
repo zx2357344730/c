@@ -19,13 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020-12-26 11:45
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020-12-26 11:45
+ * @ver 1.0
  */
 @RequestMapping("menu")
 @RestController
@@ -50,12 +49,12 @@ public class MenuController {
     @PostMapping("/v1/get_menus")
     public ApiResponse getMenusAndSubMenus(@RequestBody JSONObject reqJson) {
 
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         JSONArray canUpdate = authCheck.getUserSelectAuth(
                 tokData.getString("id_U"),
                 tokData.getString("id_C"),
                 tokData.getString("grpU"),
-                "lBAsset", "1003", "card");
+                "lSAsset", "1003", "card");
         if (!canUpdate.contains("menu"))
         {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
@@ -67,10 +66,10 @@ public class MenuController {
     @SecurityParameter
     @PostMapping("/v1/get_grpU_menuData")
     public ApiResponse getGrpUForMenusInRole(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         JSONArray canUpdate = authCheck.getUserSelectAuth(
                 tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
-                "lBAsset", "1003", "card");
+                "lSAsset", "1003", "card");
         if (!canUpdate.contains("menu"))
         {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
@@ -85,10 +84,10 @@ public class MenuController {
     @SecurityParameter
     @PostMapping("/v1/getMenuGrp")
     public ApiResponse getMenuGrp(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         JSONArray canUpdate = authCheck.getUserSelectAuth(
                 tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
-                "lBAsset", "1003", "card");
+                "lSAsset", "1003", "card");
         if (!canUpdate.contains("menu"))
         {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
@@ -103,8 +102,8 @@ public class MenuController {
 
     @SecurityParameter
     @PostMapping("/v1/get_menuData")
-    public ApiResponse getMenuListByGrpU(@RequestBody JSONObject reqJson) throws IOException {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+    public ApiResponse getMenuListByGrpU(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return menuService.getMenuListByGrpU(
                 tokData.getString("id_C"),
                 tokData.getString("grpU")
@@ -114,7 +113,7 @@ public class MenuController {
     @SecurityParameter
     @PostMapping("/v1/ud_grpU_mainMenu")
     public ApiResponse updateMenuData(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         return menuService.updateMenuData(
                 getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
@@ -129,10 +128,10 @@ public class MenuController {
     @PostMapping("/v1/get_subMenu")
     public ApiResponse getSubMenusData(@RequestBody JSONObject reqJson) {
 
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         JSONArray canUpdate = authCheck.getUserSelectAuth(
                 tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
-                "lBAsset", "1003", "card");
+                "lSAsset", "1003", "card");
         if (!canUpdate.contains("menu"))
         {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
@@ -160,28 +159,28 @@ public class MenuController {
         );
     }
 
-
-    @SecurityParameter
-    @PostMapping("/v1/check_submenu")
-    public ApiResponse checkSubMenuUse(@RequestBody JSONObject reqJson) {
-        return menuService.checkSubMenuUse(
-                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("id_C"),
-                reqJson.getString("ref")
-
-        );
-    }
-
-    @SecurityParameter
-    @PostMapping("/v1/del_submenu")
-    public ApiResponse delSubMenu(@RequestBody JSONObject reqJson) {
-        return menuService.delSubMenu(
-                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("id_C"),
-                reqJson.getString("ref")
-
-                );
-    }
+//
+//    @SecurityParameter
+//    @PostMapping("/v1/check_submenu")
+//    public ApiResponse checkSubMenuUse(@RequestBody JSONObject reqJson) {
+//        return menuService.checkSubMenuUse(
+//                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+//                reqJson.getString("id_C"),
+//                reqJson.getString("ref")
+//
+//        );
+//    }
+//
+//    @SecurityParameter
+//    @PostMapping("/v1/del_submenu")
+//    public ApiResponse delSubMenu(@RequestBody JSONObject reqJson) {
+//        return menuService.delSubMenu(
+//                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+//                reqJson.getString("id_C"),
+//                reqJson.getString("ref")
+//
+//                );
+//    }
 
 
 }

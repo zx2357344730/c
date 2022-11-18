@@ -6,9 +6,9 @@ import org.springframework.http.HttpStatus;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/9/27 14:13
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/9/27 14:13
+ * @ver 1.0
  */
 @Getter
 public class ErrorResponseException extends RuntimeException{
@@ -40,7 +40,7 @@ public class ErrorResponseException extends RuntimeException{
     public ErrorResponseException(HttpStatus status, String code, String des) {
         this.status = status;
         this.code = code;
-        this.des = des;
+        this.des = des == null ? "" : des;
         this.tid = TraceContext.traceId();
     }
 

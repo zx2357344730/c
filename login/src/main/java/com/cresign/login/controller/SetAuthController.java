@@ -56,10 +56,15 @@ public class SetAuthController {
     public ApiResponse switchComp(
             @RequestBody Map<String, Object> reqMap) {
 
-        return setAuthService.switchComp(
-                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqMap.get("id_C").toString(),
-                request.getHeader("clientType"));
+        try {
+            return setAuthService.switchComp(
+                    getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    reqMap.get("id_C").toString(),
+                    request.getHeader("clientType"));
+        } catch(Exception e)
+        {
+            return null;
+        }
     }
 
     @SecurityParameter
@@ -87,15 +92,15 @@ public class SetAuthController {
 //                request.getHeader("lang"));
 //    }
 
-
-    @SecurityParameter
-    @PostMapping("/v1/ud_card_def")
-    public ApiResponse updateDefCard(@RequestBody JSONObject reqJson) {
-        return setAuthService.updateDefCard(
-                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("id_C"),
-                reqJson.getJSONObject("defData")
-        );
-    }
+//
+//    @SecurityParameter
+//    @PostMapping("/v1/ud_card_def")
+//    public ApiResponse updateDefCard(@RequestBody JSONObject reqJson) {
+//        return setAuthService.updateDefCard(
+//                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+//                reqJson.getString("id_C"),
+//                reqJson.getJSONObject("defData")
+//        );
+//    }
 
 }

@@ -5,9 +5,9 @@ import lombok.Getter;
 /**
  * ##ClassName: PurchaseEnum
  * ##description: 购买模块异常枚举类
- * ##Author: tang
+ * @author tang
  * ##Updated: 2020/8/8 8:26
- * ##version: 1.0.0
+ * @ver 1.0.0
  */
 @Getter
 public enum PurchaseEnum {
@@ -68,7 +68,7 @@ public enum PurchaseEnum {
 
     /**
      * 带参构造方法
-     * ##Params: code  异常状态码
+     * @param code  异常状态码
      */
     PurchaseEnum(String code){
         this.code = code;

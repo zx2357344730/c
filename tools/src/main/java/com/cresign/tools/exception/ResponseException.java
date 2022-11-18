@@ -8,9 +8,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 /**
  * 返回异常状态码
- * ##author: JackSon
- * ##updated: 2020/7/25 10:31
- * ##Return:
+ * @author JackSon
+ * @updated 2020/7/25 10:31
+ * @return
  */
 public class ResponseException extends RuntimeException{
 

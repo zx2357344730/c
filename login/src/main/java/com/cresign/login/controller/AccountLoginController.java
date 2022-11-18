@@ -12,13 +12,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 /**
  * ##description:
- * ##author: JackSon
- * ##updated: 2020/7/25 11:37
- * ##version: 1.0
+ * @author JackSon
+ * @updated 2020/7/25 11:37
+ * @ver 1.0
  */
 @RestController
 @RequestMapping("/account")
@@ -35,14 +34,50 @@ public class AccountLoginController {
 
     @SecurityParameter
     @PostMapping("/v1/login")
-    public ApiResponse doNumberLogin(@RequestBody JSONObject reqJson) {
+    public ApiResponse unregLogin(@RequestBody JSONObject reqJson) {
 
-        return accountLoginService.doNumberLogin(
+        return accountLoginService.unregLogin(
 //                reqJson.getString("usn"),
 //                reqJson.getString("pwd"),
                 request.getHeader("clientType"));
 
     }
+
+//    /**
+//     * 根据id_U修改appId
+//     * @param reqJson 请求参数
+//     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+//     * @author tang
+//     * @version 1.0.0
+//     * @date 2022/9/19
+//     */
+//    @SecurityParameter
+//    @PostMapping("/v1/setAppId")
+//    public ApiResponse setAppId(@RequestBody JSONObject reqJson) {
+////        System.out.println("进入接口:");
+//        String id_U = reqJson.getString("id_U");
+//        if (null == id_U) {
+//            id_U = getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"));
+//        }
+//        return accountLoginService.setAppId(reqJson.getString("appId")
+//                ,id_U);
+//    }
+
+//    @SecurityParameter
+//    @PostMapping("/v1/key")
+//    public ApiResponse getKey(@RequestBody JSONObject reqJson) {
+//        return accountLoginService.getKey(reqJson.getString("qdKey"));
+//    }
+//
+//    @PostMapping("/v1/getHdKey")
+//    public String getHdKey(@RequestBody JSONObject reqJson) {
+//        return accountLoginService.getHdAndQdKey(reqJson.getString("qdKey"));
+//    }
+//
+//    @PostMapping("/v1/setQdKey")
+//    public ApiResponse setQdKey(@RequestBody JSONObject reqJson) {
+//        return accountLoginService.getKey(reqJson.getString("qdKey"));
+//    }
 
     @SecurityParameter
     @PostMapping("/v1/generateLoginCode")
@@ -59,10 +94,8 @@ public class AccountLoginController {
 
         return accountLoginService.scanLoginCode(
                 reqJson.getString("token"),
-               //"5f28bf314f65cc7dc2e60386",
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("clientType")
-
+                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+//                reqJson.getString("clientType")
         );
     }
 

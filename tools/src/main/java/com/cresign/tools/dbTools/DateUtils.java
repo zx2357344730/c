@@ -1,7 +1,10 @@
 package com.cresign.tools.dbTools;
 
 import com.cresign.tools.common.Constants;
+import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.exception.ErrorResponseException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
@@ -18,10 +21,10 @@ public class DateUtils {
 
     /**
      * 根据type获取格式化日期
-     * ##Params: type 日志格式
-     * ##return: 格式化结果
+     * @param type 日志格式
+     * @return 格式化结果
      */
-    public static String getDateByT(String type) {
+    public static String getDateNow(String type) {
 
         // 创建时间格式化对象
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(type);
@@ -62,15 +65,15 @@ public class DateUtils {
 
     /**
      * 给时间加上几个小时
-     * ##Params: day	当前时间 格式：yyyy-MM-dd HH:mm:ss
-     * ##Params: hour	需要加的时间
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param day	当前时间 格式：yyyy-MM-dd HH:mm:ss
+     * @param hour	需要加的时间
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:18
      */
     public static String dateAdd(String day, int hour){
-        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_TWO.getDate());
+        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate());
         Date date = null;
         try {
             date = format.parse(day);
@@ -95,17 +98,17 @@ public class DateUtils {
     }
     /**
      * 判断date1和date2的大小
-     * ##Params: date	时间格式
-     * ##Params: date1	第一个时间
-     * ##Params: date2	第二个时间
-     * ##Params: date3	第三个个时间
-     * ##Params: is	判断方式(0 = 判断是否等于,1 = 大于等于,
+     * @param date	时间格式
+     * @param date1	第一个时间
+     * @param date2	第二个时间
+     * @param date3	第三个个时间
+     * @param is	判断方式(0 = 判断是否等于,1 = 大于等于,
      *              2 = 判断第一个时间大于等于第二个并且小于等于第三个,
      *              10 = 判断小于,11 = 判断第一个小于第二个或者大于第三个,
      *              否则 = 小于等于)
-     * ##return: boolean  返回结果: 判断结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @return boolean  返回结果: 判断结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:21
      */
     public static boolean judgeTimeSize(String date, String date1, String date2, String date3, int is) {
@@ -114,7 +117,7 @@ public class DateUtils {
         //创建日期转换对象：年月日 时分秒
         SimpleDateFormat sdf = new SimpleDateFormat(date);
         String[] s = date1.split(Constants.STRING_BLANK_SPACE);
-        int qu = CommUtils.getIndex(s);
+        int qu = Ut.getLength(s);
         boolean flag = false;
         try {
             //转换为 date 类型 Debug：Sun Nov 11 11:11:11 CST 2018
@@ -142,7 +145,6 @@ public class DateUtils {
                 flag = dateD.getTime() <= dateD2.getTime();
             }
         } catch (ParseException e1) {
-            // TODO Auto-generated catch block
         }
         return flag;
     }
@@ -150,16 +152,16 @@ public class DateUtils {
 
     /**
      * 某一年某个月的每一天
-     * ##Params: year	年份
-     * ##Params: month	月份
-     * ##Params: day	天
-     * ##return: java.util.List<java.lang.String>  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param year	年份
+     * @param month	月份
+     * @param day	天
+     * @return java.util.List<java.lang.String>  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:26
      */
     public static List<String> getMonthFullDay(int year, int month, int day) {
-        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
+        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
         List<String> fullDayList = new ArrayList<>();
         if (day <= 0) {
             day = 1;
@@ -186,16 +188,16 @@ public class DateUtils {
 
     /**
      * 将date转换为数字减去shu
-     * ##Params: date	时间字符串
-     * ##Params: shu	需要减去的数
-     * ##Params: addOrReduce	判断条件
-     * ##return: java.lang.String  返回结果: 结果字符串
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param date	时间字符串
+     * @param shu	需要减去的数
+     * @param addOrReduce	判断条件
+     * @return java.lang.String  返回结果: 结果字符串
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:20
      */
     public static String splitDateString(String date, int shu, int addOrReduce) {
-        String[] split = date.split(Constants.COLON);
+        String[] split = date.split(":");
         int h = Integer.parseInt(split[0]);
         int m = Integer.parseInt(split[Constants.INT_ONE]);
         StringBuilder sb = new StringBuilder();
@@ -204,27 +206,27 @@ public class DateUtils {
         }
         if (addOrReduce == 0) {
             if (m >= shu) {
-                sb.append(CommUtils.getBl(h));
-                sb.append(Constants.COLON);
-                sb.append(CommUtils.getBl((m - shu)));
+                sb.append(Ut.addZero(h));
+                sb.append(":");
+                sb.append(Ut.addZero((m - shu)));
             } else {
-                sb.append(CommUtils.getBl((h - Constants.INT_ONE)));
-                sb.append(Constants.COLON);
-                sb.append(CommUtils.getBl(((m + Constants.DATE_SIXTY) - shu)));
+                sb.append(Ut.addZero((h - Constants.INT_ONE)));
+                sb.append(":");
+                sb.append(Ut.addZero(((m + Constants.DATE_SIXTY) - shu)));
             }
         } else {
             int l = m + shu;
             if (l >= Constants.DATE_SIXTY) {
-                sb.append(CommUtils.getBl((h + Constants.INT_ONE)));
-                sb.append(Constants.COLON);
-                sb.append(CommUtils.getBl((l - Constants.DATE_SIXTY)));
+                sb.append(Ut.addZero((h + Constants.INT_ONE)));
+                sb.append(":");
+                sb.append(Ut.addZero((l - Constants.DATE_SIXTY)));
             } else {
-                sb.append(CommUtils.getBl(h));
-                sb.append(Constants.COLON);
-                sb.append(CommUtils.getBl(l));
+                sb.append(Ut.addZero(h));
+                sb.append(":");
+                sb.append(Ut.addZero(l));
             }
         }
-        sb.append(Constants.COLON);
+        sb.append(":");
         sb.append(split[Constants.INT_TWO]);
         return sb.toString();
     }
@@ -238,11 +240,11 @@ public class DateUtils {
     }
     /**
      * 获取两个日期之间的所有日期
-     * ##Params: startTime	开始日期
-     * ##Params: endTime	结束日期
-     * ##return: java.util.List<java.lang.String>  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param startTime	开始日期
+     * @param endTime	结束日期
+     * @return java.util.List<java.lang.String>  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:26
      */
 
@@ -251,7 +253,7 @@ public class DateUtils {
         // 返回的日期集合
         List<String> days = new ArrayList<>();
 
-        DateFormat dateFormat = new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
+        DateFormat dateFormat = new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
         try {
             Date start = dateFormat.parse(startTime);
             Date end = dateFormat.parse(endTime);
@@ -276,12 +278,12 @@ public class DateUtils {
 
     /**
      * 获取指定year、month通过sdf格式化成字符串后的日期
-     * ##Params: year	年
-     * ##Params: month	月
-     * ##Params: sdf	格式化对象
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param year	年
+     * @param month	月
+     * @param sdf	格式化对象
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:26
      */
     public static synchronized String getLastDay(int year, int month, SimpleDateFormat sdf) {
@@ -349,10 +351,10 @@ public class DateUtils {
 
     /**
      *补全给定起止时间区间内的所有日期
-     * ##Params: startTime
-     * ##Params: endTime
-     * ##Params: isIncludeStartTime
-     * ##return:
+     * @param startTime
+     * @param endTime
+     * @param isIncludeStartTime
+     * @return
      * Jevon
      */
     public static List<String> getBetweenDates(String startTime, String endTime, boolean isIncludeStartTime){
@@ -381,10 +383,10 @@ public class DateUtils {
 
     /**
      *##description:      对比两个日期的天数
-     *##Params:
-     *##Return:
-     *##author:           JackSon
-     *##updated:             2020/4/20 21:51
+     *@param
+     *@return
+     *@author           JackSon
+     *@updated             2020/4/20 21:51
      */
     public static int nDaysBetweenTwoDate(String firstString, String secondString) {
         SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd");
@@ -404,7 +406,7 @@ public class DateUtils {
 
     /**
      * 最近一周的所有日期
-     * ##return:
+     * @return
      * Jevon
      */
     public static List<String> getNearlyWeekDates() {
@@ -423,8 +425,8 @@ public class DateUtils {
     /**
      * 获取过去或者未来 任意天内的日期数组
      *
-     * ##Params: intervals intervals天内
-     * ##return: 日期数组
+     * @param intervals intervals天内
+     * @return 日期数组
      * Jevon
      */
     public static ArrayList<String> timeArray(int intervals) {
@@ -437,17 +439,17 @@ public class DateUtils {
 
     /**
      * 转换endDate，nowDate为日期，然后使用endDate减去nowDate计算两个日期之间的差
-     * ##Params: endDate	减数日期
-     * ##Params: nowDate	被减数日期
-     * ##return: java.util.Map<java.lang.String,java.lang.Long>  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param endDate	减数日期
+     * @param nowDate	被减数日期
+     * @return java.util.Map<java.lang.String,java.lang.Long>  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:31
      */
     public static Map<String, Long> getDatePoor(String endDate, String nowDate) {
 
 //        //创建日期格式化对象
-//        SimpleDateFormat sDateFormat=new SimpleDateFormat(DateEnum.DATE_TWO.getDate()); //加上时间
+//        SimpleDateFormat sDateFormat=new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate()); //加上时间
 //            // 计算差多少天
 //            long day = diff / nd;
 
@@ -455,7 +457,7 @@ public class DateUtils {
 //            map.put("day",day);
 
         //加上时间
-        SimpleDateFormat sDateFormat = new SimpleDateFormat(DateEnum.DATE_H_M_S.getDate());
+        SimpleDateFormat sDateFormat = new SimpleDateFormat(DateEnum.TIME_ONLY.getDate());
 
         String[] str1 = endDate.split(Constants.STRING_BLANK_SPACE);
         String[] str2 = nowDate.split(Constants.STRING_BLANK_SPACE);
@@ -466,9 +468,9 @@ public class DateUtils {
         //定义被减数日期
         Date nowDateZ = null;
 
-        int qu1 = CommUtils.getIndex(str1);
+        int qu1 = Ut.getLength(str1);
 
-        int qu2 = CommUtils.getIndex(str2);
+        int qu2 = Ut.getLength(str2);
 
         //必须捕获异常
         try {
@@ -535,10 +537,10 @@ public class DateUtils {
 
     /**
      * 根据date获取date是属于星期几
-     * ##Params: date	时间
-     * ##return: int  返回结果: 星期几
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param date	时间
+     * @return int  返回结果: 星期几
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:29
      */
     public static int getWeek2(Date date) {
@@ -554,26 +556,26 @@ public class DateUtils {
 
     /**
      * 获取过去第几天的日期
-     * ##Params: past	指定前几天
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param past	指定前几天
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:29
      */
     public static String getPastDate(int past) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR) - past);
         Date today = calendar.getTime();
-        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
+        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
         return format.format(today);
     }
 
     /**
      * 获取过去第几个月的日期
-     * ##Params: past	指定前几个月
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param past	指定前几个月
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:30
      */
     public static String getPastDateMonth(int past) {
@@ -589,81 +591,102 @@ public class DateUtils {
         //得到前3月的时间
         dBefore = calendar.getTime();
         //设置时间格式
-        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
+        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
         return sdf.format(dBefore);
     }
 
     /**
      * 获取未来 第 past 天的日期
-     * ##Params: past	指定后几天
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param past	指定后几天
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:30
      */
     public static String getFetureDate(int past) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR) + past);
         Date today = calendar.getTime();
-        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
+        SimpleDateFormat format = new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
         return format.format(today);
     }
 
     /**
      * date2比date1多的天数
-     * ##Params: str1	第一个日期
-     * ##Params: str2	第二个日期
-     * ##return: int  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param str1	第一个日期
+     * @param str2	第二个日期
+     * @return int  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:30
      */
-    public static int differentDays(String str1,String str2) throws ParseException {
-        SimpleDateFormat sdf=new SimpleDateFormat(DateEnum.DATE_ONE.getDate());
-        Calendar cal1 = Calendar.getInstance();
-        cal1.setTime(sdf.parse(str1));
+    public static int differentDays(String str1,String str2) {
+        SimpleDateFormat sdf=new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
+        System.out.println("yr"+str1);
 
-        Calendar cal2 = Calendar.getInstance();
-        cal2.setTime(sdf.parse(str2));
-        int day1= cal1.get(Calendar.DAY_OF_YEAR);
-        int day2 = cal2.get(Calendar.DAY_OF_YEAR);
+        System.out.println("yr"+str2);
 
-        int year1 = cal1.get(Calendar.YEAR);
-        int year2 = cal2.get(Calendar.YEAR);
-        if(year1 != year2)   //同一年
-        {
-            int timeDistance = 0 ;
-            for(int i = year1 ; i < year2 ; i ++)
+        try {
+            Calendar cal1 = Calendar.getInstance();
+            System.out.println("yr"+str2);
+
+            cal1.setTime(sdf.parse(str1));
+            System.out.println("yr"+str2);
+
+
+            Calendar cal2 = Calendar.getInstance();
+            System.out.println("yr"+str2);
+
+            cal2.setTime(sdf.parse(str2));
+            System.out.println("yr"+str2);
+
+            int day1= cal1.get(Calendar.DAY_OF_YEAR);
+            int day2 = cal2.get(Calendar.DAY_OF_YEAR);
+            System.out.println("yr"+str2);
+
+
+            int year1 = cal1.get(Calendar.YEAR);
+            int year2 = cal2.get(Calendar.YEAR);
+            System.out.println("yr"+year1+year2);
+            if(year1 != year2)   //同一年
             {
-                if(i%4==0 && i%100!=0 || i%400==0)    //闰年
+                int timeDistance = 0 ;
+                for(int i = year1 ; i < year2 ; i ++)
                 {
-                    timeDistance += 366;
+                    if(i%4==0 && i%100!=0 || i%400==0)    //闰年
+                    {
+                        timeDistance += 366;
+                    }
+                    else    //不是闰年
+                    {
+                        timeDistance += 365;
+                    }
                 }
-                else    //不是闰年
-                {
-                    timeDistance += 365;
-                }
-            }
 
-            return timeDistance + (day2-day1) ;
-        }
-        else    //不同年
-        {
+                return timeDistance + (day2-day1) ;
+            }
+            else    //不同年
+            {
 //            ("判断day2 - day1 : " + (day2-day1));
-            return day2-day1;
+                return day2-day1;
+            }
+        } catch (Exception e)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.BAD_REQUEST.getCode(), null);
         }
+
     }
 
 
     /**
      * 时间转换将2020/02/21 07:53:51 120  转成  07:53
      *
-     * ##Params: date 时间
-     * ##return: 结果
+     * @param date 时间
+     * @return 结果
      * Jevon
      */
     public static String getStringDate1(String date) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateEnum.DATE_TWO.getDate());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate());
         Date dates = null;
         try {
             dates = simpleDateFormat.parse(date);
@@ -676,12 +699,12 @@ public class DateUtils {
 
     /**
      * 将date从typeZ格式转成typeResult格式
-     * ##Params: date	时间
-     * ##Params: typeZ	时间格式
-     * ##Params: typeResult	结果格式
-     * ##return: java.lang.String  返回结果: 结果
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param date	时间
+     * @param typeZ	时间格式
+     * @param typeResult	结果格式
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:33
      */
     public static String getStringDate2(String date,String typeZ,String typeResult) {
@@ -698,10 +721,10 @@ public class DateUtils {
 
     /**
      * 根据i获取星期
-     * ##Params: i	数字星期
-     * ##return: java.lang.String  返回结果: 中文星期
-     * ##Author: tang
-     * ##version: 1.0.0
+     * @param i	数字星期
+     * @return java.lang.String  返回结果: 中文星期
+     * @author tang
+     * @ver 1.0.0
      * ##Updated: 2020/8/6 11:19
      */
     public static String getWeekInChinese(int i) {

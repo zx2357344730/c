@@ -3,9 +3,9 @@ package com.cresign.tools.enumeration.manavalue;
 import lombok.Getter;
 
 /**
- * ##author: JackSon
- * ##updated: 2020/5/23
- * ##version: 1.1.0
+ * @author JackSon
+ * @updated 2020/5/23
+ * @ver 1.1.0
  * ##description: ClientEnum魔法值枚举类
  */
 @Getter
@@ -29,7 +29,7 @@ public enum ClientEnum {
     private final String clientType;
 
     /**
-     * ##Params: clientType 客户端类型
+     * @param clientType 客户端类型
      */
     ClientEnum(String clientType){
         this.clientType = clientType;
