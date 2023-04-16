@@ -38,4 +38,6 @@ public class Init {
 
     private JSONObject logInit;
 
+    private JSONObject pdfInit;
+
 }

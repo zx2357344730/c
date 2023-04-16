@@ -3,6 +3,7 @@ package com.cresign.tools.pojo.es;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.DateEnum;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -17,8 +18,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "lSAsset")
 public class lSAsset {
 
-    public lSAsset(String id_A, String id_C, String id_CP, String id_P, Double wn2qty, JSONObject wrdN, JSONObject wrddesc, String grp,
-                   String pic, String ref, Integer lAT) {
+    public lSAsset(String id_A, String id_C, String id_CP, String id_CB, String id_P, JSONObject wrdN, JSONObject wrddesc, String grp,
+                   String pic, String ref, Integer lAT, Double wn2qty, Double wn4price) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn","");
@@ -26,6 +27,7 @@ public class lSAsset {
         this.id_A = id_A;
         this.id_C = id_C;
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
+        this.id_CB = id_CB;
         this.id_P = id_P == null ? "": id_P;
         this.wrdN = wrdN == null ? (JSONObject) wrdEmpty.clone() : wrdN;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
@@ -34,6 +36,8 @@ public class lSAsset {
         this.pic = pic == null ? "" : pic;
         this.lAT = lAT == null ? 0 : lAT;
         this.wn2qty = wn2qty == 0 ? 0 : wn2qty;
+        this.wn4price = wn4price == 0 ? 0 : wn4price;
+        this.wn4value = Qt.multiply(wn2qty, wn4price);
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
@@ -44,6 +48,8 @@ public class lSAsset {
     private String id_C;
 
     private String id_CP;
+
+    private String id_CB;
 
     private String id_P;
 
@@ -60,6 +66,10 @@ public class lSAsset {
     private Double wn2qty; // 现在能出仓的数量
 
     private Double wn2qtyResv; //被预约了的数量
+
+    private Double wn4price; // 现在能出仓的数量
+
+    private Double wn4value; // 现在能出仓的数量
 
 
     private Integer lAT; //Asset Type

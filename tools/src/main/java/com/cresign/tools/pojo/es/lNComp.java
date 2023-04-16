@@ -32,6 +32,7 @@ public class lNComp {
         jsonTag.put("cn", new JSONArray());
 
         this.id_C = id_C;
+        this.id_CM = id_C;
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
         this.wrdN = wrdN == null ? (JSONObject) wrdEmpty.clone(): wrdN;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
@@ -45,6 +46,8 @@ public class lNComp {
     private String id_C;
 
     private String id_CP;
+
+    private String id_CM;
 
     private JSONObject wrdN;
 

@@ -280,11 +280,12 @@ public class SetAuthServicelmpl implements SetAuthService {
 
     @Override
     public ApiResponse getMySwitchComp(String id_U, String lang) {
-        Query userQ = new Query(
-                new Criteria("_id").is(id_U));
-
-        userQ.fields().include("rolex.objComp");
-        User one = mongoTemplate.findOne(userQ, User.class);
+//        Query userQ = new Query(
+//                new Criteria("_id").is(id_U));
+//
+//        userQ.fields().include("rolex.objComp");
+//        User one = mongoTemplate.findOne(userQ, User.class);
+        User one = qt.getMDContent(id_U, "rolex.objComp", User.class);
 
         if (one == null)
         {
@@ -295,24 +296,33 @@ public class SetAuthServicelmpl implements SetAuthService {
         JSONObject compList = one.getRolex().getJSONObject("objComp");
 
         for (String cid :compList.keySet()) {
+            System.out.println("For ."+ cid);
+
             if (compList.getJSONObject(cid).getString("picC") == null) {
-                Query compQ = new Query(
-                        new Criteria("_id").is(cid));
-                compQ.fields().include("info");
-                Comp comp = mongoTemplate.findOne(compQ, Comp.class);
+//                Query compQ = new Query(
+//                        new Criteria("_id").is(cid));
+//                compQ.fields().include("info");
+//                Comp comp = mongoTemplate.findOne(compQ, Comp.class);
+
+                Comp comp = qt.getMDContent(cid, "info", Comp.class);
                 JSONObject newDocs = new JSONObject();
                 newDocs.put("compId", comp.getId());
                 newDocs.put("wrdN", comp.getInfo().getWrdN());
                 newDocs.put("pic", comp.getInfo().getPic());
                 result.add(newDocs);
-                Update updateQuery = new Update();
-                updateQuery.set("rolex.objComp."+cid+".wrdNC", comp.getInfo().getWrdN());
-                updateQuery.set("rolex.objComp."+cid+".picC", comp.getInfo().getPic());
-                Query query2 = new Query(new Criteria("_id").is(id_U));
-                query2.fields().include("rolex.objComp."+cid);
-                mongoTemplate.updateFirst(query2, updateQuery, User.class);
+//                Update updateQuery = new Update();
+//                updateQuery.set("rolex.objComp."+cid+".wrdNC", comp.getInfo().getWrdN());
+//                updateQuery.set("rolex.objComp."+cid+".picC", comp.getInfo().getPic());
+//                Query query2 = new Query(new Criteria("_id").is(id_U));
+//                query2.fields().include("rolex.objComp."+cid);
+//                mongoTemplate.updateFirst(query2, qt.setJson("rolex.objComp."+cid+".wrdNC", comp.getInfo().getWrdN(),
+//                        "rolex.objComp."+cid+".picC", comp.getInfo().getPic()), User.class);
+                qt.setMDContent(id_U, qt.setJson("rolex.objComp."+cid+".wrdNC", comp.getInfo().getWrdN(),
+                        "rolex.objComp."+cid+".picC", comp.getInfo().getPic()), User.class);
 
             } else {
+                System.out.println("Adding List");
+
                 JSONObject newDocs = new JSONObject();
                 newDocs.put("compId", cid);
                 newDocs.put("wrdN", compList.getJSONObject(cid).getJSONObject("wrdNC"));

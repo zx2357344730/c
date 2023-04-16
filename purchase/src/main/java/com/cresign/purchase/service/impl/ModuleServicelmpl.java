@@ -28,10 +28,7 @@ import com.tencentcloudapi.common.profile.HttpProfile;
 import com.tencentcloudapi.tmt.v20180321.TmtClient;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchRequest;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -122,7 +119,7 @@ public class ModuleServicelmpl implements ModuleService {
     @Override
     public ApiResponse addOrUpdateInitMod(JSONObject objLogMod) {
         // 获取init信息
-        Init init = coupaUtil.getInit();
+        Init init = qt.getInitData("cn");
         // 获取日志模块信息
         JSONObject logInit = init.getLogInit();
         // 遍历模块信息
@@ -175,7 +172,7 @@ public class ModuleServicelmpl implements ModuleService {
                 // 获取卡片内模块信息
                 JSONObject objMod = control.getJSONObject("objMod");
                 // 获取init对象
-                Init init = coupaUtil.getInit();
+                Init init = qt.getInitData("cn");
                 // 获取日志init信息
                 JSONObject logInit = init.getLogInit();
 //                System.out.println("init:");
@@ -224,6 +221,7 @@ public class ModuleServicelmpl implements ModuleService {
                         // 调用方法更新数据
                         setAndUpdateAuth(listTypeGrp,modListNew,authListType,authGrpU
                                 ,objAuth,role,assetIdRole,grpU,listType,grp);
+
                     }
                     result.put("errRole",errRole);
                 }
@@ -453,20 +451,21 @@ public class ModuleServicelmpl implements ModuleService {
      * @date 2022/8/19
      */
     @Override
-    public ApiResponse modSetControl(String id_C,JSONObject objModQ) {
-//        String id_C = can.getString("id_C");
+    public ApiResponse modSetControl(String authComp, String id_C,JSONObject objModQ) {
+
+        if (!authComp.equals("61a5940b01902729e2576ead"))
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_MATCHING_MOD_REF.getCode(), "无匹配的modRef");
+        }
         // 调用方法获取公司模块信息
-//        JSONObject compAssetMod = getCompAssetMod(id_C);
         JSONObject compAssetMod = getCompAssetByRef(id_C,"a-core","control");
         // 获取错误状态，为0是没有错误
-        Integer status = compAssetMod.getInteger("status");
-        if (0 == status) {
-//            boolean isC = false;
+//        Integer status = compAssetMod.getInteger("status");
             // 定义存储错误信息json集合
-            JSONArray errList = new JSONArray();
             JSONObject control = compAssetMod.getJSONObject("control");
             String assetId = compAssetMod.getString("assetId");
-//            JSONObject objModQ = can.getJSONObject("objMod");
+
+            qt.errPrint("ass", null, control, assetId);
             JSONObject objMod = control.getJSONObject("objMod");
             // 遍历公司模块信息
             objModQ.keySet().forEach(k -> {
@@ -477,11 +476,33 @@ public class ModuleServicelmpl implements ModuleService {
 //                String key = js.getString("key");
                 if ("add".equals(type)) {
                     // 新增模块信息
+                    InitJava init = qt.getInitData();
+                    if (mod.getBoolean("setA"))
+                    {
+                        //a-mes
+                        String modRef = mod.getJSONObject("val").getString("mod");
+                        JSONObject authObject = init.getNewComp().getJSONObject(modRef);
+
+                        authObject.getJSONObject("info").put("id_C", id_C);
+                        authObject.getJSONObject("info").put("id_CP", id_C);
+                        authObject.getJSONObject("info").put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                        authObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                        this.createAsset(id_C, qt.GetObjectId() ,modRef,authObject);
+                    }
 
                     objMod.put(k,mod.getJSONObject("val"));
                 } else if ("del".equals(type)) {
                     // 删除模块信息
                     objMod.remove(k);
+                } else if ("upSpec".equals(type)) {
+                    String tfin = mod.getJSONObject("val").getString("tfin");
+                    Integer buyUser = mod.getJSONObject("val").getInteger("wn0buyUser");
+
+                    JSONObject modJson = objMod.getJSONObject(k);
+                    modJson.put("tfin",tfin);
+                    modJson.put("wn0buyUser", buyUser);
+                    objMod.put(k,modJson);
+
                 } else if ("upState".equals(type)) {
                     JSONArray userList = mod.getJSONObject("val").getJSONArray("id_U");
                     Integer bcdState = mod.getJSONObject("val").getInteger("bcdState");
@@ -501,23 +522,17 @@ public class ModuleServicelmpl implements ModuleService {
                     JSONObject re = new JSONObject();
                     re.put("key",k);
                     re.put("err","修改状态为空");
-                    errList.add(re);
+                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_MATCHING_MOD_REF.getCode(), "无匹配的modRef");
                 }
             });
 
             qt.setMDContent(assetId,qt.setJson("control.objMod",objMod),Asset.class);
-            JSONObject result = new JSONObject();
-            if (errList.size() > 0) {
-                result.put("type",1);
-                result.put("errList",errList);
-            } else {
-                result.put("type",0);
-            }
-            return retResult.ok(CodeEnum.OK.getCode(), result);
-        } else {
-            return errResult(status,0);
+            return retResult.ok(CodeEnum.OK.getCode(), "");
         }
-    }
+//        else {
+//            return errResult(status,0);
+//        }
+
 
     /**
      * 根据id_C获取模块信息
@@ -530,7 +545,6 @@ public class ModuleServicelmpl implements ModuleService {
     @Override
     public ApiResponse modGetControl(String id_C) {
         // 调用方法获取公司模块信息
-//        JSONObject compAssetMod = getCompAssetMod(id_C);
         JSONObject compAssetMod = getCompAssetByRef(id_C,"a-core","control");
         // 获取错误状态，为0是没有错误
         Integer status = compAssetMod.getInteger("status");
@@ -598,9 +612,7 @@ public class ModuleServicelmpl implements ModuleService {
                 , refC
                 , refCB
                 , picC
-                , picCB
-                , DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())
-                , DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                , picCB);
 //        coupaUtil.updateES_lSBComp(comp);
         qt.addES("lsbcomp", lsbcomp);
         return retResult.ok(CodeEnum.OK.getCode(), "连接关系成功");
@@ -904,28 +916,14 @@ public class ModuleServicelmpl implements ModuleService {
      */
     private JSONObject getCompAssetByRef(String id_C,String assetRef,String card){
         JSONObject result = new JSONObject();
-//        String assetId = coupaUtil.getAssetId(id_C, assetRef);
-//        if (null == assetId) {
-//            result.put("status",1);
-//            return result;
-//        }
-////        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(card));
-//        Asset asset = qt.getMDContent(assetId, card, Asset.class);
-//        if (null == asset) {
-//            result.put("status",2);
-//            return result;
-//        }
         Asset asset = qt.getConfig(id_C, assetRef, card);
         if ("a-core".equals(assetRef)) {
             JSONObject control = asset.getControl();
-//            if (null == control) {
-//                result.put("status",3);
-//                return result;
-//            }
-//            JSONObject objMod = control.getJSONObject("objMod");
+
             if (null == control || null == control.getJSONObject("objMod")) {
 //                result.put("status",4);
-                InitJava initMod = qt.getMDContent("cn_java", "newComp.a-core.control.objMod", InitJava.class);
+                InitJava initMod = qt.getInitData();
+//                InitJava initMod = qt.getMDContent("cn_java", "newComp.a-core.control.objMod", InitJava.class);
                 control = initMod.getNewComp().getJSONObject("a-core").getJSONObject("control");
                 qt.setMDContent(asset.getId(), qt.setJson("control", control), Asset.class);
             }
@@ -1253,7 +1251,7 @@ public class ModuleServicelmpl implements ModuleService {
             object.getJSONObject("info").put("id_C",id_C);
 
             //调用
-            this.createAsset(id_C, qt.GetObjectId(), ref, JSON.toJSONString(object));
+            this.createAsset(id_C, qt.GetObjectId(), ref, object);
 
 
             //生成order订单  未做
@@ -1420,6 +1418,7 @@ public class ModuleServicelmpl implements ModuleService {
 
 
         comp.getInfo().setId_CP(new_id_C);
+        comp.getInfo().setId_CM(new_id_C);
         comp.getInfo().setId_C(new_id_C);
         comp.getInfo().setTmk(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         comp.getInfo().setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
@@ -1456,7 +1455,7 @@ public class ModuleServicelmpl implements ModuleService {
         // add me into control's a-core-3 as the only User
         coreObject.getJSONObject("control").getJSONObject("objMod").getJSONObject("a-core-3").getJSONArray("id_U").add(uid);
         //调用
-        this.createAsset(new_id_C, qt.GetObjectId() ,"a-core",JSON.toJSONString(coreObject));
+        this.createAsset(new_id_C, qt.GetObjectId() ,"a-core",coreObject);
 
         User user = qt.getMDContent(uid, "info", User.class);
 
@@ -1494,7 +1493,7 @@ public class ModuleServicelmpl implements ModuleService {
         }
 
         //调用
-        this.createAsset(new_id_C, qt.GetObjectId() ,"a-auth",JSON.toJSONString(authObject));
+        this.createAsset(new_id_C, qt.GetObjectId() ,"a-auth",authObject);
 
         return retResult.ok(CodeEnum.OK.getCode(),new_id_C);
 
@@ -1518,7 +1517,7 @@ public class ModuleServicelmpl implements ModuleService {
 //
 //
 //        // 先获取该用户已拥有的模块
-//        String id_A = dbUtils.getId_A(id_C, "a-core");
+//        String id_A = qt.getId_A(id_C, "a-core");
 //        Query myModQ = new Query(new Criteria("_id").is(id_A));
 //        myModQ.fields().include("control");
 //        Asset asset = mongoTemplate.findOne(myModQ, Asset.class);
@@ -1640,14 +1639,14 @@ public class ModuleServicelmpl implements ModuleService {
 //    }
 
 
-    private JSONObject createAsset(String id_C,String id ,String ref,String data) throws IOException {
+    private JSONObject createAsset(String id_C,String id ,String ref,JSONObject data) {
 
         //状态结果对象
         JSONObject resultJson = new JSONObject();
 
         try {
 //            JSONObject.parseObject(JSON.toJSONString(objAction
-            JSONObject objData = JSONObject.parseObject(data);
+//            JSONObject objData = JSONObject.parseObject(data);
 //            objData.getJSONObject("info").put("ref",ref);
             // 获取data里面的info数据,这个给ES
 
@@ -1658,19 +1657,22 @@ public class ModuleServicelmpl implements ModuleService {
 
             //查找当前公司，获取公司信息
             //Query compCondition = new Query(new Criteria("_id").is(infoObject.get("id_CB")).and("info").exists(true));
-            Query compCondition = new Query(new Criteria("_id").is(id_C).and("info").exists(true));
+//            Query compCondition = new Query(new Criteria("_id").is(id_C).and("info").exists(true));
+//
+//            compCondition.fields().include("info");
+//            Comp objComp = mongoTemplate.findOne(compCondition, Comp.class);
 
-            compCondition.fields().include("info");
-            Comp objComp = mongoTemplate.findOne(compCondition, Comp.class);
+            Comp objComp = qt.getMDContent(id_C, "info", Comp.class);
             if(objComp == null){
                 System.out.println("no comp");
                 resultJson.put("boolean","false");
                 resultJson.put("reason","comp对象为空");
 
             }
-            Asset asset = JSONObject.parseObject(JSON.toJSONString(objData), Asset.class);
+            Asset asset = qt.jsonTo(data, Asset.class);
 
             asset.setId(id);
+            asset.getInfo().setRef(ref);
             System.out.println("start making Asset");
 
 
@@ -1678,18 +1680,20 @@ public class ModuleServicelmpl implements ModuleService {
             System.out.println("ok inserted  "+ id);
 
             //指定ES索引
-            IndexRequest request = new IndexRequest("lSAsset");
+//            IndexRequest request = new IndexRequest("lSAsset");
 
             //ES列表
             JSONObject listObject = new  JSONObject();
-            listObject.putAll( objData.getJSONObject("info"));
+            listObject.putAll( data.getJSONObject("info"));
             listObject.put("id_A", id);
             listObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             listObject.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             listObject.put("id_CP", objComp.getInfo().getId_CP());
 
-            request.source(listObject, XContentType.JSON);
-            restHighLevelClient.index(request, RequestOptions.DEFAULT);
+//            request.source(listObject, XContentType.JSON);
+//            restHighLevelClient.index(request, RequestOptions.DEFAULT);
+//
+            qt.addES("lSAsset", listObject);
 //            if (infoObject.get("lAT").equals(2)){
 
 //                //拿info位置数组

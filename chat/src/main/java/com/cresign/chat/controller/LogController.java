@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
  * ##description: 日志接口提供类
  */
 @RestController
-@RequestMapping("/log")
+@RequestMapping("log")
 public class LogController {
 
     @Autowired

@@ -7,7 +7,6 @@ import com.cresign.login.service.RoleService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
-import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -15,8 +14,6 @@ import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.InitJava;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,15 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class RoleServiceImpl implements RoleService {
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
-
-    @Autowired
-    private StringRedisTemplate redisTemplate0;
-
-    @Autowired
-    private DbUtils dbUtils;
 
     @Autowired
     private AuthCheck authCheck;
@@ -94,7 +82,7 @@ public class RoleServiceImpl implements RoleService {
 
         }
 
-//        String id_A = dbUtils.getId_A(id_C, "a-auth");
+//        String id_A = qt.getId_A(id_C, "a-auth");
 //        Query query = new Query(new Criteria("_id").is(id_A));
 //        query.fields().include("role.objAuth." + grpU + "." + listType + "." + grp);
 //        Asset asset = mongoTemplate.findOne(query, Asset.class);
@@ -175,6 +163,7 @@ public class RoleServiceImpl implements RoleService {
         JSONObject initGrpJson = this.addModInitRole(id_C, listType);
         JSONObject resultJson = qt.cloneObj(grpJson);
 
+        qt.errPrint("newestRole init", null, initGrpJson);
         //Now, start to compare:
         //check Card first:
         try {
@@ -191,18 +180,32 @@ public class RoleServiceImpl implements RoleService {
                 resultJson.put("batch", new JSONObject());
 
             }
+
+
             for (String key : initGrpJson.getJSONObject("card").keySet()) {
                 //if init+, grp-, add to grp
                 if (!grpJson.getJSONObject("card").keySet().contains(key)) {
                     resultJson.getJSONObject("card").put(key, initGrpJson.getJSONObject("card").getIntValue(key));
+
                 }
             }
+            qt.errPrint("newestRole init", null, resultJson.getJSONObject("card"));
+
+
             for (String key : grpJson.getJSONObject("card").keySet()) {
                 //if init+, grp-, add to grp
                 if (!initGrpJson.getJSONObject("card").keySet().contains(key)) {
                     resultJson.getJSONObject("card").remove(key);
                 }
+
+                //Double check tempa card - must only exist in grp 1019 @ P / O
+                if (key.equals("tempa") && !grp.equals("1019"))
+                {
+                    resultJson.getJSONObject("card").remove("tempa");
+                }
             }
+
+            qt.errPrint("newestRole init", null, resultJson.getJSONObject("card"));
 
             //check Batch:
             for (String key : initGrpJson.getJSONObject("batch").keySet()) {
@@ -371,16 +374,7 @@ public class RoleServiceImpl implements RoleService {
             to_grp, String grpU) {
 
 
-//        Query batchQ = new Query(
-//                new Criteria("info.id_C").is(id_C)
-//                        .and("info.ref").is("a-auth"));
-//
-//        batchQ.fields().include("role.objAuth." + grpU + "." + listType + "." + copy_grp);
-//
-//        Asset asset = mongoTemplate.findOne(batchQ, Asset.class);
-
         Asset asset = qt.getConfig(id_C, "a-auth", "role.objData." + grpU + "." + listType + "." + copy_grp);
-        //JSONObject roleJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(batchQ, Asset.class));
 
         System.out.println("asset"+asset);
         // 没有设置职位权限
@@ -390,34 +384,17 @@ public class RoleServiceImpl implements RoleService {
 
         // 复制的组别数据
         JSONObject copy_grp_json = asset.getRole().getJSONObject("objData").getJSONObject(grpU).getJSONObject(listType).getJSONObject(copy_grp);
-//
-//        System.out.println("asset"+copy_grp_json);
-//
-//        Update update = new Update();
-//
+
         JSONObject setUpdate = new JSONObject();
 
         // 循环将复制组别的数据拷贝到要复制的组别上
         for (Object to_grp_key : to_grp) {
-//            update.set("role.objAuth." + grpU + "." + listType + "." + to_grp_key, copy_grp_json);
             setUpdate.put("role.objData." + grpU + "." + listType + "." + to_grp_key, copy_grp_json);
         }
 
         qt.setMDContent(asset.getId(), setUpdate, Asset.class);
         qt.delRD("login:get_read_auth", "compId-"+id_C);
         qt.delRD("login:get_readwrite_auth", "compId-" + id_C);
-
-
-//        UpdateResult updateResult = mongoTemplate.updateFirst(batchQ, update, Asset.class);
-
-//        // 修改失败
-//        if (updateResult.getModifiedCount() < 0) {
-//            // 修改出现错误
-//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ROLE_UP_ERROR.getCode(), null);
-//        }
-
-//        redisTemplate0.delete("login:get_read_authcompId-" + id_C);
-//        redisTemplate0.delete("login:get_readwrite_authcompId-" + id_C);
 
         return retResult.ok(CodeEnum.OK.getCode(), null);
 
@@ -444,10 +421,8 @@ public class RoleServiceImpl implements RoleService {
 //        JSONArray resultModArray = qt.getConfig(id_C, "a-core", "control").getControl().getJSONArray("objData");
         JSONObject resultModObj = qt.getConfig(id_C, "a-core", "control").getControl().getJSONObject("objMod");
 
-//        JSONArray myModArray = qt.cloneArr(resultModArray);
         JSONObject myModObject = qt.cloneObj(resultModObj);
 
-//        JSONObject listTypeInit = initJson.getListTypeInit();
         JSONObject cardInit = initJson.getCardInit();
         JSONObject batchInit = initJson.getBatchInit();
         JSONObject logInit = initJson.getLogInit();
@@ -457,20 +432,11 @@ public class RoleServiceImpl implements RoleService {
         JSONObject resultLogObj = new JSONObject();
 
         JSONObject result = new JSONObject();
+        qt.errPrint("objMod", null, resultModObj, myModObject);
 
         // 先获取该用户已拥有的模块
 
-        //克隆
-        // data is objData.[].{tfin/ref/tmk/wn0buyUser/id_P/bcdLevel/wcnN...
-        // data changed to objMod now with ref: {{
-//            JSONArray myModArray = (JSONArray) resultModArray.clone();
 
-            // 初始化该卡片对象数组
-
-//            // 循环获取这个列表类型的卡片对象
-//            for (Object cardKey : listTypeInit.getJSONObject(listType).getJSONArray("card")) {
-//                cardList.add(cardInit.getJSONObject(cardKey.toString()));
-//            }
             for (String key : cardInit.keySet()) {
 
                 JSONObject cardJson = cardInit.getJSONObject(key);
@@ -484,11 +450,11 @@ public class RoleServiceImpl implements RoleService {
 //                    Integer modArrayLevel = myModArray.getJSONObject(i).getInteger("bcdLevel");
 
                         System.out.println(cardJson.getString("ref"));
-
-                        if (modArrayRef.equals(cardJson.getString("modRef"))
+                        if (modArrayRef.equals("a-"+cardJson.getString("modRef"))
                             && (cardListType.contains(listType.substring(2)) || cardListType.contains("all"))
-                            && modArrayLevel >= (cardJson.getInteger("bcdLevel"))) {
-                            System.out.println(cardJson.getString("ref"));
+                            && modArrayLevel >= cardJson.getInteger("bcdLevel")) {
+
+                            System.out.println("it is included");
                         resultCardObj.put(cardJson.getString("ref"), 0);
                     }
                 }

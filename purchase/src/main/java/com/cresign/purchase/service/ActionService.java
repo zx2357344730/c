@@ -29,6 +29,7 @@ public interface ActionService {
 
     ApiResponse changeDepAndFlowSL(String id_O,String grpB, JSONObject grpBOld,JSONObject grpBNew,String id_C,String id_U, String grpU, JSONObject wrdNU);
 
+    ApiResponse taskToProd(String id_O, Integer index, String id_P);
 
     ApiResponse getRefOPList(String id_Flow, Boolean isSL, String id_C) throws IOException;
 
@@ -47,6 +48,9 @@ public interface ActionService {
 
     ApiResponse dgActivateAll(String id_O, String myCompId, String id_U, String grpU, String dep,JSONObject wrdNU);
 
+    ApiResponse dgActivateSingle(String id_O, Integer index, String myCompId, String id_U, String grpU, String dep,JSONObject wrdNU);
+
+
     ApiResponse createTask(String logType, String id_FC, String id_O, String myCompId, String id_U, String grpU,
                            String dep, JSONObject oItemData, JSONObject wrdNU);
 
@@ -55,7 +59,7 @@ public interface ActionService {
 
     ApiResponse getFlowList(String id_C, String grpB);
 
-    ApiResponse subStatusChange(String id_O, Integer index, Boolean isLink, Integer statusType,  JSONObject tokData) throws IOException;
+    ApiResponse subStatusChange(String id_O, Integer index, Boolean isLink, Integer statusType,  JSONObject tokData);
 
     ApiResponse dgConfirmOrder(String id_C, JSONArray casList) throws IOException;
 
@@ -64,6 +68,6 @@ public interface ActionService {
 
     ApiResponse actionChart(String id_O);
 
-    ApiResponse rePush(String id_O, Integer index, JSONObject tokData) throws IOException;
+    ApiResponse rePush(String id_O, Integer index, JSONObject tokData);
 
 }

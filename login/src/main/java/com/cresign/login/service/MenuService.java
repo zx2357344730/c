@@ -18,7 +18,6 @@ public interface MenuService {
     /**
      * 获得菜单和子菜单数据
      * @author JackSon
-     * @param id_U      用户id
      * @param id_C      公司id
      * @ver 1.0
      * @updated 2021-03-04 16:10
@@ -29,7 +28,6 @@ public interface MenuService {
     /**
      * 通过grp在主菜单编辑页面中获取该职位的主菜单和子菜单数据
      * @author JackSon
-     * @param id_U          用户id
      * @param id_C          公司id
      * @param grpU          职位
      * @ver 1.0
@@ -41,7 +39,6 @@ public interface MenuService {
     /**
      *  当前菜单数组的限定组别
      * @author Jevon
-     * @param id_U
      * @param id_C
      * @param ref       菜单编号
      * @param grpType   类型（grp/grpProd）
@@ -56,7 +53,6 @@ public interface MenuService {
     /**
      * 获取菜单数据
      * @author JackSon
-     * @param id_U      用户id
      * @param id_C      公司id
      * @ver 1.0
      * @updated 2020-12-30 13:47
@@ -82,7 +78,6 @@ public interface MenuService {
     /**
      * 获取子菜单数据
      * @author JackSon
-     * @param id_U       用户id
      * @param id_C       公司id
      * @ver 1.0
      * @updated 2020-12-30 8:42

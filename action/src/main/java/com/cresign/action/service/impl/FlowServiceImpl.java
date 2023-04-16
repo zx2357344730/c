@@ -6,11 +6,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.common.ActionEnum;
 import com.cresign.action.service.FlowService;
-import com.cresign.action.utils.Obj;
+import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.common.Constants;
-import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.dbTools.Qt;
@@ -29,7 +28,6 @@ import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.pojo.po.orderCard.OrderODate;
 import com.cresign.tools.pojo.po.orderCard.OrderOItem;
 import com.cresign.tools.pojo.po.prodCard.ProdInfo;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -39,18 +37,6 @@ import java.util.*;
 
 @Service
 public class FlowServiceImpl implements FlowService {
-
-//    private static final Map<Long, List<Task>> taskM = new HashMap<>();
-//    private static final Map<Long,Long> zonM = new HashMap<>();
-
-    @Autowired
-    private CoupaUtil coupaUtil;
-
-    @Autowired
-    private DbUtils dbUtils;
-
-    @Autowired
-    private RestHighLevelClient client;
 
     @Autowired
     private DateUtils dateUtils;
@@ -62,7 +48,10 @@ public class FlowServiceImpl implements FlowService {
     private Qt qt;
 
     @Autowired
-    private TimeZjServiceImpl timeZjService;
+    private DbUtils dbu;
+
+    @Autowired
+    private TimeZjServiceImplX timeZjService;
 
 
     @Override
@@ -70,8 +59,7 @@ public class FlowServiceImpl implements FlowService {
     public ApiResponse getDgResult(String id_OParent,String id_U,String myCompId,Long teStart) {
 
             // 调用方法获取订单信息
-            Order salesOrderData = coupaUtil.getOrderByListKey(
-                    id_OParent, Arrays.asList("oItem", "info","view", "action"));
+            Order salesOrderData = qt.getMDContent(id_OParent, Arrays.asList("oItem", "info","view", "action"), Order.class);
 
             // 判断订单是否为空
             if (null == salesOrderData) {
@@ -163,7 +151,7 @@ public class FlowServiceImpl implements FlowService {
             OrderOItem objOItem = JSONObject.parseObject(JSON.toJSONString(oParent_objItem.getJSONObject(item)),OrderOItem.class);
             objOItem.setPriority(oParent_prior);
             OrderAction objAction = new OrderAction(100,0,0,1,salesOrderData.getId(),
-                    refOP, objOItem.getId_P(),id_OParent,item,objOItem.getWn0prior(),0,0,
+                    refOP, objOItem.getId_P(),id_OParent,item,objOItem.getRKey(),0,0,
                     new JSONArray(),new JSONArray(), new JSONArray(), new JSONArray(), salesOrderData.getInfo().getWrdN(), objOItem.getWrdN());
 
                 ////////////////actually dg ///////////////////////
@@ -184,7 +172,7 @@ public class FlowServiceImpl implements FlowService {
         }
 
         // 判断递归结果是否为空
-        if (objActionCollection.size() <= 0){
+        if (objActionCollection.size() == 0){
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
         }
 
@@ -206,7 +194,7 @@ public class FlowServiceImpl implements FlowService {
         // 获取递归结果键
         Set<String> actionCollection = objActionCollection.keySet();
 //        //before getting so many id_A, get myComp id_A first for future use
-//        String myId_A = dbUtils.getId_A(myCompId, "a-auth");
+//        String myId_A = qt.getId_A(myCompId, "a-auth");
 //        Asset myDef = dbUtils.getAssetById(myId_A, Collections.singletonList("def"));
         Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
 
@@ -239,11 +227,11 @@ public class FlowServiceImpl implements FlowService {
 
                 JSONObject grpBGroup = new JSONObject();
                 JSONObject grpGroup = new JSONObject();
-                JSONObject listData = new JSONObject();
-                JSONArray lsbArray = dbUtils.getEsKey("id_C", prodCompId, "id_CB", targetCompId, "lsbcomp");
-                if (lsbArray.size() > 0) {
-                    listData = lsbArray.getJSONObject(0);
-                }
+//                JSONObject listData = new JSONObject();
+//                JSONArray lsbArray = qt.getES("lsbcomp", qt.setESFilt("id_C", prodCompId, "id_CB", targetCompId));
+//                if (lsbArray.size() > 0) {
+//                    listData = lsbArray.getJSONObject(0);
+//                }
                 String grpO = "";
                 String grpOB = "1000";
 //                String aId;
@@ -251,10 +239,8 @@ public class FlowServiceImpl implements FlowService {
 
                 if (!targetCompId.equals(myCompId))
                 {
-//                    aId = dbUtils.getId_A(targetCompId, "a-auth");
 
                     asset = qt.getConfig(targetCompId,"a-auth","def");
-
 
                     if  (asset.getId().equals("none")) {
                         asset = myDef;
@@ -324,7 +310,7 @@ public class FlowServiceImpl implements FlowService {
 
 //                if (!prodCompId.equals(myCompId))
 //                {
-//                    aId2 = dbUtils.getId_A(prodCompId, "a-auth");
+//                    aId2 = qt.getId_A(prodCompId, "a-auth");
 //                } else if (myCompId.equals(targetCompId)) {
 //                    aId2 = "none";
 //                } else {
@@ -454,25 +440,28 @@ public class FlowServiceImpl implements FlowService {
                 newPO_Action.put("wn2progress", 0.0);
 
                 //Create oStock
-                JSONObject newPO_oStock = new JSONObject();
-                newPO_oStock.put("objData", new JSONArray());
+                JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(unitOItem));
+//                newPO_oStock.put("objData", new JSONArray());
+//
+//                    for (OrderOItem orderOItem : unitOItem) {
+//
+//                        JSONObject initStock = qt.setJson("wn2qtynow", 0.0,"wn2qtymade", 0.0,
+//                                "id_P", orderOItem.getId_P(),
+//                                "resvQty", new JSONObject(),
+//                                "rKey", orderOItem.getRKey());
+//
+//                        initStock.put("objShip", qt.setArray("wn2qtynow", 0.0, "wn2qtymade", 0.0, "wn2qtyneed", orderOItem.getWn2qtyneed()));
+//
+//                        newPO_oStock.getJSONArray("objData").add(initStock);
+//                    }
+//
 
-                    for (OrderOItem orderOItem : unitOItem) {
-                        JSONObject initStock = new JSONObject();
-                        initStock.put("wn2qtynow", 0);
-                        initStock.put("wn2qtymade", 0);
-                        initStock.put("id_P", orderOItem.getId_P());
-
-                        newPO_oStock.getJSONArray("objData").add(initStock);
-                    }
-
-
-                    newPO.setOStock(newPO_oStock);
+                newPO.setOStock(newPO_oStock);
 
                 newPO.setAction(newPO_Action);
+
+                dbu.summOrder(newPO, new JSONObject());
                 // 新增订单
-//                coupaUtil.saveOrder(newPO);
-System.out.println("saving now");
                     qt.addMD(newPO);
                     System.out.println("sales order SAVED "+ newPO.getInfo().getWrdN().getString("cn"));
 
@@ -483,7 +472,6 @@ System.out.println("saving now");
                     // 新增lsbOrder信息
 
                     qt.addES("lsborder", lsbOrder);
-//                coupaUtil.updateES_lSBOrder(lsbOrder);
 
                 }
         }
@@ -505,6 +493,344 @@ System.out.println("saving now");
         // 抛出操作成功异常
             return retResult.ok(CodeEnum.OK.getCode(), "");
         }
+
+    @Override
+    @Transactional(noRollbackFor = ResponseException.class)
+    public ApiResponse getDgSingle(String id_OParent, Integer index, String id_U,String myCompId,Long teStart) {
+
+        // 调用方法获取订单信息
+        Order salesOrderData = qt.getMDContent(id_OParent, Arrays.asList("oItem", "info","view", "action", "oStock", "casItemx"), Order.class);
+
+        // 判断订单是否为空
+        if (null == salesOrderData) {
+            // 返回为空错误信息
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+        }
+
+
+        if (!(salesOrderData.getInfo().getId_C().equals(myCompId) && salesOrderData.getInfo().getId_CB().equals(myCompId)))
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
+        }
+
+        String id_P = salesOrderData.getOItem().getJSONArray("objItem").getJSONObject(index).getString("id_P");
+        // 创建异常信息存储
+        JSONArray isRecurred = new JSONArray();
+        // 创建产品信息存储
+        JSONArray isEmpty = new JSONArray();
+        // 创建零件id集合
+        JSONArray pidList = new JSONArray();
+        JSONObject nextPart = new JSONObject();
+
+        JSONObject stat = new JSONObject();
+        stat.put("layer", 0);
+        stat.put("count", 0);
+        // ******调用验证方法******
+        this.dgCheckUtil(pidList,id_P, myCompId, nextPart,isRecurred,isEmpty, stat);
+
+        if (isRecurred.size() > 0)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), id_P);
+        }
+        if (isEmpty.size() > 0)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
+        }
+
+
+
+
+        // 第一次把action卡创建出来
+        if (null == salesOrderData.getAction()) {
+//            JSONObject newEmptyAction = new JSONObject();
+//            salesOrderData.setAction(newEmptyAction);
+            dbu.initAction(salesOrderData.getOItem().getJSONArray("objItem"));
+        }
+
+        if (null == salesOrderData.getCasItemx()) {
+            JSONObject newCa = new JSONObject();
+            newCa.put("objOrder", new JSONArray());
+            JSONObject newCas = new JSONObject();
+            newCas.put(myCompId, newCa);
+            salesOrderData.setCasItemx(newCas);
+        }
+
+
+        // 转换oItem为list
+        JSONArray oParent_objItem = salesOrderData.getOItem().getJSONArray("objItem");
+        JSONArray oParent_objAction = salesOrderData.getAction().getJSONArray("objAction");
+
+        Integer oParent_prior = salesOrderData.getInfo().getPriority();
+
+        // 创建存储递归OItem结果的Map
+        Map<String, List<OrderOItem>> objOItemCollection = new HashMap<>(Constants.HASH_MAP_DEFAULT_LENGTH);
+
+        // 创建存储递归Action结果的Map
+        Map<String, List<OrderAction>> objActionCollection = new HashMap<>(Constants.HASH_MAP_DEFAULT_LENGTH);
+
+        // 定义以公司id为键的存储map            // 定义以订单id为键的存储
+        if (salesOrderData.getCasItemx().getJSONObject(myCompId).getJSONArray("objOrder") == null)
+        {
+            salesOrderData.getCasItemx().getJSONObject(myCompId).put("objOrder", new JSONArray());
+        }
+        JSONArray casItemData = salesOrderData.getCasItemx().getJSONObject(myCompId).getJSONArray("objOrder");
+
+        //orderAction存储map
+        Map<String, OrderAction> pidActionCollection = new HashMap<>(Constants.HASH_MAP_DEFAULT_LENGTH);
+
+        String refOP = salesOrderData.getInfo().getId_C().equals(salesOrderData.getInfo().getId_CB()) ?
+                salesOrderData.getInfo().getRefB() : salesOrderData.getInfo().getRef();
+
+        // 创建递归存储的时间处理信息
+        List<OrderODate> oDates = new ArrayList<>();
+        // 创建递归存储的时间任务信息
+        List<Task> oTasks = new ArrayList<>();
+        // 创建存储零件编号的合并信息记录合并时的下标
+        JSONObject mergeJ = new JSONObject();
+        // 遍历订单内所有产品
+
+        //dg only 1 index
+        OrderOItem objOItem = qt.cloneThis(oParent_objItem.getJSONObject(index), OrderOItem.class);
+        objOItem.setPriority(oParent_prior);
+//        OrderAction objAction = new OrderAction(100,0,1,1,salesOrderData.getId(),
+//                refOP, objOItem.getId_P(),id_OParent,index,objOItem.getRKey(),0,0,
+//                new JSONArray(),new JSONArray(), new JSONArray(), new JSONArray(), salesOrderData.getInfo().getWrdN(), objOItem.getWrdN());
+
+        OrderAction objAction = qt.cloneThis(oParent_objAction.getJSONObject(index), OrderAction.class);
+
+        ////////////////actually dg ///////////////////////
+        JSONObject isJsLj = new JSONObject();
+        isJsLj.put("1",0);
+
+        JSONArray casItemData2 = new JSONArray();
+        //dgType: 1 = firstLayer (sales Items), 2 = regular/subTask or subProd, 3 = depSplit regular
+        // T/P - T/P -T/P.... problem is id_P == ""?
+
+       this.dgProcess(
+               1, myCompId, id_OParent,
+               objOItem, objAction,
+               casItemData2,
+               oParent_objItem, index,
+               objOItemCollection, objActionCollection,
+               pidActionCollection,
+               objOItem.getId_P(), oDates, oTasks, mergeJ, 0, null, isJsLj);
+
+        //dg only 1 index
+        qt.errPrint("checkx", null, objOItemCollection, objActionCollection, pidActionCollection, casItemData2);
+
+        // 判断递归结果是否为空
+        if (objActionCollection.size() == 0){
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
+        }
+
+        /////////// setup Dep.objlBProd + objlSProd for grpP
+
+        //putting the Sales order as the last casItem... I donno why
+
+        if (casItemData.size() == 0) {
+            JSONObject thisOrderData = new JSONObject();
+            thisOrderData.put("id_C", myCompId);
+            thisOrderData.put("id_O", id_OParent);
+            thisOrderData.put("lST", 4);
+            thisOrderData.put("type", 1);
+            thisOrderData.put("priority", salesOrderData.getInfo().getPriority());
+            thisOrderData.put("size", oParent_objItem.size());
+            thisOrderData.put("wrdN", salesOrderData.getInfo().getWrdN());
+            casItemData.add(thisOrderData);
+            for (int i = 0; i < casItemData2.size(); i++)
+            {
+                casItemData.add(casItemData2.getJSONObject(i));
+            }
+        } else {
+            casItemData = casItemData2;
+        }
+
+
+
+
+        // 获取递归结果键
+        Set<String> actionCollection = objActionCollection.keySet();
+//        //before getting so many id_A, get myComp id_A first for future use
+//        String myId_A = qt.getId_A(myCompId, "a-auth");
+//        Asset myDef = dbUtils.getAssetById(myId_A, Collections.singletonList("def"));
+        Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
+
+        // 遍历键，并创建采购单
+        for (String thisOrderId : actionCollection) {
+
+            // 获取对应订单id的零件递归信息
+            List<OrderAction> unitAction = objActionCollection.get(thisOrderId);
+            // 获取对应订单id的零件信息
+            List<OrderOItem> unitOItem = objOItemCollection.get(thisOrderId);
+
+            // 创建订单info
+            String prodCompId = "";
+            JSONObject orderNameCas = new JSONObject();
+            String targetCompId;
+            if (id_OParent.equals(thisOrderId)) {
+                targetCompId = salesOrderData.getInfo().getId_CB();
+            } else {
+                targetCompId = myCompId;
+            }
+            for (int j = 0; j < casItemData.size(); j++)
+            {
+                if (casItemData.getJSONObject(j).getString("id_O").equals(thisOrderId))
+                {
+                    prodCompId = casItemData.getJSONObject(j).getString("id_C");
+//                    orderNameCas = casItemData.getJSONObject(j).getJSONObject("wrdN");
+                    orderNameCas.put("cn", salesOrderData.getInfo().getWrdN().getString("cn") + " - " +
+                            salesOrderData.getOItem().getJSONArray("objItem").getJSONObject(index).getJSONObject("wrdN").getString("cn"));
+                    break;
+                }
+            }
+
+            JSONObject grpBGroup = new JSONObject();
+            JSONObject grpGroup = new JSONObject();
+
+            String grpO = "";
+            String grpOB = "1000";
+            Asset asset = null;
+
+            if (!targetCompId.equals(myCompId))
+            {
+
+                asset = qt.getConfig(targetCompId,"a-auth","def");
+
+                if  (asset.getId().equals("none")) {
+                    asset = myDef;
+                }
+            } else {
+                asset = myDef;
+            }
+
+            JSONObject defResultBP = asset.getDef().getJSONObject("objlBP");
+            JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
+
+            for (OrderOItem orderOItem : unitOItem) {
+                System.out.println(orderOItem.getGrpB());
+                String grpB = orderOItem.getGrpB();
+                if (grpBGroup.getJSONObject(grpB) == null) {
+                    grpBGroup.put(grpB, defResultBP.getJSONObject(grpB));
+                }
+            }
+
+            Asset asset2 = null;
+
+            if (!prodCompId.equals(myCompId))
+            {
+                asset2 = qt.getConfig(prodCompId,"a-auth","def");
+                if  (asset2.getId().equals("none")) {
+
+                    asset2 = myDef;
+                }
+
+            } else {
+                asset2 = myDef;
+            }
+
+            JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
+
+            JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
+
+            for (OrderOItem orderOItem : unitOItem) {
+                String grp = orderOItem.getGrp();
+
+                if (grpGroup.getJSONObject(grp) == null) {
+
+                    grpGroup.put(grp, defResultSP.getJSONObject(grp));
+                }
+            }
+
+            grpO = "1000";
+            grpOB = "1000";
+
+
+            if (id_OParent.equals(thisOrderId)) {
+                // make sales order Action
+
+                    this.updateSalesOrderSingle(index, casItemData, unitAction, unitOItem, salesOrderData, grpBGroup, grpGroup, prodCompId
+                            , oDates, oTasks);
+                    qt.errPrint("3... unitAction", null, unitAction);
+            } else
+            {
+                // else make Purchase Order
+//                // 创建订单
+                Order newPO = new Order();
+
+//                orderNameCas.put("cn", salesOrderData.getInfo().getWrdN().getString("cn") + " - " +
+//                        salesOrderData.getOItem().getJSONArray("objItem").getJSONObject(index).getJSONObject("wrdN").getString("cn"));
+                // 根据键设置订单id
+                newPO.setId(thisOrderId);
+
+                // priority is BY order, get from info and write into ALL oItem
+                OrderInfo newPO_Info = new OrderInfo(prodCompId,targetCompId,unitOItem.get(0).getId_CP(),"", id_OParent,"","",grpO,grpOB,oParent_prior,unitOItem.get(0).getPic(),4,0,orderNameCas,null);
+
+                qt.errPrint("newPOInfo", null, targetCompId, prodCompId, newPO_Info);
+                // 设置订单info信息
+                newPO.setInfo(newPO_Info);
+
+                // 添加View信息
+                JSONArray view = new JSONArray();
+                view.add("info");
+                view.add("action");
+                view.add("oItem");
+                view.add("oStock");
+                newPO.setView(view);
+
+                JSONArray objCard = new JSONArray();
+                objCard.add("action");
+                objCard.add("oStock");
+
+                Double wn2qty = 0.0;
+                Double wn4price = 0.0;
+                JSONArray arrayId_P = new JSONArray();
+
+                for (OrderOItem orderOItem : unitOItem) {
+                    wn2qty += orderOItem.getWn2qtyneed();
+                    wn4price += orderOItem.getWn4price();
+                    arrayId_P.add(orderOItem.getId_P());
+                }
+
+                // 添加OItem信息
+                JSONObject newPO_OItem = new JSONObject();
+                newPO_OItem.put("objItem", unitOItem);
+                newPO_OItem.put("wn2qty", wn2qty);
+                newPO_OItem.put("arrP", arrayId_P);
+                newPO_OItem.put("wn4price", wn4price);
+                newPO_OItem.put("objCard", objCard);
+                newPO.setOItem(newPO_OItem);
+
+                // 创建采购单的Action
+                JSONObject newPO_Action = new JSONObject();
+                newPO_Action.put("objAction", unitAction);
+                newPO_Action.put("grpBGroup", grpBGroup);
+                newPO_Action.put("grpGroup", grpGroup);
+                newPO_Action.put("wn2progress", 0.0);
+
+                //Create oStock
+                JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(unitOItem));
+
+                newPO.setOStock(newPO_oStock);
+                newPO.setAction(newPO_Action);
+
+                qt.errPrint("subOrder", null, newPO);
+                // 新增订单
+                qt.addMD(newPO);
+
+
+//              // 创建lSBOrder订单
+                lSBOrder lsbOrder = new lSBOrder(prodCompId,targetCompId,"","",id_OParent,thisOrderId, arrayId_P,
+                        "","",null,"1000",unitOItem.get(0).getPic(),4,0,orderNameCas,null,null);
+                // 新增lsbOrder信息
+
+                qt.addES("lsborder", lsbOrder);
+
+            }
+        }
+        // END FOR
+
+        return retResult.ok(CodeEnum.OK.getCode(), "");
+    }
 
         /**
          * 添加订单方法 - 注释完成
@@ -556,15 +882,16 @@ System.out.println("saving now");
             System.out.println("got all ok Sales");
 
             //Create oStock
-            JSONObject newPO_oStock = new JSONObject();
-            newPO_oStock.put("objData", new JSONArray());
-            for (OrderOItem orderOItem : salesOItem) {
-                JSONObject initStock = new JSONObject();
-                initStock.put("wn2qtynow", 0);
-                initStock.put("wn2qtymade", 0);
-                initStock.put("id_P", orderOItem.getId_P());
-                newPO_oStock.getJSONArray("objData").add(initStock);
-            }
+            JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(salesOItem));
+//            new JSONObject();
+//            newPO_oStock.put("objData", new JSONArray());
+//            for (OrderOItem orderOItem : salesOItem) {
+//                JSONObject initStock = new JSONObject();
+//                initStock.put("wn2qtynow", 0);
+//                initStock.put("wn2qtymade", 0);
+//                initStock.put("id_P", orderOItem.getId_P());
+//                newPO_oStock.getJSONArray("objData").add(initStock);
+//            }
             orderParentData.setOStock(newPO_oStock);
 
             if(!view.contains("action")) {
@@ -581,16 +908,92 @@ System.out.println("saving now");
             orderParentData.setView(view);
 
             // 新增订单
-//            coupaUtil.saveOrder(orderParentData);
-            System.out.println("saving Sales"+orderParentData);
-
 
             qt.saveMD(orderParentData);
             System.out.println("sales order SAVED Parent "+ orderParentData.getInfo().getWrdN().getString("cn"));
 
         }
 
+    public void updateSalesOrderSingle(Integer index, JSONArray casItemData,List<OrderAction> salesAction, List<OrderOItem> salesOItem,
+                                 Order orderParentData,JSONObject grpBGroup,JSONObject grpGroup, String myCompId,
+                                 List<OrderODate> oDates,List<Task> oTasks)
+    {
 
+        // TODO KEV: mixed oTasks/oDates problem
+        // 添加订单基础信息存储
+        JSONObject casItemx = new JSONObject();
+        JSONObject listCol = qt.getES("lsborder", qt.setESFilt("id_O", orderParentData.getId())).getJSONObject(0);
+
+
+        if (orderParentData.getCasItemx() != null && orderParentData.getCasItemx().getJSONObject(myCompId) != null &&
+                orderParentData.getCasItemx().getJSONObject(myCompId).getJSONArray("objOrder") != null)
+        {
+            JSONArray tempCas = qt.cloneArr(casItemData);
+
+            casItemx = orderParentData.getCasItemx();
+
+            for (int item = 0; item < tempCas.size(); item++)
+            {
+                casItemx.getJSONObject(myCompId).getJSONArray("objOrder").add(tempCas.getJSONObject(item));
+            }
+        } else {
+            JSONObject nowData = new JSONObject();
+            nowData.put("objOrder", casItemData);
+            casItemx.put(myCompId, nowData);
+        }
+
+
+        // 创建产品零件递归信息
+        JSONObject salesOrder_Action = orderParentData.getAction();
+
+        //set activate to 1 so it means it is already "cascaded
+
+        // 添加对应的产品零件递归信息
+        salesOrder_Action.getJSONArray("objAction").set(index, salesAction.get(index));
+
+        JSONObject salesOrder_OItem = orderParentData.getOItem();
+
+        JSONArray salesOrder_OStock;
+        if (orderParentData.getOStock() == null)
+        {
+            JSONObject new_ostock = dbu.initOStock(salesOrder_OItem.getJSONArray("objItem"));
+            orderParentData.setOStock(new_ostock);
+            orderParentData.getOItem().getJSONArray("objCard").add("oStock");
+        } else {
+            salesOrder_OStock = orderParentData.getOStock().getJSONArray("objData");
+            dbu.initOStock(salesOrder_OItem.getJSONArray("objItem").getJSONObject(index), salesOrder_OStock, index);
+            orderParentData.getOStock().put("objData", salesOrder_OStock);
+        }
+
+
+        //ZJ
+        salesOrder_Action.put("oDates",oDates);
+        salesOrder_Action.put("oTasks",oTasks);
+        //ZJ
+
+        // 设置action信息
+        orderParentData.setAction(salesOrder_Action);
+        // 设置订单的递归结果map
+        orderParentData.setCasItemx(casItemx);
+        // 设置oItem.objCard信息
+        orderParentData.setOItem(salesOrder_OItem);
+
+        dbu.summOrder(orderParentData, listCol);
+
+        // now action/oStock/oItem/casItemx all set, time to upRelate
+
+       JSONArray view = orderParentData.getView();
+        if(!orderParentData.getView().contains("casItemx")) {
+            orderParentData.getView().add("casItemx");
+        }
+
+        // 新增订单
+        qt.errPrint("parent order", null, orderParentData);
+
+        qt.setES("lsborder", listCol.getString("id_ES"), listCol);
+        qt.saveMD(orderParentData);
+
+    }
 
 
 
@@ -641,16 +1044,17 @@ System.out.println("saving now");
             String id_PF,List<OrderODate> oDates,List<Task> oTasks,JSONObject mergeJ,int csSta,String csId_P,JSONObject isJsLj)
     {
         //ZJ
+
         isJsLj.put("1",(isJsLj.getInteger("1")+1));
         int dq = isJsLj.getInteger("1");
         // 存储序号是否为1层级
-        int csStaN = 0;
+        int timeHandleSerialNoIsOneInside = 0;
         // 获取父id是否是当前唯一ID存储时间处理的最初产品编号存储
         boolean isPf = id_PF.equals(csId_P);
         // 判断上一个序号是否为1层级
         if (csSta == 1) {
             // 判断是，则将自己也设置为是
-            csStaN = 1;
+            timeHandleSerialNoIsOneInside = 1;
         }
         //ZJ
 
@@ -686,7 +1090,7 @@ System.out.println("saving now");
 //        }
         // if this is a task, and it's not Sales layer
         //else
-        if (id_P.equals("") && dgType.equals(2))
+        if (id_P.equals("") && dgType > 1)
         {
             if (partIndex.equals(0))
             {
@@ -713,7 +1117,8 @@ System.out.println("saving now");
             }
         }
         else if (null != pidActionCollection.get(id_P))
-        {   //Now, it is prod not task， Must Merge if id_P is in pidActionCollection
+        {
+            //Now, it is prod not task， Must Merge if id_P is in pidActionCollection
             // as long as you have it in pidArray, you MUST merge
             System.out.println("I merged2////"+ upperAction);
 
@@ -730,18 +1135,21 @@ System.out.println("saving now");
             // 添加时间处理信息
             orderODate.setEmpty(true);
             orderODate.setLinkInd(ind);
-            orderODate.setPriority(upperOItem.getPriority());
-//            orderODate.setPriorItem(objOItemCollection.get(fin_O).get(fin_Ind).getWn0prior());
-            orderODate.setPriorItem(partInfo.getInteger("wn0prior"));
+//            orderODate.setPriority(upperOItem.getPriority());
+            orderODate.setPriorItem(objOItemCollection.get(fin_O).get(fin_Ind).getWn0prior());
+
+//            orderODate.setPriorItem(partInfo.getInteger("wn0prior"));
             orderODate.setId_PF(id_PF);
             orderODate.setId_C(myCompId);
+            orderODate.setBmdpt(objActionCollection.get(fin_O).get(fin_Ind).getBmdpt());
+
             // 判断父编号是当前唯一ID存储时间处理的最初产品编号并且序号为1
             if (isPf&&orderODate.getPriorItem() == 1) {
                 // 设置序号是为1层级
-                csStaN = 1;
+                timeHandleSerialNoIsOneInside = 1;
             }
             // 添加信息
-            orderODate.setCsSta(csStaN);
+            orderODate.setCsSta(timeHandleSerialNoIsOneInside);
             oDates.add(orderODate);
             // 创建一个任务类
             Task task = new Task();
@@ -847,45 +1255,48 @@ System.out.println("saving now");
             objOItem = upperOItem;
             objAction = upperAction;
         }
-        else if(id_P.equals("")) //IF i am process
-        {
-            System.out.println("Upp"+newOrderId);
-            System.out.println("upp"+partArray.size()+partArray.getJSONObject(0).getJSONObject("wrdN"));
-            System.out.println("upp"+partIndex);
+//        else if(id_P.equals("")) //IF i am process
+//        {
+//            System.out.println("Upp"+newOrderId);
+//            System.out.println("upp"+partArray.size()+partArray.getJSONObject(0).getJSONObject("wrdN"));
+//            System.out.println("upp"+partIndex);
 //            JSONObject unitTask = partArray.getJSONObject(partIndex);
-//            JSONObject partInfo = partArray.getJSONObject(partIndex);
-
-
-            objOItem = new OrderOItem("",upperOItem.getId_O(),myCompId, myCompId,myCompId,newOrderId,partIndex,1,"","",
-                            "1009", upperOItem.getGrpB(), partInfo.getInteger("wn0prior"),"",0,0,1.0,0.0,
-                            upperOItem.getWrdN(), partInfo.getJSONObject("wrdN"),partInfo.getJSONObject("wrddesc"),partInfo.getJSONObject("wrdprep"));
-
-            objOItem.setSeq(partInfo.getString("seq"));
-
-            objAction = new OrderAction(100,0,1,1,id_OParent,upperAction.getRefOP(),"",newOrderId,partIndex,
-                    partInfo.getInteger("wn0prior"),0,0,null, null,null, null,
-                    upperOItem.getWrdN(),partInfo.getJSONObject("wrdN"));
-
-            System.out.println("oItem"+objOItem);
-
-
-//            JSONObject upPrntsData = new JSONObject();
-//            upPrntsData.put("id_O", upperOItem.getId_O());
-//            upPrntsData.put("index", upperOItem.getIndex());
-//            upPrntsData.put("wrdN", upperOItem.getWrdN());
-//            upPrntsData.put("wn2qtyneed",1);
-
-            JSONObject upPrntsData = objAction.upPrnt(upperOItem.getId_O(), upperOItem.getIndex(),  upperOItem.getWrdN(),1.0);
-//            upPrntsData.put("wn2qtyall",upperOItem.getWn2qtyneed());
-            objAction.getUpPrnts().add(upPrntsData);
-
-        } else
+////            JSONObject partInfo = partArray.getJSONObject(partIndex);
+//
+////            partInfo.getInteger => unitTask.getInteger("wn0prior")
+//            objOItem = new OrderOItem("",upperOItem.getId_O(),myCompId, myCompId,myCompId,newOrderId,partIndex,"","",
+//                            "1009", upperOItem.getGrpB(), unitTask.getInteger("wn0prior"),"",0,0,1.0,0.0,
+//                            upperOItem.getWrdN(), partInfo.getJSONObject("wrdN"),
+//                            partInfo.getJSONObject("wrddesc"),partInfo.getJSONObject("wrdprep"));
+//
+//            objOItem.setSeq(partInfo.getString("seq"));
+//
+//            //**** getRKey -> wn0prior
+//            objAction = new OrderAction(100,0,1,1,id_OParent,upperAction.getRefOP(),"",newOrderId,partIndex,
+//                    objOItem.getRKey(), 0,0,null, null,null, null,
+//                    upperOItem.getWrdN(),partInfo.getJSONObject("wrdN"));
+//
+//            System.out.println("oItem"+objOItem);
+//
+//
+////            JSONObject upPrntsData = new JSONObject();
+////            upPrntsData.put("id_O", upperOItem.getId_O());
+////            upPrntsData.put("index", upperOItem.getIndex());
+////            upPrntsData.put("wrdN", upperOItem.getWrdN());
+////            upPrntsData.put("wn2qtyneed",1);
+//
+//            JSONObject upPrntsData = objAction.upPrnt(upperOItem.getId_O(), upperOItem.getIndex(),  upperOItem.getWrdN(),1.0);
+////            upPrntsData.put("wn2qtyall",upperOItem.getWn2qtyneed());
+//            objAction.getUpPrnts().add(upPrntsData);
+//
+//        }
+        else
         {
             objOItem = new OrderOItem(id_P,upperOItem.getId_OP(),
                     partInfo.getString("id_CP")==null? prodCompId:partInfo.getString("id_CP"),
                     prodCompId,myCompId,
                     newOrderId,newOrderIndex,
-                    partInfo.getInteger("bmdpt"),partInfo.getString("ref"),partInfo.getString("refB"),
+                    partInfo.getString("ref"),partInfo.getString("refB"),
                     partInfo.getString("grp"),partInfo.getString("grpB"),0,partInfo.getString("pic"),
                     partInfo.getInteger("lUT"),partInfo.getInteger("lCR"),
                     0.0,
@@ -894,14 +1305,21 @@ System.out.println("saving now");
 
             objOItem.setTmd(dateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             objOItem.setSeq("3"); // set DGAction specific seq = 3
+
+            // if C=CB and bmdpt =1 means it's my own process, I cannot set grp
+            if (prodCompId.equals(myCompId) && partInfo.getInteger("bmdpt") == 1)
+            {
+                objOItem.setGrp("");
+            }
+
             objOItem.setWn2qtyneed(upperOItem.getWn2qtyneed() * partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"));
 
             objAction = new OrderAction(100,0,1,partInfo.getInteger("bmdpt"),
-                    id_OParent, upperAction.getRefOP(),partInfo.getString("id_P"),newOrderId,newOrderIndex,partInfo.getInteger("wn0prior"),0
+                    id_OParent, upperAction.getRefOP(),partInfo.getString("id_P"),newOrderId,newOrderIndex,objOItem.getRKey(),0
                     ,0,null,null,null,null,upperOItem.getWrdN(),partInfo.getJSONObject("wrdN"));
 
             //ZJ
-//            objAction.setPriority(0);
+            objAction.setPriority(0);
             //ZJ
 
             if (!dgType.equals(1)) {
@@ -909,13 +1327,8 @@ System.out.println("saving now");
 
                 upPrntsData.put("id_O", upperOItem.getId_O());
                 upPrntsData.put("index", upperOItem.getIndex());
-//                upPrntsData.put("I am first", upperOItem.getIndex());
-//                upPrntsData.put("wn2qty1", upperOItem.getWn2qtyneed());
-//                upPrntsData.put("wn2qty2", objOItem.getWn2qtyneed());
-//                upPrntsData.put("wn2qty3", partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"));
-//                upPrntsData.put("wn2qtyall", upperOItem.getWn2qtyneed());
+
                 upPrntsData.put("wn2qtyneed", objOItem.getWn2qtyneed());
-//                upPrntsData.put("qtyEach", partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"));
 
 
                 upPrntsData.put("wrdN", upperOItem.getWrdN());
@@ -933,8 +1346,18 @@ System.out.println("saving now");
 
 
         // 添加产品信息
+
+        if (partIndex > 0 && objActionCollection.isEmpty())
+        {
+            for (int i = 0; i < partIndex; i++)
+            {
+                orderActionList.add(new OrderAction());
+                orderOItemList.add(new OrderOItem());
+            }
+        }
         orderActionList.add(objAction);
         orderOItemList.add(objOItem);
+
 
 
             objActionCollection.put(newOrderId,orderActionList);
@@ -954,61 +1377,65 @@ System.out.println("saving now");
         if (partIndex == partArray.size() - 1) {
             boolean keepGoing;
 
-            for (int i = 0; i < partArray.size(); i++) {
-                String finO = partArray.getJSONObject(i).getString("fin_O");
-                int fin_Ind = partArray.getJSONObject(i).getInteger("fin_Ind");
-                // this is myself
-                OrderAction unitAction = objActionCollection.get(finO).get(fin_Ind);
+            for (int i = 0; i < partArray.size(); i++)
+            {
+                if (partArray.getJSONObject(i).getInteger("fin_Ind") != null) {
+                    qt.errPrint("fin_O?", null, partArray, i, objActionCollection);
 
-                int myPrior = partArray.getJSONObject(i).getInteger("wn0prior");
-                keepGoing = true;
-                int checkPrev = i - 1;
+                    String finO = partArray.getJSONObject(i).getString("fin_O");
+                    int fin_Ind = partArray.getJSONObject(i).getInteger("fin_Ind");
+                    // this is myself
+                    OrderAction unitAction = objActionCollection.get(finO).get(fin_Ind);
 
-                do {
-                    // if it's already the first item or prior 2 steps away, stop
-                    if (checkPrev < 0 || (myPrior - 2) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                        keepGoing = false;
-                    } else if (myPrior != partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                        if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                            // else prior need add PrtPrev
-                            JSONObject idAndIndex = new JSONObject();
-                            idAndIndex.put("id_O", partArray.getJSONObject(checkPrev).getString("fin_O"));
-                            idAndIndex.put("index", partArray.getJSONObject(checkPrev).getInteger("fin_Ind"));
-                            // Here, I put the checking IdIndex into my own list of prtPrev
-                            unitAction.getPrtPrev().add(idAndIndex);
-                        }
-                    }
-                    checkPrev--; // move 1 step previous
-                } while (keepGoing);
-                unitAction.setSumPrev(unitAction.getPrtPrev().size());
+                    int myPrior = partArray.getJSONObject(i).getInteger("wn0prior");
+                    keepGoing = true;
+                    int checkPrev = i - 1;
 
-                keepGoing = true;
-                int checkNext = i + 1;
-
-                do {
-                    if (checkNext == partArray.size()) {
-                        keepGoing = false;
-                    }
-                    else if ((myPrior + 2) == partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
-                        keepGoing = false;
-                    } else {
-                        if (myPrior != partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
-                            if ((myPrior + 1) == partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
+                    do {
+                        // if it's already the first item or prior 2 steps away, stop
+                        if (checkPrev < 0 || (myPrior - 2) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
+                            keepGoing = false;
+                        } else if (myPrior != partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
+                            if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
+                                // else prior need add PrtPrev
                                 JSONObject idAndIndex = new JSONObject();
-                                idAndIndex.put("id_O", partArray.getJSONObject(checkNext).getString("fin_O"));
-                                idAndIndex.put("index", partArray.getJSONObject(checkNext).getInteger("fin_Ind"));
+                                idAndIndex.put("id_O", partArray.getJSONObject(checkPrev).getString("fin_O"));
+                                idAndIndex.put("index", partArray.getJSONObject(checkPrev).getInteger("fin_Ind"));
                                 // Here, I put the checking IdIndex into my own list of prtPrev
-                                unitAction.getPrtNext().add(idAndIndex);
+                                unitAction.getPrtPrev().add(idAndIndex);
                             }
                         }
-                    }
-                    checkNext++;
-                } while (keepGoing);
+                        checkPrev--; // move 1 step previous
+                    } while (keepGoing);
+                    unitAction.setSumPrev(unitAction.getPrtPrev().size());
+
+                    keepGoing = true;
+                    int checkNext = i + 1;
+
+                    do {
+                        if (checkNext == partArray.size()) {
+                            keepGoing = false;
+                        } else if ((myPrior + 2) == partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
+                            keepGoing = false;
+                        } else {
+                            if (myPrior != partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
+                                if ((myPrior + 1) == partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
+                                    JSONObject idAndIndex = new JSONObject();
+                                    idAndIndex.put("id_O", partArray.getJSONObject(checkNext).getString("fin_O"));
+                                    idAndIndex.put("index", partArray.getJSONObject(checkNext).getInteger("fin_Ind"));
+                                    // Here, I put the checking IdIndex into my own list of prtPrev
+                                    unitAction.getPrtNext().add(idAndIndex);
+                                }
+                            }
+                        }
+                        checkNext++;
+                    } while (keepGoing);
+                }
             }
         }
         //ZJ
         if (isPf&&objOItem.getWn0prior() == 1) {
-            csStaN = 1;
+            timeHandleSerialNoIsOneInside = 1;
         }
         //ZJ
 
@@ -1067,34 +1494,42 @@ System.out.println("saving now");
 
                         // 进下一层处理part递归
                         for (int item = 0; item < partArrayNext.size(); item++) {
+
                             this.dgProcess(
-                                    2, myCompId, id_OParent,
+                                    dgType + 1, myCompId, id_OParent,
                                     objOItem, objAction,
                                     casItemData,
                                     partArrayNext, item,
                                     objOItemCollection, objActionCollection,
                                     pidActionCollection,
-                                    thisProd.getId(),oDates,oTasks,mergeJ,csStaN,csId_P,isJsLj);
+                                    thisProd.getId(),oDates,oTasks,mergeJ,timeHandleSerialNoIsOneInside,csId_P,isJsLj);
+                            //changed dgType
+                            // now check the last time and put into objAction a key
+                            if (dgType == 2 && item + 1 == partArrayNext.size()) {
+                                //TODO KEV put an isPartNext = true to the last item
+                                qt.errPrint("last item", null, objAction, objActionCollection);
+                            }
                         }
 
                 }
             }
-        } else {
-            if (objOItem.getSubTask() != null && objOItem.getSubTask().size() > 0) {
-                for (int item = 0; item < objOItem.getSubTask().size(); item++)
-                {
-
-                    this.dgProcess(
-                            2, myCompId,  newOrderId,
-                            objOItem, objAction,
-                            casItemData,
-                            objOItem.getSubTask(), item,
-                            objOItemCollection, objActionCollection,
-                            pidActionCollection
-                            ,id_PF,oDates,oTasks,mergeJ,csStaN,csId_P,isJsLj);
-                }
-            }
         }
+//        else {
+//            if (objOItem.getSubTask() != null && objOItem.getSubTask().size() > 0) {
+//                for (int item = 0; item < objOItem.getSubTask().size(); item++)
+//                {
+//
+//                    this.dgProcess(
+//                            2, myCompId,  newOrderId,
+//                            objOItem, objAction,
+//                            casItemData,
+//                            objOItem.getSubTask(), item,
+//                            objOItemCollection, objActionCollection,
+//                            pidActionCollection
+//                            ,id_PF,oDates,oTasks,mergeJ,timeHandleSerialNoIsOneInside,csId_P,isJsLj);
+//                }
+//            }
+//        }
 
         //ZJ
         if (dq != 1) {
@@ -1104,15 +1539,14 @@ System.out.println("saving now");
             // 添加时间操作处理信息
             orderODate.setId_PF(id_PF);
             orderODate.setId_P(objOItem.getId_P());
-//            orderODate.setPriorItem(objOItem.getWn0prior());
             //            orderODate.setPriority(0);
 
-            orderODate.setPriority(upperOItem.getPriority());
+//            orderODate.setPriority(upperOItem.getPriority() == null? 1 : upperOItem.getPriority());
             orderODate.setPriorItem(partInfo.getInteger("wn0prior"));
             orderODate.setTeStart(0L);
             orderODate.setTaFin(0L);
             // 判断层级为第一层并且序号为1
-            if (csStaN == 1 && objOItem.getWn0prior() == 1) {
+            if (timeHandleSerialNoIsOneInside == 1 && objOItem.getWn0prior() == 1) {
                 // 添加信息
                 orderODate.setKaiJie(1);
             } else {
@@ -1126,11 +1560,14 @@ System.out.println("saving now");
                 }
             }
             // 添加信息
-            orderODate.setCsSta(csStaN);
+            orderODate.setCsSta(timeHandleSerialNoIsOneInside);
             // 设置订单时间操作信息
             orderODate.setTeDur(partInfo.getLong("teDur")==null?120:partInfo.getLong("teDur"));
             orderODate.setTePrep(partInfo.getLong("tePrep")==null?60:partInfo.getLong("tePrep"));
             // action里面的
+            //++ZJ
+            orderODate.setPriority(0);
+            //ZJ
             orderODate.setTeDurTotal(0L);
             orderODate.setWn2qtyneed(objOItem.getWn2qtyneed());
             // 判断bmdpt等于部件
@@ -1139,7 +1576,7 @@ System.out.println("saving now");
                 orderODate.setTePrep(180L);
                 orderODate.setTeDur(0L);
                 // 判断层级为第一层
-                if (csStaN == 1) {
+                if (timeHandleSerialNoIsOneInside == 1) {
                     orderODate.setKaiJie(3);
                 } else {
                     // 添加信息
@@ -1163,11 +1600,15 @@ System.out.println("saving now");
             }
             // 获取零件名称
             String itemWrdN = objOItem.getWrdN().getString("cn");
+//            boolean isNextPart = null != objAction.getPrtNext() && objAction.getPrtNext().size() != 0;
+            boolean isNextPart = null != objAction.getPrtNext() && objAction.getPrtNext().size() == 0 && dgType == 2;
+
             // 调用生成任务信息
-            Task task = Obj.getTask(orderODate.getTeStart(), orderODate.getTeFin(), orderODate.getId_O()
+            // 调用生成任务信息
+            Task task = TaskObj.getTask(orderODate.getTeStart(), orderODate.getTeFin(), orderODate.getId_O()
                     , orderODate.getIndex(), 0L
                     , orderODate.getPriority(), itemWrdN, orderODate.getTePrep(),orderODate.getTeDelayDate()
-                    ,myCompId,0L,0L);
+                    ,myCompId,0L,0L,-1, isNextPart);
             // 设置任务公司编号
             task.setId_C(myCompId);
             System.out.println("task:");
@@ -1213,7 +1654,6 @@ System.out.println("saving now");
 
         partArray.getJSONObject(partIndex).put("fin_O", finO);
         partArray.getJSONObject(partIndex).put("fin_Ind", fin_Ind);
-        System.out.println("DGType");
 
         // this is my Action::
         OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(objOItemCollection.get(finO).get(fin_Ind)),OrderOItem.class);
@@ -1221,7 +1661,6 @@ System.out.println("saving now");
         OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(objActionCollection.get(finO).get(fin_Ind)),OrderAction.class);
 
         try {
-//            System.out.println("DGType" + partArray.getJSONObject(3).getString("dsafsvncksfsd"));
 
 
             do {
@@ -1282,7 +1721,6 @@ System.out.println("saving now");
                         subAction.getUpPrnts().add(upPrntsData);
                     }
                 } else {
-                    System.out.println("DGType");
                     JSONObject upPrntsData = new JSONObject();
                     upPrntsData.put("id_O", upperOItem.getId_O());
                     upPrntsData.put("index", upperOItem.getIndex());
@@ -1321,7 +1759,6 @@ System.out.println("saving now");
 
 
                 // 加时间 oDate 时间
-        System.out.println("DGType");
 
                 // Loop into all subParts to make sure all qty is added correctly
                 this.dgMergeQtySet(finO, qtyNeed, partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"),
@@ -1406,7 +1843,8 @@ System.out.println("saving now");
 //                upPrntsData.put("CALculatetyneed4", qtyNeed);
 //
 //                System.out.println("*** upPrntsData" + upPrntsData);
-            } else {
+            }
+            else {
                 dgType = 2;
             }
 
@@ -1424,12 +1862,171 @@ System.out.println("saving now");
     }
 
 
+
+    @Override
+    public ApiResponse dgTaskOrder(String id_O) {
+
+        try {
+            Order order = qt.getMDContent(id_O, Arrays.asList("info", "oItem", "action"), Order.class);
+
+
+            JSONArray objAction = order.getAction().getJSONArray("objAction");
+            JSONArray objItem = order.getOItem().getJSONArray("objItem");
+            System.out.println(" here 1");
+//        Integer index = 0;
+
+            this.dgTaskLoop(objAction, objItem, 0, objItem.size());
+
+            System.out.println(" final 8");
+
+            qt.errPrint("objAction", null, objAction);
+            qt.setMDContent(id_O, qt.setJson("action.objAction", objAction), Order.class);
+
+            return retResult.ok(CodeEnum.OK.getCode(), "");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+    // not DG outside id_O, only the internal ones
+    // id_O is always the same
+    // tempPrev []
+    // tempIndex []
+    // for each index
+    //    if concurr
+    //       add to tempIndex
+    //       set prtPrev = tempPrev
+    //    if nextStep
+    //    loop each tempPrev
+    //     set prtNext = tempIndex
+
+    //    set prtPrev = id_O, tempPrev
+    //    set tempPrev = tempIndex, and tempIndex = []
+    //    keep going
+
+    // need upPrnt @ subPart made
+    // upPrnt not working @ 2?
+
+
+    // set item(index-1)'s subPart []
+    private JSONArray dgTaskLoop(JSONArray objAction, JSONArray objItem, int index, int endIndex) {
+
+        try {
+            JSONArray tempPrev = new JSONArray();
+            JSONArray tempIndex = new JSONArray();
+            JSONArray tempSub = new JSONArray();
+
+            for (int j = index; j < endIndex; j++) {
+                System.out.println(" here 3  - " + j);
+
+                if (!objItem.getJSONObject(j).getString("seq").equals("2")) {
+                    //       add to tempIndex
+                    JSONObject prevData = new JSONObject();
+
+                    prevData.put("id_O", objItem.getJSONObject(j).getString("id_O"));
+                    prevData.put("index", j);
+                    tempIndex.add(qt.cloneObj(prevData));
+                    //       set prtPrev = tempPrev
+                    System.out.println(" here 4.1 concurr" + tempPrev);
+                    System.out.println(" here 4.1" + tempIndex);
+
+
+                    objAction.getJSONObject(j).put("prtPrev", qt.cloneArr(tempPrev));
+                    objAction.getJSONObject(j).put("prtNext", new JSONArray());
+
+                } else {
+                    //    loop each tempPrev
+                    JSONObject thisData = new JSONObject();
+
+                    thisData.put("id_O", objItem.getJSONObject(j).getString("id_O"));
+                    thisData.put("index", j);
+                    for (int i = 0; i < tempIndex.size(); i++) {
+                        System.out.println(" here 4.2 next step");
+
+                        Integer prevIndex = tempIndex.getJSONObject(i).getInteger("index");
+                        //     set prtNext = tempIndex
+                        objAction.getJSONObject(prevIndex).getJSONArray("prtNext").add(qt.cloneObj(thisData));
+                    }
+                    //    set prtPrev = id_O, tempPrev
+                    objAction.getJSONObject(j).put("prtPrev", qt.cloneArr(tempIndex));
+                    objAction.getJSONObject(j).put("prtNext", new JSONArray());
+
+                    System.out.println(" here 4.2" + tempIndex);
+                    System.out.println(" here 4.2" + tempPrev);
+
+
+                    //    set tempPrev = tempIndex, and tempIndex = []
+                    tempPrev = qt.cloneArr(tempIndex);
+                    tempIndex = new JSONArray();
+                    tempIndex.add(thisData);
+                }
+
+                JSONObject sub = new JSONObject();
+                System.out.println(" here 7");
+
+                //subParts = id_O, id_P, index, prior, qtyEach, upIndex, wrdN
+                sub.put("id_O", objItem.getJSONObject(j).getString("id_O"));
+                sub.put("id_P", objItem.getJSONObject(j).getString("id_P"));
+                sub.put("index", j);
+                sub.put("prior", objItem.getJSONObject(j).getString("wn0prior"));
+                sub.put("upIndex", index - 1);
+                sub.put("wrdN", objItem.getJSONObject(j).getJSONObject("wrdN"));
+                tempSub.add(sub);
+                System.out.println(" here 8" + objAction);
+
+                if (index != 0) {
+                    //upPrnt = id_O, index, wn2qtyneed, wrdN
+                    JSONObject upPrnt = new JSONObject();
+                    upPrnt.put("id_O", objItem.getJSONObject(j).getString("id_O"));
+                    upPrnt.put("index", index - 1);
+                    upPrnt.put("wn2qtyneed", objItem.getJSONObject(index - 1).getDouble("wn2qtyneed"));
+                    upPrnt.put("wrdN", objItem.getJSONObject(index - 1).getJSONObject("wrdN"));
+
+                    System.out.println(" here 9" + upPrnt);
+                    objAction.getJSONObject(j).put("upPrnt", new JSONArray());
+                    objAction.getJSONObject(j).getJSONArray("upPrnt").add(qt.cloneObj(upPrnt));
+                    System.out.println(" here 9" + objAction.getJSONObject(j).getJSONArray("upPrnt"));
+
+                } else {
+                    System.out.println(" here 10" + j);
+                    objAction.getJSONObject(j).put("upPrnt", new JSONArray());
+                }
+
+                if (objItem.getJSONObject(j).getInteger("objSub") > 0) {
+                    System.out.println(" here 6" + j + " " + objItem.getJSONObject(j).getInteger("objSub"));
+
+                    JSONArray subPart = this.dgTaskLoop(objAction, objItem, j + 1, j + 1 + objItem.getJSONObject(j).getInteger("objSub"));
+                    objAction.getJSONObject(j).put("subParts", subPart);
+                    System.out.println(" here 6" + subPart);
+                    j = j + objItem.getJSONObject(j).getInteger("objSub");
+
+                } else {
+                    System.out.println(" here 5 objSub=0");
+                    objAction.getJSONObject(j).put("subParts", new JSONArray());
+                }
+            }
+
+            return tempSub; //subParts
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+
+    }
+
+
+
+
     @Override
     public ApiResponse prodPart(String id_P) {
             JSONObject jsonPart = new JSONObject();
-            JSONObject recurCheckList = new JSONObject();
-            recurCheckList.put(id_P, "");
-            Prod prod = (Prod) dbUtils.getMongoOneFields(id_P, Arrays.asList("info", "part"), Prod.class);
+//            JSONObject recurCheckList = new JSONObject();
+//            recurCheckList.put(id_P, "");
+            Prod prod = qt.getMDContent(id_P, Arrays.asList("info", "part"), Prod.class);
             JSONArray arrayObjItem = prod.getPart().getJSONArray("objItem");
 
             JSONObject stat = new JSONObject();
@@ -1437,20 +2034,17 @@ System.out.println("saving now");
             stat.put("allCount", prod.getPart().getInteger("wn0Count") == null ?
                     300 : prod.getPart().getInteger("wn0Count"));
 
-            System.out.println("stat" + stat);
-            System.out.println("recur"+recurCheckList);
-            System.out.println(jsonPart);
 
             jsonPart.put("name", prod.getInfo().getWrdN().getString("cn"));
             jsonPart.putAll(JSON.parseObject(JSON.toJSONString(prod.getInfo())));
 
-            jsonPart.put("children", recursionProdPart(arrayObjItem, recurCheckList, stat));
+            jsonPart.put("children", recursionProdPart(arrayObjItem, stat));
 
             return retResult.ok(CodeEnum.OK.getCode(), jsonPart);
 
     }
 
-    public Object recursionProdPart(JSONArray arrayObjItem, JSONObject recurCheckList, JSONObject stat) {
+    public Object recursionProdPart(JSONArray arrayObjItem, JSONObject stat) {
 
             JSONArray arrayChildren = new JSONArray();
             HashSet<String> setId_P = new HashSet();
@@ -1468,16 +2062,16 @@ System.out.println("saving now");
             for (int i = 0; i < arrayObjItem.size(); i++) {
                 String id_P = arrayObjItem.getJSONObject(i).getString("id_P");
 
-                System.out.println(id_P);
-                System.out.println(recurCheckList);
-                if (recurCheckList.getString(id_P) != null) {
-                    throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "");
+//                if (recurCheckList.getString(id_P) != null) {
+//                    throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), "");
+//                }
+//                if (arrayObjItem.getJSONObject(i).getInteger("bmdpt").equals(2)) {
+//                    recurCheckList.put(id_P, "");
+//                }
+                if (!setId_P.contains(id_P))
+                {
+                    setId_P.add(id_P);
                 }
-                if (arrayObjItem.getJSONObject(i).getInteger("bmdpt").equals(2)) {
-                    recurCheckList.put(id_P, "");
-                }
-                setId_P.add(id_P);
-//            setId_P = setId_P + "," + id_P;
             }
             List<Prod> prods = (List<Prod>) qt.getMDContentMany(setId_P, "part", Prod.class);
             JSONObject jsonProdPart = new JSONObject();
@@ -1493,7 +2087,7 @@ System.out.println("saving now");
                 //有下一层
                 if (jsonProdPart.getJSONObject(jsonObjItem.getString("id_P")) != null) {
                     JSONArray arrayPartObjItem = jsonProdPart.getJSONObject(jsonObjItem.getString("id_P")).getJSONArray("objItem");
-                    jsonChildren.put("children", recursionProdPart(arrayPartObjItem, recurCheckList, stat));
+                    jsonChildren.put("children", recursionProdPart(arrayPartObjItem, stat));
                 }
                 arrayChildren.add(jsonChildren);
             }
@@ -1643,7 +2237,9 @@ System.out.println("saving now");
                         }
                     }
                 }
-            } else
+            }
+
+            else if (!id_P.equals(""))
             {
                     objectMap.put("errDesc","产品不存在！");
                     isEmpty.add(objectMap);
@@ -1876,34 +2472,13 @@ System.out.println("saving now");
 
             String subOrderId = casList.getJSONObject(i).getString("id_O");
 
-                try {
-//                    // 创建es删除请求
-//                    DeleteByQueryRequest requestAct = new DeleteByQueryRequest("action");
-//                    // 设置删除信息
-//                    requestAct.setQuery(new TermQueryBuilder("data.id_O.keyword", subOrderId));
-//                    // 请求方法
-//                    client.deleteByQuery(requestAct, RequestOptions.DEFAULT);
-                    qt.delES("action", qt.setESFilt("data.id_O.keyword", subOrderId));
-                    qt.delES("assetflow", qt.setESFilt("data.id_O.keyword", subOrderId));
+                    qt.delES("action", qt.setESFilt("id_O", subOrderId));
+                    qt.delES("assetflow", qt.setESFilt("data.id_O", subOrderId));
 
-                } catch (Exception e) {
-                    System.out.println("删除es出现错误:" + e.getMessage());
-                }
                 // delete that order        // 删除订单
             if (!subOrderId.equals(id_O)) {
                 // 创建es删除请求
-                try {
-//                    DeleteByQueryRequest requestLB = new DeleteByQueryRequest("lsborder");
-//                // 设置删除信息
-//                    requestLB.setQuery(new TermQueryBuilder("id_O", subOrderId));
-//                    // 请求方法
-//                    client.deleteByQuery(requestLB, RequestOptions.DEFAULT);
-                    qt.delES("lsborder", qt.setESFilt("id_O", "exact",subOrderId));
-
-                } catch (Exception e) {
-                    System.out.println("删除es出现错误:" + e.getMessage());
-                }
-
+                qt.delES("lsborder", qt.setESFilt("id_O", "exact",subOrderId));
                 qt.delMD(subOrderId, Order.class);
             }
         }

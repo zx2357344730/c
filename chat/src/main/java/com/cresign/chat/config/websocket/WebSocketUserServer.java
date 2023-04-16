@@ -188,7 +188,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             map1.put(this.session.getId(),client);
             WebSocketUserServer.clients.put(uId,map1);
         }
-        System.out.println("test-2");
         System.out.println("Token:j:"+token);
         String s1 = redisTemplate0.opsForValue().get(token);
         System.out.println("token:"+s1);
@@ -218,7 +217,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             this.onClose(uId);
             return;
         }
-        System.out.println("test-3");
         // 创建回应前端日志
         LogFlow logContent = LogFlow.getInstance();
         logContent.setId(null);
@@ -397,11 +395,11 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             }
 //            // 127.0.0.1 local test switching
             localSending(id_Us, logContent);
-//             调用检测id_U在不在本服务并发送信息方法
+            // 调用检测id_U在不在本服务并发送信息方法
 //            sendMsgToMQ(id_Us,logContent);
-//            //4. regular send to ES 1 time
+////            //4. regular send to ES 1 time
 //              sendMsgToEs(logContent);
-//            //5. regular send to PUSH to everybody who registered id_APP - batch push
+////            //5. regular send to PUSH to everybody who registered id_APP - batch push
 //            sendMsgToPush(cidArray,logContent);
         }
 
@@ -681,7 +679,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     private static void prepareMqUserInfo(String id_C, LogFlow logContent, JSONArray id_Us, JSONArray cidArray)
     {
-//        String assetId = dbUtils.getId_A(id_C, "a-auth");
+//        String assetId = qt.getId_A(id_C, "a-auth");
 //        if (null == assetId || "none".equals(assetId)) {
 //            return;
 //        }
@@ -746,7 +744,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //    private static void startSendingMq(String id_C,LogFlow logContent,String id_UThisWS
 //            ,JSONObject stringMap,String key){
 //        // 根据公司编号获取a-auth的asset信息的编号
-//        String assetId = dbUtils.getId_A(id_C, "a-auth");
+//        String assetId = qt.getId_A(id_C, "a-auth");
 //        // 判断asset编号为空
 //        if (null == assetId || "none".equals(assetId)) {
 //            return;

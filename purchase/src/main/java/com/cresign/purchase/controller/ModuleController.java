@@ -11,15 +11,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
-@RequestMapping("/module")
+@RequestMapping("module")
 @RestController
 public class ModuleController {
 
-    @Resource
+    @Autowired
     private ModuleService moduleService;
 
     @Autowired
@@ -28,7 +27,7 @@ public class ModuleController {
     @Autowired
     private GetUserIdByToken getUserToken;
 
-    @Resource
+    @Autowired
     private HttpServletRequest request;
 
     @PostMapping("/v1/modifyLogAuthAll")
@@ -147,8 +146,9 @@ public class ModuleController {
         JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         reqJson.put("id_U",tokData.getString("id_U"));
         return moduleService.modSetControl(
-                reqJson.getString("id_C")
-                ,reqJson.getJSONObject("objMod"));
+                tokData.getString("id_C"),
+                reqJson.getString("id_C"),
+                reqJson.getJSONObject("objMod"));
     }
 
     /**

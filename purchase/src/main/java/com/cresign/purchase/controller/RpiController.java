@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
  * @ver 1.0.0
  */
 @RestController
-@RequestMapping("/rpi")
+@RequestMapping("rpi")
 public class RpiController {
 
     @Resource

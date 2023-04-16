@@ -20,7 +20,6 @@ public class InitJava {
 
     private JSONObject newCompFake;
 
-
     private JSONObject newUser;
 
     private JSONObject newAsset;
@@ -56,5 +55,9 @@ public class InitJava {
     private JSONObject statInit;
 
     private JSONObject flowInit;
+
+    private JSONObject pdfInit;
+
+    private JSONObject logic;
 
 }

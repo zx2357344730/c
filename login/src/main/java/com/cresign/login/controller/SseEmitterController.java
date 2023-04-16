@@ -22,7 +22,7 @@
 // *
 // */
 //@RestController
-//@RequestMapping("/sse")
+//@RequestMapping("sse")
 //public class SseEmitterController {
 //    private static final Logger logger = LoggerFactory.getLogger(SseEmitterController.class);
 //
@@ -38,7 +38,7 @@
 //     * @param clientId
 //     * @return
 //     */
-//    @RequestMapping("/start")
+//    @RequestMapping("start")
 //    public SseEmitter testSseEmitter(String clientId) throws IOException {
 //
 //        // 默认30秒超时,设置为0L则永不超时
@@ -54,7 +54,7 @@
 //     * @param clientId
 //     * @return
 //     */
-//    @RequestMapping("/send")
+//    @RequestMapping("send")
 //    public String setSseEmitter(String clientId) {
 //        try {
 //            Result result = sseEmitterMap.get(clientId);
@@ -80,7 +80,7 @@
 //     * @param clientId
 //     * @return
 //     */
-//    @RequestMapping("/end")
+//    @RequestMapping("end")
 //    public String completeSseEmitter(String clientId) {
 //        Result result = sseEmitterMap.get(clientId);
 //        if (result != null) {

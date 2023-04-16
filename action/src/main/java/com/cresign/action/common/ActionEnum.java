@@ -145,6 +145,66 @@ public enum ActionEnum {
      * gpIo已经被解绑
      */
     ERR_IO_ALREADY_UNBIND("01102"),
+    /**
+     * 资产为空
+     */
+    ERR_ASSET_NULL("01103"),
+    /**
+     * 资产内Arrange为空
+     */
+    ERR_ASSET_ARRANGE_NULL("01104"),
+    /**
+     * 资产内Arrange内objTask为空
+     */
+    ERR_ASSET_ARRANGE_OBJ_TASK_NULL("01105"),
+    /**
+     * 资产内已存在
+     */
+    ERR_ASSET_EXISTS_NULL("01106"),
+    /**
+     * 资产内Info为空
+     */
+    ERR_ASSET_INFO_NULL("01107"),
+    /**
+     * 公司编号不匹配
+     */
+    ERR_ID_C_NO_MATCHING("01108"),
+    /**
+     * 资产编号为空
+     */
+    ERR_ASSET_ID_NULL("01109"),
+    /**
+     * 资产时间正在处理中
+     */
+    ERR_ASSET_TASK_PROCESSING("01110"),
+    /**
+     * 订单为空
+     */
+    ERR_ORDER_NULL("01111"),
+    /**
+     * 订单卡片oItem为空
+     */
+    ERR_ORDER_O_ITEM_NULL("01112"),
+    /**
+     * 订单卡片oItem内objItem为空
+     */
+    ERR_ORDER_O_ITEM_OBJ_ITEM_NULL("01113"),
+    /**
+     * 资产内chkin00s为空
+     */
+    ERR_ASSET_CHK_IN_00_S_NULL("01114"),
+    /**
+     * 订单卡片oStock为空
+     */
+    ERR_ORDER_O_STOCK_NULL("01115"),
+    /**
+     * 订单卡片oStock内objData为空
+     */
+    ERR_ORDER_O_STOCK_OBJ_DATA_NULL("01116"),
+    /**
+     * 未知异常
+     */
+    ERR_UNKNOWN("01117"),
     ;
 
 

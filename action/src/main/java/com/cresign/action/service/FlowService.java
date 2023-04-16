@@ -17,6 +17,9 @@ public interface FlowService {
      */
     ApiResponse getDgResult(String id_OParent, String id_U, String id_C, Long teStart);
 
+    ApiResponse getDgSingle(String id_OParent, Integer index, String id_U, String id_C, Long teStart);
+
+    ApiResponse dgTaskOrder(String id_O);
 
     ApiResponse prodPart(String id_P);
 
@@ -28,7 +31,7 @@ public interface FlowService {
          * @ver 1.0.0
          * @date 2020/8/6 9:03
          */
-    ApiResponse dgCheck(String id_P, String id_C);
+    ApiResponse dgCheck(String id_P, String id_C); // 1 month, all lSProd - grp, id_P[123, 222,3332] SE - objVar - log, excel
 
     /**
      * 根据请求参数，获取更新后的订单oitem

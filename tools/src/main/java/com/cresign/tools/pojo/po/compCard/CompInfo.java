@@ -54,4 +54,5 @@ public class CompInfo {
 
     private String tmk;
 
+    private String id_CM;
 }

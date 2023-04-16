@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * @author tangzejin
@@ -175,6 +174,22 @@ public class RetResult {
 
     }
 
+
+    public ApiResponse error(String code, Object message){
+
+        if (ObjectUtils.isNotEmpty(message)) {
+//            System.out.println("code:"+code);
+//            System.out.println("message:"+message);
+////            JSONObject re = JSONObject.parseObject(redisTemplate0.opsForValue().get(RED_KEY+"e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb"));
+////            System.out.println(JSON.toJSONString(re));
+            return new ApiResponse("500", JSONObject.toJSONString(encodeAesRsa(message
+            )), localMessage.getLocaleMessage(code, "", null));
+        } else {
+            return new ApiResponse("500", "", localMessage.getLocaleMessage(code, "", null));
+        }
+    }
+
+
     public ApiResponse ok(String code, Object message){
 
         if (ObjectUtils.isNotEmpty(message)) {
@@ -294,16 +309,16 @@ public class RetResult {
      * @param length 表示生成字符串的长度
      * @return 字符串
      */
-    private static String getRandomString(int length) {
-        String base = "abcdefghijklmnopqrstuvwxyz0123456789";
-        Random random = new Random();
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < length; i++) {
-            int number = random.nextInt(base.length());
-            sb.append(base.charAt(number));
-        }
-        return sb.toString();
-    }
+//    private static String getRandomString(int length) {
+//        String base = "abcdefghijklmnopqrstuvwxyz0123456789";
+//        Random random = new Random();
+//        StringBuffer sb = new StringBuffer();
+//        for (int i = 0; i < length; i++) {
+//            int number = random.nextInt(base.length());
+//            sb.append(base.charAt(number));
+//        }
+//        return sb.toString();
+//    }
 
     // 以后可能会用到
 //    /**

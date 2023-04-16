@@ -2,6 +2,7 @@ package com.cresign.tools.pojo.po;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.DoubleUtils;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.orderCard.OrderAction;
 import com.cresign.tools.pojo.po.orderCard.OrderOItem;
@@ -11,8 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-//import java.io.Serializable;
-//import java.util.List;
+
 
 @Data
 @Document(collection = "LogFlow")
@@ -96,34 +96,14 @@ public class LogFlow {
         private static final LogFlow instance = new LogFlow();
     }
 
-
-//    public void setActionData(Integer bisactivate, Integer bcdStatus, JSONArray id_Us, Double priority,String id_P,
-//                              String id_OP, Integer ind_OP, String refOP, Integer bmdpt, JSONObject wrdNP,JSONObject wrdN) {
-//        JSONObject data = new JSONObject();
-//        data.put("bisactivate",bisactivate);
-//        data.put("bcdStatus",bcdStatus);
-//        data.put("bmdpt", bmdpt);
-//        data.put("id_O", id_OP);
-//        data.put("index",ind_OP);
-//        data.put("id_OP", ind_OP);
-//        data.put("refOP", refOP);
-//        data.put("id_P",id_P);
-//        data.put("priority",priority);
-//        data.put("ex_wrdNP",wrdNP);
-//        data.put("ex_wrdN",wrdN);
-//
-//
-//        this.data = data;
-//    }
-
     public void setLogData_action (OrderAction orderAction, OrderOItem orderOItem) {
         JSONObject data = new JSONObject();
         data.put("bisactivate",orderAction.getBisactivate());
         data.put("bcdStatus",orderAction.getBcdStatus());
-        data.put("bmdpt", orderOItem.getBmdpt());
+        data.put("bmdpt", orderAction.getBmdpt());
         data.put("id_P", orderOItem.getId_P());
-        data.put("id_O", orderAction.getId_O());
-        data.put("id_OP", orderAction.getId_OP());
+        data.put("id_O", orderOItem.getId_O());
+        data.put("id_OP", orderOItem.getId_OP());
         data.put("refOP", orderAction.getRefOP());
         data.put("index",orderAction.getIndex());
         data.put("priority",orderOItem.getPriority());
@@ -131,7 +111,7 @@ public class LogFlow {
         data.put("ex_wrdN",orderAction.getWrdN());
 
 
-        this.id_OP = orderAction.getId_OP();
+        this.id_OP = orderOItem.getId_OP();
         this.setLogType("action");
 
         this.data = data;
@@ -145,14 +125,45 @@ public class LogFlow {
 
         this.data = data;
     }
-    public void setLogData_assetflow (Double qtynow, Double price, String id_A) {
+
+    public void setLogData_duraflow (Long taStart, Long taFin, String type) {
+        JSONObject data = new JSONObject();
+        data.put("taStart", taStart);
+        data.put("taFin",taFin);
+        data.put("type", type);
+        this.data = data;
+        this.setLogType("duraflow");
+
+    }
+
+    public void setLogData_assetflow (Double qtynow, Double price, String id_A, String grpA) {
+        JSONObject data = new JSONObject();
+        data.put("wn2qtynow",qtynow);
+        data.put("wn4price", price);
+        data.put("wn4value", DoubleUtils.multiply(qtynow, price));
+        data.put("id_A", id_A);
+        data.put("grpA", grpA);
+
+        this.setLogType("assetflow");
+        this.data = data;
+    }
+
+    public void setLogData_cusmsg (Double qtynow, Double price, String id_A, String grpA) {
+        JSONObject data = new JSONObject();
+
+
+        this.setLogType("cusmsg");
+        this.data = data;
+    }
+    public void setLogData_saleflow (Double qtynow, Double price, String id_A, String grpA) {
         JSONObject data = new JSONObject();
         data.put("wn2qtynow",qtynow);
         data.put("wn4price", price);
 //        data.put("bcdStatus",bcdStatus);
         data.put("id_A", id_A);
+        data.put("grpA", grpA);
 
-        this.setLogType("assetflow");
+        this.setLogType("saleflow");
         this.data = data;
     }
 
@@ -173,9 +184,9 @@ public class LogFlow {
      * 发送日志的用户id+grp
      * dep = 部门
      */
-    private String id_U;
-    private String dep;
-    private String grpU;
+    private String id_U; //tokData.getString("id_U")
+    private String dep; //tokData.getString("dep")
+    private String grpU; //tokData.getString("grpU")
 
     private String pic = "";
 
@@ -185,6 +196,7 @@ public class LogFlow {
      * 有可能为空
      */
     private String id_O;
+
     private String id_OP;
 
     private Integer index;

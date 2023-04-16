@@ -28,12 +28,12 @@ public class CoupaUtil {
     @Autowired
     private Qt qt;
 
-    public Init getInit(){
-        Query query = new Query(new Criteria("_id").is("cn_java"));
-        Field fields = query.fields();
-        fields.include("logInit");
-        return mongoTemplate.findOne(query, Init.class);
-    }
+//    public Init getInit(){
+//        Query query = new Query(new Criteria("_id").is("cn_java"));
+//        Field fields = query.fields();
+//        fields.include("logInit");
+//        return mongoTemplate.findOne(query, Init.class);
+//    }
 
     public void updateInitLog(JSONObject logInit){
         // 创建查询条件，并且添加查询条件
@@ -103,7 +103,7 @@ public class CoupaUtil {
 
         Query getAsset = new Query(new Criteria("info.id_C").is(id_C).and("info.ref").is(ref));
 
-//        String id_A = dbUtils.getId_A(id_C, ref);
+//        String id_A = qt.getId_A(id_C, ref);
 //        System.out.println(id_A+"......");
 //        Query getAsset = new Query(new Criteria("_id").is(id_A));
         getAsset.fields().include("_id");
@@ -265,7 +265,7 @@ public class CoupaUtil {
 //     */
 //    public String getAssetByGrp(String cId, String ref, String grp) {
 //
-//        String id_A = dbUtils.getId_A(cId, ref);
+//        String id_A = qt.getId_A(cId, ref);
 //        Query getAsset = new Query(new Criteria("_id").is(id_A));
 //        getAsset.fields().include("_id").include("flowControl");
 //        Asset one = mongoTemplate.findOne(getAsset, Asset.class);
@@ -287,7 +287,7 @@ public class CoupaUtil {
 //     * ##Updated: 2021/1/13 9:18
 //     */
 //    public JSONObject getAssetByKf(String cId,String oId) {
-//        String id_A = dbUtils.getId_A(cId, "a-auth");
+//        String id_A = qt.getId_A(cId, "a-auth");
 //        Query getAsset = new Query(new Criteria("_id").is(id_A));
 //        getAsset.fields().include("flowControl");
 //        Asset one = mongoTemplate.findOne(getAsset, Asset.class);
@@ -883,41 +883,5 @@ public class CoupaUtil {
         mongoTemplate.insert(order);
     }
 
-//    /**
-//     * 根据oId删除信息
-//     * @return void  返回结果: 结果
-//     * @author tang
-//     * @ver 1.0.0
-//     * ##Updated: 2020/8/6 14:56
-//     */
-//    //FIXED
-//    public void delOrder(String id) {
-//        // 创建查询，并且添加查询条件
-//        Query query = new Query(new Criteria("_id").is(id));
-//        // 根据查询删除信息
-//        mongoTemplate.remove(query,Order.class);
-//    }
-//    public void delProd(String id) {
-//        // 创建查询，并且添加查询条件
-//        Query query = new Query(new Criteria("_id").is(id));
-//        // 根据查询删除信息
-//        mongoTemplate.remove(query,Prod.class);
-//    }
-//    public void delAsset(String id) {
-//        // 创建查询，并且添加查询条件
-//        Query query = new Query(new Criteria("_id").is(id));
-//        // 根据查询删除信息
-//        mongoTemplate.remove(query,Asset.class);
-//        DeleteResult result = mongoTemplate.remove(query,Asset.class);
-////        if (result.getDeletedCount() == 0) {
-////            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ASSET_NOT_FOUND, "");
-////        }
-//    }
-//    public void delComp(String id) {
-//        // 创建查询，并且添加查询条件
-//        Query query = new Query(new Criteria("_id").is(id));
-//        // 根据查询删除信息
-//        mongoTemplate.remove(query,Comp.class);
-//    }
 
 }

@@ -118,7 +118,7 @@ public interface ModuleService {
      * @version 1.0.0
      * @date 2022/8/19
      */
-    ApiResponse modSetControl(String id_C,JSONObject objModQ);
+    ApiResponse modSetControl(String authComp, String id_C,JSONObject objModQ);
 
     /**
      * 根据id_C获取模块信息
@@ -171,8 +171,6 @@ public interface ModuleService {
 
     /**
      * 新建公司并添加默认模块
-     * @param uid   用户id
-     * @param reqJson   公司基本资料
      * @author Jevon
      * @ver 1.0
      * @updated 2020/08/05 08:32:53

@@ -16,8 +16,8 @@
         <!-- 日志路径前缀 -->
         <!-- 测试环境 -->
         <property name="logPath">/home/jar/logs</property>
+<!--        <property name="logPath">/Users/kevin/Desktop/</property>-->
 
-        <!--<property name="logPath">logs</property> /home/jar/logs  -->
     </Properties>
 
     <!--Appenders:定义日志输出目的地，内容和格式等 -->
@@ -115,7 +115,7 @@
         </AsyncRoot>
         <!-- additivity=true：接着log上次位置继续打印，false：直接清空log重新打印       -->
         <!-- 自定义 - 只开启本项目的debug级别日志 -->
-        <AsyncLogger level="debug" name="com.cresign.login" additivity="false" includeLocation="true">
+        <AsyncLogger level="debug" name="com.cresign.action" additivity="false" includeLocation="true">
             <appender-ref ref="FILE-INFO"/>
             <appender-ref ref="STDOUT"/>
             <!-- 4.添加自定义级别 -->

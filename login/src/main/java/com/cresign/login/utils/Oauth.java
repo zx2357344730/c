@@ -62,11 +62,11 @@ public class Oauth {
             } else {
                 for (String refKey : modAuth.keySet()) {
                     String tfin = modAuth.getJSONObject(refKey).getString("tfin");
-                    String tnow = dt.getDateNow(DateEnum.DATE_ONLY.getDate());
+                    String tnow = dt.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
                     if (tfin.equals(-1) || tfin.equals("-1"))
                     {
 //                        modArray.add(refKey);
-                        tfin = "2099/12/31";
+                        tfin = "2099/12/31 23:59:59";
                     }
                     if (dt.differentDays(tnow, tfin) > 0) {
                         modArray.add(refKey);

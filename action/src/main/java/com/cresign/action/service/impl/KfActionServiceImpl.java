@@ -391,7 +391,7 @@
 //    @Override
 //    public ApiResponse getScoreUser(String id_U,String id_C,String id_O,String uuId,Integer score) {
 //
-//        String assetId = dbUtils.getId_A(id_C, "a-auth");
+//        String assetId = qt.getId_A(id_C, "a-auth");
 //
 //        Asset one = coupaUtil.getAssetById(assetId, Collections.singletonList("flowControl"));
 //        if (null == one) {

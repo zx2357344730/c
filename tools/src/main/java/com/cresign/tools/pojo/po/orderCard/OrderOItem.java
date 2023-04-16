@@ -2,6 +2,7 @@ package com.cresign.tools.pojo.po.orderCard;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.uuid.UUID19;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -24,35 +25,36 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class OrderOItem {
 
 
-    public OrderOItem(String id_P, String id_C, String id_CP, String id_CB, JSONObject wrdN,
-                      JSONObject wrddesc, JSONObject wrdprep, String grp, String grpB, String ref,
-                      String refB, String pic, Integer lCR, Integer lUT, Double wn2qtyneed,
-                      Double wn4price, Integer wn0prior) {
-
-        JSONObject wrdEmpty = new JSONObject();
-        wrdEmpty.put("cn","");
-
-        this.id_P = id_P;
-        this.id_C = id_C;
-        this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
-        this.id_CB = id_CB;
-        this.wrdN = wrdN  == null? (JSONObject) wrdEmpty.clone(): wrdN;
-        this.wrddesc = wrddesc  == null? (JSONObject) wrdEmpty.clone(): wrddesc;
-        this.wrdprep = wrdprep == null? (JSONObject) wrdEmpty.clone(): wrdprep;
-        this.grp = grp == null? "1000": grp;
-        this.grpB = grpB == null? "1000": grpB;
-        this.ref = ref == null? "": ref;
-        this.refB = refB == null? "": refB;
-        this.pic = pic  == null? "": pic;
-        this.lUT = lUT  == null? 0: lUT;
-        this.lCR = lCR  == null? 0: lCR;
-        this.wn2qtyneed = wn2qtyneed == null? 1: wn2qtyneed;
-        this.wn4price = wn4price == null? 0: wn4price;
-        this.wn0prior = wn0prior;
-    }
+//    public OrderOItem(String id_P, String id_C, String id_CP, String id_CB, JSONObject wrdN,
+//                      JSONObject wrddesc, JSONObject wrdprep, String grp, String grpB, String ref,
+//                      String refB, String pic, Integer lCR, Integer lUT, Double wn2qtyneed,
+//                      Double wn4price, Integer wn0prior) {
+//
+//        JSONObject wrdEmpty = new JSONObject();
+//        wrdEmpty.put("cn","");
+//
+//        this.id_P = id_P;
+//        this.id_C = id_C;
+//        this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
+//        this.id_CB = id_CB;
+//        this.rKey = UUID19.uuid8();
+//        this.wrdN = wrdN  == null? (JSONObject) wrdEmpty.clone(): wrdN;
+//        this.wrddesc = wrddesc  == null? (JSONObject) wrdEmpty.clone(): wrddesc;
+//        this.wrdprep = wrdprep == null? (JSONObject) wrdEmpty.clone(): wrdprep;
+//        this.grp = grp == null? "1000": grp;
+//        this.grpB = grpB == null? "1000": grpB;
+//        this.ref = ref == null? "": ref;
+//        this.refB = refB == null? "": refB;
+//        this.pic = pic  == null? "": pic;
+//        this.lUT = lUT  == null? 0: lUT;
+//        this.lCR = lCR  == null? 0: lCR;
+//        this.wn2qtyneed = wn2qtyneed == null? 1: wn2qtyneed;
+//        this.wn4price = wn4price == null? 0: wn4price;
+//        this.wn0prior = wn0prior;
+//    } // need id_O, index, wrdNP, id_OP
 
     public OrderOItem(String id_P, String id_OP, String id_CP, String id_C, String id_CB, String id_O, Integer index,
-                      Integer bmdpt, String ref, String refB, String grp, String grpB, Integer wn0prior,
+                       String ref, String refB, String grp, String grpB, Integer wn0prior,
                        String pic, Integer lUT, Integer lCR, Double wn2qtyneed, Double wn4price,
                        JSONObject wrdNP, JSONObject wrdN, JSONObject wrddesc, JSONObject wrdprep) {
 
@@ -66,15 +68,14 @@ public class OrderOItem {
         this.id_CB = id_CB;
         this.id_O = id_O;
         this.index = index;
-
-        this.bmdpt = bmdpt;
+        this.rKey = UUID19.uuid8();
         this.ref = ref == null? "": ref;
         this.refB = refB == null? "": refB;
         this.grp = grp == null? "1000": grp;
         this.grpB = grpB == null? "1000": grpB;
         this.wn0prior = wn0prior;
-        //this.subTask = new JSONArray();
-
+        this.seq = index == 0 ? "0" : "2" ;
+        this.priority = 1;
         this.wrdNP = wrdNP == null? (JSONObject) wrdEmpty.clone(): wrdNP;
         this.wrdN = wrdN  == null? (JSONObject) wrdEmpty.clone(): wrdN;
         this.pic = pic  == null? "": pic;
@@ -95,7 +96,9 @@ public class OrderOItem {
         return OrderOItem.Hod.instance;
     }
 
-//    private String id;
+    public void genRKey() {
+        this.rKey =  UUID19.uuid8();
+    }
 
     /**
      * 产品id
@@ -117,6 +120,7 @@ public class OrderOItem {
     private String id_CB;
     private String id_O;
     private String id_C;
+    private String rKey;
 
     /**
      * 零件编号
@@ -134,6 +138,9 @@ public class OrderOItem {
      * 零件图片
      */
     private String pic  = "";
+
+    private Integer objSub  = 0;
+
 
     /**
      * 零件用量单位，例：个，只，件
@@ -176,7 +183,7 @@ public class OrderOItem {
      * 是否合并: 0 : 未合并，1 : 合并，2 : 被合并
      */
     private Integer merge = 0;
-    private Integer bmdpt = 0;
+//    private Integer bmdpt = 0;
 
     private Integer index = 0;
 

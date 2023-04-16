@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
  * @ver 1.0
  */
 @RestController
-@RequestMapping("/account")
+@RequestMapping("account")
 public class AccountLoginController {
 
     @Autowired

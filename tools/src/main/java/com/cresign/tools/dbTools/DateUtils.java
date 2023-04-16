@@ -33,6 +33,23 @@ public class DateUtils {
         return LocalDateTime.now().format(formatter);
     }
 
+    public static long getTimeStamp() {
+
+        try {
+            String time = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            Date date = sdf.parse(time);
+
+            return date.getTime();
+
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
+
+
     /**
      * 获取两个日期相差的月数
      */

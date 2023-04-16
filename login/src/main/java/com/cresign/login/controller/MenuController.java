@@ -116,8 +116,8 @@ public class MenuController {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
         return menuService.updateMenuData(
-                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("id_C"),
+                tokData.getString("id_U"),
+                tokData.getString("id_C"),
                 reqJson.getString("grpU"),
                 reqJson.getJSONArray("data").toJavaList(MainMenuBO.class)
 

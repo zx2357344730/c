@@ -22,7 +22,7 @@
 // * @ver 1.0
 // */
 //@RestController
-//@RequestMapping("/cusmsg")
+//@RequestMapping("cusmsg")
 //public class KfController {
 //    /**
 //     * 自动注入HttpServletRequest类

@@ -8,88 +8,74 @@ import com.cresign.purchase.common.ChatEnum;
 import com.cresign.purchase.service.ActionService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.dbTools.CoupaUtil;
+import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.dbTools.Qt;
-import com.cresign.tools.dbTools.Ut;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.Order;
+import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.pojo.po.orderCard.OrderAction;
 import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.pojo.po.orderCard.OrderOItem;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
 @Service
 @Slf4j
 public class ActionServiceImpl implements ActionService {
 
-//    public static final String PI_GPIO = "pi:gp_";
-//    public static final String PI = "pi:p_";
+    /***
+     * Final an order
+     * Final dgOrder
+     * Create subTasks
+     * dgTask order, push TaskOrder
+     * dg 1 oItem, push 1 oItem
+     * add oItem to internal Order
+     * change Dep
+     * addOItem will need to fix action
+     *dgTask need to fix action
+     * make UI for pick dep / id_FC
+     */
+
+
+
 
     /**
      * getActionData **** 这个很重要，拿了action / oItem 的内容都要转换
      * changeActionStatus -> updateNext -> updateParent
-     * 这几个没有改完 dgActivate / switchTask2Prod / genFlowControlOrder
-     * 这些是OK 的
      * createQuest / createTask / dgConfirmOrder
      * getFlowList / changeDepAndFlow / dgActivateAll
      */
-        
-
 
         @Autowired
         private RetResult retResult;
 
         @Autowired
-        private CoupaUtil coupaUtil;
-
-        @Autowired
         private WSClient ws;
-
-        @Autowired
-        private Ut ut;
 
         @Autowired
         private Qt qt;
 
         @Autowired
-        private DbUtils dbUtils;
-
-        @Autowired
-        private RestHighLevelClient restHighLevelClient;
-
-//    /**
-//     * 注入redis数据库下标1模板
-//     */
-//    @Resource
-//    private StringRedisTemplate redisTemplate0;
-//    public static final String RPI_URL_PREFIX = "https://www.cresign.cn/qrCodeTest?qrType=rpi&t=";
+        private DbUtils dbu;
 
     /**
      * 根据oId修改grpBGroup字段
-     * @param id_O	   订单编号
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
      * @author tang
      * @date 2021/9/10 17:32
@@ -99,27 +85,25 @@ public class ActionServiceImpl implements ActionService {
             ,String id_C,String id_U,String grpU, JSONObject wrdNU) {
 
 //        //1. Save the new
-//        JSONObject mapKey = new JSONObject();
-//        mapKey.put("action.grpBGroup."+grpB,grpBNew);
-//        coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
         qt.setMDContent(id_O, qt.setJson("action.grpBGroup."+grpB, grpBNew), Order.class);
         //2. get Order's oItem+action
-//        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info","oItem", "action"));
         Order order = qt.getMDContent(id_O,qt.strList("action", "oItem","info"), Order.class);
         JSONArray objItem = order.getOItem().getJSONArray("objItem");
         JSONArray objAction = order.getAction().getJSONArray("objAction");
         //3. Loop check grpB==oItem(i).grpB and objAction(i).isPUshed == 1
         for (int i = 0; i < objItem.size(); i++) {
+            qt.errPrint("check", null, objAction.getJSONObject(i).getInteger("bisPush"), objAction.getJSONObject(i).getInteger("bcdStatus"),objItem.getJSONObject(i).getString("grpB"));
             if (grpB.equals(objItem.getJSONObject(i).getString("grpB")) &&
             objAction.getJSONObject(i).getInteger("bisPush") == 1 &&
             objAction.getJSONObject(i).getInteger("bcdStatus") != 2){
+                System.out.println("i am here in "+ grpB+ " "+ i);
 
-                OrderAction oAction = ut.jsonTo(objAction.getJSONObject(i),OrderAction.class);
-                OrderOItem oItem = ut.jsonTo(objItem.getJSONObject(i), OrderOItem.class);
+                OrderAction oAction = qt.jsonTo(objAction.getJSONObject(i),OrderAction.class);
+                OrderOItem oItem = qt.jsonTo(objItem.getJSONObject(i), OrderOItem.class);
 
                 //4. Send Log to stop old Flow
                 LogFlow logStop = new LogFlow("action", // grpBOld.getString("logType"),
-                        grpBOld.getString("id_FC"),"","stateChg",
+                        grpBOld.getString("id_Flow"),"","stateChg",
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),grpBOld.getString("grpB"), "",
                         objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
@@ -129,7 +113,7 @@ public class ActionServiceImpl implements ActionService {
                 logStop.getData().put("bcdStatus", 9);
 
                 LogFlow logStart = new LogFlow("action", //grpBOld.getString("logType"),
-                        grpBNew.getString("id_FC"),"","stateChg",
+                        grpBNew.getString("id_Flow"),"","stateChg",
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),grpBNew.getString("grpB"), "",
                         objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
@@ -146,16 +130,15 @@ public class ActionServiceImpl implements ActionService {
 
     }
 
+
     @Override
     public ApiResponse changeDepAndFlowSL(String id_O, String grpB, JSONObject grpBOld,JSONObject grpBNew
             ,String id_C,String id_U,String grpU, JSONObject wrdNU) {
 
         //1. Save the new
-        JSONObject mapKey = new JSONObject();
-        mapKey.put("action.grpGroup."+grpB,grpBNew);
-        coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+        qt.setMDContent(id_O,qt.setJson("action.grpGroup."+grpB,grpBNew), Order.class);
         //2. get Order's oItem+action
-        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info","oItem", "action"));
+        Order order = qt.getMDContent(id_O, Arrays.asList("info","oItem", "action"), Order.class);
         JSONArray objItem = order.getOItem().getJSONArray("objItem");
         JSONArray objAction = order.getAction().getJSONArray("objAction");
         //3. Loop check grpB==oItem(i).grpB and objAction(i).isPUshed == 1
@@ -164,11 +147,11 @@ public class ActionServiceImpl implements ActionService {
                     objAction.getJSONObject(i).getInteger("bisPush") == 1 &&
                     objAction.getJSONObject(i).getInteger("bcdStatus") != 2){
 
-                OrderAction oAction = ut.jsonTo(objAction.getJSONObject(i),OrderAction.class);
-                OrderOItem oItem = ut.jsonTo(objItem.getJSONObject(i), OrderOItem.class);
+                OrderAction oAction = qt.jsonTo(objAction.getJSONObject(i),OrderAction.class);
+                OrderOItem oItem = qt.jsonTo(objItem.getJSONObject(i), OrderOItem.class);
 
                 //4. Send Log to stop old Flow
-                LogFlow logStop = new LogFlow("action","",grpBOld.getString("id_FC"),"stateChg",
+                LogFlow logStop = new LogFlow("action","",grpBOld.getString("id_Flow"),"stateChg",
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),"", grpBOld.getString("grpB"),
                         objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
@@ -177,7 +160,7 @@ public class ActionServiceImpl implements ActionService {
                 logStop.setLogData_action(oAction, oItem);
                 logStop.getData().put("bcdStatus", 9);
 
-                LogFlow logStart = new LogFlow("action","",grpBNew.getString("id_FC"),"stateChg",
+                LogFlow logStart = new LogFlow("action","",grpBNew.getString("id_Flow"),"stateChg",
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),"", grpBNew.getString("grpB"),
                         objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
@@ -196,16 +179,17 @@ public class ActionServiceImpl implements ActionService {
     }
 
     @Override
-    public ApiResponse rePush(String id_O, Integer index, JSONObject tokData) throws IOException {
+    public ApiResponse rePush(String id_O, Integer index, JSONObject tokData) {
 
         JSONObject actData = this.getActionData(id_O, index);
 
-        OrderOItem orderOItem = ut.jsonTo(actData.get("orderOItem"), OrderOItem.class);
-        OrderAction orderAction = ut.jsonTo(actData.get("orderAction"), OrderAction.class);
+        OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+        OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
 
         String taskName = orderOItem.getWrdN().getString("cn");
+        Integer bcdStatus = orderAction.getBcdStatus();
 
-        if (orderAction.getBcdStatus() != 100 && orderAction.getBcdStatus() != 2 && orderAction.getBcdStatus() != 9)
+        if (bcdStatus != 100 && bcdStatus != 2 && bcdStatus != 9)
         {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "这任务没有关闭");
         }
@@ -213,38 +197,49 @@ public class ActionServiceImpl implements ActionService {
         // 备注
         String message = taskName + "[已恢复执行]";
         JSONObject res = new JSONObject();
-        JSONObject mapKey = new JSONObject();
         JSONObject listCol = new JSONObject();
 
-        mapKey.put("info.lST", 8);
         listCol.put("lST", 8);
         // 设置产品状态
-        orderAction.setBcdStatus(3);
+//        orderAction.setBcdStatus(bcdStatus);
+        orderAction.setBcdStatus(0);
 
         // Start making log with data
         LogFlow logL = new LogFlow("action",actData.getString("id_FC"),
-                actData.getString("id_FS"),"stateChg", tokData.getString("id_U"),tokData.getString("grpU"),orderOItem.getId_P(),orderOItem.getGrpB(),orderOItem.getGrp(),
+                actData.getString("id_FS"),"stateChg", tokData.getString("id_U"),tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(),orderOItem.getGrp(),
                 orderAction.getId_OP(), id_O,index,actData.getJSONObject("info").getString("id_CB"),orderOItem.getId_C(), "",tokData.getString("dep"),message,3,orderOItem.getWrdN(),tokData.getJSONObject("wrdNU"));
 
         logL.setLogData_action(orderAction,orderOItem);
+        logL.getData().put("bcdStatus", -1 * bcdStatus);
         logL.getData().put("wn0prog", 0);
 
-        try {
             ws.sendWS(logL);
 
-            mapKey.put("action.objAction."+index,orderAction);
-            coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+            qt.setMDContent(id_O, qt.setJson("info.lST", 8, "action.objAction."+index,orderAction), Order.class);
 
             if(null != listCol.getInteger("lST")) {
-                QueryBuilder queryBuilder = QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery("id_O", id_O));
-                dbUtils.updateListCol(queryBuilder, "lsborder", listCol);
+
+                qt.setES("lSBOrder", qt.setESFilt("id_O", id_O), listCol);
             }
             return retResult.ok(CodeEnum.OK.getCode(), res);
+    }
 
-        } catch (RuntimeException e) {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始,"+e);
+    private void setFavRecent(String id_C, String id_U, String id_O, Integer index, String id_FC, String id_FS, JSONObject wrdN, String pic)
+    {
+        JSONObject jsonFav = qt.setJson("id_C", id_C, "id_O", id_O, "index", index, "id", id_FC, "id_FS", id_FS,
+                "wrdN", wrdN, "pic", pic, "type", 0);
+        qt.pushMDContent(id_U, "fav.objFav", jsonFav, User.class);
+        qt.pushMDContent(id_O, "action.objAction." + index + ".arrUA", id_U, Order.class);
+    }
+
+    private void removeFavRecent(JSONArray idRemove, String id_O, Integer index, String id_FC, String id_FS, JSONArray id_UA)
+    {
+        JSONObject jsonFav = qt.setJson("id_O", id_O, "index", index, "id", id_FC, "id_FS", id_FS);
+        for (int i = 0; i < idRemove.size(); i++) {
+            qt.pullMDContent(idRemove.getString(i), "fav.objFav", jsonFav, User.class);
+            id_UA.remove(idRemove.getString(i));
         }
+        qt.setMDContent(id_O, qt.setJson("action.objAction." + index + ".arrUA", id_UA), Order.class);
     }
     /**
          * 操作开始，暂停，恢复功能 - 注释完成
@@ -255,227 +250,300 @@ public class ActionServiceImpl implements ActionService {
          */
 
 
-            @Override
-            @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
-            public ApiResponse changeActionStatus(String logType, Integer status, String msg,
-                                                  Integer index, String id_O, Boolean isLink,
-                                                  String id_FC, String id_FS, JSONObject tokData) throws IOException {
+        @Override
+        @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
+        public ApiResponse changeActionStatus(String logType, Integer status, String msg,
+                                              Integer index, String id_O, Boolean isLink,
+                                              String id_FC, String id_FS, JSONObject tokData) {
 
                 JSONObject actData = this.getActionData(id_O, index);
 
-                OrderOItem orderOItem = ut.jsonTo(actData.get("orderOItem"), OrderOItem.class);
-                OrderAction orderAction = ut.jsonTo(actData.get("orderAction"),OrderAction.class);
+                OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+                OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
 
                 String taskName = orderOItem.getWrdN().getString("cn");
 
                 // 根据下标获取递归信息
 
-            System.out.println("bcdStatus"+orderOItem.getWrdN());
+                // 判断新的状态和旧状态不一样
+//                if (orderAction.getBcdStatus().equals(status)) {
+//                    // 抛出操作成功异常
+////                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
+//                    return retResult.error(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
+//
+//                }
 
-            // 判断新的状态和旧状态不一样
-            if (orderAction.getBcdStatus().equals(status)){
-                // 抛出操作成功异常
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
-            }
-
-            // 备注
-            String message = "";
-            JSONObject res = new JSONObject();
-            JSONObject mapKey = new JSONObject();
-            JSONObject listCol = new JSONObject();
+                // 备注
+                String message;
+                JSONObject res = new JSONObject();
+                JSONObject mapKey = new JSONObject();
+                JSONObject listCol = new JSONObject();
+                boolean isStateChg = false;
+                String duraType = "none";
 
                 /***
-                 * logStatus = 2@推送 3@开始 1@停 -1@再开 -6@取消 5@完成
+                 * logStatus(wn0prog) = 2@推送 3@开始 1@停 -1@再开 -6@取消 5@完成
+                 * bcdStatus = 0, 1 start, 2 end, 3 resume, 8 stop, 9 cancel
+                 * 0 about, 1 process, 9 stop, -8(3) resume/process, 3 finished, 10 cancel, 8 process(with next started)
+                 * rePush = > -2,
+                 *
+                 * 1. send logDura, 2. favRecent+, 3.
                  */
-            Integer logStatus = 2;
-            // 判断属于什么操作
-            switch (status){
-                case 1:
-                    // Start an OItem, DG just start, Task just start, Quest start + update Prob
-                    if (orderAction.getBcdStatus() != 0)
-                    {
-                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
-                    }
-                    // 设置备注信息
-                    // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
-                    message = taskName + "[开始运行]"+ msg;
-                    logStatus = 3;
-                    JSONArray id_Us = orderAction.getId_Us() == null? new JSONArray() : orderAction.getId_Us();
+                // if state => 1 ^id_Us+ / ^state => 1 / ^logState 1 / ^ logdura+start / ^recent+ / ^lST = 8
+                // if state => 5 ^(add me) id_Us+ / ^state no chg / ^logState no / ^logdura+start / ^recent+
+                // if state => 6 ^(rem me) id+Us- / ^state no chg / ^logState no / ^logdura+end / ^recent keep
 
-                    //Adding myself to the id_Us of action to indicate
+                // 8 pause (^if id_Us [1]) id_Us- / ^stateChg / ^logState / ^logdura+end / ^recent keep
+                // 3/-8 resume (^id_Us+) / id_Us = []? ^stateChg / ^logState / ^logdura+start /
+
+                // if state => 2 ^statechg/^logState /^id_Us = [] / ^logdura all user end /  ^FavRecent remove all / ^lST = 13
+
+                // 7 start next => ^isactivated = 4 / push next / ^nothing else changed
+                // 9 cancel => ^state = 9 / ^id_Us = [] ^ all user end / ^favRecent remove all
+
+                // ???repush state = 0 log sent as 0, waiting for user to start?
+
+            // activate = 4 means Skip = already pushed Next
+
+
+            JSONArray id_Us = orderAction.getId_Us() == null ? new JSONArray() : orderAction.getId_Us();
+
+                // 判断属于什么操作
+                switch (status) {
+                    case 1:
+                        // Start an OItem, DG just start, Task just start, Quest start + update Prob
+                        if (orderAction.getBcdStatus() != 0) {
+                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经开始过了");
+                        }
+                        // 设置备注信息
+                        // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
+                        message = "[开始运行]" + msg;
+
+                        //Adding myself to the id_Us of action to indicate
                         id_Us.add(tokData.getString("id_U"));
                         orderAction.setId_Us(id_Us);
-                    res.put("isJoin", 1);
-                    res.put("id_Us", orderAction.getId_Us());
-                    if (actData.getJSONObject("info").getInteger("lST") == 7)
-                    {
-                        mapKey.put("info.lST", 8);
-                        listCol.put("lST", 8);
-                    }
-                    break;
-                case 2:                    // 2 = finish, set qtyfin setNextDesc
-                    if (orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3
-                            && orderAction.getBcdStatus() != 7)
-                    {
-                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
-                    }
-                    if (orderAction.getSumChild() > 0 && orderAction.getBmdpt() == 2 && isLink)
-                    {
-                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
-                    }
-                    logStatus = 5;
+                        res.put("isJoin", 1);
+                        res.put("id_Us", orderAction.getId_Us());
+                        if (actData.getJSONObject("info").getInteger("lST") == 7) {
+                            mapKey.put("info.lST", 8);
+                            listCol.put("lST", 8);
+                        }
+                        orderAction.setBcdStatus(status);
+                        isStateChg = true;
+                        duraType = "start";
 
-                    Double progress = Double.valueOf((actData.getInteger("progress") + 1) / actData.getJSONArray("actionArray").size() * 100);
-                    //update actions' total progress
-                    if (progress == 100.0)
-                    {
-                        mapKey.put("info.lST", 13);
-                        listCol.put("lST", 13);
+                        break;
+                    case 2:                    // 2 = finish, set qtyfin setNextDesc
+//                        if (orderAction.getBcdStatus() != 2 && orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3 && orderAction.getBcdStatus() != -8 && orderAction.getBcdStatus() != 7) {
+//                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
+//                        }
+                        if (orderAction.getSumChild() > 0 && orderAction.getBmdpt() == 2 && isLink) {
+                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
+                        }
 
-                    }
-                    mapKey.put("action.wn2progress", progress );
+                        Double progress = Double.valueOf((actData.getInteger("progress") + 1) / actData.getJSONArray("actionArray").size() * 100);
+                        //update actions' total progress
+                        if (progress == 100.0) {
+                            mapKey.put("info.lST", 13);
+                            listCol.put("lST", 13);
+                        }
+                        mapKey.put("action.wn2progress", progress);
+                        orderAction.setBcdStatus(status);
 
-                    message = taskName + "[已完成]" + msg;
-                    break;
-                case 3: // resume OItem
-                    if (orderAction.getBcdStatus() != 8)
-                    {
-                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
-                    }
-                    message = taskName + "[已恢复执行]"  + msg;
-                    logStatus = -1;
+                        message = "[已完成]" + msg;
+                        isStateChg = true;
+                        duraType = "allEnd";
 
-                    break;
-                case 5:
-                    if (orderAction.getId_Us() == null) {
-                        orderAction.setId_Us(new JSONArray());
-                    }
-                    if ( !orderAction.getId_Us().contains(tokData.getString("id_U")))
-                    {
-                        orderAction.getId_Us().add(tokData.getString("id_U"));
-                    }
-                    message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功]"  + msg;
-//                    result = "[加入成功]"  + msg;
-                    status = orderAction.getBcdStatus();
-                    if (status == 0)
-                    {
-                        status = 1;
-                        logStatus = 3;
-                        message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功，开始执行]"  + msg;
-                    }
-                    res.put("isJoin", 1);
-                    res.put("id_Us", orderAction.getId_Us());
-                    break;
-                case 7:
-                    if ((orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3)
-                            || orderAction.getBisactivate() == 4)
-                    {
-                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能操作");
-                    }
-                    orderAction.setBisactivate(4);
-                    message = taskName + "[继续下一个]"+msg;
-                    break;
-                case 8: // pause
-                    if (orderAction.getBcdStatus() != 1
-                            && orderAction.getBcdStatus() != 3)
-                    {
-                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
-                    }                    // 设置备注信息
-                    message = taskName + "[已暂停]" + msg;
-                    logStatus = 1;
-                    break;
-                case 9: // cancel
-                    // pause but it's nothing special
-                    // 设置备注信息
-                    message = taskName + "[已取消]" + msg;
-                    logStatus = -6;
-                    break;
-                default:
-                    message = taskName + "[无法操作]";
-                    break;
-            }
+                        break;
+                    case 3:
+                    case -8: // resume OItem
+                        if (orderAction.getBcdStatus() != 8) {
+                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
+                        }
 
-            // 设置产品状态
-            orderAction.setBcdStatus(status);
-            String compId;
+                        message = "[已恢复执行]" + msg;
+                        orderAction.setBcdStatus(-8);
+                        res.put("isJoin", 1);
+                        res.put("id_Us", orderAction.getId_Us());
+                        isStateChg = true;
+                        duraType = "resume";
 
-            if (logType.endsWith("SL"))
-            {
-                compId = actData.getJSONObject("info").getString("id_CB");
-            } else
-            {
-                compId = tokData.getString("id_C");
-            }
+                        break;
+                    case 5: // 加入
+                        id_Us.add(tokData.getString("id_U"));
+                        orderAction.setId_Us(id_Us);
+                        message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功]" + msg;
+                        // set back status to original status
+                        status = orderAction.getBcdStatus();
 
-            // Start making log with data
-            LogFlow logL = new LogFlow("action",id_FC,
-                    id_FS,"stateChg", tokData.getString("id_U"),tokData.getString("grpU"),orderOItem.getId_P(),orderOItem.getGrpB(),orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O,index,compId,orderOItem.getId_C(), "",tokData.getString("dep"),message,3,orderOItem.getWrdN(),tokData.getJSONObject("wrdNU"));
+                        res.put("isJoin", 1);
+                        res.put("id_Us", orderAction.getId_Us());
+                        duraType = "start";
+                        break;
+                    case 6:
+                        id_Us.remove(tokData.getString("id_U"));
+                        orderAction.setId_Us(id_Us);
 
-//            LogFlow logL = dbUtils.getRecentLog(id_O, index, tokData);
-            logL.setLogData_action(orderAction,orderOItem);
-            logL.getData().put("wn0prog", logStatus);
+                        message = tokData.getJSONObject("wrdNU").getString("cn") + "[退出成功]" + msg;
+                        status = orderAction.getBcdStatus();
 
+                        res.put("isJoin", 0);
+                        res.put("id_Us", orderAction.getId_Us());
+                        duraType = "end";
+                        break;
+                    case 7:
+                        if ((orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != -8)
+                                || orderAction.getBisactivate() == 4) {
+                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能操作");
+                        }
+                        orderAction.setBisactivate(4);
+                        message = "[继续下一个]" + msg;
 
-            try {
-                ws.sendWS(logL);
+                        break;
+                    case 8: // pause
+                        if (orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3
+                                && orderAction.getBcdStatus() != -8) {
+                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能");
+                        }                    // 设置备注信息
+                        message = "[已暂停]" + msg;
+                        orderAction.setBcdStatus(status);
+                        isStateChg = true;
+                        duraType = "pause";
 
-                mapKey.put("action.objAction."+index,orderAction);
-//                coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
-                qt.setMDContent(id_O, mapKey, Order.class);
+//                    logStatus = 1;
+                        break;
+                    case 9: // cancel
 
-                if(null != listCol.getInteger("lST")) {
-//                    QueryBuilder queryBuilder = QueryBuilders.boolQuery()
-//                            .must(QueryBuilders.termQuery("id_O", id_O));
-//                    dbUtils.updateListCol(queryBuilder, "lsborder", listCol);
-                    qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
+                        // pause but it's nothing special
+                        if (orderAction.getBcdStatus() == 8) {
+                            // need to unpause then cancel
+                            LogFlow logL = new LogFlow("action", id_FC,
+                                    id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                                    orderAction.getId_OP(), id_O, index, tokData.getString("id_C"), orderOItem.getId_C(), "", tokData.getString("dep"), "[准备取消]", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+                            logL.setLogData_action(orderAction, orderOItem);
+                            logL.getData().put("bcdStatus", -8);
+                            ws.sendWS(logL);
+                        }
+                        // 设置备注信息
+                        orderAction.setBcdStatus(status);
+                        message = "[已取消]" + msg;
+                        isStateChg = true;
+                        duraType = "allEnd";
+                        break;
+                    default:
+                        message = taskName + "[无法操作]";
+                        break;
                 }
-            } catch (RuntimeException e) {
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始,"+e);
-            }
 
-            // if Quest, send log + update OItem of myself = task = DG = above
-            // get upPrnt data, and find the prob, set that status of Prob to status
+                // 设置产品状态
+                String compId;
 
-            if (orderAction.getBisactivate() == 7)
-            {
-                JSONObject upPrnt = orderAction.getUpPrnts().getJSONObject(0);
+                //BUG
 
+                if (logType.endsWith("SL")) {
+                    compId = actData.getJSONObject("info").getString("id_CB");
+                } else {
+                    compId = tokData.getString("id_C");
+                }
+
+                if (isStateChg) {
+                    // Start making log with data
+                    LogFlow logL = new LogFlow("action", id_FC,
+                            id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                            orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), message, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+
+                    logL.setLogData_action(orderAction, orderOItem);
+                    ws.sendWS(logL);
+                }
+
+                LogFlow logL = new LogFlow("duraflow", id_FC,
+                        id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                        orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+
+                if (duraType.equals("start") || duraType.equals("resume")) { //type start
+                    // Start making log with data
+                    logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, duraType);
+                    logL.setZcndesc("任务计时开始");
+                    ws.sendWS(logL);
+                    if (duraType.equals("start"))
+                    {
+                        this.setFavRecent(tokData.getString("id_C"), tokData.getString("id_U"), id_O, index, id_FC, id_FS,
+                                orderOItem.getWrdN(), orderOItem.getPic());
+                    }
+                } else if (duraType.equals("end") || duraType.equals("pause")) { //type end
+                    // End making log with data
+                    logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
+                    logL.setZcndesc("任务计时停止");
+                    ws.sendWS(logL);
+                    if (duraType.equals("end"))
+                    {
+                        this.removeFavRecent(qt.setArray(tokData.getString("id_U")),  id_O, index, id_FC, id_FS, orderAction.getArrUA());
+                    }
+                } else if (duraType.equals("allEnd")) { // type allEnd
+                    for (int i = 0; i < orderAction.getId_Us().size(); i++) {
+                        logL.setId_U(orderAction.getId_Us().getString(i));
+                        logL.setGrpU("1000");
+                        logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
+                        logL.setZcndesc("任务结束");
+
+                        ws.sendWS(logL);
+                    }
+                    this.removeFavRecent(orderAction.getId_Us(), id_O, index, id_FC, id_FS, orderAction.getArrUA());
+
+                    orderAction.setId_Us(new JSONArray());
+
+                }
                 try {
-                    // if any null exception, catch
-                    JSONObject taskOwner = this.getActionData(upPrnt.getString("id_O"),upPrnt.getInteger("index"));
-                    OrderAction objAction = JSONObject.parseObject(JSON.toJSONString(taskOwner.get("orderAction")),OrderAction.class);
+                    mapKey.put("action.objAction." + index, orderAction);
+                    qt.setMDContent(id_O, mapKey, Order.class);
 
-                    JSONObject probData = objAction.getProb().getJSONObject(upPrnt.getInteger("probIndex"));
-                    probData.put("bcdStatus", status);
-
-//                    JSONObject probKey = new JSONObject();
-//                    probKey.put("action.objAction."+upPrnt.getInteger("index"),objAction);
-//                    coupaUtil.updateOrderByListKeyVal(upPrnt.getString("id_O"),probKey);
-                    qt.setMDContent(upPrnt.getString("id_O"),
-                            qt.setJson("action.objAction."+upPrnt.getInteger("index"),objAction),
-                            Order.class);
+                    if (null != listCol.getInteger("lST")) {
+                        qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
+                    }
                 } catch (RuntimeException e) {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始,"+e);
+                    System.out.println("shit X");
+
+                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
                 }
-            } else if ((status == 2 && orderAction.getBisactivate() != 4) || status == 7) {
-                // activate = 4 means Skip = already pushed Next
 
-//                Boolean childrenAllDone =
-                this.updateParent(orderAction, tokData, logType);
-//                // 判断父产品不为空
-//                if (!childrenAllDone) {
-//                    this.updateNext(orderAction, id_C, id_U,grpU, dep, wrdNU, logType);
-//                }
-            }
+                // if Quest, send log + update OItem of myself = task = DG = above
+                // get upPrnt data, and find the prob, set that status of Prob to status
+
+                if (orderAction.getBisactivate() == 7)
+                {
+                    JSONObject upPrnt = orderAction.getUpPrnts().getJSONObject(0);
+
+                    try {
+                        // if any null exception, catch
+                        JSONObject taskOwner = this.getActionData(upPrnt.getString("id_O"), upPrnt.getInteger("index"));
+                        OrderAction objAction = JSONObject.parseObject(JSON.toJSONString(taskOwner.get("orderAction")), OrderAction.class);
+
+                        JSONObject probData = objAction.getProb().getJSONObject(upPrnt.getInteger("probIndex"));
+                        probData.put("bcdStatus", status);
+
+                        qt.setMDContent(upPrnt.getString("id_O"),
+                                qt.setJson("action.objAction." + upPrnt.getInteger("index"), objAction),
+                                Order.class);
+                    } catch (RuntimeException e) {
+                        System.out.println("shit A");
+                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
+                    }
+                } else if ((status == 2 && orderAction.getBisactivate() != 4) || status == 7) {
+                    // activate = 4 means Skip = already pushed Next
+                    if (orderAction.getUpPrnts().size() == 0 && orderAction.getId_P().equals(""))
+                        this.updateNext(orderAction, tokData);
+                    else
+                        this.updateParent(orderAction, tokData, logType);
+                }
 
 
-                // 抛出操作成功异常
+            // 抛出操作成功异常
             return retResult.ok(CodeEnum.OK.getCode(), res);
         }
 
-    private void updateNext(OrderAction orderAction, JSONObject tokData, String logType)
+    private void updateNext(OrderAction orderAction, JSONObject tokData)
     {
+
         for (Integer i = 0; i < orderAction.getPrtNext().size(); i++ )
         {
             // 获取下一个产品的id + index
@@ -483,7 +551,9 @@ public class ActionServiceImpl implements ActionService {
             Integer nextIndex = orderAction.getPrtNext().getJSONObject(i).getInteger("index");
 
                 JSONObject actData = this.getActionData(nextId, nextIndex);
-                if (null != actData) {
+            qt.errPrint("oAction", null, actData);
+
+            if (null != actData) {
 
                     OrderOItem orderOItem1 = JSONObject.parseObject(JSON.toJSONString(actData.get("orderOItem")),OrderOItem.class);
                     OrderAction orderAction1 = JSONObject.parseObject(JSON.toJSONString(actData.get("orderAction")),OrderAction.class);
@@ -491,9 +561,11 @@ public class ActionServiceImpl implements ActionService {
                     if (orderAction1.getBcdStatus() == 100) {
                         // 设置该产品的上一个数量减一
                         orderAction1.setSumPrev(orderAction1.getSumPrev() - 1);
+                        qt.errPrint("oAction", null, orderAction1);
 
                         // 判断下一个产品子产品是否为0, // both sumXXX are 0, send log
                         if (orderAction1.getSumPrev() <= 0) {
+
 
                             if (orderAction1.getBmdpt() != 4 && orderAction1.getSumChild() == 0) {
                                 orderAction1.setBcdStatus(0); //状态改为准备开始
@@ -510,14 +582,13 @@ public class ActionServiceImpl implements ActionService {
 
                                 // 调用发送日志方法
                                 ws.sendWS(logL);
-                                // 把修改好的信息设置回去
 
-//                                JSONObject mapKey = new JSONObject();
-//                                mapKey.put("action.objAction." + nextIndex, orderAction1);
-//                                coupaUtil.updateOrderByListKeyVal(nextId, mapKey);
+                            }
+                            else if (orderAction1.getBmdpt() == 4)
+//                            else if (orderAction1.getId_P() == null || orderAction1.getId_P() == "")
+                            {
 
-
-                            } else if (orderAction1.getBmdpt() == 4) {
+                                qt.errPrint("in id_P", null, orderAction1);
 
                                 // Start myself, because I am a Process group and I don't need sumChild == 0 to start
                                 orderAction1.setBcdStatus(0); //状态改为准备开始
@@ -553,9 +624,7 @@ public class ActionServiceImpl implements ActionService {
                                         subAction.setBcdStatus(0);
                                         subAction.setBisPush(1);
 
-                                        JSONObject mapKey = new JSONObject();
-                                        mapKey.put("action.objAction." + subIndex, subAction);
-                                        coupaUtil.updateOrderByListKeyVal(subId, mapKey);
+                                        qt.setMDContent(subId, qt.setJson("action.objAction." + subIndex, subAction), Order.class);
 
                                         LogFlow logLP = new LogFlow("action", subOrderData.getString("id_FC"),
                                                 subOrderData.getString("id_FS"), "stateChg",
@@ -567,6 +636,7 @@ public class ActionServiceImpl implements ActionService {
                                                 "", tokData.getString("dep"), "准备开始", 3, subOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
                                         logLP.setLogData_action(subAction, subOItem);
                                         logLP.getData().put("wn0prog", 2);
+                                        qt.errPrint("subO", null, subOrderData);
 
 
                                         ws.sendWS(logLP);
@@ -574,9 +644,9 @@ public class ActionServiceImpl implements ActionService {
                                 }
                             }
                         }
-                        JSONObject mapKey = new JSONObject();
-                        mapKey.put("action.objAction." + nextIndex, orderAction1);
-                        coupaUtil.updateOrderByListKeyVal(nextId, mapKey);
+
+                        qt.setMDContent(nextId, qt.setJson("action.objAction." + nextIndex, orderAction1), Order.class);
+
                     }
                 }
             }
@@ -592,6 +662,7 @@ public class ActionServiceImpl implements ActionService {
          * @date 2020/8/6 9:21
          */
         private void updateParent(OrderAction orderAction,JSONObject tokData,String logType) {
+
 
             for (Integer i = 0; i < orderAction.getUpPrnts().size(); i++) {
 
@@ -610,8 +681,7 @@ public class ActionServiceImpl implements ActionService {
 
                     // 判断父的子产品是否为0，如果为0则把父产品推送得到WebSocket
                     if (unitActionPrnt.getSumChild().equals(unitActionPrnt.getSubParts().size() - 1)) {
-//                        if (unitActionPrnt.getSumChild() == 0)
-//                        {
+
 
                         unitActionPrnt.setBcdStatus(0);
                         unitActionPrnt.setBisPush(1);
@@ -630,9 +700,7 @@ public class ActionServiceImpl implements ActionService {
                         ws.sendWS(logL);
                     }
 
-                        JSONObject mapKey = new JSONObject();
-                        mapKey.put("action.objAction."+indexPrnt,unitActionPrnt);
-                        coupaUtil.updateOrderByListKeyVal(idPrnt,mapKey);
+                        qt.setMDContent(idPrnt, qt.setJson("action.objAction."+indexPrnt,unitActionPrnt) , Order.class);
 
 //                            return true;
 //                        } else {
@@ -644,7 +712,7 @@ public class ActionServiceImpl implements ActionService {
 
                     if (unitActionPrnt.getSumChild() != 0)
                     {
-                        this.updateNext(orderAction, tokData, logType);
+                        this.updateNext(orderAction, tokData);
                     }
                 }
             }
@@ -652,12 +720,12 @@ public class ActionServiceImpl implements ActionService {
 
 
         @Override
-        public ApiResponse getRefOPList(String id_Flow, Boolean isSL, String id_C) throws IOException {
+        public ApiResponse getRefOPList(String id_Flow, Boolean isSL, String id_C) {
 
                 Integer rows = 5000;
                 String idF = "id";
                 String idC = "id_C";
-                //set to SL's search checking keys if the chatroom is for Sales
+                //set to SL's search checking keys if the chatroom is Sales side
                 if (isSL)
                 {
                     idF = "id_FS";
@@ -666,64 +734,18 @@ public class ActionServiceImpl implements ActionService {
                 // Type = 1: msgList regular with stateChg filter,
                 // 2: progress with no filter but only those in id_O+index
                 //构建搜索条件
-                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-                SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
 
-            //组合查询条件
-                BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+                JSONArray filtArray1 = qt.setESFilt(idC, id_C, "data.bcdStatus", 0);
+                qt.setESFilt(filtArray1, idF, "eq", id_Flow);
 
-                    boolQueryBuilder.must(QueryBuilders.matchQuery(idF , id_Flow));
-                    boolQueryBuilder.must(QueryBuilders.termQuery(idC, id_C));
-                    boolQueryBuilder.must(QueryBuilders.termQuery("data.bcdStatus", 0));
+                JSONArray filtArray2 = new JSONArray();
+                qt.setESFilt(filtArray2, idF, "eq", id_Flow);
+                qt.setESFilt(filtArray2, idC, "exact", id_C);
+                qt.setESFilt(filtArray2, "data.bcdStatus", "contain", Arrays.asList("2", "9"));
 
-                BoolQueryBuilder boolQueryBuilder2 = new BoolQueryBuilder();
+                JSONArray result = qt.getES("action", filtArray1);
+                JSONArray result2 = qt.getES("action", filtArray2);
 
-                boolQueryBuilder2.must(QueryBuilders.matchQuery(idF, id_Flow));
-                boolQueryBuilder2.must(QueryBuilders.termQuery(idC, id_C));
-
-                boolQueryBuilder2.must(QueryBuilders.queryStringQuery("2 OR 9").field("data.bcdStatus"));
-                //构建查询库
-                SearchRequest searchRequest = new SearchRequest();
-
-                searchRequest.indices("action");
-
-                //把查询条件放入构建搜索对象中
-                searchSourceBuilder.query(boolQueryBuilder);
-                //分页
-                searchSourceBuilder.size(rows);
-                // 获取排序的类型DESC还是ASC
-
-                searchSourceBuilder.sort("tmd", SortOrder.DESC);
-
-                //把构建对象放入，指定查那个对象，把查询条件放进去
-                searchRequest.source(searchSourceBuilder);
-                //执行请求
-                SearchResponse search = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-                JSONArray result = new JSONArray();
-                for (SearchHit hit : search.getHits().getHits()) {
-
-                    result.add(hit.getSourceAsMap());
-                }
-
-                //------------
-            //构建查询库
-            SearchRequest searchRequest2 = new SearchRequest();
-            searchRequest2.indices("action");
-
-            //把查询条件放入构建搜索对象中
-            searchSourceBuilder2.query(boolQueryBuilder2);
-            //分页
-            searchSourceBuilder2.size(rows);
-            // 获取排序的类型DESC还是ASC
-            searchSourceBuilder2.sort("tmd", SortOrder.DESC);
-            //把构建对象放入，指定查那个对象，把查询条件放进去
-            searchRequest2.source(searchSourceBuilder2);
-            //执行请求
-            SearchResponse search2 = restHighLevelClient.search(searchRequest2, RequestOptions.DEFAULT);
-            JSONArray result2 = new JSONArray();
-            for (SearchHit hit : search2.getHits().getHits()) {
-                result2.add(hit.getSourceAsMap());
-            }
             JSONObject refOPList = new JSONObject();
                 // contentMap方法意义：比如lSProd 的id_P替换id，这样的意义，前端可以拿这个id去查Prod表
 
@@ -756,40 +778,7 @@ public class ActionServiceImpl implements ActionService {
                 return retResult.ok(CodeEnum.OK.getCode(), refOPList);
 
             }
-            //遍历获取最新数据
-//            for (SearchHit hit : hits) {
-////            for (SearchHit hit : searchStart.getHits().getHits()) {
-//                JSONObject jsonHit = JSON.parseObject(hit.getSourceAsString());
-//                System.out.println(jsonHit);
-//
-//                orderList.add( JSONObject.parseObject(JSON.toJSONString(hit.getSourceAsMap())));
-//            }
-//
-//            JSONObject refOPList = new JSONObject();
-//            System.out.println("what is in"+ orderList);
-//
-//            for (int i = 0; i < orderList.size(); i++)
-//            {
-//                String refOP = orderList.getJSONObject(i).getJSONObject("data").getString("refOP");
-//                if (refOPList.getInteger(refOP).equals(null))
-//                {
-//                    refOPList.put(refOP, 1);
-//                } else
-//                {
-//                    refOPList.put(refOP, refOPList.getInteger(refOP) + 1);
-//                }
-//            }
-//
-//            System.out.println("what is in"+ refOPList);
 
-            // getfrom lBOrder, filter lST = making + id_C = myself
-            // getfrom assetflow where mixeq [refOP] contains [refOP above]
-
-            // return refOPList
-
-//            return retResult.ok(CodeEnum.OK.getCode(), refOPList);
-
-//        }
 
         // 用在 flowControl 卡片 改 grpB 的
         @Override
@@ -826,18 +815,15 @@ public class ActionServiceImpl implements ActionService {
                 grpData.getJSONObject(grpB.getString(i)).put("wrdN", wrdGrpB.getJSONObject(i));
             }
 
-            try {
-                JSONObject mapKey = new JSONObject();
-                mapKey.put(updatingGrp, grpData);
-                coupaUtil.updateOrderByListKeyVal(id_O, mapKey);
+//                JSONObject mapKey = new JSONObject();
+//                mapKey.put(updatingGrp, grpData);
+//                coupaUtil.updateOrderByListKeyVal(id_O, mapKey);
+
+                qt.setMDContent(id_O, qt.setJson(updatingGrp, grpData), Order.class);
 
 //                JSONObject mapKey2 = new JSONObject();
 //                mapKey2.put("flowControl.objData."+index+".grpB", grpB);
 //                coupaUtil.updateOrderByListKeyVal(id_A, mapKey2);
-            } catch (RuntimeException e) {
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始,"+e);
-            }
-
 
             return retResult.ok(CodeEnum.OK.getCode(), grpData);
 
@@ -847,9 +833,10 @@ public class ActionServiceImpl implements ActionService {
     private JSONObject getActionData(String oid, Integer index) {
         // 创建卡片信息存储集合
         // 调用方法并且获取请求结果
-        Order order = coupaUtil.getOrderByListKey(oid, Arrays.asList("info", "oItem", "action"));
+//        Order order = coupaUtil.getOrderByListKey(oid, Arrays.asList("info", "oItem", "action"));
+        Order order = qt.getMDContent(oid, Arrays.asList("info", "oItem", "action"), Order.class);
 
-        System.out.println("result ");
+        qt.errPrint("order@getActionData", null, order);
         // 判断订单为空
         if (null == order || order.getOItem() == null || order.getAction() == null) {
            
@@ -891,8 +878,8 @@ public class ActionServiceImpl implements ActionService {
         JSONObject id_FC = grpBGroup.getJSONObject(oItemArray.getJSONObject(index).getString("grpB"));
         JSONObject id_FS = grpGroup.getJSONObject(oItemArray.getJSONObject(index).getString("grp"));
 
-        result.put("orderAction",actionArray.getJSONObject(index));
-        result.put("orderOItem",oItemArray.getJSONObject(index));
+        result.put("orderAction",qt.cloneObj(actionArray.getJSONObject(index)));
+        result.put("orderOItem",qt.cloneObj(oItemArray.getJSONObject(index)));
         result.put("oItemArray", oItemArray);
         result.put("actionArray", actionArray);
         result.put("progress", counter);
@@ -902,6 +889,8 @@ public class ActionServiceImpl implements ActionService {
         result.put("id_FS", id_FS==null?"":id_FS.getString("id_Flow"));
         result.put("info",order.getInfo());
         result.put("size", oItemArray.size());
+
+        System.out.println(result);
 
         return result;
 
@@ -920,41 +909,52 @@ public class ActionServiceImpl implements ActionService {
             JSONObject actData = this.getActionData(id_O, index);
 
             if (null != actData) {
-                OrderInfo unitInfo = JSONObject.parseObject(JSON.toJSONString(actData.get("info")),OrderInfo.class);
-                if (unitInfo.getLST() != 7)
-                 //All Push, not final cannot push, after final cannot move/delete oItem 全部推送，非最终不能推送，最终后不能移动／删除oItem
-                {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_ORDER_NEED_FINAL.getCode(), "还未确认");
-                }
-                OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(actData.get("orderOItem")),OrderOItem.class);
-                OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(actData.get("orderAction")),OrderAction.class);
+                OrderInfo unitInfo = JSONObject.parseObject(JSON.toJSONString(actData.get("info")), OrderInfo.class);
+//                if (unitInfo.getLST() < 7)
+//                //All Push, not final cannot push, after final cannot move/delete oItem 全部推送，非最终不能推送，最终后不能移动／删除oItem
+//                {
+//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_ORDER_NEED_FINAL.getCode(), "还未确认");
+//                }
+                OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(actData.get("orderOItem")), OrderOItem.class);
+                OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(actData.get("orderAction")), OrderAction.class);
 
-                if (unitAction.getBisPush() != 1)
-                {
-                    // 根据零件递归信息获取零件信息，并且制作日志
-                    unitAction.setBcdStatus(0);
-                    unitAction.setBisPush(1);
+//                if (unitAction.getBisPush() != 1)
+//                {
+                // 根据零件递归信息获取零件信息，并且制作日志
+                unitAction.setBcdStatus(0);
+                unitAction.setBisPush(1);
 
-                    JSONObject mapKey = new JSONObject();
-                    mapKey.put("action.objAction."+index,unitAction);
-                    coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+//                    JSONObject mapKey = new JSONObject();
+//                    mapKey.put("action.objAction."+index,unitAction);
+//                    coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+                qt.setMDContent(id_O, qt.setJson("action.objAction." + index, unitAction), Order.class);
 
 
-                    String logType = actData.getJSONObject("grpBGroup").getJSONObject(unitOItem.getGrpB()).getString("logType");
+                String logType = actData.getJSONObject("grpBGroup").getJSONObject(unitOItem.getGrpB()).getString("logType");
 
-                    LogFlow logLP = new LogFlow(logType,actData.getString("id_FC"),
-                        actData.getString("id_FS"),"stateChg",
-                        id_U,grpU, unitOItem.getId_P(),unitOItem.getGrpB(),unitOItem.getGrp(),
-                            "",id_O,unitAction.getIndex(), myCompId,unitOItem.getId_C(),
-                        "",dep,"准备开始",3,unitOItem.getWrdN(),wrdNU);
-                logLP.setLogData_action(unitAction,unitOItem);
+                LogFlow logLP = new LogFlow(logType, actData.getString("id_FC"),
+                        actData.getString("id_FS"), "stateChg",
+                        id_U, grpU, unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(),
+                        "", id_O, unitAction.getIndex(), myCompId, unitOItem.getId_C(),
+                        "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
+                logLP.setLogData_action(unitAction, unitOItem);
 
                 ws.sendWS(logLP);
 
-            } else {
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经推送过了");
+                LogFlow logL = new LogFlow("duraflow", actData.getString("id_FC"),
+                        actData.getString("id_FS"), "userStat",
+                        id_U, grpU, unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(),
+                        "", id_O, unitAction.getIndex(), myCompId, unitOItem.getId_C(),
+                        "", dep, "任务推送", 3, unitOItem.getWrdN(), wrdNU);
+
+                logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
+                ws.sendWS(logL);
             }
-        }
+
+//            } else {
+//                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经推送过了");
+//            }
+
         return retResult.ok(CodeEnum.OK.getCode(), "done");
     }
 
@@ -963,19 +963,17 @@ public class ActionServiceImpl implements ActionService {
     @Transactional(noRollbackFor = ResponseException.class)
     public ApiResponse dgActivateAll(String id_O, String myCompId, String id_U, String grpU, String dep, JSONObject wrdNU) {
 
-        Order orderMainData = coupaUtil.getOrderByListKey(
-                id_O, Arrays.asList("casItemx"));
+        Order orderMainData = qt.getMDContent(id_O, "casItemx", Order.class);
         List <Order> orderDataList = new ArrayList<>();
         JSONArray orderList = orderMainData.getCasItemx().getJSONObject(myCompId).getJSONArray("objOrder");
 
-//        JSONObject oParent = new JSONObject();
-//        oParent.put("id_O", id_O);
-//        orderList.add(oParent);
 
         for (Integer n = 0; n < orderList.size(); n++) {
 
-            orderDataList.add(coupaUtil.getOrderByListKey(
-                    orderList.getJSONObject(n).getString("id_O"), Arrays.asList( "info","oItem", "action")));
+            orderDataList.add(
+                    qt.getMDContent(orderList.getJSONObject(n).getString("id_O"), Arrays.asList( "info","oItem", "action"), Order.class)
+
+            );
             OrderInfo unitInfo = JSONObject.parseObject(JSON.toJSONString(orderDataList.get(n).getInfo()), OrderInfo.class);
 
             if (unitInfo.getLST() != 7) {
@@ -995,7 +993,6 @@ public class ActionServiceImpl implements ActionService {
             JSONObject grpGroup = orderData.getAction().getJSONObject("grpGroup");
             System.out.println("orderData"+orderData);
 
-            try {
                 for (Integer j = 0; j < objAction.size(); j++) {
                     OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(objAction.getJSONObject(j)), OrderAction.class);
                     OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(objOItem.getJSONObject(j)), OrderOItem.class);
@@ -1019,8 +1016,8 @@ public class ActionServiceImpl implements ActionService {
 
                                     JSONObject mapKey = new JSONObject();
                                     mapKey.put("action.objAction." + unitAction.getSubParts().getJSONObject(k).getInteger("index"), subAction);
-                                    coupaUtil.updateOrderByListKeyVal(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey);
-
+//                                    coupaUtil.updateOrderByListKeyVal(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey);
+                                    qt.setMDContent(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey, Order.class);
                                     System.out.println("unit " + subOItem.getGrpB() + subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
                                     String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
 
@@ -1034,6 +1031,17 @@ public class ActionServiceImpl implements ActionService {
                                     logLP.setLogData_action(subAction, subOItem);
 
                                     ws.sendWS(logLP);
+                                    LogFlow logL = new LogFlow("duraflow", subOrderData.getString("id_FC"),
+                                            subOrderData.getString("id_FS"), "userStat",
+                                            id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
+                                            id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
+                                            unitAction.getSubParts().getJSONObject(k).getInteger("index"),
+                                            myCompId, subOItem.getId_C(), "", dep, "任务推送", 3, subOItem.getWrdN(), wrdNU);
+
+                                    logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
+                                    ws.sendWS(logL);
+
+
                                 } else {
                                     System.out.println("break @ " + k);
                                     break;
@@ -1044,9 +1052,7 @@ public class ActionServiceImpl implements ActionService {
                             unitAction.setBcdStatus(0);
                             unitAction.setBisPush(1);
 
-                            JSONObject mapKey = new JSONObject();
-                            mapKey.put("action.objAction." + j, unitAction);
-                            coupaUtil.updateOrderByListKeyVal(orderList.getJSONObject(i).getString("id_O"), mapKey);
+                            qt.setMDContent(orderList.getJSONObject(i).getString("id_O"), qt.setJson("action.objAction." + j, unitAction), Order.class);
 
                             JSONObject fcCheck = grpBGroup.getJSONObject(unitOItem.getGrpB());
                             JSONObject fsCheck = grpGroup.getJSONObject(unitOItem.getGrp());
@@ -1078,11 +1084,135 @@ public class ActionServiceImpl implements ActionService {
                         }
                     }
                 }
-            } catch (Exception e)
-            {
-                e.printStackTrace();
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), "doneAll");
+    }
+
+    @Override
+    @Transactional(noRollbackFor = ResponseException.class)
+    public ApiResponse dgActivateSingle(String id_O, Integer i, String myCompId, String id_U, String grpU, String dep, JSONObject wrdNU) {
+
+        Order orderMainData = qt.getMDContent(id_O, "casItemx", Order.class);
+        List <Order> orderDataList = new ArrayList<>();
+        JSONArray orderList = orderMainData.getCasItemx().getJSONObject(myCompId).getJSONArray("objOrder");
+
+
+        for (Integer n = 0; n < orderList.size(); n++) {
+
+            orderDataList.add(
+                    qt.getMDContent(orderList.getJSONObject(n).getString("id_O"), Arrays.asList( "info","oItem", "action"), Order.class)
+
+            );
+            OrderInfo unitInfo = JSONObject.parseObject(JSON.toJSONString(orderDataList.get(n).getInfo()), OrderInfo.class);
+
+            if (unitInfo.getLST() != 7) {
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_ORDER_NEED_FINAL.getCode(), "");
             }
         }
+        // After checked all lST, they are all 7 and ready to push
+
+//            Order orderData = coupaUtil.getOrderByListKey(
+//                    orderList.getJSONObject(i).getString("id_O"), Arrays.asList("oItem", "info", "action"));
+
+            Order orderData = orderDataList.get(i);
+            JSONArray objAction = orderData.getAction().getJSONArray("objAction");
+            JSONArray objOItem = orderData.getOItem().getJSONArray("objItem");
+            JSONObject grpBGroup = orderData.getAction().getJSONObject("grpBGroup");
+            JSONObject grpGroup = orderData.getAction().getJSONObject("grpGroup");
+            System.out.println("orderData"+orderData);
+
+            for (Integer j = 0; j < objAction.size(); j++) {
+                OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(objAction.getJSONObject(j)), OrderAction.class);
+                OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(objOItem.getJSONObject(j)), OrderOItem.class);
+                if (unitAction.getBisPush() != 1) {
+
+                    // if bmdpt == 4, && sumPrev == 0, my subParts [prior == 0] starts
+                    // for each subParts
+                    // check if wn0prior == 0, if so dgActivate
+                    if (unitAction.getBmdpt() == 4 && unitAction.getSumPrev() == 0) {
+                        for (int k = 0; k < unitAction.getSubParts().size(); k++) {
+                            JSONObject subOrderData = this.getActionData(unitAction.getSubParts().getJSONObject(k).getString("id_O"),
+                                    unitAction.getSubParts().getJSONObject(k).getInteger("index"));
+
+                            OrderOItem subOItem = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderOItem")), OrderOItem.class);
+                            OrderAction subAction = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderAction")), OrderAction.class);
+
+//                                if (subAction.getPriority() == 1) {
+                            if (subOItem.getWn0prior() == 1) {
+                                subAction.setBcdStatus(0);
+                                subAction.setBisPush(1);
+
+                                JSONObject mapKey = new JSONObject();
+                                mapKey.put("action.objAction." + unitAction.getSubParts().getJSONObject(k).getInteger("index"), subAction);
+//                                    coupaUtil.updateOrderByListKeyVal(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey);
+                                qt.setMDContent(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey, Order.class);
+                                System.out.println("unit " + subOItem.getGrpB() + subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
+                                String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
+
+                                LogFlow logLP = new LogFlow(logType, subOrderData.getString("id_FC"),
+                                        subOrderData.getString("id_FS"), "stateChg",
+                                        id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
+                                        id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
+                                        unitAction.getSubParts().getJSONObject(k).getInteger("index"),
+                                        myCompId, subOItem.getId_C(),
+                                        "", dep, "准备开始", 3, subOItem.getWrdN(), wrdNU);
+                                logLP.setLogData_action(subAction, subOItem);
+
+                                ws.sendWS(logLP);
+                                LogFlow logL = new LogFlow("duraflow", subOrderData.getString("id_FC"),
+                                        subOrderData.getString("id_FS"), "userStat",
+                                        id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
+                                        id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
+                                        unitAction.getSubParts().getJSONObject(k).getInteger("index"),
+                                        myCompId, subOItem.getId_C(), "", dep, "任务推送", 3, subOItem.getWrdN(), wrdNU);
+
+                                logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
+                                ws.sendWS(logL);
+
+
+                            } else {
+                                System.out.println("break @ " + k);
+                                break;
+                            }
+                        }
+                    } else if (unitAction.getBmdpt() == 3 && unitAction.getSumPrev() == 0) {
+                        //                // 根据零件递归信息获取零件信息，并且制作日志
+                        unitAction.setBcdStatus(0);
+                        unitAction.setBisPush(1);
+
+                        qt.setMDContent(orderList.getJSONObject(i).getString("id_O"), qt.setJson("action.objAction." + j, unitAction), Order.class);
+
+                        JSONObject fcCheck = grpBGroup.getJSONObject(unitOItem.getGrpB());
+                        JSONObject fsCheck = grpGroup.getJSONObject(unitOItem.getGrp());
+                        String id_FS = "";
+                        String id_FC = "";
+
+                        if (fcCheck != null) {
+                            id_FC = fcCheck.getString("id_Flow") != null
+                                    && !unitOItem.getId_C().equals(myCompId) ?
+                                    fcCheck.getString("id_Flow") : "";
+                        }
+
+                        if (fsCheck != null) {
+                            id_FS = fsCheck.getString("id_Flow") != null
+                                    && !unitOItem.getId_C().equals(myCompId) ?
+                                    fsCheck.getString("id_Flow") : "";
+                        }
+
+                        LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
+                                id_FC,
+                                id_FS, "stateChg", id_U, grpU,
+                                unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(), id_O, unitAction.getId_O(), unitAction.getIndex(),
+                                myCompId, unitOItem.getId_C(), "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
+                        logLP.setLogData_action(unitAction, unitOItem);
+
+                        System.out.println(logLP);
+                        ws.sendWS(logLP);
+                        // 发送日志
+                    }
+                }
+            }
+
         return retResult.ok(CodeEnum.OK.getCode(), "doneAll");
     }
 
@@ -1099,13 +1229,6 @@ public class ActionServiceImpl implements ActionService {
     public ApiResponse createTask(String logType, String id_FC, String id_O, String myCompId, String id_U,
                                   String grpU, String dep, JSONObject oItemData, JSONObject wrdNU) {
 
-        // Simply: set Order OItem.add[], Action.add[], send Log
-        // Get order, check oItem size
-
-        //if more than 5 Concurrent and not finished, it turns into Next task and send log Notify
-        //so once all 5 are done, next 5 will show
-        //can also set urgent (do it now, do it after, stop everything and do it now)
-        //
         Integer index = 0;
         Integer prior = 1;
         JSONObject actData = this.getActionData(id_O, index);
@@ -1115,7 +1238,6 @@ public class ActionServiceImpl implements ActionService {
         {                // 返回操作失败结果
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
         }
-
 
         // Converting id_FS/id_FC
         if (logType.endsWith("SL"))
@@ -1137,35 +1259,48 @@ public class ActionServiceImpl implements ActionService {
 
         // Adding oItem and Action
         OrderOItem unitOItem = new OrderOItem ("","",oItemData.getString("id_CP"),myCompId,myCompId,
-                id_O,index,1,"","",
+                id_O,index,"","",
                 oItemData.getString("grp"),oItemData.getString("grpB"),prior,oItemData.getString("pic"),
                 oItemData.getInteger("lUT"),oItemData.getInteger("lCR"),oItemData.getDouble("wn2qtyneed"),
                 oItemData.getDouble("wn4price"),oItemData.getJSONObject("wrdNP"),oItemData.getJSONObject("wrdN"),
                 oItemData.getJSONObject("wrddesc"),oItemData.getJSONObject("wrdprep"));
 
+        JSONArray prtPrev = new JSONArray();
+
+        JSONArray allAction = actData.getJSONArray("actionArray"); // this is action.objAction []
+
+        if (index - 1 >= 0) {
+            prtPrev.add(qt.setJson("id_O", id_O, "index", index - 1));
+            allAction.getJSONObject(index - 1).getJSONArray("prtNext").add(qt.setJson("id_O", id_O, "index", index));
+        }
+
         OrderAction unitAction = new OrderAction(0,1,5,1,
-                "","","",id_O,index, prior,0,0,
-                null,null,null,null,
+                "","","",id_O, index, unitOItem.getRKey(),0, index == 0 ? 0 : 1,
+                new JSONArray(),new JSONArray(),new JSONArray(),prtPrev,
                 oItemData.getJSONObject("wrdNP"),oItemData.getJSONObject("wrdN"));
+
+        allAction.add(unitAction);
 
         // Send a log
         LogFlow logLP = new LogFlow(logType,id_FC,
                 id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "","",id_O,index, myCompId,myCompId,
                 oItemData.getString("pic"),dep,"准备开始",3,oItemData.getJSONObject("wrdN"),wrdNU);
+       logLP.setLogData_action(unitAction,unitOItem);
 
-        logLP.setLogData_action(unitAction,unitOItem);
+        LogFlow logL = new LogFlow("duraflow",id_FC,
+                id_FS,"userStat", id_U,grpU,"",unitOItem.getGrpB(), "","",id_O,index, myCompId,myCompId,
+                oItemData.getString("pic"),dep,"任务推送",3,oItemData.getJSONObject("wrdN"),wrdNU);
+
+        logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
+        ws.sendWS(logL);
+
+
+
         // append an OItem + ActionItem, save OItem and action
-        JSONObject mapKey = new JSONObject();
-        mapKey.put("action.objAction."+index,unitAction);
-        mapKey.put("oItem.objItem."+index,unitOItem);
-        coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+        qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem), Order.class);
 
-        try {
-            ws.sendWS(logLP);
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        ws.sendWS(logLP);
+
         return retResult.ok(CodeEnum.OK.getCode(), "done");
     }
 
@@ -1225,16 +1360,19 @@ public class ActionServiceImpl implements ActionService {
         probData.put("index",indexProb);
         orderAction.getProb().add(probData);
 
-        JSONObject mapKey = new JSONObject();
-        mapKey.put("action.objAction."+index,orderAction);
-        // adding prob[] into id_O[index]
-        coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+        qt.setMDContent(id_O, qt.setJson("action.objAction."+index,orderAction), Order.class);
 
-        //KEV possibly set cross company Questing? no, order must be a new order with CB != C and have id_P
-        // ...
+       JSONArray prtPrev = new JSONArray();
+//        java.lang.NullPointerException at com.cresign.purchase.service.impl.ActionServiceImpl.createQuest(ActionServiceImpl.java:1412) at com.cresign.purchase.service.impl.ActionServiceImpl$$FastClassBySpringCGLIB$$71b9cf0f.invoke(<generated>) at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218) at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:685) at com.cresign.purchase.service.impl.ActionServiceImpl$$EnhancerBySpringCGLIB$$2f684ac3.createQuest(<generated>) at com.cresign.purchase.controller.ActionController.createQuest$original$vSjocHQQ(ActionController.java:259) at com.cresign.purchase.controller.ActionController.createQuest$original$vSjocHQQ$accessor$5fjkzAdo(ActionController.java) at com.cresign.purchase.controller.ActionController$auxiliary$6PMXB0hl.call(Unknown Source) at
+        JSONArray allAction = actData.getJSONArray("actionArray"); // this is action.objAction []
+//
+        if (indexProb - 1 >= 0) {
+            prtPrev.add(qt.setJson("id_O", id_O, "index", indexProb - 1));
+            allAction.getJSONObject(indexProb - 1).getJSONArray("prtNext").add(qt.setJson("id_O", id_O, "index", indexProb));
+        }
 
         OrderOItem unitOItem = new OrderOItem ("",id_O,"",myCompId,myCompId,
-                id_Prob,indexProb,1,"","",
+                id_Prob,indexProb,"","",
                 "1009","1009",priorProb, orderOItem.getPic(),
                 1,1,1.0,
                 0.0,probData.getJSONObject("wrdNP"),probData.getJSONObject("wrdN"),
@@ -1248,9 +1386,12 @@ public class ActionServiceImpl implements ActionService {
         upPrntsData.put("probIndex",sumProb);
         upPrnt.add(upPrntsData);
         System.out.println("probData"+probData);
+
         OrderAction unitAction = new OrderAction(0,1,7,1,probData.getString("id_OP"),probData.getString("refOP"),"",
-                id_O,index,priorProb,0,0, null,upPrnt,null,null,
+                id_O,index,unitOItem.getRKey(),0,indexProb == 0 ? 0: 1, new JSONArray(),upPrnt,new JSONArray(),prtPrev,
                 probData.getJSONObject("wrdNP"),probData.getJSONObject("wrdN"));
+
+        allAction.add(unitAction);
 
         LogFlow logProb = new LogFlow(logTypeProb,id_FC,
                 id_FQ,"stateChg", id_U,grpU,orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),id_O, id_Prob,indexProb, myCompId,myCompId,
@@ -1261,95 +1402,87 @@ public class ActionServiceImpl implements ActionService {
 //                orderOItem.getId_P(), id_O,index,1,unitAction.getWrdNP(),unitOItem.getWrdN());
 
         JSONObject probResult = new JSONObject();
-        probResult.put("action.objAction."+indexProb,unitAction);
+        probResult.put("action.objAction", allAction);
         probResult.put("oItem.objItem."+indexProb,unitOItem);
 
-        coupaUtil.updateOrderByListKeyVal(id_Prob,probResult);
+        qt.setMDContent(id_Prob, probResult, Order.class);
 
         ws.sendWS(logProb);
+
+        LogFlow logL = new LogFlow("duraflow",id_FC,
+                id_FQ,"userStat", id_U,grpU,orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),id_O, id_Prob,indexProb, myCompId,myCompId,
+                probData.getString("pic"),dep,"任务推送",3,probData.getJSONObject("wrdN"),wrdNU);
+
+        logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
+        ws.sendWS(logL);
 
         return retResult.ok(CodeEnum.OK.getCode(), "done");
 
     }
 
     @Override
-    public ApiResponse subStatusChange(String id_O, Integer index, Boolean isLink, Integer statusType, JSONObject tokData) throws IOException {
+    public ApiResponse subStatusChange(String id_O, Integer index, Boolean isLink, Integer statusType, JSONObject tokData) {
 
-//        //1. Save the new
-//        JSONObject mapKey = new JSONObject();
-//        mapKey.put("action.grpBGroup."+grpB,grpBNew);
-//        coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
         //2. get Order's oItem+action
-        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("action"));
-//        JSONArray objItem = order.getOItem().getJSONArray("objItem");
-        JSONObject objAction = order.getAction().getJSONArray("objAction").getJSONObject(index);
-        //3. Loop check grpB==oItem(i).grpB and objAction(i).isPUshed == 1
-        for (int i = 0; i < objAction.getJSONArray("subParts").size(); i++) {
+            Order order = qt.getMDContent(id_O, "action", Order.class);
+            JSONObject objAction = order.getAction().getJSONArray("objAction").getJSONObject(index);
+            //-8. Loop check grpB==oItem(i).grpB and objAction(i).isPUshed == 1
+            for (int i = 0; i < objAction.getJSONArray("subParts").size(); i++) {
 
-            String subPartId_O = objAction.getJSONArray("subParts").getJSONObject(i).getString("id_O");
-            Integer subPartIndex = objAction.getJSONArray("subParts").getJSONObject(i).getInteger("index");
+                String subPartId_O = objAction.getJSONArray("subParts").getJSONObject(i).getString("id_O");
+                Integer subPartIndex = objAction.getJSONArray("subParts").getJSONObject(i).getInteger("index");
 
-            JSONObject subOrderData = this.getActionData(subPartId_O, subPartIndex);
+                JSONObject subOrderData = this.getActionData(subPartId_O, subPartIndex);
 
-            OrderOItem subOItem = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderOItem")), OrderOItem.class);
-            OrderAction subAction = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderAction")), OrderAction.class);
+                OrderOItem subOItem = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderOItem")), OrderOItem.class);
+                OrderAction subAction = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderAction")), OrderAction.class);
 
-            Integer subStatus = subAction.getBcdStatus();
-            Integer newStatus = 0;
-            String newMsg = "";
+                Integer subStatus = subAction.getBcdStatus();
+                Integer newStatus = 0;
+                String newMsg = "";
 
 
-            if (statusType.equals(0))
-            {
-                if (subStatus.equals(0) || subStatus.equals(1) || subStatus.equals(3) || subStatus.equals(7))
-                {
-                    newStatus = 8;
-                    newMsg = "全单暂停";
+                if (statusType.equals(0)) {
+                    if (subStatus.equals(0) || subStatus.equals(1) || subStatus.equals(-8) || subStatus.equals(7)) {
+                        newStatus = 8;
+                        newMsg = "全单暂停";
+                    }
+                } else if (statusType.equals(1)) {
+                    if (subStatus.equals(0)) {
+                        newStatus = 1;
+                        newMsg = "全单开始";
+                    } else if (subStatus.equals(8)) {
+                        newStatus = -8;
+                        newMsg = "全单再开";
+                    }
+                } else if (statusType.equals(2)) {
+                    if (subStatus.equals(1) || subStatus.equals(-8) || subStatus.equals(7) || subStatus.equals(8)) {
+                        this.changeActionStatus("action", 2, "全单完成", subPartIndex, subPartId_O, isLink,
+                                subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), tokData);
+                    }
                 }
-            } else if (statusType.equals(1))
-            {
-                if (subStatus.equals(0))
-                {
-                    newStatus = 1;
-                    newMsg = "全单开始";
-                } else if (subStatus.equals(8))
-                {
-                    newStatus = 3;
-                    newMsg = "全单再开";
-                }
-            } else if (statusType.equals(2))
-            {
-                if (subStatus.equals(1) || subStatus.equals(3) || subStatus.equals(7) || subStatus.equals(8))
-                {
-                    this.changeActionStatus("action", 2, "全单完成", subPartIndex, subPartId_O, isLink,
-                            subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), tokData);
-                }
-            }
 
-            if (!newStatus.equals(0))
-            {
-                //newStatus need to update mdb and send a log
+                if (!newStatus.equals(0)) {
+                    //newStatus need to update mdb and send a log
 
-                    JSONObject mapKey = new JSONObject();
                     subAction.setBcdStatus(newStatus);
 
-                    mapKey.put("action.objAction." + subPartIndex +".bcdStatus", newStatus);
-                    coupaUtil.updateOrderByListKeyVal(subPartId_O, mapKey);
+                    qt.setMDContent(subPartId_O, qt.setJson("action.objAction." + subPartIndex + ".bcdStatus", newStatus), Order.class);
 
                     LogFlow logLP = new LogFlow("action", subOrderData.getString("id_FC"),
                             subOrderData.getString("id_FS"), "stateChg",
-                            tokData.getString("id_U"), tokData.getString("grpU"), subOItem.getId_P(),subOItem.getGrpB(),subOItem.getGrp(),
-                            subAction.getId_OP(),subPartId_O, subPartIndex,
+                            tokData.getString("id_U"), tokData.getString("grpU"), subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
+                            subAction.getId_OP(), subPartId_O, subPartIndex,
                             tokData.getString("id_C"), subOItem.getId_C(),
                             "", tokData.getString("dep"), newMsg, 3, subOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
                     logLP.setLogData_action(subAction, subOItem);
 
                     ws.sendWS(logLP);
 
+                }
             }
-        }
 
-        return retResult.ok(CodeEnum.OK.getCode(), "Status batch changed");
+            return retResult.ok(CodeEnum.OK.getCode(), "Status batch changed");
 
     }
 
@@ -1376,31 +1509,34 @@ public class ActionServiceImpl implements ActionService {
 //
 //    }
 
-    /***
-     * Final an order
-     * Final dgOrder
-     * Create subTasks
-     * dgTask order, push TaskOrder
-     * dg 1 oItem, push 1 oItem
-     * add oItem to internal Order
-     * change Dep
-     * addOItem will need to fix action
-      *dgTask need to fix action
-     * make UI for pick dep / id_FC
-     */
 
-    public ApiResponse switchTask2Prod() //
+
+    public ApiResponse taskToProd(String id_O, Integer index, String id_P)
 
     {
-        //KEV
-        //setOItem to OrderItem
-        // id_P wn2qtyNow
-        // getDgOItem API for igura, and this switch
-        // Special bmdpt for dg-able product
-        //if part, can dg -> final -> Push
-        //
+        // send WS
 
-        return retResult.ok(CodeEnum.OK.getCode(), "done");
+        // get id_P data,
+        JSONObject prodInfo = qt.getES("lBProd", qt.setESFilt("id_P", id_P)).getJSONObject(0);
+        Order order = qt.getMDContent(id_O, "oItem" + index, Order.class);
+        // update oItem
+        JSONObject oItem = order.getOItem().getJSONArray("objItem").getJSONObject(index);
+        qt.upJson(oItem, "id_P", id_P, "wrdN", prodInfo.getJSONObject("wrdN"), "wrddesc", prodInfo.getJSONObject("wrddesc"),
+                "grpB", prodInfo.getJSONObject("grpB"), "grp", prodInfo.getJSONObject("grp"),
+                "ref", prodInfo.getJSONObject("ref"), "refB", prodInfo.getJSONObject("refB"), "pic", prodInfo.getJSONObject("pic"),
+                "lUT", prodInfo.getJSONObject("lUT"), "lCR", prodInfo.getJSONObject("lCR"), "wn4price", prodInfo.getJSONObject("wn4price"),
+                "tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+
+        JSONObject listCol = new JSONObject();
+        dbu.summOrder(order, listCol);
+        // save oItem
+
+        qt.setMDContent(id_O, qt.setJson("oItem", oItem), Order.class);
+        qt.setES("lSBOrder", qt.setESFilt("id_O", id_O), listCol);
+
+        //TODO KEV sendWS??
+
+        return retResult.ok(CodeEnum.OK.getCode(), "");
 
     }
 
@@ -1428,7 +1564,7 @@ public class ActionServiceImpl implements ActionService {
 //                    .must(QueryBuilders.termQuery("id_CB", id_C));
         } // I am id_CB Buyer
         else if (id_C.equals(order.getInfo().getId_CB())) { //if Seller is REAL
-            if (dbUtils.judgeComp(id_C, order.getInfo().getId_C()) == 1) {
+            if (qt.judgeComp(id_C, order.getInfo().getId_C()) == 1) {
                 if (order.getInfo().getLST() == 6) { // if they confirmed, set to both confirm
                     order.getInfo().setLST(7);
                 } else {
@@ -1443,7 +1579,7 @@ public class ActionServiceImpl implements ActionService {
 //                    .must(QueryBuilders.termQuery("id_CB", id_C));
         } else // I am Seller
         { //if Buyer is REAL
-            if (dbUtils.judgeComp(id_C, order.getInfo().getId_CB()) == 1) {
+            if (qt.judgeComp(id_C, order.getInfo().getId_CB()) == 1) {
                 if (order.getInfo().getLST() == 5) { // if they confirmed, set to both confirm
                     order.getInfo().setLST(7);
                 } else {
@@ -1475,7 +1611,8 @@ public class ActionServiceImpl implements ActionService {
 
     @Override
     public ApiResponse cancelOrder(String id_C,String id_O) {
-        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info"));
+//        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info"));
+        Order order = qt.getMDContent(id_O, "info", Order.class);
         //Seller = 14, Buyer = 15, Both = 16
 
         // if I am both buyer and seller, internal order, whatever side I am, set it to both final
@@ -1483,7 +1620,7 @@ public class ActionServiceImpl implements ActionService {
             order.getInfo().setLST(16);
         } // I am id_CB Buyer
         else if (id_C.equals(order.getInfo().getId_CB())) { //if Seller is REAL
-            if (dbUtils.judgeComp(id_C, order.getInfo().getId_C()) == 1) {
+            if (qt.judgeComp(id_C, order.getInfo().getId_C()) == 1) {
                 if (order.getInfo().getLST() == 14) { // if they confirmed, set to both confirm
                     order.getInfo().setLST(16);
                 } else {
@@ -1495,7 +1632,7 @@ public class ActionServiceImpl implements ActionService {
             }
         } else // I am Seller
         { //if Buyer is REAL
-            if (dbUtils.judgeComp(id_C, order.getInfo().getId_CB()) == 1) {
+            if (qt.judgeComp(id_C, order.getInfo().getId_CB()) == 1) {
                 if (order.getInfo().getLST() == 15) { // if they confirmed, set to both confirm
                     order.getInfo().setLST(16);
                 } else {
@@ -1506,9 +1643,10 @@ public class ActionServiceImpl implements ActionService {
                 order.getInfo().setLST(16);
             }
         }
-        JSONObject mapKey = new JSONObject();
-        mapKey.put("info.lST", order.getInfo().getLST());
-        coupaUtil.updateOrderByListKeyVal(id_O, mapKey);
+//        JSONObject mapKey = new JSONObject();
+//        mapKey.put("info.lST", order.getInfo().getLST());
+//        coupaUtil.updateOrderByListKeyVal(id_O, mapKey);
+        qt.setMDContent(id_O, qt.setJson("info.lST", order.getInfo().getLST()), Order.class);
         return retResult.ok(CodeEnum.OK.getCode(), order.getInfo());
     }
 
@@ -1533,14 +1671,44 @@ public class ActionServiceImpl implements ActionService {
 
     }
 
+    //getRefOP
+
+    private void updateRefOP(String id_C, String id_FC, String id_FS, Boolean isStart)
+    {
+        String id_Flow = id_FC;
+        if (id_FC.equals(""))
+        {
+            id_Flow = id_FS;
+        }
+        Asset asset = qt.getConfig(id_C, "a-auth", "flowControl");
+
+        if (isStart)
+        {
+//            qt.setMDContent();
+        }
+
+
+    }
+    //1. no need
+
+    //setRefOP use in statusChg
+    //params: id_C, id_FC/id_FS, flowControl's refOP{"id_OP":{refOP, wrdN, index{}}}
+    //when start + index into fc.refOP
+    //when stop, -index, if index == 0, - refOP.id_OP
+    //no API is needed for vue
+
+
+
     //For change Dep/Grp @ grpBGroup,
+    //工作任务换群专用
     //Loop thru all Flowcontrol items
     //Pick those that match grpB[], return Object of FlowControl item
     @Override
     public ApiResponse getFlowList(String id_C, String grpB)
     {
-        String assetId = dbUtils.getId_A(id_C, "a-auth");
-        Asset assetData = coupaUtil.getAssetById(assetId, Collections.singletonList("flowControl"));
+//        String assetId = qt.getId_A(id_C, "a-auth");
+//        Asset assetData = coupaUtil.getAssetById(assetId, Collections.singletonList("flowControl"));
+        Asset assetData = qt.getConfig(id_C, "a-auth", "flowControl");
         if (null == assetData) {
             // 返回操作失败结果
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, ChatEnum.ERR_GET_DATA_NULL.getCode(), "获取数据为空");
@@ -1550,7 +1718,6 @@ public class ActionServiceImpl implements ActionService {
         JSONArray objData = assetData.getFlowControl().getJSONArray("objData");
         for (int i = 0; i < objData.size(); i++) {
             JSONArray grpList = objData.getJSONObject(i).getJSONArray("grpB");
-            System.out.println("grp"+objData.getJSONObject(i));
 
             if (grpList != null && grpList.contains(grpB)) {
                 System.out.println("inHere "+grpB);
@@ -1572,7 +1739,8 @@ public class ActionServiceImpl implements ActionService {
         JSONObject jsonObjStock = new JSONObject();
 
 
-        Order order = (Order) dbUtils.getMongoOneFields(id_O, Arrays.asList("action","oItem","oStock"), Order.class);
+//        Order order = (Order) dbUtils.getMongoOneFields(id_O, Arrays.asList("action","oItem","oStock"), Order.class);
+        Order order = qt.getMDContent(id_O, Arrays.asList("action","oItem","oStock"), Order.class);
         JSONArray arrayObjAction = order.getAction().getJSONArray("objAction");
         Integer num = 0;
         for (int a = 0; a < arrayObjAction.size(); a++) {
@@ -1699,11 +1867,15 @@ public class ActionServiceImpl implements ActionService {
 
     private void recursionActionChart(HashSet setId_O, JSONObject jsonUpId_O, JSONObject jsonAction, JSONObject jsonUpId_OIndex, JSONObject jsonExcludeId_OIndex, Integer num) {
 
-        List<Order> orders = (List<Order>) dbUtils.getMongoListFields(setId_O, Arrays.asList("action","oItem","oStock"), Order.class);
+//        List<Order> orders = (List<Order>) dbUtils.getMongoListFields(setId_O, Arrays.asList("action","oItem","oStock"), Order.class);
+
+        List<Order> orders = (List<Order>) qt.getMDContentMany(setId_O, Arrays.asList("action","oItem","oStock"), Order.class);
         setId_O = new HashSet();
         JSONObject jsonId_O = new JSONObject();
         for (Order order : orders) {
             String id_O = order.getId();
+            qt.errPrint("actionChart", null, order);
+
             JSONArray arrayObjAction = order.getAction().getJSONArray("objAction");
             JSONArray arrayObjItem = order.getOItem().getJSONArray("objItem");
             JSONArray arrayObjStock = order.getOStock().getJSONArray("objData");
@@ -1711,6 +1883,7 @@ public class ActionServiceImpl implements ActionService {
             for (Integer index : setIndex) {
                 if (jsonExcludeId_OIndex.getString(id_O + "." + index) == null) {
                     jsonExcludeId_OIndex.put(id_O + "." + index, "");
+                    qt.errPrint("arrayObj", null, arrayObjAction, index, id_O);
                     JSONObject jsonObjAction = arrayObjAction.getJSONObject(index);
                     JSONObject jsonObjItem = arrayObjItem.getJSONObject(index);
                     JSONObject jsonObjStock = arrayObjStock.getJSONObject(index);

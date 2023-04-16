@@ -1,12 +1,16 @@
 package com.cresign.tools.token;
 
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * ##description: 通过token获取uid
@@ -45,8 +49,24 @@ public class GetUserIdByToken {
         throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), "");
     }
 
+    public ApiResponse err(String apiName, Exception e)
+    {
+        if (e.getClass().equals(ErrorResponseException.class))
+        {
+System.out.println(e.getClass());
+//            throw new  e;
+        }
+        e.printStackTrace();
+        StringWriter writer = new StringWriter();
+        PrintWriter printWriter= new PrintWriter(writer);
+        e.printStackTrace(printWriter);
+        throw new ErrorResponseException(HttpStatus.OK, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), writer.toString());
+    }
+
+
     public JSONObject getTokenDataX(String jwtStr, String clientType,String mod,Integer lev) {
 
+        // get lType, check authType (card/batch/log/none),  and grp
         if(qt.hasRDKey(clientType+"Token", jwtStr)) {
             //            System.out.println(redisTemplate0.opsForValue().get(clientType + "Token:" + jwtStr));
             JSONObject result = new JSONObject();

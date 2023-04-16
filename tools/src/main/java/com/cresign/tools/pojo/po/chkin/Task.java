@@ -1,18 +1,20 @@
 package com.cresign.tools.pojo.po.chkin;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @ClassName Task
  * @Description 作者很懒什么也没写
- * @authortang
+ * @authortang tang
  * @Date 2021/9/23 10:54
  * @ver 1.0.0
  */
 @Data
 public class Task {
-
     /**
      * 优先级
      */
@@ -69,5 +71,29 @@ public class Task {
      * 预计操作处理的第一个子零件的开始时间
      */
     private Long teCsSonOneStart;
+    /**
+     * 实际开始时间
+     */
+    private Long taPStart;
+    /**
+     * 实际完成时间
+     */
+    private Long taPFinish;
+    /**
+     * 任务下标
+     */
+    private Integer dateIndex = -1;
+    /**
+     * 实际超时了多久
+     */
+    private Long taOver = 0L;
+    /**
+     * 合并任务列表
+     */
+    private JSONArray mergeTasks;
 
+    /**
+     * 是否有下一个零件
+     */
+    private Boolean isNextPart;
 }

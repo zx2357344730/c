@@ -26,13 +26,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class OrderAction {
 
     public OrderAction(Integer bcdStatus, Integer bisPush, Integer bisactivate, Integer bmdpt,
-                       String id_OP, String refOP, String id_P, String id_O, Integer index, Integer priority,
+                       String id_OP, String refOP, String id_P, String id_O, Integer index, String rKey,
                        Integer sumChild, Integer sumPrev,
                    JSONArray subParts, JSONArray upPrnts, JSONArray prtNext, JSONArray prtPrev,
                    JSONObject wrdNP, JSONObject wrdN) {
-
-//        Lang wrdEmpty = new Lang();
-//        wrdEmpty.setCn("");
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn", "");
@@ -47,6 +44,8 @@ public class OrderAction {
         this.index = index;
         this.bmdpt = bmdpt;
         this.sumChild = sumChild;
+        this.rKey = rKey;
+
         this.sumPrev = sumPrev;
         this.wrdNP = wrdNP  == null? JSON.parseObject(JSON.toJSONString(wrdEmpty)) : wrdNP;
 //        this.wrdN = wrdN  == null? wrdEmpty : wrdN;
@@ -104,8 +103,14 @@ public class OrderAction {
      * 总订单id，最大的订单id
      */
     private String id_OP;
-    private String refOP;
-    private String id_P;
+    private String refOP = "";
+    private String id_P ="";
+
+    private String rKey;
+
+    private JSONArray id_Us = new JSONArray();
+
+    private JSONArray arrUA = new JSONArray();
 
     /**
      * 自己的下标
@@ -115,7 +120,7 @@ public class OrderAction {
     /**
      *   类型，1：工序、2：部件、3：物料
      */
-    private Integer bmdpt;
+    private Integer bmdpt = 1;
 
     /**
      * 子产品数量
@@ -128,21 +133,6 @@ public class OrderAction {
     private Integer sumPrev = 0;
 
     /**
-     * 唯一下标
-     */
-//    private Integer indexOnly;
-
-    /**
-     * 现在完成数量
-     */
-//    private Integer wn2qtynow = 0;
-
-    /**
-     * 最後完成數量
-     */
-//    private Integer wn2qtyfin = 0;
-
-    /**
      * 所有父产品名称拼接存放
      */
     private JSONObject wrdNP;
@@ -153,17 +143,7 @@ public class OrderAction {
     /**
      * 优先级
      */
-//    private Integer priority;
-
-    /**
-     * 是否是子任务的bmdpt-4 的父零件
-     */
-//    private Integer isZp = 0;
-
-    /**
-     * 加入共同工作人信息
-     */
-    private JSONArray id_Us;
+    private Integer priority;
 
     /**
      * subPart = parts, upPrnts = myParent[], Next[] next process, prev Process

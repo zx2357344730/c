@@ -33,7 +33,6 @@ public class InitServiceImpl implements InitService {
     @Override
     public ApiResponse getInitById(String lang, Integer ver,String qdKey,String uuId) {
 
-//        Init initVerCheck = qt.getMDContent(lang, "ver", Init.class);
         Init init = qt.getInitData(lang);
 
                 JSONObject re = new JSONObject();
@@ -77,7 +76,7 @@ public class InitServiceImpl implements InitService {
     @Override
     public ApiResponse getPhoneType(String lang) {
 
-        Init init = qt.getInitData(lang); //= qt.getMDContent(lang,"list.phoneType", Init.class);
+        Init init = qt.getInitData(lang);
 
         JSONArray phoneType = init.getList().getJSONArray("phoneType");
 

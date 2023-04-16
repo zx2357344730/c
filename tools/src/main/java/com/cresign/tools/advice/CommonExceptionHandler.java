@@ -64,7 +64,7 @@ public class CommonExceptionHandler {
         // code == 500
         map.put("code", CodeEnum.INTERNAL_SERVER_ERROR.getCode());
 
-        map.put("message", "");
+        map.put("message", "i am in  exception 1"+JSON.toJSONString(map));
 
 //        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
         map.put("des", JSON.toJSONString(map));
@@ -108,11 +108,13 @@ public class CommonExceptionHandler {
 
         map.put("code", CodeEnum.INTERNAL_SERVER_ERROR.getCode());
 
-        map.put("message", "");
+        map.put("message", "i am in  exception 2"+JSON.toJSONString(map));
 
 //        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
         map.put("des", JSON.toJSONString(map));
         System.out.println("i am in  exception 2");
+
+        reEx.printStackTrace();
 
         System.out.println(reEx);
 
@@ -148,6 +150,8 @@ public class CommonExceptionHandler {
         }
 
         map.put("code", CodeEnum.OK.getCode());
+
+        e.printStackTrace();
 
         map.put("message", "feignException");
 

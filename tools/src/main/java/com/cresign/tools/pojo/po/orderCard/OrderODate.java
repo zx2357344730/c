@@ -33,6 +33,8 @@ public class OrderODate {
      */
     private Integer csSta;
 
+    private Integer bmdpt;
+
     /**
      * 部门
      */

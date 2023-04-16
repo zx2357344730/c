@@ -31,8 +31,13 @@ public class lSBComp {
 
         this.id_C = id_C;
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
+
+
+        this.id_CM = id_CP; this.id_CBM = id_CBP;
+
         this.id_CB = id_CB;
         this.id_CBP = id_CBP == null || id_CBP == "" ? id_CB: id_CBP;
+
         this.wrdNC = wrdNC == null ? (JSONObject) wrdEmpty.clone(): wrdNC;
         this.wrdNCB = wrdNCB == null ? (JSONObject) wrdEmpty.clone(): wrdNCB;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
@@ -52,9 +57,13 @@ public class lSBComp {
 
     private String id_CP;
 
+    private String id_CM;
+
     private String id_CB;
 
     private String id_CBP;
+
+    private String id_CBM;
 
     private JSONObject wrdNC;
 

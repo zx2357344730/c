@@ -2,14 +2,12 @@ package com.cresign.purchase.controller;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.purchase.enumeration.PurchaseEnum;
+import com.cresign.purchase.client.WSClient;
 import com.cresign.purchase.service.ActionService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.token.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +23,7 @@ import java.io.IOException;
  * @ver 1.0
  */
 @RestController
-@RequestMapping("/action")
+@RequestMapping("action")
 public class ActionController {
 
         @Autowired
@@ -69,7 +67,7 @@ public class ActionController {
 
         return actionService.dgActivateAll(
                 reqJson.getString("id_O"),
-                reqJson.getString("id_C"),
+                tokData.getString("id_C"),
                 tokData.getString("id_U"),
                 tokData.getString("grpU"),
                 tokData.getString("dep"),
@@ -77,8 +75,47 @@ public class ActionController {
 
         } catch (Exception e)
         {
-            e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.ASSET_NOT_FOUND.getCode(), "产品需要更新");
+            return getUserToken.err("actionService.dgActivateAll", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/taskToProd")
+    public ApiResponse taskToProd(@RequestBody JSONObject reqJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+
+        try {
+
+            return actionService.taskToProd(
+                    reqJson.getString("id_O"),
+                    reqJson.getInteger("index"),
+                    reqJson.getString("id_P"));
+
+        } catch (Exception e)
+        {
+            return getUserToken.err("actionService.task2Prod", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/dgActivateSingle")
+    public ApiResponse dgActivateSingle(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+
+        try {
+
+            return actionService.dgActivateSingle(
+                    reqJson.getString("id_O"),
+                    reqJson.getInteger("index"),
+                    tokData.getString("id_C"),
+                    tokData.getString("id_U"),
+                    tokData.getString("grpU"),
+                    tokData.getString("dep"),
+                    tokData.getJSONObject("wrdNU"));
+
+        } catch (Exception e)
+        {
+            return getUserToken.err("actionService.dgActivateAll", e);
         }
     }
 
@@ -112,7 +149,7 @@ public class ActionController {
 
     @SecurityParameter
     @PostMapping("/v1/rePush")
-    public ApiResponse rePush(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse rePush(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return actionService.rePush(
                 reqJson.getString("id_O"),
@@ -141,6 +178,7 @@ public class ActionController {
     @PostMapping("/v2/statusChange")
     public ApiResponse statusChange(@RequestBody JSONObject reqJson) throws IOException {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        try {
         return actionService.changeActionStatus(
                 reqJson.getString("logType"),
                 reqJson.getInteger("status"),
@@ -151,8 +189,20 @@ public class ActionController {
                 reqJson.getString("id_FC"),
                 reqJson.getString("id_FS"),
                 tokData);
+        } catch (Exception e)
+        {
+            return getUserToken.err("statusChg", e);
+        }
     }
 
+
+    /**
+     * for a "component", batch change the status of all its subParts
+     * isLink means whether this will control the next step
+     * statusType 0 - all stop, 1 - all start, 2 - all finish
+     * @return
+     * @throws IOException
+     */
     @SecurityParameter
     @PostMapping("/v1/subStatusChange")
     public ApiResponse subStatusChange(@RequestBody JSONObject reqJson) throws IOException {
@@ -176,21 +226,26 @@ public class ActionController {
     }
 
 
-        @SecurityParameter
+    @SecurityParameter
     @PostMapping("/v1/createTask")
     public ApiResponse createTask(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
-        return actionService.createTask(
-                reqJson.getString("logType"),
-                reqJson.getString("id_FC"),
-                reqJson.getString("id_O"),
-                tokData.getString("id_C"),
-                tokData.getString("id_U"),
-                tokData.getString("grpU"),
-                tokData.getString("dep"),
-                reqJson.getJSONObject("oItemData"),
-                tokData.getJSONObject("wrdNU"));
+        try {
+            return actionService.createTask(
+                    reqJson.getString("logType"),
+                    reqJson.getString("id_FC"),
+                    reqJson.getString("id_O"),
+                    tokData.getString("id_C"),
+                    tokData.getString("id_U"),
+                    tokData.getString("grpU"),
+                    tokData.getString("dep"),
+                    reqJson.getJSONObject("oItemData"),
+                    tokData.getJSONObject("wrdNU"));
+        } catch (Exception e)
+        {
+            return getUserToken.err("createTask", e);
+        }
     }
 
     @SecurityParameter
@@ -215,18 +270,23 @@ public class ActionController {
     public ApiResponse createQuest(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
-        return actionService.createQuest(
-                tokData.getString("id_C"),
-                reqJson.getString("id_O"),
-                reqJson.getInteger("index"),
-                reqJson.getString("id_Prob"),
-                reqJson.getString("id_FC"),
-                reqJson.getString("id_FQ"),
-                tokData.getString("id_U"),
-                tokData.getString("grpU"),
-                tokData.getString("dep"),
-                tokData.getJSONObject("wrdNU"),
-                reqJson.getJSONObject("probData"));
+        try {
+            return actionService.createQuest(
+                    tokData.getString("id_C"),
+                    reqJson.getString("id_O"),
+                    reqJson.getInteger("index"),
+                    reqJson.getString("id_Prob"),
+                    reqJson.getString("id_FC"),
+                    reqJson.getString("id_FQ"),
+                    tokData.getString("id_U"),
+                    tokData.getString("grpU"),
+                    tokData.getString("dep"),
+                    tokData.getJSONObject("wrdNU"),
+                    reqJson.getJSONObject("probData"));
+        } catch (Exception e)
+        {
+            return getUserToken.err("createQuest", e);
+        }
     }
 
         /**

@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.Map;
 
 
-@RequestMapping("/setAuth")
+@RequestMapping("setAuth")
 @RestController
 public class SetAuthController {
 

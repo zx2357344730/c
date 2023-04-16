@@ -40,6 +40,8 @@ public class AssetInfo {
 
     private String id_CP;
 
+    private String id_CB;
+
     private String id_P;
 
     private JSONObject wrdN;

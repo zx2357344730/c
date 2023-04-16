@@ -23,7 +23,7 @@ import java.io.IOException;
  * @ver 1.0.0
  **/
 @RestController
-@RequestMapping("/usage")
+@RequestMapping("usage")
 public class UsageController {
 
     @Autowired
@@ -42,57 +42,97 @@ public class UsageController {
     }
 
 
+//    @SecurityParameter
+//    @PostMapping("/v1/setFav")
+//    public ApiResponse setFav(@RequestBody JSONObject json) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        return usageService.setFav(
+//                tokData.getString("id_U"),
+//                tokData.getString("id_C"),
+//                json.getString("id_O"),
+//                json.getInteger("index"),
+//                json.getString("id"),
+//                json.getString("id_FS")
+//        );
+//    }
+
+//    @SecurityParameter
+//    @PostMapping("/v1/setRecentTask")
+//    public ApiResponse setRecentTask(@RequestBody JSONObject json) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//        return usageService.setRecentTask(
+//                tokData.getString("id_U"),
+//                tokData.getString("id_C"),
+//                json.getString("id_O"),
+//                json.getInteger("index"),
+//                json.getString("id"),
+//                json.getString("id_FS")
+//        );
+//    }
+
     @SecurityParameter
     @PostMapping("/v1/setFav")
-    public ApiResponse setFav(@RequestBody JSONObject json) {
+    public ApiResponse setFav(@RequestBody JSONObject json) throws IOException {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         return usageService.setFav(
                 tokData.getString("id_U"),
                 tokData.getString("id_C"),
-                json.getString("id_O"),
-                json.getInteger("index"),
-                json.getString("id"),
-                json.getString("id_FS")
+                json.getJSONObject("content")
         );
     }
-
-    @SecurityParameter
-    @PostMapping("/v1/setRecentTask")
-    public ApiResponse setRecentTask(@RequestBody JSONObject json) {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-        return usageService.setRecentTask(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"),
-                json.getString("id_O"),
-                json.getInteger("index"),
-                json.getString("id"),
-                json.getString("id_FS")
-        );
-    }
-
 
     @SecurityParameter
     @PostMapping("/v1/getFav")
-    public ApiResponse getFav(@RequestBody JSONObject json) {
+    public ApiResponse getFav(@RequestBody JSONObject json) throws IOException {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-
         return usageService.getFav(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"));
+                tokData.getString("id_U")
+//                json.getString("id_U")
+        );
     }
 
-
     @SecurityParameter
-    @PostMapping("/v1/setFavAppoint")
-    public ApiResponse setFavAppoint(@RequestBody JSONObject json) {
+    @PostMapping("/v1/delFav")
+    public ApiResponse delFav(@RequestBody JSONObject json) throws IOException {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-        return usageService.setFavAppoint(
-                json.getJSONArray("id_Us"),
-                tokData.getString("id_C"),
+        return usageService.delFav(
+                tokData.getString("id_U"),
                 json.getString("id_O"),
                 json.getInteger("index"),
                 json.getString("id"),
                 json.getString("id_FS")
+        );
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/appointTask")
+    public ApiResponse appointTask(@RequestBody JSONObject json) throws IOException {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        return usageService.appointTask(
+                json.getJSONArray("array_U"),
+                tokData.getString("id_U"),
+                tokData.getString("id_C"),
+                json.getJSONObject("content")
+        );
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/setPowerup")
+    public ApiResponse setPowerup(@RequestBody JSONObject json) throws IOException {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        return usageService.setPowerup(
+                tokData.getString("id_C"),
+                json.getJSONObject("capacity")
+        );
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getPowerup")
+    public ApiResponse getPowerup(@RequestBody JSONObject json) throws IOException {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        return usageService.getPowerup(
+                tokData.getString("id_C"),
+                json.getString("ref")
         );
     }
 
@@ -140,24 +180,24 @@ public class UsageController {
         );
     }
 
-    @SecurityParameter
-    @PostMapping("/v1/connectionComp")
-    public ApiResponse connectionComp(@RequestBody JSONObject json) throws IOException {
-        return usageService.connectionComp(
-                json.getString("id_C"),
-                json.getString("id_CB"),
-                json.getBoolean("isCB")
-        );
-    }
-
-    @SecurityParameter
-    @PostMapping("/v1/connectionProd")
-    public ApiResponse connectionProd(@RequestBody JSONObject json) throws IOException {
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-
-        return usageService.connectionProd(
-                tokData.getString("id_C"),
-                json.getString("id_P")
-        );
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/connectionComp")
+//    public ApiResponse connectionComp(@RequestBody JSONObject json) throws IOException {
+//        return usageService.connectionComp(
+//                json.getString("id_C"),
+//                json.getString("id_CB"),
+//                json.getBoolean("isCB")
+//        );
+//    }
+//
+//    @SecurityParameter
+//    @PostMapping("/v1/connectionProd")
+//    public ApiResponse connectionProd(@RequestBody JSONObject json) throws IOException {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//
+//        return usageService.connectionProd(
+//                tokData.getString("id_C"),
+//                json.getString("id_P")
+//        );
+//    }
 }

@@ -43,7 +43,7 @@ public class OrderInfo implements Cloneable{
         this.grpB = grpB == null? "1000": grpB;
         this.ref = ref == null? "": ref;
         this.refB = refB == null? "": refB;
-        this.priority = priority == null? 0: priority;
+        this.priority = priority == null ? 5: priority;
         this.pic = pic  == null? "": pic;
         this.lST = lST  == null? 4: lST;
         this.lCR = lCR  == null? 0: lCR;

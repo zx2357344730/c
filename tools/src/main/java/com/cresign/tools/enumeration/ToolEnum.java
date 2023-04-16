@@ -9,8 +9,11 @@ public enum ToolEnum {
     ASSET_NOT_FOUND("021005"),
 
     DB_ERROR("029001"),
+    //公司文件容量不足
+    POWER_NOT_ENOUGH("030011"),
 
-
+    //产品数量不足
+    PROD_NOT_ENOUGH("022018"),
     ;
     /**
      * 异常状态码

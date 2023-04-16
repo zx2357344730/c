@@ -3,15 +3,17 @@ package com.cresign.tools.dbTools;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
-import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.LogFlow;
+import com.cresign.tools.pojo.po.Order;
+import com.cresign.tools.pojo.po.orderCard.OrderAction;
+import com.cresign.tools.pojo.po.orderCard.OrderOItem;
+import com.cresign.tools.pojo.po.orderCard.OrderStock;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -23,8 +25,6 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -34,7 +34,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -53,12 +53,13 @@ public class DbUtils {
     private RestHighLevelClient client;
 
     @Autowired
-    private StringRedisTemplate redisTemplate0;
+    private Qt qt;
 
-    /**
+    @Autowired
+    private DoubleUtils du;
+
+    /*
         ES
-        merge addESs, delESs, updateES
-        updateES, updateESBulk
         lSBxxxUpdateFields
         getES-lSBxxx data
         getES-logFlow data
@@ -73,7 +74,7 @@ public class DbUtils {
         setRedis0, setRedis1
         getRedis0, getRedis1
 
-     **/
+     */
 
 
     /**
@@ -86,7 +87,8 @@ public class DbUtils {
      * @Return java.lang.Object
      * @Card
      **/
-    //FIXED
+
+    //Fixed
     public Object getMongoOneField(String id, String field, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
         if (field != null) {
@@ -105,6 +107,7 @@ public class DbUtils {
      * @Return java.lang.Object
      * @Card
      **/
+
     //FIXED
     public Object getMongoOneFields(String id, List<String> listField, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
@@ -112,46 +115,6 @@ public class DbUtils {
         return mongoTemplate.findOne(query, classType);
     }
 
-    /**
-     * 根据多个id查询mongo
-     * @author Rachel
-     * @Date 2022/01/14
-     * @param setId
-     * @param field 返回字段
-     * @param classType 表对应的实体类
-     * @Return java.util.List<?>
-     * @Card
-     **/
-    //FIXED
-    public List<?> getMongoListField(HashSet setId, String field, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").in(setId));
-        if (field != null) {
-            query.fields().include(field);
-        }
-        List<?> list = mongoTemplate.find(query, classType);
-        return list;
-    }
-
-    /**
-     * 根据多个id查询mongo
-     * @author Rachel
-     * @Date 2022/01/14
-     * @param setId
-     * @param listField 多个返回字段
-     * @param classType 表对应的实体类
-     * @Return java.util.List<?>
-     * @Card
-     **/
-    //FIXED
-
-    public List<?> getMongoListFields(HashSet setId, List<String> listField, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").in(setId));
-        listField.forEach(query.fields()::include);
-        List<?> list = mongoTemplate.find(query, classType);
-        return list;
-    }
-
-    //FIXED
 
     public Map<String, ?> getMongoMapField(HashSet setId, String field, Class<?> classType) {
         Query query = new Query(new Criteria("_id").in(setId));
@@ -170,23 +133,6 @@ public class DbUtils {
         return mapId;
     }
 
-
-    //FIXED
-
-    public Map<String, ?> getMongoMapFields(HashSet setId, List<String> listField, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").in(setId));
-        listField.forEach(query.fields()::include);
-        List<?> list = mongoTemplate.find(query, classType);
-        System.out.println("list=" + list);
-        System.out.println("list=" + list);
-        Map<String, Object> mapId = new HashMap<>();
-        list.forEach(l ->{
-            System.out.println("l= " + l);
-            JSONObject json = (JSONObject) JSON.toJSON(l);
-            mapId.put(json.getString("id"), l);
-        });
-        return mapId;
-    }
 
     /**
      * set修改mongo
@@ -214,7 +160,6 @@ public class DbUtils {
      * set修改mongo
      * @author Rachel
      * @Date 2022/01/14
-     * @param id
      * @param jsonUpdate 多个修改字段
      * @param classType 表对应的实体类
      * @Return com.mongodb.client.result.UpdateResult
@@ -231,132 +176,6 @@ public class DbUtils {
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         return updateResult;
     }
-
-//    /**
-//     * inc修改mongo
-//     * @author Rachel
-//     * @Date 2022/01/14
-//     * @param id
-//     * @param updateKey 修改字段key
-//     * @param updateValue 修改字段value
-//     * @param classType 表对应的实体类
-//     * @Return com.mongodb.client.result.UpdateResult
-//     * @Card
-//     **/
-//    //FIXED
-//
-//    public UpdateResult incMongoValue(String id, String updateKey, Number updateValue, Class<?> classType) {
-//        Query query = new Query(new Criteria("_id").is(id));
-//        Update update = new Update();
-//        update.inc(updateKey, updateValue);
-//        update.inc("tvs", 1);
-//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-//        return updateResult;
-//    }
-//
-//    /**
-//     * inc修改mongo
-//     * @author Rachel
-//     * @Date 2022/01/14
-//     * @param id
-//     * @param jsonUpdate 多个修改对象
-//     * @param classType 表对应的实体类
-//     * @Return com.mongodb.client.result.UpdateResult
-//     * @Card
-//     **/
-    //FIXED
-//    public UpdateResult incMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
-//        Query query = new Query(new Criteria("_id").is(id));
-//        Update update = new Update();
-//        jsonUpdate.forEach((k, v) ->{
-//            update.inc(k, (Number) v);
-//        });
-//        update.inc("tvs", 1);
-//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-//        return updateResult;
-//    }
-
-    /**
-     * push修改mongo
-     * @author Rachel
-     * @Date 2022/01/14
-     * @param id
-     * @param updateKey 修改字段key
-     * @param updateValue 修改字段value
-     * @param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    public UpdateResult pushMongoValue(String id, String updateKey, Object updateValue, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        update.push(updateKey, updateValue);
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
-//
-//    /**
-//     * push修改mongo
-//     * @author Rachel
-//     * @Date 2022/01/14
-//     * @param id
-//     * @param jsonUpdate 多个修改对象
-//     * @param classType 表对应的实体类
-//     * @Return com.mongodb.client.result.UpdateResult
-//     * @Card
-//     **/
-//    public UpdateResult pushMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
-//        Query query = new Query(new Criteria("_id").is(id));
-//        Update update = new Update();
-//        jsonUpdate.forEach((k, v) ->{
-//            update.push(k, v);
-//        });
-//        update.inc("tvs", 1);
-//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-//        return updateResult;
-//    }
-//
-//    /**
-//     * pull修改mongo
-//     * @author Rachel
-//     * @Date 2022/01/14
-//     * @param id
-//     * @param updateKey 修改字段key
-//     * @param updateValue 修改字段value
-//     * @param classType 表对应的实体类
-//     * @Return com.mongodb.client.result.UpdateResult
-//     * @Card
-//     **/
-//    public UpdateResult pullMongoValue(String id, String updateKey, Object updateValue, Class<?> classType) {
-//        Query query = new Query(new Criteria("_id").is(id));
-//        Update update = new Update();
-//        update.pull(updateKey, updateValue);
-//        update.inc("tvs", 1);
-//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-//        return updateResult;
-//    }
-//
-//    /**
-//     * pull修改mongo
-//     * @author Rachel
-//     * @Date 2022/01/14
-//     * @param id
-//     * @param jsonUpdate 多个修改对象
-//     * @param classType 表对应的实体类
-//     * @Return com.mongodb.client.result.UpdateResult
-//     * @Card
-//     **/
-//    public UpdateResult pullMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
-//        Query query = new Query(new Criteria("_id").is(id));
-//        Update update = new Update();
-//        jsonUpdate.forEach((k, v) ->{
-//            update.pull(k, v);
-//        });
-//        update.inc("tvs", 1);
-//        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-//        return updateResult;
-//    }
 
     /**
      * 修改mongo
@@ -405,54 +224,6 @@ public class DbUtils {
     }
 
     /**
-     * 批量操作es
-     * @author Rachel
-     * @Date 2022/05/17
-     * @Param arrayBulk 新增：{"type":"insert", "logType":"", "insert":{}} / 修改：{"type":"update", "logType":"", "id":"", update:{}} / 删除：{"type":"remove", "logType":"", "id":""}
-     * @Param logType
-     * @Return java.lang.Object
-     * @Card
-     **/
-    public BulkResponse bulkEs(List<JSONObject> listBulk) throws IOException {
-        System.out.println("listBulk=" + listBulk);
-        BulkRequest bulk = new BulkRequest();
-        listBulk.forEach(jsonBulk ->{
-            String type = jsonBulk.getString("type");
-            String logType = jsonBulk.getString("logType");
-            if (type.equals("insert")) {
-                bulk.add(new IndexRequest(logType).source(jsonBulk.getJSONObject("insert")));
-            } else if (type.equals("update")) {
-                JSONObject jsonEs = jsonBulk.getJSONObject("update");
-                jsonEs.remove("id_ES");
-                bulk.add(new UpdateRequest(logType, jsonBulk.getString("id")).doc(jsonEs, XContentType.JSON));
-            } else if (type.equals("delete")) {
-                bulk.add(new DeleteRequest(logType, jsonBulk.getString("id")));
-            }
-        });
-        BulkResponse bulkResponse = client.bulk(bulk, RequestOptions.DEFAULT);
-        return bulkResponse;
-    }
-    public BulkResponse bulkEs(List<JSONObject> listBulk, String logType) throws IOException {
-        System.out.println("listBulk=" + listBulk);
-        BulkRequest bulk = new BulkRequest();
-        listBulk.forEach(jsonBulk ->{
-            String type = jsonBulk.getString("type");
-            if (type.equals("insert")) {
-                bulk.add(new IndexRequest(logType).source(jsonBulk.getJSONObject("insert")));
-            } else if (type.equals("update")) {
-                JSONObject jsonEs = jsonBulk.getJSONObject("update");
-                jsonEs.remove("id_ES");
-                bulk.add(new UpdateRequest(logType, jsonBulk.getString("id")).doc(jsonEs, XContentType.JSON));
-            } else if (type.equals("delete")) {
-                bulk.add(new DeleteRequest(logType, jsonBulk.getString("id")));
-            }
-        });
-        BulkResponse bulkResponse = client.bulk(bulk, RequestOptions.DEFAULT);
-        return bulkResponse;
-    }
-
-
-    /**
      * 获取原有日志修改后发日志
      * @author Rachel
      * @Date 2022/05/18
@@ -473,7 +244,7 @@ public class DbUtils {
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder.query(queryBuilder).from(0).size(1).sort("tmd", SortOrder.DESC);
-        
+
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("action","assetflow");
         searchRequest.source(sourceBuilder);
@@ -499,7 +270,7 @@ public class DbUtils {
         newestLog.setWrdNU(tokData.getJSONObject("wrdNU"));
 
 
-//        
+//
 //        newestLog.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 //        newestLog.put("id_U", tokData.getString("id_U"));
 //        newestLog.put("dep", tokData.getString("dep"));
@@ -656,21 +427,6 @@ public class DbUtils {
         return result;
     }
 
-    //FIXED
-    public BulkByScrollResponse delES(String listType, String key, String id) throws IOException {
-        DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(listType);
-        deleteByQueryRequest.setQuery(QueryBuilders.termQuery(key, id));
-        return client.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
-    }
-    //FIXED
-    public BulkByScrollResponse delES(String listType, String key, String id, String key2, String id2) throws IOException {
-        DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(listType);
-        deleteByQueryRequest.setQuery(QueryBuilders.termQuery(key, id));
-        deleteByQueryRequest.setQuery(QueryBuilders.termQuery(key2, id2));
-
-        return client.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
-    }
-
     /**
      * 新增assetflow日志
      * @author Jevon
@@ -679,8 +435,10 @@ public class DbUtils {
      * @updated 2020/10/26 8:30
      * @return void
      */
-    //Fixed
-    public  void addES(JSONObject infoObject , String indexes ) throws IOException {
+
+
+
+    public void addES(JSONObject infoObject , String indexes ) throws IOException {
 
         //8-1 indexes = indexes + "-write";
         infoObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
@@ -694,79 +452,6 @@ public class DbUtils {
     }
 
 
-    /**
-     * 根据id_C和ref获取id_A
-     * @author Rachel
-     * @Date 2022/01/14
-     * @param id_C 公司id
-     * @param ref 编号
-     * @Return java.lang.String
-     * @Card
-     **/
-//    //FIXED
-    public String getId_A(String id_C, String ref) {
-        Boolean bool = redisTemplate0.opsForHash().hasKey("login:module_id:compId-" + id_C, ref);
-        System.out.println("bool=" + bool);
-        if (bool) {
-            String id_A = (String) redisTemplate0.opsForHash().get("login:module_id:compId-" + id_C, ref);
-            System.out.println("id_A=" + id_A);
-            return id_A;
-        } else {
-            Query queryAsset = new Query(new Criteria("info.id_C").is(id_C).and("info.ref").is(ref));
-            queryAsset.fields().include("id");
-            Asset asset = mongoTemplate.findOne(queryAsset, Asset.class);
-            System.out.println("what"+id_C+ref);
-            if (asset == null) {
-//                throw new ErrorResponseException(HttpStatus.FORBIDDEN, ToolEnum.ASSET_NOT_FOUND.getCode(), null);
-                return "none";
-            }
-            redisTemplate0.opsForHash().put("login:module_id:compId-" + id_C, ref, asset.getId());
-            System.out.println("id_A=" + asset.getId());
-            return asset.getId();
-        }
-    }
-
-    /**
-     * 根据aId获取listKey需要的信息
-     * @param aId	aid
-     * @param listKey	需要的数据集合
-     * @return com.cresign.chat.pojo.po.Asset  返回结果: 结果
-     * @author tang
-     * @ver 1.0.0
-     * ##Updated: 2020/8/6 9:29
-     */
-//    public Asset getAssetById(String aId, List<String> listKey) {
-//        Query query = new Query(new Criteria("_id").is(aId));
-//        Field fields = query.fields();
-//        listKey.forEach(fields::include);
-//        return mongoTemplate.findOne(query, Asset.class);
-//    }
-
-    /**
-     * 查询公司是真是假  1：真公司    0：假公司，2：都是自己
-     * @author Jevon
-     * @param id_C      自己
-     * @param compOther     对方
-     * @ver 1.0
-     * @updated 2021/1/12 9:33
-     * @return int
-     */
-    public int judgeComp(String id_C,String compOther){
-
-        if (id_C.equals(compOther)){
-            return 2;
-        }else{
-            Query compQ = new Query(
-                    new Criteria("_id").is(compOther).and("bcdNet").is(1));
-            compQ.fields().include("bcdNet");
-            Comp comp = mongoTemplate.findOne(compQ, Comp.class);
-            if (comp != null) {
-                return 1;
-            }else {
-                return 0;
-            }
-        }
-    }
 
 
     public UpdateResponse updateEs(String logType, String id, JSONObject logInfo) throws IOException {
@@ -804,52 +489,480 @@ public class DbUtils {
 
     }
 
-    public Boolean checkOrder(JSONObject jsonObj, String objKey, List<Integer> arrayIndex, List<String> arrayKey) {
-        if (jsonObj == null || jsonObj.getJSONArray(objKey) == null) {
-            return false;
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// init oItem, action, oStock if needed
+public JSONObject checkCard(Order order)
+{
+    JSONObject jsonCard = new JSONObject();
+    JSONArray arrayCard = null;
+    JSONArray arrayOItem = null;
+    JSONArray arrayArrP = null;
+    JSONArray arrayData = null;
+    System.out.println("checking Card");
+
+        arrayOItem = order.getOItem().getJSONArray("objItem");
+        if (order.getOItem().getString("bmdHeight") == null)
+        {    order.getOItem().put("bmdHeight", "unset"); }
+        if ( order.getOItem().getJSONArray("objCard") == null)
+        {
+            order.getOItem().put("objCard", new JSONArray());
+            order.getOItem().getJSONArray("objCard").add("oItem");
+
+            if (order.getOStock() != null)
+            {
+                order.getOItem().getJSONArray("objCard").add("oStock");
+            }
+            if (order.getAction() != null) {
+                order.getOItem().getJSONArray("objCard").add("action");
+            }
         }
-        JSONArray array = jsonObj.getJSONArray(objKey);
-        //遍历array
-        if (arrayIndex == null) {
-            for (int i = 0; i < array.size(); i++) {
-                JSONObject json = array.getJSONObject(i);
-                if (json == null) {
-                    return false;
-                } else {
-                    for (int j = 0; j < arrayKey.size(); j++) {
-                        String key = arrayKey.get(j);
-                        if (json.get(key) == null) {
-                            return false;
+        if (order.getOItem().getJSONArray("arrP") == null)
+        {
+            order.getOItem().put("arrP", new JSONArray());
+            for (int i = 0; i < arrayOItem.size(); i++)
+            {
+                order.getOItem().getJSONArray("arrP").add(arrayOItem.getJSONObject(i).getString("id_P"));
+            }
+        }
+
+        if (order.getOItem().getJSONArray("objItemCol") == null)
+         {
+             order.getOItem().put("objItemCol", qt.getInitData("cn").getList().getJSONArray("objItemCol"));
+             System.out.println(qt.getInitData("cn").getList());
+         }
+
+        arrayCard = order.getOItem().getJSONArray("objCard");
+        arrayArrP = order.getOItem().getJSONArray("arrP");
+
+    if (arrayCard == null || arrayOItem == null || arrayArrP == null || arrayOItem.size() != arrayArrP.size()) {
+        System.out.println(2);
+        throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
+    }
+
+    // for each "card" in objCard: check if "json data" actually has data
+    for (int n = 0; n < arrayCard.size(); n++)
+    {
+            switch (arrayCard.getString(n)) {
+                case "oStock":
+                    if (order.getOStock() == null)
+                    {
+                        //whole card Init
+                        order.setOStock(this.initOStock(order.getOItem().getJSONArray("objItem")));
+                        order.getView().add("oStock");
+                    }
+                    // Check if all oItem has a oStock, if not, init it
+                    for (int i = 0; i < arrayOItem.size(); i++)
+                    {
+                        if (order.getOStock().getJSONArray("objData").getJSONObject(i) == null)
+                        {
+                            // just init 1 oitem
+                            this.initOStock(arrayOItem.getJSONObject(i), order.getOStock().getJSONArray("objData"),i);
+                        }
+                    }
+                    arrayData = order.getOStock().getJSONArray("objData");
+
+                    break;
+                case "action":
+                    if (order.getAction() == null)
+                    {
+                        order.setAction(this.initAction(order.getOItem().getJSONArray("objItem")));
+                        order.getView().add("action");
+                    }
+                    // Check if all oItem has a action, if not, init it
+                    for (int i = 0; i < arrayOItem.size(); i++)
+                    {
+                        this.initAction(arrayOItem.getJSONObject(i), order.getAction().getJSONArray("objAction"),i);
+                    }
+                    arrayData = order.getAction().getJSONArray("objAction");
+                    break;
+            }
+            jsonCard.put(arrayCard.getString(n), arrayData);
+    }
+    // this will return an JSONObject with "oStock":{...}, "action":{...}
+    return jsonCard;
+}
+
+// updateAsset , ... ?????, Asset
+    /**
+     *
+     * @param order
+     * @param listCol ES update list
+     * @return JSONObject of update String
+     */
+    public JSONObject summOrder(Order order, JSONObject listCol)
+    {
+
+        if (order.getOItem() == null)
+            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
+
+
+        JSONArray oItem = order.getOItem().getJSONArray("objItem");
+        JSONArray oStock = null;
+        JSONArray action = null;
+
+        Double wn2fin = 0.0;
+        Double wn2made = 0.0;
+        Double wn2progress = 0.0;
+        Integer count = 0;
+        Double wn2qty = 0.0;
+        Double wn4price = 0.0;
+        JSONArray arrP = new JSONArray();
+
+        if (order.getOItem().getJSONArray("objCard").contains("oStock") && order.getOStock() != null)
+        {
+            oStock = order.getOStock().getJSONArray("objData");
+        }
+        if (order.getOItem().getJSONArray("objCard").contains("action") && order.getAction() != null)
+        {
+            action = order.getAction().getJSONArray("objAction");
+        }
+
+        for (int i = 0; i < oItem.size(); i++)
+        {
+            wn2qty = du.add(oItem.getJSONObject(i).getDouble("wn2qtyneed"), wn2qty);
+            wn4price = du.add(wn4price, du.multiply(oItem.getJSONObject(i).getDouble("wn2qtyneed"),oItem.getJSONObject(i).getDouble("wn4price")));
+            arrP.add(oItem.getJSONObject(i).getString("id_P"));
+            oItem.getJSONObject(i).put("index", i);
+
+            if (oStock != null)
+            {
+                Double madePercent = du.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"),oItem.getJSONObject(i).getDouble("wn2qtyneed"));
+                wn2made = du.add(wn2made, madePercent);
+                oStock.getJSONObject(i).put("index", i);
+
+                if (action != null)
+                {
+                    for (int j = 0; j < action.getJSONObject(i).getJSONArray("upPrnts").size(); j++)
+                    {
+                        if (oStock.getJSONObject(i).getJSONArray("objShip").getJSONObject(j) == null)
+                        {
+                            // init it if it is null
+                            JSONObject newObjShip = qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
+                                    "wn2qtyneed", oItem.getJSONObject(i).getDouble("wn2qtyneed"));
+                            oStock.getJSONObject(i).getJSONArray("objShip").add(newObjShip);
                         }
                     }
                 }
             }
-            return true;
-        } else {
-            int size = arrayIndex.size();
-            for (int i = 0; i < size; i++) {
-                Integer index = arrayIndex.get(i);
-                if (index >= size || array.getJSONObject(index) == null) {
-                    return false;
-                } else {
-                    JSONObject json = array.getJSONObject(index);
-                    for (int j = 0; j < arrayKey.size(); j++) {
-                        String key = arrayKey.get(j);
-                        if (json.get(key) == null) {
-                            return false;
-                        }
+            if (action != null)
+            {
+                count = action.getJSONObject(i).getInteger("bcdStatus") == 2 ? 1: 0 + count;
+                action.getJSONObject(i).put("index", i);
+
+                String grp = oItem.getJSONObject(i).getString("grp");
+                String grpB = oItem.getJSONObject(i).getString("grpB");
+
+                // if grp not exists, need to init grpGroup
+                if (grp != null && !grp.equals("") && order.getAction().getJSONObject("grpGroup").getJSONObject(grp) == null)
+                {
+                Asset asset = qt.getConfig(oItem.getJSONObject(i).getString("id_C"),"a-auth","def.objlSP."+grp);
+                    //sales side getlSProd, and set default values
+                    System.out.println("getGrp"+asset.getId());
+
+                    if (!asset.getId().equals("none")) {
+                        JSONObject grpData = asset.getDef().getJSONObject("objlSP").getJSONObject(grp) == null? new JSONObject() : asset.getDef().getJSONObject("objlSP").getJSONObject(grp);
+                        order.getAction().getJSONObject("grpGroup").put(grp, grpData);
+                    }
+                }
+                if (grpB != null && !grpB.equals("") && order.getAction().getJSONObject("grpBGroup").getJSONObject(grpB) == null)
+                {
+
+                    Asset asset = qt.getConfig(order.getInfo().getId_CB(),"a-auth","def.objlBP."+grpB);
+                    System.out.println("getGrpB"+asset.getId());
+
+                    //sales side getlSProd, and set default values
+                    if (!asset.getId().equals("none")) {
+                        JSONObject grpData = asset.getDef().getJSONObject("objlBP").getJSONObject(grpB) == null ? new JSONObject() : asset.getDef().getJSONObject("objlBP").getJSONObject(grpB);
+                        order.getAction().getJSONObject("grpBGroup").put(grpB, grpData);
                     }
                 }
             }
-            return true;
+        }
+        wn2fin = du.divide(wn2made, oItem.size());
+        wn2progress = du.divide(count, oItem.size());
+        qt.upJson(listCol, "wn2fin", wn2fin, "wn2progress", wn2progress, "wn2qty", wn2qty, "wn4price", wn4price, "arrP", arrP);
+
+        order.getOItem().put("wn2qty", wn2qty);
+        order.getOItem().put("wn4price", wn4price);
+        order.getOItem().put("arrP", arrP);
+        order.getAction().put("wn2progress", wn2progress);
+        order.getOStock().put("wn2fin", wn2fin);
+
+        JSONObject result = new JSONObject();
+        result.put("oItem", order.getOItem());
+        result.put("view", order.getView());
+        if (oStock != null)
+            result.put("oStock", order.getOStock());
+        if (action != null)
+            result.put("action", order.getAction());
+        return result;
+
+    }
+
+    public void initAction(JSONObject orderOItem, JSONArray action, Integer index)
+    {
+
+        if (action.getJSONObject(index) == null) {
+            JSONObject actionData = qt.setJson(
+                    "bcdStatus", 100, "bisPush", 0,
+                    "bisactivate", 0,
+                    "id_O", orderOItem.getString("id_O"),
+                    "id_Us", new JSONArray(),
+                    "id_OP", orderOItem.getString("id_OP"),
+                    "id_P", orderOItem.getString("id_P"),
+                    "index", orderOItem.getString("index"),
+                    "refOP", "",
+                    "prob", new JSONArray(),
+                    "sumChild", 0, "sumPrev", 0,
+                    "prtNext", new JSONArray(),
+                    "prtPrev", new JSONArray(),
+                    "subParts", new JSONArray(),
+                    "upPrnts", new JSONArray(),
+                    "sumChild", 0,
+                    "rKey", orderOItem.getString("rKey"),
+                    "wrdNP", orderOItem.getJSONObject("wrdNP"),
+                    "wrdN", orderOItem.getJSONObject("wrdN"),
+                    "bmdpt", 1, "priority", 2);
+
+
+            action.set(index, actionData);
+        }
+        if (action.getJSONObject(index).getJSONArray("upPrnts") == null)
+        {
+            action.getJSONObject(index).put("upPrnts", new JSONArray());
+        }
+        if (action.getJSONObject(index).getJSONArray("subParts") == null)
+        {
+            action.getJSONObject(index).put("subParts", new JSONArray());
+        }
+        if (action.getJSONObject(index).getJSONArray("prtPrev") == null)
+        {
+            action.getJSONObject(index).put("prtPrev", new JSONArray());
+        }
+        if (action.getJSONObject(index).getJSONArray("prtNext") == null)
+        {
+            action.getJSONObject(index).put("prtNext", new JSONArray());
         }
     }
 
-    public void updateSize(String id_C, Long fileSize) {
-        String id_A = getId_A(id_C, "a-auth");
-        Update update = new Update();
-        update.inc("refAuto.objSize.nowSize", fileSize);
-        update.set("refAuto.objSize.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-        updateMongoValues(id_A, update, Asset.class);
+    /***
+     * init entire oStock from nothing
+     * @param oItem need to send the entire oItem.objItem for data to init
+     * @return
+     */
+    public JSONObject initAction(JSONArray oItem)
+    {
+        JSONArray actionArray = new JSONArray();
+        for (int i = 0; i < oItem.size(); i++)
+        {
+            this.initAction(oItem.getJSONObject(i), actionArray, i);
+        }
+        JSONObject action = new JSONObject();
+        action.put("objAction", actionArray);
+        action.put("wn2progress", 0.0);
+        action.put("grpGroup", new JSONObject());
+        action.put("grpBGroup", new JSONObject());
+        return action;
+    }
+
+    public void initOStock(JSONObject orderOItem, JSONArray oStock, Integer index)
+    {
+
+            JSONObject oStockData = qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
+                    "id_P", orderOItem.getString("id_P"),
+                    "resvQty", new JSONObject(),
+                    "rKey", orderOItem.getString("rKey"));
+
+            oStockData.put("objShip", qt.setArray(
+                    qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
+                            "wn2qtyneed", orderOItem.getDouble("wn2qtyneed"))));
+
+            oStock.set(index, oStockData);
+    }
+
+    /***
+     * init entire oStock from nothing
+     * @param oItem need to send the entire oItem.objItem for data to init
+     * @return
+     */
+    public JSONObject initOStock(JSONArray oItem)
+    {
+        JSONArray stockArray = new JSONArray();
+        for (int i = 0; i < oItem.size(); i++)
+        {
+            this.initOStock(oItem.getJSONObject(i), stockArray, i);
+        }
+        JSONObject oStock = new JSONObject();
+        oStock.put("objData", stockArray);
+        oStock.put("wn2fin", 0.0);
+        return oStock;
+    }
+
+    /*  Order -> order, =>
+
+    if action, oItem -> action, sumQty, wn2Qtynow
+    if oStock
+    */
+
+    public void upOrderRelated(Order data, JSONObject listCol) {
+
+        JSONArray cardList = data.getOItem().getJSONArray("objCard");
+
+        JSONArray oItem = data.getOItem().getJSONArray("objItem");
+
+        JSONArray view = data.getView();
+
+        // up all card's summary values
+        for (int i = 0; i < cardList.size(); i++)
+        {
+            String card = cardList.getString(i);
+
+            switch (card) {
+                case "oItem":
+                    // Calculate Summarize keys here
+                    // summarize all lsbKeys
+                    Double qtyTotal = 0.0;
+                    Double priceTotal = 0.0;
+                    for (int j = 0; j < data.getOItem().getJSONArray("objItem").size(); j++)
+                    {
+                        JSONObject objItem = data.getOItem().getJSONArray("objItem").getJSONObject(j);
+                        qtyTotal = qtyTotal + objItem.getDouble("wn2qtyneed");
+                        priceTotal = priceTotal + objItem.getDouble("wn2qtyneed") * objItem.getDouble("wn4price");
+                    }
+
+                    // set mdb & listCol
+                    data.getOItem().put("wn2qty", qtyTotal);
+                    data.getOItem().put("wn4price", priceTotal);
+                    listCol.put("wn2qty", qtyTotal);
+                    listCol.put("wn4price", priceTotal);
+
+                    System.out.print("oItem");
+
+                    break;
+                case "action":
+
+                    //if card is NULL, init
+                    if (data.getAction() == null)
+                    {
+                        JSONObject obj = new JSONObject();
+                        obj.put("grpBGroup", new JSONObject());
+                        obj.put("grpGroup", new JSONObject());
+                        obj.put("objAction", new JSONArray());
+                        data.setAction(obj);
+                    }
+//                    JSONArray savingData = new JSONArray();
+                    JSONArray actionObj = data.getAction().getJSONArray("objAction");
+                    JSONArray savingData = new JSONArray();
+
+                    Integer counter = 0;
+
+                    for (int j = 0; j < oItem.size(); j++)
+                    {
+                        String rKey = oItem.getJSONObject(j).getString("rKey");
+                        Boolean isSet = false;
+                        for (int k = 0; k < actionObj.size(); k++)
+                        {
+                            if (actionObj.getJSONObject(k).getString("rKey").equals(rKey))
+                            {
+                                //setup rearrange items by rKey
+                                savingData.add(qt.cloneObj(actionObj.getJSONObject(k)));
+                                isSet = true;
+                                //set index as j (it's not arranged correctly)
+                                savingData.getJSONObject(j).put("index", j);
+                            }
+                            break;
+                        }
+
+                        if (!isSet)
+                        {
+                            //need to init objAction here
+                            OrderAction objAction = new OrderAction(100, 0, 0, 1, "", "", oItem.getJSONObject(j).getString("id_P"),
+                                    oItem.getJSONObject(j).getString("id_O"),j,oItem.getJSONObject(j).getString("rKey"),
+                                    0, 0, null, null, null, null, null, oItem.getJSONObject(j).getJSONObject("wrdN"));
+                            savingData.add(qt.toJson(objAction));
+                            //TODO KEV setup grpBGroup grpGroup
+                        }
+
+                        if (savingData.getJSONObject(j).getInteger("bcdStatus").equals(2))
+                        {
+                            counter++;
+                        }
+                    }
+
+                    // Calculate Summarize keys here
+                    // summarize all lsbKeys
+                    data.getAction().put("wn2progress", counter / data.getAction().getJSONArray("objAction").size());
+
+                    // set mdb & listCol
+                    data.getAction().put("objAction", savingData);
+                    listCol.put("wn2progress", data.getAction().getDouble("wn2progress"));
+
+                    System.out.print("action");
+                    break;
+                case "oStock":
+                    //if card is NULL, init
+                    if (data.getOStock() == null)
+                    {
+                        JSONObject obj = new JSONObject();
+                        obj.put("wn2fin", 0);
+                        obj.put("objData", new JSONArray());
+                        data.setOStock(obj);
+                    }
+                    JSONArray stockObj = data.getOStock().getJSONArray("objData");
+                    Double finQty = 0.0;
+                    JSONArray savingStock = new JSONArray();
+
+                    for (int j = 0; j < oItem.size(); j++)
+                    {
+                        String rKey = oItem.getJSONObject(j).getString("rKey");
+                        Boolean isSet = false;
+                        for (int k = 0; k < stockObj.size(); k++)
+                        {
+                            if (stockObj.getJSONObject(k).getString("rKey").equals(rKey))
+                            {
+                                //setup rearrange items by rKey
+                                savingStock.add(qt.cloneObj(stockObj.getJSONObject(k)));
+                                isSet = true;
+                                //set index as j (it's not arranged correctly)
+                                savingStock.getJSONObject(j).put("index", j);
+                            }
+                            break;
+                        }
+
+                        if (!isSet)
+                        {
+                            //need to init objAction here
+                            OrderStock objStock = new OrderStock(oItem.getJSONObject(j).getString("id_P"),
+                                    oItem.getJSONObject(j).getString("rKey"),j, 0.0, 0.0);
+                            savingStock.add(qt.toJson(objStock));
+                            //TODO KEV setup grpBGroup grpGroup
+                        }
+
+                        finQty = finQty + savingStock.getJSONObject(j).getDouble("wn2qtymade");
+                    }
+
+                    // set mdb & listCol
+                    data.getOStock().put("objData", savingStock);
+                    data.getOStock().put("wn2fin", finQty);
+                    listCol.put("wn2fin", finQty);
+
+                    System.out.print("oStock");
+                    break;
+            }
+
+            System.out.println("...2");
+
+            if(!view.contains(card)) {
+                view.add(card);
+            }
+        }
+
+
+
+     //   qt.setMDContent(data.getId(), savingData, Order.class);
+      //  qt.setES(listType,qt.setESFilt("id", data.getId()), listCol);
+
     }
 }
