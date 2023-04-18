@@ -1,5 +1,6 @@
 package com.cresign.login.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.enumeration.LoginEnum;
@@ -7,12 +8,15 @@ import com.cresign.login.service.RoleService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
+import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.InitJava;
+import com.cresign.tools.pojo.po.LogFlow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -52,6 +56,8 @@ public class RoleServiceImpl implements RoleService {
         String redisKey = grpU + "_" + listType + "_" + grp + "_" + authType;
         qt.delRDHashItem("login:get_read_auth", "compId-"+id_C, redisKey);
         qt.delRDHashItem("login:get_readwrite_auth", "compId-" + id_C, redisKey);
+
+        qt.sendMQRearEnd(id_C,id_U,"updateRole");
 
         return retResult.ok(CodeEnum.OK.getCode(), "");
 
@@ -310,6 +316,8 @@ public class RoleServiceImpl implements RoleService {
         qt.delRDHashItem("login:get_read_auth", "compId-"+id_C, redisKey);
         qt.delRDHashItem("login:get_readwrite_auth", "compId-" + id_C, redisKey);
 
+        qt.sendMQRearEnd(id_C,id_U,"up_grp_all_auth");
+
         return retResult.ok(CodeEnum.OK.getCode(), "");
 
 
@@ -360,6 +368,7 @@ public class RoleServiceImpl implements RoleService {
         qt.delRD("login:get_read_auth", "compId-"+id_C);
         qt.delRD("login:get_readwrite_auth", "compId-" + id_C);
 
+        qt.sendMQRearEnd(id_C,id_U,"copyGrpU");
 
         return retResult.ok(CodeEnum.OK.getCode(), "");
 

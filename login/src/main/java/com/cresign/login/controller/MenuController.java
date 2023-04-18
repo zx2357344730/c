@@ -120,7 +120,6 @@ public class MenuController {
                 tokData.getString("id_C"),
                 reqJson.getString("grpU"),
                 reqJson.getJSONArray("data").toJavaList(MainMenuBO.class)
-
         );
     }
 

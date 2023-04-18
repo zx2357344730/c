@@ -114,7 +114,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @param logService	日志接口
      * @param redisTemplate0	redis下标为1的数据库模板
      * @param rocketMQTemplate	rocketMQ模板
-     * @return void  返回结果: 结果
      * @author tang
      * @ver 1.0.0
      * @date 2022/6/22
@@ -396,6 +395,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //            // 127.0.0.1 local test switching
             localSending(id_Us, logContent);
             // 调用检测id_U在不在本服务并发送信息方法
+            qt.sendMQ("chatTopic:chatTap",JSONObject.parseObject(JSON.toJSONString(logContent)));
 //            sendMsgToMQ(id_Us,logContent);
 ////            //4. regular send to ES 1 time
 //              sendMsgToEs(logContent);
@@ -482,7 +482,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     /**
      * MQ消息接收方法
      * @param msg	接收的消息
-     * @return void  返回结果: 结果
      * @author tang
      * @ver 1.0.0
      * @date 2022/6/22
@@ -492,6 +491,21 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     {
         JSONObject json = JSONObject.parseObject(msg);
         String subType = json.getString("subType");
+        if ("hd".equals(subType)) {
+            System.out.println("接收后端直接发送消息:");
+            System.out.println(JSON.toJSONString(json));
+            JSONObject data = json.getJSONObject("data");
+            JSONArray id_Us = data.getJSONArray("id_Us");
+            data.remove("id_Us");
+            json.put("data",data);
+            for (int i = 0; i < id_Us.size(); i++) {
+                if (WebSocketUserServer.webSocketSet.containsKey(id_Us.getString(i))) {
+                    WebSocketUserServer.webSocketSet.get(id_Us.getString(i)).values()
+                            .forEach(w -> w.sendMessage(json, AesUtil.getKey(),true));
+                }
+            }
+            return;
+        }
         if ("link".equals(subType)) {
             String id_U = json.getString("id_U");
 //            JSONArray sessions = json.getJSONArray("sessions");
@@ -604,7 +618,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     /**
      * 当前总在线人数加1
      * 无参
-     * @return void  返回结果: 结果
      * @author tang
      * @ver 1.0.0
      * @date 2022/6/23
@@ -616,7 +629,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     /**
      * 当前总在线人数减1
      * 无参
-     * @return void  返回结果: 结果
      * @author tang
      * @ver 1.0.0
      * @date 2022/6/23
@@ -640,7 +652,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     /**
      * ws关闭执行方法
      * @param uId	当前连接用户编号
-     * @return void  返回结果: 结果
      * @author tang
      * @ver 1.0.0
      * @date 2022/6/23
@@ -840,7 +851,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * 检测id_U在不在本服务并发送信息方法，在：直接发送、不在：放入mq发送
      * @param id_Us	用户编号
      * @param logContent 消息体
-     * @return void  返回结果: 结果
      * @author tang
      * @ver 1.0.0
      * @date 2022/6/28
@@ -892,7 +902,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     /**
      * 发送消息到es监听mq
      * @param logContent	发送的消息
-     * @return void  返回结果: 结果
      * @author tang
      * @ver 1.0.0
      * @date 2022/7/2

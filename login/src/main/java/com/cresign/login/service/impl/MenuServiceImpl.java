@@ -8,12 +8,15 @@ import com.cresign.login.service.MenuService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
+import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.InitJava;
+import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.assetCard.MainMenuBO;
 import com.cresign.tools.pojo.po.assetCard.SubMenuBO;
 import org.apache.commons.lang3.ObjectUtils;
@@ -190,14 +193,16 @@ public class MenuServiceImpl implements MenuService {
             }
         }
 
-        Asset asset = qt.getConfig(id_C, "a-auth","menu");
-
-//        Update mainMenuUd = new Update();
-//        mainMenuUd.set("menu.mainMenus." + grpU, mainMenusData);
-//        UpdateResult updateResult = mongoTemplate.updateFirst(menuQuery, mainMenuUd, Asset.class);
-        qt.setMDContent(asset.getId(),qt.setJson("menu.mainMenus." + grpU, mainMenusData), Asset.class);
+//        Asset asset = qt.getConfig(id_C, "a-auth","menu");
+//
+////        Update mainMenuUd = new Update();
+////        mainMenuUd.set("menu.mainMenus." + grpU, mainMenusData);
+////        UpdateResult updateResult = mongoTemplate.updateFirst(menuQuery, mainMenuUd, Asset.class);
+//        qt.setMDContent(asset.getId(),qt.setJson("menu.mainMenus." + grpU, mainMenusData), Asset.class);
 
         qt.delRD("details:get_menus", "compId-" + id_C);
+
+        qt.sendMQRearEnd(id_C, id_U,"ud_grpU_mainMenu");
 
         return retResult.ok(CodeEnum.OK.getCode(), null);
 

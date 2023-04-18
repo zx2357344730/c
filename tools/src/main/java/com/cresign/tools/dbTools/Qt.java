@@ -26,6 +26,7 @@ import com.cresign.tools.reflectTools.ApplicationContextTools;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.lang.StringUtils;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.bson.types.ObjectId;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -83,6 +84,12 @@ import static java.lang.Math.abs;
 
         public JSONObject initData = new JSONObject();
 
+        /**
+         * 注入RocketMQ模板
+         */
+        @Autowired
+        private RocketMQTemplate rocketMQTemplate;
+
         //MDB - done: get, getMany, del, new, inc, set, push, pull
         //MDB - need: ops, opsExec
         //ESS - done: get, getFilt, del, add, set
@@ -110,6 +117,98 @@ import static java.lang.Math.abs;
 //            return rKey.toString();
 //
 //        }
+
+        /**
+         * 发送MQ信息
+         * @param destination MQ标签
+         * @param db	发送内容
+         * @return 返回结果:
+         * @author tang
+         * @date 创建时间: 2023/4/15
+         * @ver 版本号: 1.0.0
+         */
+        public void sendMQ(String destination,JSONObject db){
+            rocketMQTemplate.convertAndSend(destination, db);
+        }
+        public void sendMQRearEnd(String id_C,String id_U,String noticeType){
+//            Asset asset = getConfig(id_C,"a-auth","flowControl");
+            JSONArray result = this.getES("lBUser", this.setESFilt("id_CB",id_C,"grpU","1001"));
+            System.out.println(JSON.toJSONString(result));
+            LogFlow logContent = LogFlow.getInstance();
+            logContent.setId_C(id_C);
+            logContent.setId_U(id_U);
+            logContent.setLogType("notice");
+            logContent.setSubType("hd");
+            logContent.setId(null);
+            logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+            JSONObject logData = new JSONObject();
+            JSONArray id_Us = new JSONArray();
+            for (int i = 0; i < result.size(); i++) {
+                JSONObject jsonObject = result.getJSONObject(i);
+                id_Us.add(jsonObject.getString("id_U"));
+            }
+//            if (!asset.getId().equals("none")) {
+//                LogFlow logContent = LogFlow.getInstance();
+//                logContent.setId_C(id_C);
+//                logContent.setId_U(id_U);
+//                logContent.setLogType("notice");
+//                logContent.setSubType("hd");
+//                logContent.setId(null);
+//                logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//                JSONObject logData = new JSONObject();
+//                JSONArray id_Us = new JSONArray();
+//                JSONArray cidArray = new JSONArray();
+//                // 获取卡片信息
+//                JSONObject flowControl = asset.getFlowControl();
+//                // 获取卡片data信息
+//                JSONArray flowData = flowControl.getJSONArray("objData");
+//                // 遍历data
+//                for (int i = 0; i < flowData.size(); i++) {
+//                    // 获取i对应的data信息
+//                    JSONObject roomSetting = flowData.getJSONObject(i);
+//                    // 获取群id
+//                    String roomId = roomSetting.getString("id");
+//                    // 获取日志群id
+//                    String logFlowId = logContent.getId();
+//                    if (roomSetting.getString("type").endsWith("SL")) {
+//                        logFlowId = logContent.getId_FS();
+//                    }
+//                    // 判断群id一样
+//                    if (roomId.equals(logFlowId)) {
+////                System.out.println("进入各FC 的loop: id=" + logContent.getId());
+//                        // 获取群用户id列表
+//                        JSONArray objUser = roomSetting.getJSONArray("objUser");
+////                System.out.println("objUser:" + JSON.toJSONString(objUser));
+//                        // 创建存储推送用户信息
+////                    System.out.println("当前服务标志:" + WebSocketUserServer.bz);
+//                        // 遍历群用户id列表
+//                        for (int j = 0; j < objUser.size(); j++) {
+//                            // 获取j对应的群用户信息
+//                            JSONObject thisUser = objUser.getJSONObject(j);
+//                            // 获取群用户id
+//                            id_Us.add(thisUser.getString("id_U"));
+//
+//                            // 判断群用户id不等于当前ws连接用户id
+//                            if (thisUser.getInteger("imp") <= logContent.getImp()) {
+//                                String id_client = thisUser.getString("id_APP");
+//                                if (null != id_client && !"".equals(id_client)) {
+//                                    cidArray.add(id_client);
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                logData.put("id_Us",id_Us);
+//                logData.put("cidArray",cidArray);
+//                logData.put("noticeType",noticeType);
+//                logContent.setData(logData);
+//                sendMQ("chatTopic:chatTap",JSONObject.parseObject(JSON.toJSONString(logContent)));
+//            }
+            logData.put("id_Us",id_Us);
+            logData.put("noticeType",noticeType);
+            logContent.setData(logData);
+            sendMQ("chatTopic:chatTap",JSONObject.parseObject(JSON.toJSONString(logContent)));
+        }
 
         public static String GetObjectId() {
             return new ObjectId().toString();
