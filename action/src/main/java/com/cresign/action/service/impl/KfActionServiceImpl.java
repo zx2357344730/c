@@ -8,10 +8,7 @@
 //import com.cresign.tools.advice.RetResult;
 //import com.cresign.tools.apires.ApiResponse;
 //import com.cresign.tools.common.Constants;
-//import com.cresign.tools.dbTools.CoupaUtil;
-//import com.cresign.tools.dbTools.DateUtils;
-//import com.cresign.tools.dbTools.DbUtils;
-//import com.cresign.tools.dbTools.Ut;
+//import com.cresign.tools.dbTools.*;
 //import com.cresign.tools.enumeration.CodeEnum;
 //import com.cresign.tools.enumeration.DateEnum;
 //import com.cresign.tools.exception.ErrorResponseException;
@@ -39,13 +36,10 @@
 //import java.io.IOException;
 //import java.util.*;
 //
-////这个文件还没开始修改
-//
-//
 ///**
 // * @ClassName KfAction
 // * @Description 作者很懒什么也没写
-// * @authortang
+// * @author tang
 // * @Date 2021/5/25 17:18
 // * @ver 1.0.0
 // */
@@ -70,7 +64,8 @@
 //    @Autowired
 //    private RetResult retResult;
 //
-//
+//    @Autowired
+//    private Qt qt;
 //
 //    /**
 //     * 恢复客服信息,Es数据库
@@ -89,15 +84,16 @@
 //
 //
 //        if (!"notice".equals(type)&&"false".equals(kf)) {
-//            Order errOrder = coupaUtil.getOrderByKeyAndListKey(
-//                    "info.cusmsgId",oId, Collections.singletonList(Constants.GET_CUSMSG));
-//            if (null == errOrder) {
+////            Order order = coupaUtil.getOrderByKeyAndListKey(
+////                    "info.cusmsgId",oId, Collections.singletonList(Constants.GET_CUSMSG));
+//            Order order = qt.getMDContent(oId,"cusmsg", Order.class);
+//            if (null == order) {
 //                // 返回操作失败结果
 ////                return RetResult.jsonResultEncrypt(HttpStatus.OK, LogEnum.LOG_GET_DATA_NULL.getCode(),"获取订单数据为空");
 //
 //                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_GET_ORDER_NULL.getCode(), "获取订单数据为空");
 //            }
-//            JSONObject cusmsg = errOrder.getCusmsg();
+//            JSONObject cusmsg = order.getCusmsg();
 //            if (null == cusmsg) {
 //                // 返回操作失败结果
 ////                return RetResult.jsonResultEncrypt(HttpStatus.OK, LogEnum.LOG_GET_DATA_NULL.getCode(),"获取订单数据为空");
@@ -504,6 +500,5 @@
 //
 //        // 发送日志
 //    }
-//
 //
 //}

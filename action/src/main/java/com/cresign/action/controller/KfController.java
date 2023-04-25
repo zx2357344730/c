@@ -51,12 +51,15 @@
 //    @PostMapping("/v1/getRecoveryKf")
 //    public ApiResponse getRecoveryKf(@RequestBody JSONObject map){
 //        // 获取订单id
-//        String oId = map.getString(Constants.REQUEST_OID);
-//        String type = map.getString("type");
-//        String id_U = getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"));
-//        String kf = map.getString("kf");
-//        Integer indexOnly = map.getInteger(Constants.GET_INDEX_ONLY);
-//        return kfActionService.getRecoveryKf(oId,type,id_U,kf,indexOnly);
+//        String oId = map.getString("id_O");
+//        String cId = map.getString("id_C");
+////        String type = map.getString("type");
+////        String id_U = getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"));
+////        String kf = map.getString("kf");
+////        Integer indexOnly = map.getInteger(Constants.GET_INDEX_ONLY);
+////        return kfActionService.getRecoveryKf(oId,type,id_U,kf,indexOnly);
+//
+//        return kfActionService.getRecoveryKf(oId,cId);
 //    }
 //
 //    /**

@@ -75,6 +75,10 @@ public class GatewayFilter implements GlobalFilter, Ordered {
                 || url.equals("/file/cos/v1/get_objurl_token")
                 || url.equals("/file/cos/v1/get_multi_token")
 
+                || url.equals("/action/cus/v1/sendUserCusCustomer")
+                || url.equals("/action/cus/v1/sendUserCusService")
+                || url.equals("/action/cus/v1/cusOperate")
+
 //                || url.equals("/file/picture/v1/picUpload")
         ){
             return chain.filter(exchange);

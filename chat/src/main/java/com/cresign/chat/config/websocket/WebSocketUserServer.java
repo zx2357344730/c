@@ -12,6 +12,7 @@ import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
+import com.cresign.tools.pojo.po.User;
 import io.netty.channel.ChannelHandler.Sharable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -328,7 +329,306 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //        JSONObject stringMap = aes(logContent,key);
 //        stringMap.put("en",true);
 
-
+        if ("cusmsg".equals(logContent.getLogType())) {
+            JSONObject data = logContent.getData();
+            sendMsgOne(data.getString("id_UPointTo"),logContent);
+//            String subType = logContent.getSubType();
+//            JSONObject data = logContent.getData();
+//            boolean isHost = data.getBoolean("isHost");
+//            String id_uCus = data.getString("id_UCus");
+//            String id_CCus = data.getString("id_CCus");
+//            if (isHost) {
+//                if ("score".equals(subType)) {
+//                    String id_uPointTo = data.getString("id_UPointTo");
+//                    String type = data.getString("type");
+//                    Asset asset = qt.getConfig(id_CCus,"a-auth","flowControl");
+//                    JSONObject dataNew = new JSONObject();
+//                    dataNew.put("id_UPointTo",logContent.getId_U());
+//                    String resultDesc;
+//                    if (null != asset) {
+//                        JSONObject flowControl = asset.getFlowControl();
+//                        if (null != flowControl) {
+//                            JSONObject cusAsset = flowControl.getJSONObject("cus");
+//                            if (null != cusAsset) {
+//                                JSONArray cusArr = cusAsset.getJSONArray(type);
+//                                if (null != cusArr && cusArr.size() > 0) {
+//                                    for (int i = 0; i < cusArr.size(); i++) {
+//                                        JSONObject cusArrI = cusArr.getJSONObject(i);
+//                                        if (cusArrI.getString("id_U").equals(logContent.getId_U())) {
+//                                            JSONObject userAll = cusArrI.getJSONObject("userAll");
+//                                            JSONObject id_uPo = userAll.getJSONObject(id_uPointTo);
+//                                            id_uPo.put("type",2);
+//                                            userAll.put(id_uPointTo,id_uPo);
+//                                            cusArrI.put("userAll",userAll);
+//                                            cusArrI.put("isBusy",0);
+//                                            qt.setMDContent(asset.getId(),qt.setJson("flowControl.cus."+type+"."+i,cusArrI), Asset.class);
+//                                            JSONObject foUp = new JSONObject();
+//                                            foUp.put("img","111.jpg");
+//                                            foUp.put("type",1);
+//                                            qt.setMDContent(asset.getId(),qt.setJson("flowControl.cusFoUp."+id_uPointTo,foUp), Asset.class);
+//                                            break;
+//                                        }
+//                                    }
+//                                    data.put("result",true);
+//                                    logContent.setData(data);
+//                                    sendMsgOne(id_uPointTo,logContent);
+//                                    sendMsgOne(logContent.getId_U(),logContent);
+//                                    return;
+//                                } else {
+//                                    resultDesc = "资产客服列表信息为空";
+//                                }
+//                            } else {
+//                                resultDesc = "资产客服信息为空";
+//                            }
+//                        } else {
+//                            resultDesc = "资产消息信息为空";
+//                        }
+//                    } else {
+//                        resultDesc = "资产信息为空";
+//                    }
+//                    sendMsgNotice(logContent.getId_U(),id_CCus,resultDesc, null,dataNew);
+//                    return;
+//                } else if ("foUp".equals(subType)) {
+//                    String id_uPointTo = data.getString("id_UPointTo");
+//                    User user = qt.getMDContent(id_uPointTo, "rolex", User.class);
+//                    JSONObject dataNew = new JSONObject();
+//                    dataNew.put("id_UPointTo",logContent.getId_U());
+//                    String resultDesc;
+//                    if (null != user) {
+//                        JSONObject rolex = user.getRolex();
+//                        if (null != rolex) {
+//                            JSONObject cus = rolex.getJSONObject("cus");
+//                            if (null != cus) {
+//                                JSONObject cusUser = cus.getJSONObject(id_CCus);
+//                                if (null == cusUser) {
+////                                    sendMsgNotice(logContent.getId_U(),id_CCus,"无法回访该用户!", logContent.getId_U(),dataNew);
+//                                    resultDesc = "无法回访该用户!";
+//                                } else {
+//                                    int cusFoUp = cusUser.getInteger("cusFoUp");
+//                                    if (cusFoUp > 0) {
+//                                        sendMsgOne(logContent.getId_U(),logContent);
+//                                        sendMsgOne(id_uPointTo,logContent);
+//                                        cusFoUp--;
+//                                        cusUser.put("cusFoUp",cusFoUp);
+//                                        qt.setMDContent(logContent.getId_U(),qt.setJson("rolex.cus."+id_CCus,cusUser), User.class);
+//                                        return;
+//                                    } else {
+////                                        sendMsgNotice(logContent.getId_U(),id_CCus,"回访次数已达上限!", logContent.getId_U(),dataNew);
+//                                        resultDesc = "回访次数已达上限!";
+//                                    }
+//                                }
+//                            } else {
+//                                resultDesc = "用户客服信息为空";
+//                            }
+//                        } else {
+//                            resultDesc = "用户权限信息为空";
+//                        }
+//                    } else {
+//                        resultDesc = "用户信息为空";
+//                    }
+//                    sendMsgNotice(logContent.getId_U(),id_CCus,resultDesc, null,dataNew);
+//                    return;
+//                }
+//            } else {
+//                if ("rejection".equals(subType)) {
+//                    JSONObject cusUser = new JSONObject();
+//                    cusUser.put("state",0);
+//                    cusUser.put("id_UCus",null);
+//                    cusUser.put("type",null);
+//                    cusUser.put("cusFoUp",0);
+//                    qt.setMDContent(logContent.getId_U(),qt.setJson("rolex.cus."+id_CCus,cusUser), User.class);
+//                    data.put("result",true);
+//                    logContent.setData(data);
+//                    sendMsgOne(logContent.getId_U(),logContent);
+//                    return;
+//                } else if ("del".equals(subType)) {
+//                    User user = qt.getMDContent(logContent.getId_U(), "rolex", User.class);
+//                    JSONObject dataNew = new JSONObject();
+//                    dataNew.put("id_UPointTo",logContent.getId_U());
+//                    String resultDesc;
+//                    if (null != user) {
+//                        JSONObject rolex = user.getRolex();
+//                        if (null != rolex) {
+//                            JSONObject cus = rolex.getJSONObject("cus");
+//                            if (null != cus) {
+//                                cus.remove(id_CCus);
+//                                qt.setMDContent(logContent.getId_U(),qt.setJson("rolex.cus",cus), User.class);
+//                                data.put("result",true);
+//                                logContent.setData(data);
+//                                sendMsgOne(logContent.getId_U(),logContent);
+//                                return;
+//                            } else {
+//                                resultDesc = "用户客服信息为空";
+//                            }
+//                        } else {
+//                            resultDesc = "用户权限信息为空";
+//                        }
+//                    } else {
+//                        resultDesc = "用户信息为空";
+//                    }
+//                    sendMsgNotice(logContent.getId_U(),id_CCus,resultDesc, null,dataNew);
+//                    return;
+//                } else if ("score".equals(subType)) {
+//                    User user = qt.getMDContent(logContent.getId_U(), "rolex", User.class);
+//                    JSONObject dataNew = new JSONObject();
+//                    dataNew.put("id_UPointTo",logContent.getId_U());
+//                    String resultDesc;
+//                    String id_uCusNew;
+//                    String type;
+//                    String score;
+//                    JSONObject cusUser;
+//                    if (null != user) {
+//                        JSONObject rolex = user.getRolex();
+//                        if (null != rolex) {
+//                            JSONObject cus = rolex.getJSONObject("cus");
+//                            if (null != cus) {
+//                                cusUser = cus.getJSONObject(id_CCus);
+//                                id_uCusNew = cusUser.getString("id_UCus");
+//                                type = cusUser.getString("type");
+//                                score = data.getString("score");
+//                            } else {
+//                                sendMsgNotice(logContent.getId_U(),id_CCus,"用户客服信息为空", null,dataNew);
+//                                return;
+//                            }
+//                        } else {
+//                            sendMsgNotice(logContent.getId_U(),id_CCus,"用户权限信息为空", null,dataNew);
+//                            return;
+//                        }
+//                    } else {
+//                        sendMsgNotice(logContent.getId_U(),id_CCus,"用户信息为空", null,dataNew);
+//                        return;
+//                    }
+//
+//                    Asset asset = qt.getConfig(id_CCus,"a-auth","flowControl");
+//                    if (null != asset) {
+//                        JSONObject flowControl = asset.getFlowControl();
+//                        if (null != flowControl) {
+//                            JSONObject cusAsset = flowControl.getJSONObject("cus");
+//                            JSONArray cusArr = cusAsset.getJSONArray(type);
+//                            for (int i = 0; i < cusArr.size(); i++) {
+//                                JSONObject cusArrI = cusArr.getJSONObject(i);
+//                                if (cusArrI.getString("id_U").equals(id_uCusNew)) {
+//                                    int scoreCus = cusArrI.getInteger(score);
+//                                    scoreCus++;
+//                                    qt.setMDContent(asset.getId(),qt.setJson("flowControl.cus."+type+"."+i+".score."+score,scoreCus), Asset.class);
+//                                    break;
+//                                }
+//                            }
+//                            cusUser.put("id_UCus","");
+//                            cusUser.put("type","");
+//                            cusUser.put("cusFoUp",cusUser.getInteger("cusFoUp"));
+//                            cusUser.put("state",cusUser.getInteger("state"));
+//                            qt.setMDContent(logContent.getId_U(),qt.setJson("rolex.cus."+id_CCus,cusUser), User.class);
+//                            data.put("result",true);
+//                            logContent.setData(data);
+//                            sendMsgOne(logContent.getId_U(),logContent);
+//                            sendMsgOne(id_uCusNew,logContent);
+//                            return;
+//                        } else {
+//                            resultDesc = "资产消息信息为空";
+//                        }
+//                    } else {
+//                        resultDesc = "资产信息为空";
+//                    }
+//                    sendMsgNotice(logContent.getId_U(),id_CCus,resultDesc, null,dataNew);
+//                    return;
+//                }
+//            }
+//            // normal
+//            String resultDesc;
+//            if (null != id_uCus && !"".equals(id_uCus)) {
+//                String id_uPointTo = data.getString("id_UPointTo");
+//                if (isHost) {
+//                    User user = qt.getMDContent(id_uPointTo, "rolex", User.class);
+//                    if (null != user && null != user.getRolex()) {
+//                        JSONObject rolex = user.getRolex();
+//                        JSONObject cus = rolex.getJSONObject("cus");
+//                        if (null != cus) {
+//                            JSONObject cusUser = cus.getJSONObject(id_CCus);
+//                            if (null != cusUser) {
+//                                int state = cusUser.getInteger("state");
+//                                if (state == 0) {
+//                                    resultDesc = "用户已拒收!";
+//                                } else {
+//                                    sendMsgOne(logContent.getId_U(),logContent);
+//                                    sendMsgOne(id_uPointTo,logContent);
+//                                    return;
+//                                }
+//                            } else {
+//                                resultDesc = "该用户客服信息无本公司!";
+//                            }
+//                        } else {
+//                            resultDesc = "该用户客服信息异常!";
+//                        }
+//                    } else {
+//                        resultDesc = "该用户信息为空!";
+//                    }
+//                    JSONObject dataNew = new JSONObject();
+//                    dataNew.put("id_UPointTo",logContent.getId_U());
+//                    sendMsgNotice(logContent.getId_U(),id_CCus,resultDesc,null,dataNew);
+//                } else {
+//                    sendMsgOne(logContent.getId_U(),logContent);
+//                    sendMsgOne(id_uPointTo,logContent);
+//                }
+//                return;
+//            }
+//            Asset asset = qt.getConfig(id_CCus,"a-auth","flowControl");
+//            if (null != asset && null != asset.getFlowControl()) {
+//                JSONObject flowControl = asset.getFlowControl();
+//                JSONObject cus = flowControl.getJSONObject("cus");
+//                if (null != cus) {
+//                    String typePointTo = data.getString("typePointTo");
+//                    JSONArray cusArr = cus.getJSONArray(typePointTo);
+//                    if (null == cusArr || cusArr.size() > 0) {
+//                        cusArr = cus.getJSONArray("zhu");
+//                        typePointTo = "zhu";
+//                    }
+//                    if (null != cusArr && cusArr.size() > 0) {
+//                        for (int i = 0; i < cusArr.size(); i++) {
+//                            JSONObject cusArrObj = cusArr.getJSONObject(i);
+//                            int isBusy = cusArrObj.getInteger("isBusy");
+//                            if (isBusy == 0) {
+//                                cusArrObj.put("isBusy",1);
+//                                JSONObject userAll = cusArrObj.getJSONObject("userAll");
+//                                JSONObject userInfo = new JSONObject();
+//                                userInfo.put("img",logContent.getPic());
+//                                userInfo.put("type",1);
+//                                userAll.put(logContent.getId_U(),userInfo);
+//                                cusArrObj.put("userAll",userAll);
+//                                qt.setMDContent(asset.getId(),qt.setJson("flowControl.cus."+typePointTo+"."+i,cusArrObj), Asset.class);
+//
+//                                String id_u = cusArrObj.getString("id_U");
+//                                JSONObject cusUser = new JSONObject();
+//                                cusUser.put("state",1);
+//                                cusUser.put("id_UCus",id_u);
+//                                cusUser.put("type",typePointTo);
+//                                cusUser.put("cusFoUp",3);
+//                                qt.setMDContent(logContent.getId_U(),qt.setJson("rolex.cus."+id_CCus,cusUser), User.class);
+//
+//                                JSONObject dataNew = new JSONObject();
+//                                dataNew.put("id_UPointTo",logContent.getId_U());
+//                                dataNew.put("id_UCus",id_u);
+//                                sendMsgNotice(logContent.getId_U(),id_CCus,"客服-"+id_u+"-为你服务!",id_u,dataNew);
+//                                dataNew.put("id_UPointTo",id_u);
+//                                sendMsgNotice(id_u,id_CCus,"顾客"+logContent.getId_U()+"需要服务!",logContent.getId_U(),dataNew);
+//                                return;
+//                            }
+//                        }
+//                        resultDesc = "该公司客服-繁忙中...";
+//                    } else {
+//                        resultDesc = "该公司客服-为空-!";
+//                    }
+//                } else {
+//                    resultDesc = "该公司没有客服!";
+//                }
+//            } else {
+//                resultDesc = "该公司权限为空!";
+//            }
+//            JSONObject dataNew = new JSONObject();
+//            dataNew.put("id_UPointTo",logContent.getId_U());
+//            sendMsgNotice(logContent.getId_U(),id_CCus,resultDesc,null,dataNew);
+//            return;
+        }
         if ("link".equals(logContent.getSubType())) {
             //每次响应之前随机获取AES的key，加密data数据
             String key = AesUtil.getKey();
@@ -351,7 +651,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //                mqToEs.sendLogByES(logContent.getLogType(), logContent);
             }
 //            sendMsgToMQ(null,logContent);
-        } else if ("only".equals(logContent.getSubType())) {
+        } else if ("only".equals(logContent.getSubType()))
+        {
             JSONObject data = logContent.getData();
             JSONArray sendU = data.getJSONArray("sendU");
             System.out.println("sendU:");
@@ -405,6 +706,29 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
 
     }
+
+    public static void sendMsgOne(String id_U,LogFlow logFlow){
+//        JSONObject data = logFlow.getData();
+//        data.put("id_UPointTo",id_U);
+//        logFlow.setData(data);
+        if (WebSocketUserServer.webSocketSet.containsKey(id_U)) {
+            Map<String, String> cliU = WebSocketUserServer.clients.get(id_U);
+            Map<String, WebSocketUserServer> sw = WebSocketUserServer.webSocketSet.get(id_U);
+            cliU.keySet().forEach(k->
+                    sw.get(k).sendMessage(JSONObject.parseObject(JSON.toJSONString(logFlow))
+                            ,AesUtil.getKey(),true)
+            );
+        }
+//        else {
+//            qt.sendMQ("chatTopic:chatTap",JSONObject.parseObject(JSON.toJSONString(logFlow)));
+//        }
+    }
+//    public static void sendMsgNotice(String sendUser,String id_CCus,String desc,String logUser,JSONObject dataNew){
+//        dataNew.put("id_CCus",id_CCus);
+//        LogFlow logFlow = getNullLogFlow("cusmsg","notice"
+//                ,desc,id_CCus,logUser,dataNew);
+//        sendMsgOne(sendUser,logFlow);
+//    }
 
     /**
      * 根据key加密logContent数据
@@ -505,6 +829,16 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 }
             }
             return;
+        } else if ("cusmsg".equals(json.getString("logType"))) {
+            System.out.println("收到客服信息:");
+            System.out.println(JSON.toJSONString(json));
+            JSONObject data = json.getJSONObject("data");
+            String id_uPointTo = data.getString("id_UPointTo");
+            if (WebSocketUserServer.webSocketSet.containsKey(id_uPointTo)) {
+                System.out.println("--在本服务--");
+                WebSocketUserServer.webSocketSet.get(id_uPointTo).values()
+                        .forEach(w -> w.sendMessage(json, AesUtil.getKey(),true));
+            }
         }
         if ("link".equals(subType)) {
             String id_U = json.getString("id_U");
@@ -521,7 +855,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                     }
                 });
             }
-        } else if ("only".equals(subType)) {
+        } else if ("only".equals(subType))
+        {
             String sendU = json.getString("sendU");
             if (WebSocketUserServer.webSocketSet.containsKey(sendU)) {
                 String client = json.getString("client");
@@ -948,5 +1283,17 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             e.printStackTrace();
         }
 
+    }
+
+    private static LogFlow getNullLogFlow(String logType,String subType,String desc,String id_C,String id_U,JSONObject data){
+        LogFlow logFlow = LogFlow.getInstance();
+        logFlow.setLogType(logType);
+        logFlow.setSubType(subType);
+        logFlow.setZcndesc(desc);
+        logFlow.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        logFlow.setId_C(id_C);
+        logFlow.setId_U(id_U);
+        logFlow.setData(data);
+        return logFlow;
     }
 }

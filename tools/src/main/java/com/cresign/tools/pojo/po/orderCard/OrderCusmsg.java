@@ -29,10 +29,10 @@ public class OrderCusmsg {
      */
     private String id_O;
 
-//    /**
-//     * 自己的下标
-//     */
-//    private Integer index = 0;
+    /**
+     * 自己的下标
+     */
+    private Integer index = 0;
 
     /**
      * 负责人id
@@ -54,9 +54,9 @@ public class OrderCusmsg {
      */
     private String uuId;
 
-    /**
-     * 评分
-     */
-    private Integer score = 0;
+//    /**
+//     * 评分
+//     */
+//    private Integer score = 0;
 
 }

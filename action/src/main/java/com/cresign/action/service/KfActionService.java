@@ -25,16 +25,17 @@
 //    /**
 //     * 恢复客服信息,Es数据库
 //     * @param oId	订单编号
-//     * @param type	类型
-//     * @param id_U	用户编号
-//     * @param kf	客服信息
-//     * @param indexOnly	唯一标识
+////     * @param type	类型
+////     * @param id_U	用户编号
+////     * @param kf	客服信息
+////     * @param indexOnly	唯一标识
 //     * @return java.lang.String  返回结果: 结果
 //     * @author tang
 //     * @ver 1.0.0
 //     * @date 2021/6/16 14:59
 //     */
-//    ApiResponse getRecoveryKf(String oId,String type,String id_U,String kf,Integer indexOnly);
+////    ApiResponse getRecoveryKf(String oId,String type,String id_U,String kf,Integer indexOnly);
+//    ApiResponse getRecoveryKf(String oId,String cId);
 //
 //    /**
 //     * 恢复客服信息,并且携带用户基础信息,Es数据库

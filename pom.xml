@@ -11,7 +11,7 @@
         <module>tools</module>
         <module>gateway</module>
         <module>login</module>
-<!--        <module>action</module>-->
+        <module>action</module>
 <!--        <module>details</module>-->
 <!--        <module>search</module>-->
 <!--        <module>file</module>-->
