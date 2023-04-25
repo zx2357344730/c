@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 /**
  * ##description:
@@ -103,11 +102,15 @@ public class FlowController {
 
             JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
 
-            return flowService.getDgResult(
-                    reqJson.getString("id_O"),
-                    tokData.getString("id_U"),
-                    tokData.getString("id_C"),
-                    reqJson.getLong("teStart"));
+            try {
+                return flowService.getDgResult(
+                        reqJson.getString("id_O"),
+                        tokData.getString("id_U"),
+                        tokData.getString("id_C"),
+                        reqJson.getLong("teStart"));
+            } catch (Exception e) {
+                return getUserToken.err("flowService.getDG", e);
+            }
         }
 
         @SecurityParameter

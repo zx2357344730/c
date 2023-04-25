@@ -11,8 +11,6 @@ package com.cresign.tools.dbTools;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.ToolEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -21,7 +19,6 @@ import com.cresign.tools.pojo.es.lSAsset;
 import com.cresign.tools.pojo.po.*;
 import com.cresign.tools.pojo.po.assetCard.AssetAStock;
 import com.cresign.tools.pojo.po.assetCard.AssetInfo;
-import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.reflectTools.ApplicationContextTools;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -47,7 +44,6 @@ import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-import org.redisson.misc.Hash;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -67,8 +63,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.lang.Math.abs;
 
 @Service
     public class Qt {
@@ -308,7 +302,7 @@ import static java.lang.Math.abs;
 
         public List<?> getMDContentMany(HashSet setIds, List<String> fields, Class<?> classType) {
             Query query = new Query(new Criteria("_id").in(setIds));
-            if (fields != null && !fields.equals("")) {
+            if (fields != null) {
                 for (Object field : fields)
                 {
                     query.fields().include(field.toString());
@@ -358,7 +352,7 @@ import static java.lang.Math.abs;
 
         public void errPrint(String title, Exception e, Object... vars)
         {
-            System.out.println(title);
+            System.out.println("****[" +title+"]****");
 
 //            System.out.println("[");
             for (Object item : vars)
@@ -373,14 +367,13 @@ import static java.lang.Math.abs;
                     System.out.println(this.toJson(item));
                 }
                 else if (item!= null) {
-                    System.out.println(item.getClass());
-
+//                    System.out.println(item.getClass());
                     System.out.println(item);
                 } else {
-                    System.out.println("null,");
+                    System.out.println("....null");
                 }
             }
-//            System.out.println("]");
+            System.out.println("*****[End]*****");
 
             if (e != null)
                 e.printStackTrace();
@@ -941,7 +934,7 @@ import static java.lang.Math.abs;
             }
         }
 
-        private JSONArray hit2Array(SearchResponse response)
+        public JSONArray hit2Array(SearchResponse response)
         {
             JSONArray result = new JSONArray();
             if (response.getHits().getHits().length > 0)
@@ -1021,8 +1014,8 @@ import static java.lang.Math.abs;
 
         }
 
-        public void setES(String listType, String id, JSONObject listCol) {
-            UpdateRequest updateRequest = new UpdateRequest(listType, id);
+        public void setES(String listType, String id_ES, JSONObject listCol) {
+            UpdateRequest updateRequest = new UpdateRequest(listType, id_ES);
             listCol.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             listCol.remove("id_ES");
 
@@ -1249,6 +1242,21 @@ import static java.lang.Math.abs;
                             queryBuilder.must(queryStringQueryBuilder);
                             break;
                         }
+                        case "shouldeq": {
+                            //复杂查询，可一对一，一对多，多对一，多对多
+                            JSONArray arrayKey = conditionMap.getJSONArray("filtKey");
+                            JSONArray arrayValue = conditionMap.getJSONArray("filtVal");
+                            String value = StringUtils.join(arrayValue, " OR ");
+                            System.out.println("value=" + value);
+                            QueryStringQueryBuilder queryStringQueryBuilder = QueryBuilders.queryStringQuery(value);
+                            for (int j = 0; j < arrayKey.size(); j++) {
+                                queryStringQueryBuilder = queryStringQueryBuilder.field(arrayKey.getString(j));
+//                                queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).gte(arrayValue.get(0)).lt(arrayValue.get(1)));
+
+                            }
+                            queryBuilder.should(queryStringQueryBuilder);
+                            break;
+                        }
                         case "nexact":
                             //精确查询，不分词
                             queryBuilder.mustNot(QueryBuilders.termQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
@@ -1443,439 +1451,6 @@ import static java.lang.Math.abs;
             return jsonArray;
         }
 
-        // SE if / info / exec (oTrig, cTrig, Summ00s, tempa
-    public Object scriptEngineVar(String var, JSONObject jsonObjGlobal) {
-        try {
-            System.out.println("");
-            System.out.println("var=" + var);
-            System.out.println("jsonObjGlobal=" + jsonObjGlobal);
-            if (var.startsWith("##")) {
-                //Get from card
-                if (var.startsWith("##C")) {
-                    if (var.startsWith("##CC")) {
-                        String varSubstring = var.substring(5);
-                        String[] varSplits = varSubstring.split("\\$\\$");
-                        StringBuffer sb = new StringBuffer();
-                        for (int i = 0; i < varSplits.length; i++) {
-                            String varSplit = varSplits[i];
-                            if (varSplit.startsWith("##")) {
-                                String key = varSplit.substring(2);
-                                Object result = scriptEngineVar(jsonObjGlobal.getString(key), jsonObjGlobal);
-                                System.out.println("##CC=" + key + ":" + result);
-                                sb.append(result);
-                            } else {
-                                sb.append(varSplit);
-                            }
-                        }
-                        return sb.toString();
-                    }
-
-                    String[] scriptSplit = var.split("\\.");
-                    Query query = new Query(new Criteria("_id").is(scriptSplit[2]));
-                    List list = new ArrayList();
-                    //See which COUPA
-                    switch (scriptSplit[1]) {
-                        case "Comp":
-                            list = mongoTemplate.find(query, Comp.class);
-                            break;
-                        case "Order":
-                            list = mongoTemplate.find(query, Order.class);
-                            break;
-                        case "User":
-                            list = mongoTemplate.find(query, User.class);
-                            break;
-                        case "Prod":
-                            list = mongoTemplate.find(query, Prod.class);
-                            break;
-                        case "Asset":
-                            list = mongoTemplate.find(query, Asset.class);
-                            break;
-                    }
-                    if (list.get(0) == null) {
-                        return null;
-                    }
-                    JSONObject jsonList = (JSONObject) JSON.toJSON(list.get(0));
-                    if (jsonList.getJSONObject(scriptSplit[3]) == null) {
-                        return null;
-                    }
-                    JSONObject jsonVar = jsonList.getJSONObject(scriptSplit[3]);
-                    for (int k = 4; k < scriptSplit.length - 1; k++) {
-                        //根据[拆分
-                        //break up array
-                        String[] ifArray = scriptSplit[k].split("\\[");
-                        System.out.println("length=" + ifArray.length);
-                        //拆分成一份类型为jsonObject
-                        if (ifArray.length == 1) {
-                            if (jsonVar.getJSONObject(ifArray[0]) == null) {
-                                return null;
-                            }
-                            jsonVar = jsonVar.getJSONObject(ifArray[0]);
-                        }
-                        //拆分成两份类型为jsonArray
-                        if (ifArray.length == 2) {
-                            String[] index = ifArray[1].split("]");
-                            if (jsonVar.getJSONArray(ifArray[0]).getJSONObject(Integer.parseInt(index[0])) == null) {
-                                return null;
-                            }
-                            jsonVar = jsonVar.getJSONArray(ifArray[0]).getJSONObject(Integer.parseInt(index[0]));
-                        }
-                    }
-                    System.out.println("jsonVar=" + jsonVar);
-                    if (jsonVar.get(scriptSplit[scriptSplit.length - 1]) == null) {
-                        return null;
-                    }
-                    if (var.startsWith("##CB")) {
-                        Boolean scriptResult = jsonVar.getBoolean(scriptSplit[scriptSplit.length - 1]);
-                        return scriptResult;
-                    }
-                    if (var.startsWith("##CS")) {
-                        String scriptResult = jsonVar.getString(scriptSplit[scriptSplit.length - 1]);
-                        return scriptResult;
-                    }
-                    if (var.startsWith("##CI")) {
-                        Integer scriptResult = jsonVar.getInteger(scriptSplit[scriptSplit.length - 1]);
-                        return scriptResult;
-                    }
-                    if (var.startsWith("##CN")) {
-                        Double scriptResult = jsonVar.getDouble(scriptSplit[scriptSplit.length - 1]);
-                        return scriptResult;
-                    }
-                    if (var.startsWith("##CA")) {
-                        JSONArray scriptResult = jsonVar.getJSONArray(scriptSplit[scriptSplit.length - 1]);
-                        return scriptResult;
-                    }
-                    if (var.startsWith("##CO")) {
-                        System.out.println("test=" + jsonVar.getJSONObject(scriptSplit[scriptSplit.length - 1]));
-
-                        return jsonVar.getJSONObject(scriptSplit[scriptSplit.length - 1]);
-                    }
-                }
-                //T means it is a counter
-                else if (var.startsWith("##T")) {
-                    String[] scriptSplit = var.split("\\.");
-                    Asset asset = this.getConfig(scriptSplit[1], "a-core", "refAuto");
-                    if (asset == null || asset.getRefAuto() == null || asset.getRefAuto().getJSONObject("objCounter") == null ||
-                            asset.getRefAuto().getJSONObject("objCounter").getJSONObject(scriptSplit[2]) == null) {
-                        return null;
-                    }
-                    JSONObject jsonCounter = asset.getRefAuto().getJSONObject("objCounter").getJSONObject(scriptSplit[2]);
-                    Integer count = jsonCounter.getInteger("count");
-                    Integer max = jsonCounter.getInteger("max");
-                    Integer digit = jsonCounter.getInteger("digit");
-                    int length = digit - String.valueOf(count).length();
-                    System.out.println("length=" + length);
-                    StringBuffer sb = new StringBuffer();
-                    for (int i = 0; i < length; i++) {
-                        sb.append("0");
-                    }
-                    String strCount = String.valueOf(sb);
-                    strCount += count;
-                    System.out.println("strCount=" + strCount);
-                    if (count == max) {
-                        count = 1;
-                    } else {
-                        count++;
-                    }
-                    System.out.println("count=" + count);
-                    JSONObject jsonUpdate = this.setJson("refAuto.objCounter." + scriptSplit[2] + ".count", count);
-                    this.setMDContent(asset.getId(), jsonUpdate, Asset.class);
-                    return strCount;
-                }
-                //##F.com.cresign.timer.controller.StatController##getStatisticByEs1##op0
-                //F = it is a function, then break the string and recall myself to calculate
-                else if (var.startsWith("##F")) {
-                    String varSubstring = var.substring(4);
-                    String[] varSplit = varSubstring.split("##");
-                    System.out.println("##F=" + varSplit[0] + "," + varSplit[1] + "," + varSplit[2]);
-                    String result = (String) scriptEngineVar(jsonObjGlobal.getJSONObject(varSplit[2]).getString("value"), jsonObjGlobal);
-                    System.out.println("result=" + result);
-                    System.out.println("resultType=" + result.getClass().getSimpleName());
-                    JSONObject jsonResult = JSONObject.parseObject(result);
-                    Class<?> clazz = Class.forName(varSplit[0]);
-                    Object bean = ApplicationContextTools.getBean(clazz);
-                    Method method1 = clazz.getMethod(varSplit[1], new Class[]{JSONObject.class});
-                    System.out.println("varSplit[1]=" + varSplit[1]);
-                    System.out.println("method1=" + method1);
-                    //invoke....
-                    Object invoke = method1.invoke(bean, jsonResult);
-                    System.out.println("invoke=" + invoke);
-                    return invoke;
-                }
-                //D = date formates
-                else if (var.startsWith("##D")) {
-                    if (var.startsWith("##DT")) {
-                        String varSubstring = var.substring(5);
-                        System.out.println("varSubstring=" + varSubstring);
-                        SimpleDateFormat sdf = new SimpleDateFormat(varSubstring);
-                        String date = sdf.format(new Date());
-                        System.out.println("##DT=" + date);
-                        return date;
-                    } else {
-                        String varSubstring = var.substring(4);
-                        System.out.println("varSubstring=" + varSubstring);
-                        String[] varSplit = varSubstring.split("##");
-                        SimpleDateFormat sdf = null;
-                        Calendar calendar = Calendar.getInstance();
-                        for (int i = varSplit.length - 1; i >= 0; i--) {
-                            String partTime = varSplit[i];
-                            if (partTime.equals("*")) {
-                                switch (i) {
-                                    case 0:
-                                        sdf = new SimpleDateFormat("yyyy");
-                                        varSplit[0] = sdf.format(calendar.getTime());
-                                        break;
-                                    case 1:
-                                        sdf = new SimpleDateFormat("MM");
-                                        varSplit[1] = sdf.format(calendar.getTime());
-                                        break;
-                                    case 2:
-                                        sdf = new SimpleDateFormat("dd");
-                                        varSplit[2] = sdf.format(calendar.getTime());
-                                        break;
-                                    case 3:
-                                        sdf = new SimpleDateFormat("HH");
-                                        varSplit[3] = sdf.format(calendar.getTime());
-                                        break;
-                                    case 4:
-                                        sdf = new SimpleDateFormat("mm");
-                                        varSplit[4] = sdf.format(calendar.getTime());
-                                        break;
-                                    case 5:
-                                        sdf = new SimpleDateFormat("ss");
-                                        varSplit[5] = sdf.format(calendar.getTime());
-                                        break;
-                                }
-                            } else if (partTime.startsWith("+") || partTime.startsWith("-")) {
-                                int part = Integer.parseInt(partTime);
-                                System.out.println("part=" + part);
-                                switch (i) {
-                                    case 0:
-                                        calendar.add(Calendar.YEAR, part);
-                                        sdf = new SimpleDateFormat("yyyy");
-                                        varSplit[0] = sdf.format(calendar.getTime());
-                                        break;
-                                    case 1:
-                                        calendar.add(Calendar.MONTH, part);
-                                        sdf = new SimpleDateFormat("MM");
-                                        varSplit[1] = sdf.format(calendar.getTime());
-                                        break;
-                                    case 2:
-                                        calendar.add(Calendar.DATE, part);
-                                        sdf = new SimpleDateFormat("dd");
-                                        varSplit[2] = sdf.format(calendar.getTime());
-                                        break;
-                                    case 3:
-                                        calendar.add(Calendar.HOUR_OF_DAY, part);
-                                        sdf = new SimpleDateFormat("HH");
-                                        varSplit[3] = sdf.format(calendar.getTime());
-                                        break;
-                                    case 4:
-                                        calendar.add(Calendar.MINUTE, part);
-                                        sdf = new SimpleDateFormat("mm");
-                                        varSplit[4] = sdf.format(calendar.getTime());
-                                        break;
-                                    case 5:
-                                        calendar.add(Calendar.SECOND, part);
-                                        sdf = new SimpleDateFormat("ss");
-                                        varSplit[5] = sdf.format(calendar.getTime());
-                                        break;
-                                }
-                            }
-                            System.out.println("i=" + i + ",varSplit=" + varSplit[i]);
-                        }
-                        StringBuffer stringBuffer = new StringBuffer();
-                        stringBuffer = stringBuffer.append(varSplit[0]).append("/").append(varSplit[1]).append("/").append(varSplit[2])
-                                .append(" ").append(varSplit[3]).append(":").append(varSplit[4]).append(":").append(varSplit[5]);
-                        System.out.println("##D=" + stringBuffer);
-                        return stringBuffer;
-                    }
-                }
-                // else this is not a ##, use script engine to get result
-                else {
-                    String varSubString = var.substring(4);
-                    if (varSubString.contains("for")) {
-                        return null;
-                    }
-                    ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("javascript");
-                    Compilable compilable = (Compilable) scriptEngine;
-                    Bindings bindings = scriptEngine.createBindings();
-                    CompiledScript compiledScript = compilable.compile(varSubString);
-                    String[] varSplit = var.split("\\(");
-                    if (varSplit[varSplit.length - 1].split("\\)").length > 0) {
-                        String scriptVar = varSplit[varSplit.length - 1].split("\\)")[0];
-                        System.out.println("scriptVar=" + scriptVar);
-                        String[] arrayKey = scriptVar.split(",");
-                        for (int i = 0; i < arrayKey.length; i++) {
-                            String key = arrayKey[i];
-                            System.out.println("key=" + key);
-                            // I am calling myself again here
-                            Object result = scriptEngineVar(jsonObjGlobal.getString(key), jsonObjGlobal);
-                            System.out.println(i + ":" + result);
-                            bindings.put(key, result);
-                        }
-                    }
-
-                    //after created all compile data, here is actual eval
-                    if (var.startsWith("##B")) {
-                        Boolean scriptResult = (Boolean) compiledScript.eval(bindings);
-                        return scriptResult;
-                    }
-                    if (var.startsWith("##S")) {
-                        String scriptResult = compiledScript.eval(bindings).toString();
-                        return scriptResult;
-                    }
-                    if (var.startsWith("##I")) {
-                        Integer scriptResult = (Integer) compiledScript.eval(bindings);
-                        System.out.println("##I=" + scriptResult);
-                        return scriptResult;
-                    }
-                    if (var.startsWith("##N")) {
-                        Double scriptResult = (Double) compiledScript.eval(bindings);
-                        System.out.println("##N=" + scriptResult);
-                        return scriptResult;
-                    }
-                    if (var.startsWith("##A")) {
-                        String result = JSON.toJSONString((compiledScript.eval(bindings)));
-                        System.out.println("##A=" + result);
-                        JSONArray scriptResult = JSON.parseArray(result);
-                        System.out.println(scriptResult);
-                        return scriptResult;
-                    }
-                    if (var.startsWith("##O")) {
-                        String result = JSON.toJSONString(compiledScript.eval(bindings));
-                        System.out.println("##O=" + result);
-//                    result = result.replace("\\", "");
-//                    System.out.println(result);
-//                    result = result.substring(1, result.length() - 1);
-//                    System.out.println(result);
-                        JSONObject scriptResult = JSON.parseObject(result);
-                        System.out.println(scriptResult);
-                        return scriptResult;
-                    }
-                }
-            }
-            // if they are not B/S/N/A/O, it's NO ##, so it's either number or text
-            //正则判断是否数字
-            Pattern pattern = Pattern.compile("-?[0-9]+(\\\\.[0-9]+)?");
-            Matcher matcher = pattern.matcher(var);
-            //判断字符串是否是数字
-            if (matcher.matches()) {
-                return Double.parseDouble(var);
-            }
-            return var;
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
-        }
-    }
-
-    /**
-     * 加
-     * @Author Rachel
-     * @Date 2022/09/14
-     * @Param num1
-     * @Param num2
-     * @Return double
-     * @Card
-     **/
-    public static double add(double... num) {
-        BigDecimal result = new BigDecimal(Double.toString(num[0]));
-        int length = num.length;
-        for (int i = 1; i < length; i++) {
-            BigDecimal decimal = new BigDecimal(Double.toString(num[i]));
-            result = result.add(decimal);
-        }
-        return result.doubleValue();
-    }
-
-    /**
-     * 减
-     * @Author Rachel
-     * @Date 2022/09/14
-     * @Param num1
-     * @Param num2
-     * @Return double
-     * @Card
-     **/
-    public static double subtract(double... num) {
-        BigDecimal result = new BigDecimal(Double.toString(num[0]));
-        int length = num.length;
-        for (int i = 1; i < length; i++) {
-            BigDecimal decimal = new BigDecimal(Double.toString(num[i]));
-            result = result.subtract(decimal);
-        }
-        return result.doubleValue();
-    }
-
-    /**
-     * 乘
-     * @Author Rachel
-     * @Date 2022/09/14
-     * @Param num1
-     * @Param num2
-     * @Return double
-     * @Card
-     **/
-    public static double multiply(double... num) {
-        BigDecimal result = new BigDecimal(Double.toString(num[0]));
-        int length = num.length;
-        for (int i = 1; i < length; i++) {
-            BigDecimal decimal = new BigDecimal(Double.toString(num[i]));
-            result = result.multiply(decimal);
-        }
-        return result.doubleValue();
-    }
-
-
-
-    /**
-     * 除
-     * @Author Rachel
-     * @Date 2022/09/14
-     * @Param num1
-     * @Param num2
-     * @Param scale 保留小数位数
-     * @Param roundingMode 模式: 0:正数向大舍入，负数向小舍入 / 1:正数向小舍入，负数向大舍入 / 2:向大舍入 / 3:向小舍入 / 4:四舍五入 / 5:五舍六入 / 6：向最接近的舍入
-     * @Return double
-     * @Card
-     **/
-    public static double divide(int scale, int roundingMode, double... num) {
-        BigDecimal result = new BigDecimal(Double.toString(num[0]));
-        int length = num.length;
-        for (int i = 1; i < length; i++) {
-            BigDecimal decimal = new BigDecimal(Double.toString(num[i]));
-            result = result.divide(decimal, scale, roundingMode);
-        }
-        return result.doubleValue();
-    }
-
-    /**
-     * 比较大小: -1:小于 / 0:等于 / 1:大于
-     * @Author Rachel
-     * @Date 2022/09/14
-     * @Param num1
-     * @Param num2
-     * @Return int
-     * @Card
-     **/
-    public static int compareTo(double num1, double num2) {
-        BigDecimal decimal1 = new BigDecimal(Double.toString(num1));
-        BigDecimal decimal2 = new BigDecimal(Double.toString(num2));
-        return decimal1.compareTo(decimal2);
-    }
-    public static boolean doubleEquals(double num1, double num2) {
-        boolean bool = compareTo(num1, num2) == 0 ? true: false;
-        return bool;
-    }
-    public static boolean doubleGt(double num1, double num2) {
-        boolean bool = compareTo(num1, num2) == 1 ? true: false;
-        return bool;
-    }
-    public static boolean doubleGte(double num1, double num2) {
-        boolean bool = compareTo(num1, num2) != -1 ? true: false;
-        return bool;
-    }
 
 //    public void updateAsset(Order order, JSONArray arrayLsasset, JSONArray arrayLbasset) {
 //
@@ -2227,471 +1802,6 @@ import static java.lang.Math.abs;
 //        }
 //    }
 
-    public void updateAsset(Order order, JSONArray arrayLsasset, JSONArray arrayLbasset) {
-        BoolQueryBuilder shouldQuery = new BoolQueryBuilder();
-        BoolQueryBuilder shouldQueryB = new BoolQueryBuilder();
-        HashSet setId_P = new HashSet();
-        for (int i = 0; i < arrayLsasset.size(); i++) {
-            JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
-            String id_C = jsonLsasset.getJSONObject("tokData").getString("id_C");
-            String id_CB = jsonLsasset.getString("id_CB");
-            String id_P = jsonLsasset.getString("id_P");
-            setId_P.add(id_P);
-            String locAddr = jsonLsasset.getString("locAddr");
 
-            BoolQueryBuilder mustQuery = new BoolQueryBuilder();
-            mustQuery.must(QueryBuilders.termQuery("id_C", id_C))
-                    .must(QueryBuilders.termQuery("id_CB", id_CB))
-                    .must(QueryBuilders.termQuery("id_P", id_P));
-            if (locAddr != null) {
-                mustQuery.must(QueryBuilders.termQuery("locAddr", locAddr));
-            }
-            shouldQuery.should(mustQuery);
-        }
-        for (int i = 0; i < arrayLbasset.size(); i++) {
-            JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
-            String id_C = jsonLbasset.getJSONObject("tokData").getString("id_C");
-            String id_CB = jsonLbasset.getString("id_CB");
-            String id_P = jsonLbasset.getString("id_P");
-            setId_P.add(id_P);
 
-            BoolQueryBuilder mustQueryB = new BoolQueryBuilder();
-            //id_C=id_CB，内部负债，连接一个lbasset
-            mustQueryB.must(QueryBuilders.termQuery("id_C", id_C))
-                    .must(QueryBuilders.termQuery("id_CB", id_CB))
-                    .must(QueryBuilders.termQuery("id_P", id_P));
-            shouldQueryB.should(mustQueryB);
-            //id_C!=id_CB，外部负债，两个公司共用，连接两个lbasset
-            if (!id_C.equals(id_CB)) {
-                mustQueryB = new BoolQueryBuilder();
-                mustQueryB.must(QueryBuilders.termQuery("id_C", id_CB))
-                        .must(QueryBuilders.termQuery("id_CB", id_C))
-                        .must(QueryBuilders.termQuery("id_P", id_P));
-                shouldQueryB.should(mustQueryB);
-            }
-        }
-        HashSet setId_A = new HashSet();
-        JSONObject jsonLsas = this.getEsByQuery(shouldQuery, "lSAsset", setId_A);
-        JSONObject jsonLbas = this.getEsByQuery(shouldQueryB, "lBAsset", setId_A);
-
-        List<?> assets = this.getMDContentMany(setId_A, Arrays.asList("info", "aStock"), Asset.class);
-        JSONObject jsonAssets = this.list2Obj(assets, "id");
-
-        List<?> prods = this.getMDContentMany(setId_P, "info", Prod.class);
-        JSONObject jsonProds = this.list2Obj(prods, "id");
-
-        for (int i = 0; i < arrayLsasset.size(); i++) {
-            JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
-            String id_C = jsonLsasset.getJSONObject("tokData").getString("id_C");
-            String id_CB = jsonLsasset.getString("id_CB");
-            String id_P = jsonLsasset.getString("id_P");
-            String locAddr = jsonLsasset.getString("locAddr");
-
-            JSONObject jsonLsa = null;
-            if (locAddr != null) {
-                jsonLsa = jsonLsas.getJSONObject(id_C + "-" + id_CB + "-" + id_P + "-" + locAddr);
-            } else {
-                jsonLsa = jsonLsas.getJSONObject(id_C + "-" + id_CB + "-" + id_P);
-            }
-            if (jsonLsa != null) {
-                JSONObject jsonAsset = jsonAssets.getJSONObject(jsonLsa.getString("id_A"));
-                jsonLsasset.put("jsonAsset", jsonAsset);
-                jsonLsasset.put("jsonLsa", jsonLsa);
-            }
-            JSONObject jsonProd = jsonProds.getJSONObject(id_P);
-            jsonLsasset.put("jsonProd", jsonProd);
-        }
-        for (int i = 0; i < arrayLbasset.size(); i++) {
-            JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
-            String id_C = jsonLbasset.getJSONObject("tokData").getString("id_C");
-            String id_CB = jsonLbasset.getString("id_CB");
-            String id_P = jsonLbasset.getString("id_P");
-
-            JSONObject jsonLba = jsonLbas.getJSONObject(id_C + "-" + id_CB + "-" + id_P);
-            if (jsonLba != null) {
-                JSONObject jsonAsset = jsonAssets.getJSONObject(jsonLba.getString("id_A"));
-                jsonLbasset.put("jsonAsset", jsonAsset);
-                jsonLbasset.put("jsonLsa", jsonLba);
-                if (!id_C.equals(id_CB)) {
-                    JSONObject jsonLbaB = jsonLbas.getJSONObject(id_CB + "-" + id_C + "-" + id_P);
-                    jsonLbasset.put("jsonLba", jsonLbaB);
-                }
-            }
-            JSONObject jsonProd = jsonProds.getJSONObject(id_P);
-            jsonLbasset.put("jsonProd", jsonProd);
-        }
-
-        System.out.println("arraylsasset=" + arrayLsasset);
-        System.out.println("arrayLbasset=" + arrayLbasset);
-
-        List<JSONObject> listBulkAsset = new ArrayList<>();
-        List<JSONObject> listBulkLsasset = new ArrayList<>();
-        List<JSONObject> listBulkLbasset = new ArrayList<>();
-        //处理arrayLsasset
-        this.assetType(order, arrayLsasset, listBulkAsset, listBulkLsasset, null, false, true);
-        //处理arrayLbasset
-        this.assetType(order, arrayLbasset, listBulkAsset, listBulkLbasset, listBulkLsasset, false, false);
-        this.setMDContentMany(listBulkAsset, Asset.class);
-        this.setESMany("lSAsset", listBulkLsasset);
-        this.setESMany("lBAsset", listBulkLbasset);
-        this.errPrint("new", null, arrayLsasset, arrayLbasset, listBulkAsset, listBulkLsasset, listBulkLbasset);
-    }
-
-    public void assetType(Order order, JSONArray arrayLsasset, List<JSONObject> listBulkAsset, List<JSONObject> listBulkLsasset,
-                          List<JSONObject> listBulkLbasset, Boolean isResv, Boolean isLsa) {
-        String id_O = order.getId();
-        JSONArray arrayOItem = order.getOItem().getJSONArray("objItem");
-        for (int i = 0; i < arrayLsasset.size(); i++) {
-            JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
-            JSONObject tokData = jsonLsasset.getJSONObject("tokData");
-            String id_C = tokData.getString("id_C");
-            String id_U = tokData.getString("id_U");
-            String grpU = tokData.getString("grpU");
-            String id_CB = jsonLsasset.getString("id_CB");
-            JSONObject jsonLog = jsonLsasset.getJSONObject("log");
-            Integer index = jsonLsasset.getInteger("index");
-            String id_P = jsonLsasset.getString("id_P");
-            Double wn2qty = jsonLsasset.getDouble("wn2qty");
-            JSONObject jsonBulkAsset = null;
-            JSONObject jsonBulkLsasset = null;
-            String id_A = null;
-            String grpA = "";
-            //index不为空是产品，反之是金钱
-            if (index != null) {
-                JSONObject jsonOItem = arrayOItem.getJSONObject(index);
-                Double wn4price = jsonOItem.getDouble("wn4price");
-                Double wn4value = DoubleUtils.multiply(wn2qty, wn4price);
-                String locAddr = jsonLsasset.getString("locAddr");
-                JSONArray arrayUpdateLocSpace = jsonLsasset.getJSONArray("locSpace");
-                JSONArray arrayUpdateSpaceQty = jsonLsasset.getJSONArray("spaceQty");
-                //存在资产
-                if (jsonLsasset.getJSONObject("jsonLsa") != null) {
-                    JSONObject jsonLsa = jsonLsasset.getJSONObject("jsonLsa");
-                    id_A = jsonLsa.getString("id_A");
-                    grpA = jsonLsa.getString("grp");
-                    JSONObject jsonAsset = jsonLsasset.getJSONObject("jsonAsset");
-                    JSONObject aStock = jsonAsset.getJSONObject("aStock");
-                    JSONArray arrayLocSpace = aStock.getJSONArray("locSpace");
-                    JSONArray arraySpaceQty = aStock.getJSONArray("spaceQty");
-                    //货架的格子
-                    for (int j = 0; j < arrayLocSpace.size(); j++) {
-                        //要移动的格子
-                        for (int k = 0; k < arrayUpdateLocSpace.size(); k++) {
-                            //格子相等
-                            if (arrayLocSpace.getInteger(j) == arrayUpdateLocSpace.getInteger(k)) {
-                                Double spaceQty = arraySpaceQty.getDouble(j);
-                                //移动数量，移入正数，移出负数
-                                Double updateSpaceQty = arrayUpdateSpaceQty.getDouble(k);
-                                Double qty = DoubleUtils.add(spaceQty, updateSpaceQty);
-                                System.out.println("spaceQty=" + spaceQty);
-                                System.out.println("updateSpaceQty=" + updateSpaceQty);
-                                System.out.println("qty=" + qty);
-                                //货架格子小于移动格子
-                                if (DoubleUtils.compareTo(qty, 0) == -1) {
-                                    throw new ErrorResponseException(HttpStatus.OK, ToolEnum.PROD_NOT_ENOUGH.getCode(), null);
-                                }
-                                //大于，减去数量
-                                if (DoubleUtils.compareTo(qty, 0) == 1) {
-                                    arraySpaceQty.set(j, qty);
-                                }
-                                //等于，删除格子数组和数量数组对应的数组元素
-                                else {
-                                    arrayLocSpace.remove(j);
-                                    arraySpaceQty.remove(j);
-                                }
-                            }
-                        }
-                    }
-
-                    if (isResv && aStock.getJSONObject("resvQty") != null &&
-                            aStock.getJSONObject("resvQty").getDouble(id_O + "-" + index) != null) {
-                        ///////************SET - aStock resvAsset qty **************//////////
-                        Double remain = Qt.add(aStock.getDouble("wn2qtyResv"), wn2qty);
-
-                        if (aStock.getDouble("wn2qty") == 0 && remain == 0) {
-                            jsonBulkAsset = this.setJson("type", "delete",
-                                    "id", id_A);
-                            jsonBulkLsasset = this.setJson("type", "delete",
-                                    "id", jsonLsa.getString("id_ES"));
-                        } else {
-                            //check if fromSum == resvQty.wn2qty, if so remove that object, else deduct
-                            JSONObject jsonResvQty = aStock.getJSONObject("resvQty");
-                            if (Qt.doubleEquals(jsonResvQty.getDouble(id_O + "-" + index), wn2qty)) {
-                                jsonResvQty.remove(id_O + "-" + index);
-                            } else {
-                                jsonResvQty.put(id_O + "-" + index, Qt.add(jsonResvQty.getDouble(id_O + "-" + index), wn2qty));
-                            }
-
-                            AssetAStock assetAStock = new AssetAStock(
-                                    wn4price, locAddr, arrayLocSpace, arraySpaceQty, remain, jsonResvQty);
-                            JSONObject jsonUpdate = this.setJson("aStock", assetAStock);
-                            jsonBulkAsset = this.setJson("type", "update",
-                                    "id", id_A,
-                                    "update", jsonUpdate);
-
-                            this.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
-                                    "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
-                                    "locSpace", arrayLocSpace,
-                                    "spaceQty", arraySpaceQty,
-                                    "wn2qtyResv", remain);
-                            jsonBulkLsasset = this.setJson("type", "update",
-                                    "id", jsonLsa.getString("id_ES"),
-                                    "update", jsonLsa);
-                        }
-                    }
-                    else {
-                        if (Qt.doubleEquals(aStock.getDouble("wn2qty"), wn2qty)) {
-                            jsonBulkAsset = this.setJson("type", "delete",
-                                    "id", id_A);
-                            jsonBulkLsasset = this.setJson("type", "delete",
-                                    "id", jsonLsa.getString("id_ES"));
-                        } else {
-                            AssetAStock assetAStock = new AssetAStock(
-                                    wn4price,
-                                    locAddr, arrayLocSpace, arraySpaceQty);
-                            JSONObject jsonUpdate = this.setJson("aStock", assetAStock);
-                            jsonBulkAsset = this.setJson("type", "update",
-                                    "id", id_A,
-                                    "update", jsonUpdate);
-
-                            this.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
-                                    "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
-                                    "locSpace", arrayLocSpace,
-                                    "spaceQty", arraySpaceQty);
-                            jsonBulkLsasset = this.setJson("type", "update",
-                                    "id", jsonLsa.getString("id_ES"),
-                                    "update", jsonLsa);
-                        }
-                    }
-                }
-                //不存在资产，新增资产
-                else {
-                    Asset asset = new Asset();
-                    id_A = this.GetObjectId();
-                    asset.setId(id_A);
-                    AssetInfo assetInfo = new AssetInfo(id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
-                            jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-                            jsonOItem.getString("pic"), jsonLsasset.getInteger("lAT"));
-                    asset.setInfo(assetInfo);
-
-                    AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayUpdateLocSpace, arrayUpdateSpaceQty);
-                    asset.setAStock((JSONObject) JSON.toJSON(assetAStock));
-                    JSONArray view = this.setArray("info", "aStock");
-                    asset.setView(view);
-                    jsonBulkAsset = this.setJson("type", "insert",
-                            "insert", asset);
-
-                    lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
-                            jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-                            jsonOItem.getString("pic"), jsonLsasset.getInteger("lAT"), wn2qty, wn4price);
-                    lsasset.setLocAddr(locAddr);
-                    lsasset.setLocSpace(arrayUpdateLocSpace);
-                    lsasset.setSpaceQty(arrayUpdateSpaceQty);
-
-                    jsonBulkLsasset = this.setJson("type", "insert",
-                            "insert", lsasset);
-
-//                    if (isLsa) {
-//                        lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
-//                                jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-//                                jsonOItem.getString("pic"), jsonLsasset.getInteger("lAT"), wn2qty, wn4price);
-//                        lsasset.setLocAddr(locAddr);
-//                        lsasset.setLocSpace(arrayUpdateLocSpace);
-//                        lsasset.setSpaceQty(arrayUpdateSpaceQty);
-//
-//                        jsonBulkLsasset = this.setJson("type", "insert",
-//                                "insert", lsasset);
-//                    } else {
-//                        lBAsset lbasset = new lBAsset(id_A, id_C, id_C, id_CB, id_P, jsonOItem.getJSONObject("wrdN"),
-//                                jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-//                                jsonOItem.getString("pic"), jsonLsasset.getInteger("lAT"), wn2qty, wn4price);
-//                        lbasset.setLocAddr(locAddr);
-//                        lbasset.setLocSpace(arrayUpdateLocSpace);
-//                        lbasset.setSpaceQty(arrayUpdateSpaceQty);
-//
-//                        jsonBulkLsasset = this.setJson("type", "insert",
-//                                "insert", lbasset);
-//                    }
-                }
-                listBulkAsset.add(jsonBulkAsset);
-                listBulkLsasset.add(jsonBulkLsasset);
-
-                LogFlow log = new LogFlow(tokData, jsonOItem, order.getAction(),
-                        order.getInfo().getId_CB(), id_O, index, "assetflow", "stoChg",
-                        jsonOItem.getJSONObject("wrdN").getString("cn") + jsonLog.getString("zcndesc"),
-                        jsonLog.getInteger("imp"));
-                log.setLogData_assetflow(wn2qty, wn4price, id_A, grpA);
-                System.out.println("assetflow=" + JSON.toJSON(log));
-//                ws.sendWS(log);
-            }
-            else {
-                JSONObject prodInfo = jsonLsasset.getJSONObject("jsonProd").getJSONObject("info");
-                //存在金钱
-                if (jsonLsasset.getJSONObject("jsonLsa") != null) {
-                    JSONObject jsonLsa = jsonLsasset.getJSONObject("jsonLsa");
-                    id_A = jsonLsa.getString("id_A");
-                    JSONObject jsonAsset = jsonLsasset.getJSONObject("jsonAsset");
-                    JSONObject aStock = jsonAsset.getJSONObject("aStock");
-                    AssetAStock assetAStock = new AssetAStock(Qt.add(aStock.getDouble("wn4price"), wn2qty));
-                    JSONObject jsonUpdate = this.setJson("aStock", assetAStock);
-                    jsonBulkAsset = this.setJson("type", "update",
-                            "id", id_A,
-                            "update", jsonUpdate);
-
-                    if (!isLsa && !id_C.equals(id_CB)) {
-                        JSONObject jsonLba = jsonLsasset.getJSONObject("jsonLba");
-                        this.upJson(jsonLba, "wn4price", Qt.add(aStock.getDouble("wn4price"), wn2qty),
-                                "wn4value", Qt.add(aStock.getDouble("wn4value"), wn2qty));
-                        JSONObject jsonBulkLbasset = this.setJson("type", "update",
-                                "id", jsonLba.getString("id_ES"),
-                                "update", jsonLba);
-                        listBulkLbasset.add(jsonBulkLbasset);
-                    }
-
-                    this.upJson(jsonLsa, "wn4price", Qt.add(aStock.getDouble("wn4price"), wn2qty),
-                            "wn4value", Qt.add(aStock.getDouble("wn4value"), wn2qty));
-                    jsonBulkLsasset = this.setJson("type", "update",
-                            "id", jsonLsa.getString("id_ES"),
-                            "update", jsonLsa);
-                }
-                //不存在金钱，新增
-                else {
-                    Asset asset = new Asset();
-                    id_A = this.GetObjectId();
-                    asset.setId(id_A);
-//                    JSONObject prodInfo = jsonProds.getJSONObject(id_P).getJSONObject("info");
-                    AssetInfo assetInfo = new AssetInfo(id_C, id_C, id_P, prodInfo.getJSONObject("wrdN"),
-                            prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
-                            prodInfo.getString("pic"), jsonLsasset.getInteger("lAT"));
-                    asset.setInfo(assetInfo);
-                    AssetAStock assetAStock = new AssetAStock(wn2qty);
-                    asset.setAStock((JSONObject) JSON.toJSON(assetAStock));
-                    JSONArray view = this.setArray("info", "aStock");
-                    asset.setView(view);
-                    jsonBulkAsset = this.setJson("type", "insert",
-                            "insert", asset);
-
-                    if (isLsa) {
-                        lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_CB, id_P, prodInfo.getJSONObject("wrdN"),
-                                prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
-                                prodInfo.getString("pic"), jsonLsasset.getInteger("lAT"), 1.0, wn2qty);
-
-                        jsonBulkLsasset = this.setJson("type", "insert",
-                                "insert", lsasset);
-                    } else {
-                        if (!id_C.equals(id_CB)) {
-                            lSAsset lsasset = new lSAsset(id_A, id_CB, id_CB, id_C, id_P, prodInfo.getJSONObject("wrdN"),
-                                    prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
-                                    prodInfo.getString("pic"), jsonLsasset.getInteger("lAT"), 1.0, wn2qty);
-
-                            JSONObject jsonBulkLbasset = this.setJson("type", "insert",
-                                    "insert", lsasset);
-                            listBulkLbasset.add(jsonBulkLbasset);
-                        }
-                        lBAsset lbasset = new lBAsset(id_A, id_C, id_C, id_CB, id_P, prodInfo.getJSONObject("wrdN"),
-                                prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
-                                prodInfo.getString("pic"), jsonLsasset.getInteger("lAT"), 1.0, wn2qty);
-
-                        jsonBulkLsasset = this.setJson("type", "insert",
-                                "insert", lbasset);
-                    }
-                }
-
-                listBulkAsset.add(jsonBulkAsset);
-                listBulkLsasset.add(jsonBulkLsasset);
-
-                LogFlow log = new LogFlow("moneyflow", jsonLog.getString("id"), jsonLog.getString("id_FS"),
-                        "stoChg", id_U, grpU, id_P, jsonLog.getString("grpB"), jsonLog.getString("grp"),
-                        jsonLog.getString("id_OP"), id_O, jsonLog.getInteger("index"), id_C,
-                        jsonLog.getString("id_CS"), prodInfo.getString("pic"), tokData.getString("dep"),
-                        prodInfo.getJSONObject("wrdN").getString("cn") + jsonLog.getString("zcndesc"),
-                        jsonLog.getInteger("imp"), prodInfo.getJSONObject("wrdN"), tokData.getJSONObject("wrdNU"));
-                log.setLogData_money(id_A, "", wn2qty);
-                System.out.println("moneyflow=" + JSON.toJSON(log));
-//                ws.sendWS(log);
-            }
-        }
-    }
-
-    public JSONObject getEsByQuery(BoolQueryBuilder queryBuilder, String listType, HashSet setId_A) {
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.query(queryBuilder).size(1000);
-        try {
-            SearchRequest request = new SearchRequest(listType).source(sourceBuilder);
-            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-            JSONArray arrayEs = this.hit2Array(response);
-            System.out.println("arrayEs=" + arrayEs);
-            JSONObject jsonResult = new JSONObject();
-            if (listType.equals("lSAsset")) {
-                for (int i = 0; i < arrayEs.size(); i++) {
-                    JSONObject jsonEs = arrayEs.getJSONObject(i);
-                    String locAddr = jsonEs.getString("locAddr");
-                    if (locAddr == null || locAddr.equals("")) {
-                        jsonResult.put(jsonEs.getString("id_C") + "-" + jsonEs.getString("id_CB") + "-" +
-                                jsonEs.getString("id_P"), jsonEs);
-                    } else {
-                        jsonResult.put(jsonEs.getString("id_C") + "-" + jsonEs.getString("id_CB") + "-" +
-                                jsonEs.getString("id_P") + "-" + locAddr, jsonEs);
-                    }
-                    setId_A.add(jsonEs.getString("id_A"));
-                }
-            } else {
-                for (int i = 0; i < arrayEs.size(); i++) {
-                    JSONObject jsonEs = arrayEs.getJSONObject(i);
-                    jsonResult.put(jsonEs.getString("id_C") + "-" + jsonEs.getString("id_CB") + "-" +
-                            jsonEs.getString("id_P"), jsonEs);
-                    setId_A.add(jsonEs.getString("id_A"));
-                }
-            }
-            System.out.println("jsonResult=" + jsonResult);
-            return jsonResult;
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
-        }
-    }
-
-    public JSONObject setStock(JSONObject tokData, String id_CB, String id_P, Double wn2qty, Integer index,
-                               String locAddr, JSONArray locSpace, JSONArray spaceQty, Integer lAT, String zcndesc, Integer imp) {
-        JSONObject jsonLog = this.setJson(
-                "zcndesc", zcndesc,
-                "imp", imp);
-        JSONObject json = this.setJson("tokData", tokData,
-                "id_CB", id_CB,
-                "id_P", id_P,
-                "wn2qty", wn2qty,
-                "index", index,
-                "locAddr", locAddr,
-                "locSpace", locSpace,
-                "spaceQty", spaceQty,
-                "lAT", lAT,
-                "log", jsonLog);
-        return json;
-    }
-
-    public JSONObject setMoney(JSONObject tokData, String id_CB, String id_P, Double wn2qty, Integer lAT, JSONObject action,
-                               JSONObject oMoney, Integer index, String zcndesc, Integer imp) {
-        String id_OP = "";
-        if (index != null) {
-            id_OP = action.getJSONArray("objAction").getJSONObject(index).getString("id_OP");
-        }
-        String id = action.getJSONObject("grpBGroup").getJSONObject(oMoney.getString("grpB")).getString("id_Money");
-        String id_FS = action.getJSONObject("grpGroup").getJSONObject(oMoney.getString("grp")).getString("id_Money");
-        JSONObject jsonLog = this.setJson("id", id,
-                "id_FS", id_FS,
-                "grpB", oMoney.getString("grpB"),
-                "grp", oMoney.getString("grp"),
-                "id_OP", id_OP,
-                "index", index,
-                "id_CS", tokData.getString("id_C"),
-                "zcndesc", zcndesc,
-                "imp", imp);
-        JSONObject json = this.setJson("tokData", tokData,
-                "id_CB", id_CB,
-                "id_P", id_P,
-                "wn2qty", wn2qty,
-                "lAT", lAT,
-                "log", jsonLog);
-        return json;
-    }
 }

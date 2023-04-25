@@ -365,15 +365,10 @@ public class FlowServiceImpl implements FlowService {
 //                  }
                 grpO = "1000";
                 grpOB = "1000";
-
                 System.out.print("got all ok");
 
                 if (id_OParent.equals(thisOrderId)) {
                     // make sales order Action
-                    System.out.print("sales order");
-                    System.out.print(unitAction);
-
-                    System.out.print(oDates);
 
                     this.updateSalesOrder(casItemData,unitAction,unitOItem,salesOrderData,grpBGroup, grpGroup, prodCompId
                     ,oDates,oTasks);
@@ -383,7 +378,6 @@ public class FlowServiceImpl implements FlowService {
                 // else make Purchase Order
 //                // 创建订单
                 Order newPO = new Order();
-                    System.out.println("sales order");
 
 
                     // 根据键设置订单id
@@ -392,7 +386,6 @@ public class FlowServiceImpl implements FlowService {
 
                 // priority is BY order, get from info and write into ALL oItem
                 OrderInfo newPO_Info = new OrderInfo(prodCompId,targetCompId,unitOItem.get(0).getId_CP(),"", id_OParent,"","",grpO,grpOB,oParent_prior,unitOItem.get(0).getPic(),4,0,orderNameCas,null);
-                    System.out.println("sales order");
 
                 // 设置订单info信息
                 newPO.setInfo(newPO_Info);
@@ -404,7 +397,6 @@ public class FlowServiceImpl implements FlowService {
                 view.add("oItem");
                 view.add("oStock");
                 newPO.setView(view);
-                    System.out.println("sales order");
 
                 JSONArray objCard = new JSONArray();
                 objCard.add("action");
@@ -413,7 +405,6 @@ public class FlowServiceImpl implements FlowService {
                 Double wn2qty = 0.0;
                 Double wn4price = 0.0;
                 JSONArray arrayId_P = new JSONArray();
-                    System.out.println("sales order");
 
                 for (OrderOItem orderOItem : unitOItem) {
                     wn2qty += orderOItem.getWn2qtyneed();
@@ -919,7 +910,6 @@ public class FlowServiceImpl implements FlowService {
                                  List<OrderODate> oDates,List<Task> oTasks)
     {
 
-        // TODO KEV: mixed oTasks/oDates problem
         // 添加订单基础信息存储
         JSONObject casItemx = new JSONObject();
         JSONObject listCol = qt.getES("lsborder", qt.setESFilt("id_O", orderParentData.getId())).getJSONObject(0);
@@ -1836,7 +1826,7 @@ public class FlowServiceImpl implements FlowService {
 //                System.out.println(unitOItem.getWn2qtyneed());
 //
                 JSONObject upPrntsData = unitAction.getUpPrnts().getJSONObject(0); //******
-                     upPrntsData.put("CALcul", unitOItem.getWn2qtyneed());
+//                     upPrntsData.put("CALcul", unitOItem.getWn2qtyneed());
                 upPrntsData.put("wn2qtyneed", unitOItem.getWn2qtyneed());
 //
 //                upPrntsData.put("CALculatetyneed3", qtySubNeed);
