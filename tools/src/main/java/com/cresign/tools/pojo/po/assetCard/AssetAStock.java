@@ -25,7 +25,7 @@ public class AssetAStock {
         }
 //        this.wn2qty = wn2qty == null ? 0.0 : wn2qty;
         this.wn4price = wn4price == null ? 0.0 : wn4price;
-        this.wn4value = Qt.multiply(wn2qty,wn4price);
+        this.wn4value = DoubleUtils.multiply(wn2qty,wn4price);
         this.locAddr = locAddr == null ? "" : locAddr;
         this.locSpace = locSpace == null ? array : locSpace;
         this.spaceQty = spaceQty == null ? array : spaceQty;
@@ -36,7 +36,7 @@ public class AssetAStock {
         JSONArray array = new JSONArray();
         this.wn2qty = 1.0;
         this.wn4price = wn4price == null ? 0.0 : wn4price;
-        this.wn4value = Qt.multiply(wn2qty,wn4price);
+        this.wn4value = DoubleUtils.multiply(wn2qty,wn4price);
         this.locAddr = "";
         this.locSpace = array;
         this.spaceQty = array;
@@ -53,7 +53,7 @@ public class AssetAStock {
         }
 //        this.wn2qty = wn2qty == null ? 0.0 : wn2qty;
         this.wn4price = wn4price == null ? 0.0 : wn4price;
-        this.wn4value = Qt.multiply(wn2qty,wn4price);
+        this.wn4value = DoubleUtils.multiply(wn2qty,wn4price);
         this.locAddr = locAddr == null ? "" : locAddr;
         this.locSpace = locSpace == null ? array : locSpace;
         this.spaceQty = spaceQty == null ? array : spaceQty;

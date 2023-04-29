@@ -3,6 +3,7 @@ package com.cresign.tools.pojo.es;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.DoubleUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.DateEnum;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -37,7 +38,7 @@ public class lSAsset {
         this.lAT = lAT == null ? 0 : lAT;
         this.wn2qty = wn2qty == 0 ? 0 : wn2qty;
         this.wn4price = wn4price == 0 ? 0 : wn4price;
-        this.wn4value = Qt.multiply(wn2qty, wn4price);
+        this.wn4value = DoubleUtils.multiply(wn2qty, wn4price);
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
