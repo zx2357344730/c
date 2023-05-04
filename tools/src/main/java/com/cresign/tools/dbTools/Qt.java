@@ -256,7 +256,7 @@ import java.util.regex.Pattern;
                 initData.put("cn_java", result);
                 return result;
             }
-            return this.jsonTo(initData.get("java"), InitJava.class);
+            return this.jsonTo(initData.get("cn_java"), InitJava.class);
         }
         public Init getInitData(String lang)
         {
