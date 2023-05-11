@@ -29,10 +29,10 @@ public class OrderCusmsg {
      */
     private String id_O;
 
-//    /**
-//     * 自己的下标
-//     */
-//    private Integer index = 0;
+    /**
+     * 自己的下标
+     */
+    private Integer index;
 
     /**
      * 负责人id

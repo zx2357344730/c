@@ -6,6 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="128c9a26-d44c-4e41-b0e6-dabc284dd13b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/CusServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/CusServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/resources/bootstrap.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chat/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/resources/bootstrap.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/orderCard/OrderCusmsg.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/orderCard/OrderCusmsg.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +42,20 @@
     &quot;last_opened_file_path&quot;: &quot;/Users/kevin/Documents/Important/ccpl2&quot;
   }
 }</component>
-  <component name="RunManager" selected="Application.GatewayApp">
+  <component name="RunManager" selected="Application.ChatApp">
+    <configuration name="ActionApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.cresign.action.ActionApp" />
+      <module name="action" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.cresign.action.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="ChatApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.cresign.chat.ChatApp" />
       <module name="chat" />
@@ -67,8 +84,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.GatewayApp" />
         <item itemvalue="Application.ChatApp" />
+        <item itemvalue="Application.GatewayApp" />
+        <item itemvalue="Application.ActionApp" />
       </list>
     </recent_temporary>
   </component>

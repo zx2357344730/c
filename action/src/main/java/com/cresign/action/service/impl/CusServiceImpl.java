@@ -316,8 +316,9 @@ public class CusServiceImpl implements CusService {
                 JSONObject cusUser = new JSONObject();
                 cusUser.put("state",0);
                 cusUser.put("id_UCus",null);
-                cusUser.put("type",null);
                 cusUser.put("cusFoUp",0);
+                cusUser.put("id_O",id_O);
+                cusUser.put("index",null);
                 qt.setMDContent(id_uThis,qt.setJson("rolex.cus."+id_CCus,cusUser), User.class);
                 sendMsgOneNew(id_uThis,logFlow);
                 sendMsgNotice(id_uThis,id_CCus,"已拒收该公司消息",id_uThis,id_O);
@@ -519,7 +520,7 @@ public class CusServiceImpl implements CusService {
 
     @Override
     public ApiResponse cusOperate(String id_CCus, String id_U, String id_O, int index, int bcdStatus) {
-        String resultDesc;
+        String resultDesc = null;
         Order order = qt.getMDContent(id_O, "cusmsg", Order.class);
         if (null != order) {
             JSONObject cusmsg = order.getCusmsg();
@@ -545,6 +546,32 @@ public class CusServiceImpl implements CusService {
                                 id_uProInfo.put("type",1);
                                 userAll.put(id_uPropose,id_uProInfo);
                                 qt.setMDContent(asset.getId(),qt.setJson("flowControl.cus."+id_U+".userAll", userAll), Asset.class);
+
+                                User user = qt.getMDContent(id_uPropose, "rolex", User.class);
+                                boolean isUserOk = false;
+                                JSONObject cusUser = null;
+                                if (null != user) {
+                                    JSONObject rolex = user.getRolex();
+                                    if (null != rolex) {
+                                        cusUser = rolex.getJSONObject("cus");
+                                        if (null != cusUser) {
+                                            isUserOk = true;
+                                        } else {
+                                            resultDesc = "用户客服信息为空";
+                                        }
+                                    } else {
+                                        resultDesc = "用户权限信息为空";
+                                    }
+                                } else {
+                                    resultDesc = "用户信息为空";
+                                }
+                                if (!isUserOk) {
+                                    sendMsgNotice(id_U,id_CCus,resultDesc, null,id_O);
+                                    return retResult.ok(CodeEnum.OK.getCode(), "0");
+                                }
+                                cusUser.put("id_UCus",id_U);
+                                cusUser.put("cusFoUp",3);
+                                qt.setMDContent(id_uPropose,qt.setJson("rolex.cus."+id_CCus,cusUser), User.class);
 
                                 sendMsgNotice(id_U,id_CCus,"已接受",id_U,id_O);
                                 sendMsgNotice(id_uPropose,id_CCus,"已被接受",id_U,id_O);
@@ -609,6 +636,13 @@ public class CusServiceImpl implements CusService {
                         JSONObject cus = flowControl.getJSONObject("cus");
                         if (null != cus) {
                             sendMsgNotice(id_U,id_CCus,"客服请求发起成功",id_U,id_O);
+                            JSONObject cusUser = new JSONObject();
+                            cusUser.put("state",1);
+                            cusUser.put("id_UCus",null);
+                            cusUser.put("cusFoUp",0);
+                            cusUser.put("id_O",id_O);
+                            cusUser.put("index",orderCusmsg.getIndex());
+                            qt.setMDContent(id_U,qt.setJson("rolex.cus."+id_CCus,cusUser), User.class);
                             cus.keySet().forEach(id_UCus -> sendMsgNotice(id_UCus,id_CCus
                                     ,"顾客"+id_U+"需要服务!",id_U,id_O));
                             return retResult.ok(CodeEnum.OK.getCode(), "1");
