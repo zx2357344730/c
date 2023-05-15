@@ -8,6 +8,7 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
+import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.Asset;
@@ -35,6 +36,9 @@ public class CusServiceImpl implements CusService {
 
     @Autowired
     private Qt qt;
+
+    @Autowired
+    private Ws ws;
 
     @Autowired
     private RetResult retResult;
@@ -674,13 +678,13 @@ public class CusServiceImpl implements CusService {
         sendMsgOne(logFlow);
     }
     public void sendMsgOne(LogFlow logFlow){
-        qt.sendMQ("chatTopic:chatTap",JSONObject.parseObject(JSON.toJSONString(logFlow)));
+        ws.sendWS(logFlow);
     }
     public void sendMsgOneNew(String sendUser,LogFlow logFlow){
         JSONObject data = logFlow.getData();
         data.put("id_UPointTo",sendUser);
         logFlow.setData(data);
-        qt.sendMQ("chatTopic:chatTap",JSONObject.parseObject(JSON.toJSONString(logFlow)));
+        ws.sendWS(logFlow);
     }
     private LogFlow getNullLogFlow(String logType,String subType,String desc,String id_C,String id_U
             ,JSONObject data,String id_O){
