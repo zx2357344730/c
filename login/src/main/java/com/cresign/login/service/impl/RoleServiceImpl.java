@@ -1,6 +1,5 @@
 package com.cresign.login.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.enumeration.LoginEnum;
@@ -8,15 +7,13 @@ import com.cresign.login.service.RoleService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
-import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
+import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
-import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.InitJava;
-import com.cresign.tools.pojo.po.LogFlow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -40,6 +37,9 @@ public class RoleServiceImpl implements RoleService {
     @Autowired
     private Qt qt;
 
+    @Autowired
+    private Ws ws;
+
     @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
     @Override
     //ok
@@ -57,7 +57,7 @@ public class RoleServiceImpl implements RoleService {
         qt.delRDHashItem("login:get_read_auth", "compId-"+id_C, redisKey);
         qt.delRDHashItem("login:get_readwrite_auth", "compId-" + id_C, redisKey);
 
-        qt.sendMQRearEnd(id_C,id_U,"updateRole");
+        ws.sendWS_grpU(id_C,id_U,"updateRole");
 
         return retResult.ok(CodeEnum.OK.getCode(), "");
 
@@ -316,7 +316,7 @@ public class RoleServiceImpl implements RoleService {
         qt.delRDHashItem("login:get_read_auth", "compId-"+id_C, redisKey);
         qt.delRDHashItem("login:get_readwrite_auth", "compId-" + id_C, redisKey);
 
-        qt.sendMQRearEnd(id_C,id_U,"up_grp_all_auth");
+        ws.sendWS_grpU(id_C,id_U,"up_grp_all_auth");
 
         return retResult.ok(CodeEnum.OK.getCode(), "");
 
@@ -368,7 +368,7 @@ public class RoleServiceImpl implements RoleService {
         qt.delRD("login:get_read_auth", "compId-"+id_C);
         qt.delRD("login:get_readwrite_auth", "compId-" + id_C);
 
-        qt.sendMQRearEnd(id_C,id_U,"copyGrpU");
+        ws.sendWS_grpU(id_C,id_U,"copyGrpU");
 
         return retResult.ok(CodeEnum.OK.getCode(), "");
 
@@ -424,10 +424,8 @@ public class RoleServiceImpl implements RoleService {
 
         //1. check control has that mod?
         //2. get a list of all CardBatchLog we have now
-//        InitJava initJson = qt.getMDContent("cn_java", qt.strList("listTypeInit","cardInit","batchInit","logInit"), InitJava.class);
         InitJava initJson = qt.getInitData();
 
-//        JSONArray resultModArray = qt.getConfig(id_C, "a-core", "control").getControl().getJSONArray("objData");
         JSONObject resultModObj = qt.getConfig(id_C, "a-core", "control").getControl().getJSONObject("objMod");
 
         JSONObject myModObject = qt.cloneObj(resultModObj);
@@ -441,22 +439,15 @@ public class RoleServiceImpl implements RoleService {
         JSONObject resultLogObj = new JSONObject();
 
         JSONObject result = new JSONObject();
-        qt.errPrint("objMod", null, resultModObj, myModObject);
 
         // 先获取该用户已拥有的模块
-
-
             for (String key : cardInit.keySet()) {
 
                 JSONObject cardJson = cardInit.getJSONObject(key);
                 JSONArray cardListType = cardInit.getJSONObject(key).getJSONArray("listType");
-//                for (int i = 0; i < myModArray.size(); i++) {
                     for (String modKey : myModObject.keySet()) {
                         String modArrayRef = myModObject.getJSONObject(modKey).getString("mod");
                         Integer modArrayLevel = myModObject.getJSONObject(modKey).getInteger("bcdLevel");
-
-//                    String modArrayRef = myModArray.getJSONObject(i).getString("ref");
-//                    Integer modArrayLevel = myModArray.getJSONObject(i).getInteger("bcdLevel");
 
                         System.out.println(cardJson.getString("ref"));
                         if (modArrayRef.equals("a-"+cardJson.getString("modRef"))
@@ -471,22 +462,14 @@ public class RoleServiceImpl implements RoleService {
 
 
             // 初始化该卡片对象数组
-//            List<JSONObject> batchList = new ArrayList<>();
-
             try {
                 for (String key : batchInit.keySet()) {
                     JSONObject batchJson = batchInit.getJSONObject(key);
                     JSONArray batchListType = batchInit.getJSONObject(key).getJSONArray("listType");
 
-//                    for (int i = 0; i < myModArray.size(); i++) {
-//                        String modArrayRef = myModArray.getJSONObject(i).getString("ref");
-//                        Integer modArrayLevel = myModArray.getJSONObject(i).getInteger("bcdLevel");
                     for (String modKey : myModObject.keySet()) {
                         String modArrayRef = myModObject.getJSONObject(modKey).getString("mod");
                         Integer modArrayLevel = myModObject.getJSONObject(modKey).getInteger("bcdLevel");
-
-
-
 
                         if (modArrayRef.equals(batchJson.getString("modRef"))
                                 && (batchListType.contains(listType.substring(2)) || batchListType.contains("all"))
@@ -503,9 +486,7 @@ public class RoleServiceImpl implements RoleService {
                 if (listType.equals("lSProd") || listType.equals("lBProd")) {
                     for (String key : logInit.keySet()) {
                         JSONObject logJson = logInit.getJSONObject(key);
-//                        for (int i = 0; i < myModArray.size(); i++) {
-//                            String modArrayRef = myModArray.getJSONObject(i).getString("ref");
-//                            Integer modArrayLevel = myModArray.getJSONObject(i).getInteger("bcdLevel");
+
                         for (String modKey : myModObject.keySet()) {
                             String modArrayRef = myModObject.getJSONObject(modKey).getString("mod");
                             Integer modArrayLevel = myModObject.getJSONObject(modKey).getInteger("bcdLevel");
@@ -518,8 +499,6 @@ public class RoleServiceImpl implements RoleService {
 
                     result.put("log", resultLogObj);
                 }
-
-                System.out.println("result"+result.getJSONObject("log"));
 
             } catch (Exception e)
             {

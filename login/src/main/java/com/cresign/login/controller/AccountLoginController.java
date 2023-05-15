@@ -37,8 +37,6 @@ public class AccountLoginController {
     public ApiResponse unregLogin(@RequestBody JSONObject reqJson) {
 
         return accountLoginService.unregLogin(
-//                reqJson.getString("usn"),
-//                reqJson.getString("pwd"),
                 request.getHeader("clientType"));
 
     }

@@ -3,7 +3,6 @@ package com.cresign.purchase.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.purchase.client.WSClient;
 import com.cresign.purchase.common.ChatEnum;
 import com.cresign.purchase.service.ActionService;
 import com.cresign.tools.advice.RetResult;
@@ -11,6 +10,7 @@ import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.dbTools.Qt;
+import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -65,8 +65,11 @@ public class ActionServiceImpl implements ActionService {
         @Autowired
         private RetResult retResult;
 
+//        @Autowired
+//        private WSClient ws;
+
         @Autowired
-        private WSClient ws;
+        private Ws ws;
 
         @Autowired
         private Qt qt;
@@ -324,7 +327,7 @@ public class ActionServiceImpl implements ActionService {
                         orderAction.setId_Us(id_Us);
                         res.put("isJoin", 1);
                         res.put("id_Us", orderAction.getId_Us());
-                        if (actData.getJSONObject("info").getInteger("lST") == 7) {
+                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
                             mapKey.put("info.lST", 8);
                             listCol.put("lST", 8);
                         }
@@ -354,11 +357,14 @@ public class ActionServiceImpl implements ActionService {
                         isStateChg = true;
                         duraType = "allEnd";
 
+
                         break;
                     case 3:
                     case -8: // resume OItem
                         if (orderAction.getBcdStatus() != 8) {
-                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
+                            return retResult.ok(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
+
+//                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
                         }
 
                         message = "[已恢复执行]" + msg;
@@ -447,6 +453,15 @@ public class ActionServiceImpl implements ActionService {
                 }
 
                 if (isStateChg) {
+
+                    if (status.equals(2) || status.equals(9))
+                    {
+                        //removing it from flowControl RefOP
+                        this.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
+                                id_FC, id_FS, orderAction.getId_OP(), orderAction.getRefOP(), orderAction.getWrdNP(), orderAction.getIndex(), false );
+                    }
+
+                    qt.errPrint("stateChg to send log here?", null, isStateChg);
                     // Start making log with data
                     LogFlow logL = new LogFlow("action", id_FC,
                             id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
@@ -533,7 +548,7 @@ public class ActionServiceImpl implements ActionService {
                     if (orderAction.getUpPrnts().size() == 0 && orderAction.getId_P().equals(""))
                         this.updateNext(orderAction, tokData);
                     else
-                        this.updateParent(orderAction, tokData, logType);
+                        this.updateParent(orderAction, tokData);
                 }
 
 
@@ -571,6 +586,13 @@ public class ActionServiceImpl implements ActionService {
                                 orderAction1.setBcdStatus(0); //状态改为准备开始
                                 orderAction1.setBisPush(1);
 
+                                this.updateRefOP(tokData.getString("id_C"), orderOItem1.getId_C(),
+                                        actData.getString("id_FC"),
+                                        actData.getString("id_FS"), orderAction1.getId_OP(), orderAction1.getRefOP(),
+                                        orderAction1.getWrdNP(), nextIndex, true );
+
+
+
                                 // Start making log with data
                                 LogFlow logL = new LogFlow("action", actData.getString("id_FC"),
                                         actData.getString("id_FS"), "stateChg",
@@ -593,6 +615,11 @@ public class ActionServiceImpl implements ActionService {
                                 // Start myself, because I am a Process group and I don't need sumChild == 0 to start
                                 orderAction1.setBcdStatus(0); //状态改为准备开始
                                 orderAction1.setBisPush(1);
+
+                                this.updateRefOP(tokData.getString("id_C"), orderOItem1.getId_C(),
+                                        actData.getString("id_FC"),
+                                        actData.getString("id_FS"), orderAction1.getId_OP(), orderAction1.getRefOP(),
+                                        orderAction1.getWrdNP(), nextIndex, true );
 
                                 // Start making log with data
                                 LogFlow logL = new LogFlow("action", actData.getString("id_FC"),
@@ -619,28 +646,35 @@ public class ActionServiceImpl implements ActionService {
                                     OrderOItem subOItem = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderOItem")), OrderOItem.class);
                                     OrderAction subAction = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderAction")), OrderAction.class);
 
-                                    if (subAction.getPrtPrev().size() == 0) //it's 0 means he is the first one
-                                    {
-                                        subAction.setBcdStatus(0);
-                                        subAction.setBisPush(1);
-
-                                        qt.setMDContent(subId, qt.setJson("action.objAction." + subIndex, subAction), Order.class);
-
-                                        LogFlow logLP = new LogFlow("action", subOrderData.getString("id_FC"),
-                                                subOrderData.getString("id_FS"), "stateChg",
-                                                tokData.getString("id_U"), tokData.getString("grpU"), subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
-                                                subOItem.getId_OP(),
-                                                subId,
-                                                subIndex,
-                                                tokData.getString("id_C"), subOItem.getId_C(),
-                                                "", tokData.getString("dep"), "准备开始", 3, subOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
-                                        logLP.setLogData_action(subAction, subOItem);
-                                        logLP.getData().put("wn0prog", 2);
-                                        qt.errPrint("subO", null, subOrderData);
-
-
-                                        ws.sendWS(logLP);
-                                    }
+                                    this.updateNext(subAction, tokData);
+//                                    if (subAction.getPrtPrev().size() == 0) //it's 0 means he is the first one
+//                                    {
+//                                        subAction.setBcdStatus(0);
+//                                        subAction.setBisPush(1);
+//
+//                                        qt.setMDContent(subId, qt.setJson("action.objAction." + subIndex, subAction), Order.class);
+//
+//                                        this.updateRefOP(tokData.getString("id_C"), subOItem.getId_C(),
+//                                                subOrderData.getString("id_FC"),
+//                                                subOrderData.getString("id_FS"), subOItem.getId_OP(), subAction.getRefOP(),
+//                                                subAction.getWrdNP(), subIndex, true );
+//
+//
+//                                        LogFlow logLP = new LogFlow("action", subOrderData.getString("id_FC"),
+//                                                subOrderData.getString("id_FS"), "stateChg",
+//                                                tokData.getString("id_U"), tokData.getString("grpU"), subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
+//                                                subOItem.getId_OP(),
+//                                                subId,
+//                                                subIndex,
+//                                                tokData.getString("id_C"), subOItem.getId_C(),
+//                                                "", tokData.getString("dep"), "准备开始", 3, subOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+//                                        logLP.setLogData_action(subAction, subOItem);
+//                                        logLP.getData().put("wn0prog", 2);
+//                                        qt.errPrint("subO", null, subOrderData);
+//
+//
+//                                        ws.sendWS(logLP);
+//                                    }
                                 }
                             }
                         }
@@ -661,7 +695,7 @@ public class ActionServiceImpl implements ActionService {
          * @ver 1.0.0
          * @date 2020/8/6 9:21
          */
-        private void updateParent(OrderAction orderAction,JSONObject tokData,String logType) {
+        private void updateParent(OrderAction orderAction,JSONObject tokData) {
 
 
             for (Integer i = 0; i < orderAction.getUpPrnts().size(); i++) {
@@ -679,12 +713,19 @@ public class ActionServiceImpl implements ActionService {
                     unitActionPrnt.setSumChild(unitActionPrnt.getSumChild() - 1);
 
 
-                    // 判断父的子产品是否为0，如果为0则把父产品推送得到WebSocket
-                    if (unitActionPrnt.getSumChild().equals(unitActionPrnt.getSubParts().size() - 1)) {
+                    // 只要是第一个开了，父就推出来, @4 工序组时也可能再推，检查已推isPush
 
+                    if (unitActionPrnt.getSumChild().equals(unitActionPrnt.getSubParts().size() - 1)
+                    && unitActionPrnt.getBisPush() != 1) {
 
                         unitActionPrnt.setBcdStatus(0);
                         unitActionPrnt.setBisPush(1);
+
+                        this.updateRefOP(tokData.getString("id_C"), unitOItemPrnt.getId_C(),
+                                actData.getString("id_FC"),
+                                actData.getString("id_FS"), unitActionPrnt.getId_OP(), unitActionPrnt.getRefOP(),
+                                unitActionPrnt.getWrdNP(), indexPrnt, true );
+
 
                         // Start making log with data
                         LogFlow logL = new LogFlow("action", actData.getString("id_FC"),
@@ -718,11 +759,131 @@ public class ActionServiceImpl implements ActionService {
             }
         }
 
+    //refOP{"refOP":{refOP, wrdN, index[], id_OP}}
+    private void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
+                             String id_OP, String refOP, JSONObject wrdN, Integer index, Boolean isStart)
+    {
+        if (id_CS == null)
+            id_CS = "";
+        if (id_FS == null)
+            id_FS = "";
 
-        @Override
+        Asset assetB = qt.getConfig(id_CB, "a-auth", "flowControl");
+        Asset assetS = qt.getConfig(id_CS, "a-auth", "flowControl");
+
+        JSONObject refOPInfo = qt.setJson("refOP", refOP, "wrdN", wrdN, "index", new JSONArray(), "id_OP", id_OP);
+
+        // check and update id_FC
+        if (!id_FC.equals("") && !assetB.getId().equals("none"))
+        {
+
+            for (int i = 0; i < assetB.getFlowControl().getJSONArray("objData").size(); i++)
+            {
+
+                JSONObject flowInfo = assetB.getFlowControl().getJSONArray("objData").getJSONObject(i);
+
+                //adding 1 index
+                if (flowInfo.getString("id").equals(id_FC) && isStart && refOP != null) {
+                    // case 1: id_OP not exists in refOP, init
+                    if (flowInfo.getJSONObject("refOP") == null)
+                    {
+                        flowInfo.put("refOP", new JSONObject());
+                    }
+
+                    if (id_OP.equals(""))
+                    {
+                        flowInfo.getJSONObject("refOP").put("id_OP", flowInfo.getString("id_O"));
+                    }
+
+                    // case 2: refOP not exists
+                    if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
+                    {
+                        flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
+                    }
+                    // any case, add this index to index[]
+                    flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(index);
+
+                    qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+                    break;
+
+                } // removing now here:
+                else if (flowInfo.getString("id").equals(id_FC) && !isStart) {
+
+                    // case 1: if index size == 1, remove the whole id_OP
+                    try {
+                        if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
+                        {
+                            flowInfo.getJSONObject("refOP").remove(refOP);
+                        } else
+                        {
+                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(index);
+                        }
+                        qt.errPrint("flowInfo remove", null, flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index"));
+
+                        qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+
+                    } catch (Exception e) {
+                        // here it must have an error flowcontrol
+                    }
+                    break;
+                }
+            }
+        }
+        if (!id_FS.equals("") && !assetS.getId().equals("none"))
+        {
+            for (int i = 0; i < assetS.getFlowControl().getJSONArray("objData").size(); i++)
+            {
+                JSONObject flowInfo = assetS.getFlowControl().getJSONArray("objData").getJSONObject(i);
+                //adding 1 index
+                if (flowInfo.getString("id").equals(id_FS) && isStart && refOP != null) {
+                    // case 1: id_OP not exists in refOP, init
+                    if (flowInfo.getJSONObject("refOP") == null)
+                    {
+                        flowInfo.put("refOP", new JSONObject());
+                    }
+                    if (id_OP.equals(""))
+                    {
+                        flowInfo.getJSONObject("refOP").put("id_OP", flowInfo.getString("id_O"));
+                    }
+                    // case 2: refOP not exists
+                    if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
+                    {
+                        flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
+                    }
+                    // any case, add this index to index[]
+                    flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(index);
+                    qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+                    break;
+
+                } // removing now here:
+                else if (flowInfo.getString("id").equals(id_FS) && !isStart) {
+                    // case 1: if index size == 1, remove the whole id_OP
+                    try {
+                        if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
+                        {
+                            flowInfo.getJSONObject("refOP").remove(refOP);
+                        } else
+                        {
+                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(index);
+                        }
+                        qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+
+                    } catch (Exception e) {
+                        // here it must have an error flowcontrol
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+
+    @Override
         public ApiResponse getRefOPList(String id_Flow, Boolean isSL, String id_C) {
 
-                Integer rows = 5000;
+            // 1. if flowControl.refOP in front end not exist, will call this to get all refOP info and
+            // 2. use updateRefOP to write into flowControl REF
+
                 String idF = "id";
                 String idC = "id_C";
                 //set to SL's search checking keys if the chatroom is Sales side
@@ -731,6 +892,8 @@ public class ActionServiceImpl implements ActionService {
                     idF = "id_FS";
                     idC = "id_CS";
                 }
+                JSONObject refOPIndexArray = new JSONObject();
+
                 // Type = 1: msgList regular with stateChg filter,
                 // 2: progress with no filter but only those in id_O+index
                 //构建搜索条件
@@ -743,37 +906,65 @@ public class ActionServiceImpl implements ActionService {
                 qt.setESFilt(filtArray2, idC, "exact", id_C);
                 qt.setESFilt(filtArray2, "data.bcdStatus", "contain", Arrays.asList("2", "9"));
 
-                JSONArray result = qt.getES("action", filtArray1);
-                JSONArray result2 = qt.getES("action", filtArray2);
+                JSONArray result = qt.getES("action", filtArray1, 4000);
+                JSONArray result2 = qt.getES("action", filtArray2, 4000);
 
-            JSONObject refOPList = new JSONObject();
+                JSONObject refOPList = new JSONObject();
                 // contentMap方法意义：比如lSProd 的id_P替换id，这样的意义，前端可以拿这个id去查Prod表
 
                 for (int i = 0; i < result.size(); i++) {
 
                     String refOP = result.getJSONObject(i).getJSONObject("data").getString("refOP");
-                    if (refOP != null && ! refOP.equals("") && refOPList.getInteger(refOP) == null)
+
+                    if (refOP != null && ! refOP.equals("") && refOPList.getInteger(refOP) == null && result.getJSONObject(i).getInteger("index") != null)
                     {
                         refOPList.put(refOP, 1);
-                    } else if (refOP != null && ! refOP.equals(""))
+                        refOPIndexArray.put(refOP, qt.setJson("refOP", refOP, "index", new JSONArray()));
+                        refOPIndexArray.getJSONObject(refOP).getJSONArray("index").add(result.getJSONObject(i).getInteger("index"));
+
+
+                    } else if (refOP != null && !refOP.equals("") && result.getJSONObject(i).getInteger("index") != null)
                     {
                         refOPList.put(refOP, refOPList.getInteger(refOP) + 1);
+                        refOPIndexArray.getJSONObject(refOP).getJSONArray("index").add(result.getJSONObject(i).getInteger("index"));
+
                     }
+
                 }
                 for (int i = 0; i < result2.size(); i++) {
                     System.out.println("result222"+result2.getJSONObject(i).getJSONObject("data").getString("refOP"));
 
                     String refOP = result2.getJSONObject(i).getJSONObject("data").getString("refOP");
-                    if (refOP != null && ! refOP.equals("") && refOPList.getInteger(refOP) != null)
+
+                    if (refOP != null && ! refOP.equals("") && refOPList.getInteger(refOP) != null && result2.getJSONObject(i).getInteger("index") != null)
                     {
                         refOPList.put(refOP, refOPList.getInteger(refOP) - 1);
+                        refOPIndexArray.getJSONObject(refOP).getJSONArray("index").remove(result2.getJSONObject(i).getInteger("index"));
+
                         if (refOPList.getInteger(refOP).equals(0))
                         {
                             refOPList.remove(refOP);
+                            refOPIndexArray.remove(refOP);
                         }
+
                     }
                 }
-                System.out.println(refOPList);
+
+                Asset asset = qt.getConfig(id_C, "a-auth", "flowControl");
+        for (int i = 0; i < asset.getFlowControl().getJSONArray("objData").size(); i++) {
+            JSONObject flowInfo = asset.getFlowControl().getJSONArray("objData").getJSONObject(i);
+            //adding 1 index
+            if (flowInfo.getString("id").equals(id_Flow)) {
+                qt.setMDContent(asset.getId(), qt.setJson("flowControl.objData." + i + ".refOP", refOPIndexArray), Asset.class);
+                break;
+            }
+        }
+
+
+
+
+
+        System.out.println(refOPList);
 
                 return retResult.ok(CodeEnum.OK.getCode(), refOPList);
 
@@ -887,7 +1078,7 @@ public class ActionServiceImpl implements ActionService {
         result.put("grpGroup", grpGroup);
         result.put("id_FC", id_FC==null?"":id_FC.getString("id_Flow"));
         result.put("id_FS", id_FS==null?"":id_FS.getString("id_Flow"));
-        result.put("info",order.getInfo());
+        result.put("info",qt.toJson(order.getInfo()));
         result.put("size", oItemArray.size());
 
         System.out.println(result);
@@ -909,7 +1100,7 @@ public class ActionServiceImpl implements ActionService {
             JSONObject actData = this.getActionData(id_O, index);
 
             if (null != actData) {
-                OrderInfo unitInfo = JSONObject.parseObject(JSON.toJSONString(actData.get("info")), OrderInfo.class);
+//                OrderInfo unitInfo = JSONObject.parseObject(JSON.toJSONString(actData.get("info")), OrderInfo.class);
 //                if (unitInfo.getLST() < 7)
 //                //All Push, not final cannot push, after final cannot move/delete oItem 全部推送，非最终不能推送，最终后不能移动／删除oItem
 //                {
@@ -929,13 +1120,15 @@ public class ActionServiceImpl implements ActionService {
 //                    coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
                 qt.setMDContent(id_O, qt.setJson("action.objAction." + index, unitAction), Order.class);
 
+                this.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
+                        actData.getString("id_FC"), actData.getString("id_FS"), unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getIndex(), true );
 
                 String logType = actData.getJSONObject("grpBGroup").getJSONObject(unitOItem.getGrpB()).getString("logType");
 
                 LogFlow logLP = new LogFlow(logType, actData.getString("id_FC"),
                         actData.getString("id_FS"), "stateChg",
                         id_U, grpU, unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(),
-                        "", id_O, unitAction.getIndex(), myCompId, unitOItem.getId_C(),
+                        unitAction.getId_OP(), id_O, unitAction.getIndex(), myCompId, unitOItem.getId_C(),
                         "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
                 logLP.setLogData_action(unitAction, unitOItem);
 
@@ -1021,6 +1214,9 @@ public class ActionServiceImpl implements ActionService {
                                     System.out.println("unit " + subOItem.getGrpB() + subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
                                     String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
 
+                                    this.updateRefOP(subOrderData.getJSONObject("info").getString("id_CB"), subOrderData.getJSONObject("info").getString("id_C"),
+                                            subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), subAction.getId_OP(), subAction.getRefOP(), subAction.getWrdNP(), subAction.getIndex(), true );
+
                                     LogFlow logLP = new LogFlow(logType, subOrderData.getString("id_FC"),
                                             subOrderData.getString("id_FS"), "stateChg",
                                             id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
@@ -1071,6 +1267,10 @@ public class ActionServiceImpl implements ActionService {
                                         fsCheck.getString("id_Flow") : "";
                             }
 
+                            this.updateRefOP(myCompId, unitOItem.getId_C(),
+                                    id_FC, id_FS, unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getIndex(), true );
+
+
                             LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
                                     id_FC,
                                     id_FS, "stateChg", id_U, grpU,
@@ -1087,6 +1287,11 @@ public class ActionServiceImpl implements ActionService {
         }
         return retResult.ok(CodeEnum.OK.getCode(), "doneAll");
     }
+
+    // for dgActivate if C=CB=Me, lST must be less than 10
+    // if C!= CB, must be above 7
+    // and if lST != 8, set to 8
+    // I can stop the order and set everything to pause / finish/ cancel?
 
     @Override
     @Transactional(noRollbackFor = ResponseException.class)
@@ -1144,10 +1349,12 @@ public class ActionServiceImpl implements ActionService {
 
                                 JSONObject mapKey = new JSONObject();
                                 mapKey.put("action.objAction." + unitAction.getSubParts().getJSONObject(k).getInteger("index"), subAction);
-//                                    coupaUtil.updateOrderByListKeyVal(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey);
                                 qt.setMDContent(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey, Order.class);
                                 System.out.println("unit " + subOItem.getGrpB() + subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
                                 String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
+
+                                this.updateRefOP(myCompId, subOItem.getId_C(),
+                                        subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), id_O, unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getSubParts().getJSONObject(k).getInteger("index"), true );
 
                                 LogFlow logLP = new LogFlow(logType, subOrderData.getString("id_FC"),
                                         subOrderData.getString("id_FS"), "stateChg",
@@ -1198,6 +1405,9 @@ public class ActionServiceImpl implements ActionService {
                                     && !unitOItem.getId_C().equals(myCompId) ?
                                     fsCheck.getString("id_Flow") : "";
                         }
+
+                        this.updateRefOP(myCompId, unitOItem.getId_C(),
+                                id_FC, id_FS, id_O, unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getIndex(), true );
 
                         LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
                                 id_FC,
@@ -1281,14 +1491,18 @@ public class ActionServiceImpl implements ActionService {
 
         allAction.add(unitAction);
 
+        this.updateRefOP(myCompId, myCompId,
+                id_FC, id_FS, id_O, "grpTask", oItemData.getJSONObject("wrdNP"), index, true );
+
+
         // Send a log
         LogFlow logLP = new LogFlow(logType,id_FC,
-                id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "","",id_O,index, myCompId,myCompId,
+                id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
                 oItemData.getString("pic"),dep,"准备开始",3,oItemData.getJSONObject("wrdN"),wrdNU);
        logLP.setLogData_action(unitAction,unitOItem);
 
         LogFlow logL = new LogFlow("duraflow",id_FC,
-                id_FS,"userStat", id_U,grpU,"",unitOItem.getGrpB(), "","",id_O,index, myCompId,myCompId,
+                id_FS,"userStat", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
                 oItemData.getString("pic"),dep,"任务推送",3,oItemData.getJSONObject("wrdN"),wrdNU);
 
         logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
@@ -1392,6 +1606,11 @@ public class ActionServiceImpl implements ActionService {
                 probData.getJSONObject("wrdNP"),probData.getJSONObject("wrdN"));
 
         allAction.add(unitAction);
+
+        this.updateRefOP(myCompId,myCompId,
+                id_FC, id_FQ, probData.getString("id_OP"), "grpask",
+                unitAction.getWrdNP(), index, true );
+
 
         LogFlow logProb = new LogFlow(logTypeProb,id_FC,
                 id_FQ,"stateChg", id_U,grpU,orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),id_O, id_Prob,indexProb, myCompId,myCompId,
@@ -1535,6 +1754,7 @@ public class ActionServiceImpl implements ActionService {
         qt.setES("lSBOrder", qt.setESFilt("id_O", id_O), listCol);
 
         //TODO KEV sendWS??
+//        ws.sendWS();
 
         return retResult.ok(CodeEnum.OK.getCode(), "");
 
@@ -1671,25 +1891,6 @@ public class ActionServiceImpl implements ActionService {
 
     }
 
-    //getRefOP
-
-    private void updateRefOP(String id_C, String id_FC, String id_FS, Boolean isStart)
-    {
-        String id_Flow = id_FC;
-        if (id_FC.equals(""))
-        {
-            id_Flow = id_FS;
-        }
-        Asset asset = qt.getConfig(id_C, "a-auth", "flowControl");
-
-        if (isStart)
-        {
-//            qt.setMDContent();
-        }
-
-
-    }
-    //1. no need
 
     //setRefOP use in statusChg
     //params: id_C, id_FC/id_FS, flowControl's refOP{"id_OP":{refOP, wrdN, index{}}}

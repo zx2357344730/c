@@ -5,12 +5,12 @@ import com.cresign.purchase.service.RpiService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.token.GetUserIdByToken;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -24,13 +24,13 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("rpi")
 public class RpiController {
 
-    @Resource
+    @Autowired
     private HttpServletRequest request;
 
-    @Resource
+    @Autowired
     private GetUserIdByToken getUserToken;
 
-    @Resource
+    @Autowired
     private RpiService rpiService;
 
     @PostMapping("/v1/delPi")

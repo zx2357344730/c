@@ -207,26 +207,17 @@ public class SetAuthServicelmpl implements SetAuthService {
          */
 
         // 通过id_U查询该用户
-//        Query query = new Query(new Criteria("_id").is(id_U));
-//        query.fields().include("rolex.objComp."+ id_C);
-//        query.fields().include("info");
-//
-//        User user = mongoTemplate.findOne(query, User.class);
+
         User user = qt.getMDContent(id_U, Arrays.asList("rolex.objComp."+ id_C, "info"), User.class);
 
         //  here delete old Token,
-        //  boolean deleteResult = redisTemplate0.delete(clientType + "RefreshToken:" + refreshToken);
         JSONObject userRolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
         // if user actually exists in this company
         if (userRolex != null) {
             oauth.setToken(user, id_C, userRolex.getString("grpU"),
                     userRolex.getString("dep"), clientType);
 
-//            Query compCheck = new Query(new Criteria("_id").is(id_C));
-//            compCheck.fields().include("info");
-//            Comp comp = mongoTemplate.findOne(compCheck, Comp.class);
             Comp comp = qt.getMDContent(id_C, "info", Comp.class);
-//            Update updateQuery = new Update();
             JSONObject updateData = new JSONObject();
 
             if (!comp.getInfo().getPic().equals(userRolex.getString("picC")) ||
@@ -234,8 +225,7 @@ public class SetAuthServicelmpl implements SetAuthService {
             {
                 updateData.put("rolex.objComp."+id_C+".wrdNC", comp.getInfo().getWrdN());
                 updateData.put("rolex.objComp."+id_C+".picC", comp.getInfo().getPic());
-//                updateQuery.set("rolex.objComp."+id_C+".wrdNC", comp.getInfo().getWrdN());
-//                updateQuery.set("rolex.objComp."+id_C+".picC", comp.getInfo().getPic());
+
             }
 
             // 4. update def_C

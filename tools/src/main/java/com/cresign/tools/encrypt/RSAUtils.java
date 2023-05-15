@@ -1,9 +1,11 @@
 package com.cresign.tools.encrypt;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 
 import javax.crypto.Cipher;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -378,6 +380,20 @@ public class RSAUtils {
 		}
 		return temp;
 	}
+
+	public static String getSHA256Str(String str){
+		MessageDigest messageDigest;
+		String encdeStr = "";
+		try {
+			messageDigest = MessageDigest.getInstance("SHA-256");
+			byte[] hash = messageDigest.digest(str.getBytes(StandardCharsets.UTF_8));
+			encdeStr = Hex.encodeHexString(hash);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return encdeStr;
+	}
+
 
 //	public static void main(String[] args) throws  Exception{
 //		Map<String, Object> stringObjectMap = RSAUtils.genKeyPair();

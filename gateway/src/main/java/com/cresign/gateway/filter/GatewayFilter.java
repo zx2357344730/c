@@ -35,8 +35,7 @@ public class GatewayFilter implements GlobalFilter, Ordered {
     @Autowired
     private StringRedisTemplate redisTemplate0;
 
-//    @Autowired
-//    private GatewayAuthConfig gatewayAuthConfig;
+
 
 
     @Override
@@ -74,10 +73,6 @@ public class GatewayFilter implements GlobalFilter, Ordered {
                 || url.equals("/login/facebook/v1/faceBookRegister")
                 || url.equals("/file/cos/v1/get_objurl_token")
                 || url.equals("/file/cos/v1/get_multi_token")
-
-                || url.equals("/action/cus/v1/sendUserCusCustomer")
-                || url.equals("/action/cus/v1/sendUserCusService")
-                || url.equals("/action/cus/v1/cusOperate")
 
 //                || url.equals("/file/picture/v1/picUpload")
         ){

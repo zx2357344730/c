@@ -49,13 +49,13 @@ public class ModuleController {
                 ,reqJson.getString("modRef"));
     }
 
-    @PostMapping("/v1/addOrUpdateInitMod")
-    @SecurityParameter
-    public ApiResponse addOrUpdateInitMod(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.addOrUpdateInitMod(reqJson.getJSONObject("objLogMod"));
-    }
+//    @PostMapping("/v1/addOrUpdateInitMod")
+//    @SecurityParameter
+//    public ApiResponse addOrUpdateInitMod(@RequestBody JSONObject reqJson){
+//        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+//        reqJson.put("id_U",tokData.getString("id_U"));
+//        return moduleService.addOrUpdateInitMod(reqJson.getJSONObject("objLogMod"));
+//    }
 
     @PostMapping("/v1/updateLogAuth")
     @SecurityParameter

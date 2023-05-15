@@ -8,7 +8,6 @@ import com.cresign.purchase.common.ChatEnum;
 import com.cresign.purchase.service.RpiService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -58,16 +57,16 @@ public class RpiServiceImpl implements RpiService {
     private StringRedisTemplate redisTemplate0;
 
     @Resource
-    private CoupaUtil coupaUtil;
-
-    @Resource
     private RetResult retResult;
 
     @Autowired
     private Qt qt;
 
-    @Resource
-    private WSClient ws;
+//    @Autowired
+//    private Ws ws;
+
+    @Autowired
+    private WSClient wsrpi;
 
     /**
      * 删除机器绑定公司接口
@@ -384,7 +383,7 @@ public class RpiServiceImpl implements RpiService {
             data.put("id_C",id_C);
             logFlow.setData(data);
             // 发送日志
-            ws.sendWSPi(logFlow);
+            wsrpi.sendWSPi(logFlow);
             System.out.println("发送消息:");
             System.out.println(JSON.toJSONString(logFlow));
             // 更新redis
@@ -434,7 +433,7 @@ public class RpiServiceImpl implements RpiService {
             logFlow.setZcndesc("解绑gpIo成功");
             logFlow.setData(data);
             // 发送日志
-            ws.sendWSPi(logFlow);
+            wsrpi.sendWSPi(logFlow);
             System.out.println("发送消息:");
             System.out.println(JSON.toJSONString(logFlow));
             // 更新redis

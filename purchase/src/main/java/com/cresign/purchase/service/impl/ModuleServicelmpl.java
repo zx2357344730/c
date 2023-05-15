@@ -8,9 +8,7 @@ import com.cresign.purchase.enumeration.PurchaseEnum;
 import com.cresign.purchase.service.ModuleService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
-import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
@@ -28,7 +26,6 @@ import com.tencentcloudapi.common.profile.HttpProfile;
 import com.tencentcloudapi.tmt.v20180321.TmtClient;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchRequest;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchResponse;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -39,7 +36,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -56,19 +52,11 @@ public class ModuleServicelmpl implements ModuleService {
     private StringRedisTemplate redisTemplate0;
 
     @Autowired
-    private DbUtils dbUtils;
-
-    @Autowired
     private Qt qt;
-
-    @Autowired
-    private RestHighLevelClient restHighLevelClient;
 
     @Autowired
     private RetResult retResult;
 
-    @Resource
-    private CoupaUtil coupaUtil;
 
     private static final String secretId = "AKIDwjMl15uUt53mFUVGk39zaw4ydAWfaS8a";
     private static final String secretKey = "HLEsHSRChx1sTtELCpFXfZGk14tVw97w";
@@ -116,23 +104,23 @@ public class ModuleServicelmpl implements ModuleService {
      * @version 1.0.0
      * @date 2022/9/19
      */
-    @Override
-    public ApiResponse addOrUpdateInitMod(JSONObject objLogMod) {
-        // 获取init信息
-        Init init = qt.getInitData("cn");
-        // 获取日志模块信息
-        JSONObject logInit = init.getLogInit();
-        // 遍历模块信息
-        objLogMod.keySet().forEach(k -> {
-            // 获取模块对象
-            JSONObject jsonObject = objLogMod.getJSONObject(k);
-            // 添加模块
-            logInit.put(k,jsonObject);
-        });
-        // 更新数据库
-        coupaUtil.updateInitLog(logInit);
-        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
-    }
+//    @Override
+//    public ApiResponse addOrUpdateInitMod(JSONObject objLogMod) {
+//        // 获取init信息
+//        Init init = qt.getInitData("cn");
+//        // 获取日志模块信息
+//        JSONObject logInit = init.getLogInit();
+//        // 遍历模块信息
+//        objLogMod.keySet().forEach(k -> {
+//            // 获取模块对象
+//            JSONObject jsonObject = objLogMod.getJSONObject(k);
+//            // 添加模块
+//            logInit.put(k,jsonObject);
+//        });
+//        // 更新数据库
+//        coupaUtil.updateInitLog(logInit);
+//        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+//    }
 
     /**
      * 根据id_C修改asset的a-auth内role对应的grpU+listType+grp

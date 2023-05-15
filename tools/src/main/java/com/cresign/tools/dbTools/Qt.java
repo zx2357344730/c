@@ -14,12 +14,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.ToolEnum;
 import com.cresign.tools.exception.ErrorResponseException;
-import com.cresign.tools.pojo.es.lBAsset;
-import com.cresign.tools.pojo.es.lSAsset;
 import com.cresign.tools.pojo.po.*;
-import com.cresign.tools.pojo.po.assetCard.AssetAStock;
-import com.cresign.tools.pojo.po.assetCard.AssetInfo;
-import com.cresign.tools.reflectTools.ApplicationContextTools;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.lang.StringUtils;
@@ -54,15 +49,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import javax.script.*;
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
     public class Qt {
@@ -78,7 +67,9 @@ import java.util.regex.Pattern;
 
         public JSONObject initData = new JSONObject();
 
-        /**
+        public static final String appId = "KVB0qQq0fRArupojoL4WM9";
+
+    /**
          * 注入RocketMQ模板
          */
         @Autowired
@@ -91,118 +82,6 @@ import java.util.regex.Pattern;
         //RED - done: set/hash, hasKey, put/set, get expire
         //Other - done: toJson, jsonTo, list2Map, getConfig, filterBuilder
         //Other - need: getRecentLog, judgeComp, chkUnique,, checkOrder, updateSize
-
-//        public static String[] chars = new String[] { "a", "b", "c", "d", "e", "f",
-//            "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s",
-//            "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5",
-//            "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I",
-//            "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V",
-//            "W", "X", "Y", "Z" };
-//
-//
-//        public String getRKey() {
-//            StringBuffer rKey = new StringBuffer();
-//            String uuid = UUID.randomUUID().toString().replace("-", "");
-//            for (int i = 0; i < 8; i++) {
-//                String str = uuid.substring(i * 4, i * 4 + 4);
-//                int x = Integer.parseInt(str, 16);
-//                rKey.append(chars[x % 0x3E]);
-//            }
-//            return rKey.toString();
-//
-//        }
-
-        /**
-         * 发送MQ信息
-         * @param destination MQ标签
-         * @param db	发送内容
-         * @return 返回结果:
-         * @author tang
-         * @date 创建时间: 2023/4/15
-         * @ver 版本号: 1.0.0
-         */
-        public void sendMQ(String destination,JSONObject db){
-            rocketMQTemplate.convertAndSend(destination, db);
-        }
-        public void sendMQRearEnd(String id_C,String id_U,String noticeType){
-//            Asset asset = getConfig(id_C,"a-auth","flowControl");
-            JSONArray result = this.getES("lBUser", this.setESFilt("id_CB",id_C,"grpU","1001"));
-            System.out.println(JSON.toJSONString(result));
-            LogFlow logContent = LogFlow.getInstance();
-            logContent.setId_C(id_C);
-            logContent.setId_U(id_U);
-            logContent.setLogType("notice");
-            logContent.setSubType("hd");
-            logContent.setId(null);
-            logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-            JSONObject logData = new JSONObject();
-            JSONArray id_Us = new JSONArray();
-            for (int i = 0; i < result.size(); i++) {
-                JSONObject jsonObject = result.getJSONObject(i);
-                id_Us.add(jsonObject.getString("id_U"));
-            }
-//            if (!asset.getId().equals("none")) {
-//                LogFlow logContent = LogFlow.getInstance();
-//                logContent.setId_C(id_C);
-//                logContent.setId_U(id_U);
-//                logContent.setLogType("notice");
-//                logContent.setSubType("hd");
-//                logContent.setId(null);
-//                logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//                JSONObject logData = new JSONObject();
-//                JSONArray id_Us = new JSONArray();
-//                JSONArray cidArray = new JSONArray();
-//                // 获取卡片信息
-//                JSONObject flowControl = asset.getFlowControl();
-//                // 获取卡片data信息
-//                JSONArray flowData = flowControl.getJSONArray("objData");
-//                // 遍历data
-//                for (int i = 0; i < flowData.size(); i++) {
-//                    // 获取i对应的data信息
-//                    JSONObject roomSetting = flowData.getJSONObject(i);
-//                    // 获取群id
-//                    String roomId = roomSetting.getString("id");
-//                    // 获取日志群id
-//                    String logFlowId = logContent.getId();
-//                    if (roomSetting.getString("type").endsWith("SL")) {
-//                        logFlowId = logContent.getId_FS();
-//                    }
-//                    // 判断群id一样
-//                    if (roomId.equals(logFlowId)) {
-////                System.out.println("进入各FC 的loop: id=" + logContent.getId());
-//                        // 获取群用户id列表
-//                        JSONArray objUser = roomSetting.getJSONArray("objUser");
-////                System.out.println("objUser:" + JSON.toJSONString(objUser));
-//                        // 创建存储推送用户信息
-////                    System.out.println("当前服务标志:" + WebSocketUserServer.bz);
-//                        // 遍历群用户id列表
-//                        for (int j = 0; j < objUser.size(); j++) {
-//                            // 获取j对应的群用户信息
-//                            JSONObject thisUser = objUser.getJSONObject(j);
-//                            // 获取群用户id
-//                            id_Us.add(thisUser.getString("id_U"));
-//
-//                            // 判断群用户id不等于当前ws连接用户id
-//                            if (thisUser.getInteger("imp") <= logContent.getImp()) {
-//                                String id_client = thisUser.getString("id_APP");
-//                                if (null != id_client && !"".equals(id_client)) {
-//                                    cidArray.add(id_client);
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//                logData.put("id_Us",id_Us);
-//                logData.put("cidArray",cidArray);
-//                logData.put("noticeType",noticeType);
-//                logContent.setData(logData);
-//                sendMQ("chatTopic:chatTap",JSONObject.parseObject(JSON.toJSONString(logContent)));
-//            }
-            logData.put("id_Us",id_Us);
-            logData.put("noticeType",noticeType);
-            logContent.setData(logData);
-            sendMQ("chatTopic:chatTap",JSONObject.parseObject(JSON.toJSONString(logContent)));
-        }
 
         public static String GetObjectId() {
             return new ObjectId().toString();
@@ -357,7 +236,11 @@ import java.util.regex.Pattern;
 //            System.out.println("[");
             for (Object item : vars)
             {
-                if (item.getClass().toString().startsWith("class java.util.Array"))
+                if (item == null)
+                {
+                    System.out.println("....null");
+                }
+                else if (item.getClass().toString().startsWith("class java.util.Array"))
                 {
                     System.out.println(this.toJArray(item));
                 }
@@ -366,11 +249,8 @@ import java.util.regex.Pattern;
                 {
                     System.out.println(this.toJson(item));
                 }
-                else if (item!= null) {
-//                    System.out.println(item.getClass());
+                else {
                     System.out.println(item);
-                } else {
-                    System.out.println("....null");
                 }
             }
             System.out.println("*****[End]*****");
@@ -1450,358 +1330,5 @@ import java.util.regex.Pattern;
             JSONArray jsonArray = JSON.parseArray(jsonString);
             return jsonArray;
         }
-
-
-//    public void updateAsset(Order order, JSONArray arrayLsasset, JSONArray arrayLbasset) {
-//
-//        HashSet setId_P = new HashSet();
-//        JSONArray arrayLsaQuery = new JSONArray();
-//        JSONArray arrayLbaQuery = new JSONArray();
-//        for (int i = 0; i < arrayLsasset.size(); i++) {
-//            JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
-//            String id_C = jsonLsasset.getJSONObject("tokData").getString("id_C");
-//            String id_P = jsonLsasset.getString("id_P");
-//            setId_P.add(id_P);
-//            JSONObject jsonLsaQuery = this.setJson("id_C", id_C,
-//                    "id_P", id_P);
-//            String locAddr = jsonLsasset.getString("locAddr");
-//            if (locAddr != null) {
-//                jsonLsaQuery.put("locAddr", locAddr);
-//            }
-//            arrayLsaQuery.add(jsonLsaQuery);
-//        }
-//        System.out.println("arrayLsaQuery=" + arrayLsaQuery);
-//
-//        for (int i = 0; i < arrayLbasset.size(); i++) {
-//            JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
-//            String id_C = jsonLbasset.getJSONObject("tokData").getString("id_C");
-//            String id_P = jsonLbasset.getString("id_P");
-//            setId_P.add(id_P);
-//            JSONObject jsonLbaQuery = this.setJson("id_C", id_C,
-//                    "id_P", id_P);
-//            arrayLbaQuery.add(jsonLbaQuery);
-//        }
-//        System.out.println("arrayLbaQuery=" + arrayLbaQuery);
-//        List<?> prods = this.getMDContentMany(setId_P, "info", Prod.class);
-//        JSONObject jsonProds = this.list2Obj(prods, "id");
-//
-//        HashSet setId_A = new HashSet();
-//        JSONObject jsonLsas = this.getId_AById_CId_P(arrayLsaQuery, "lSAsset", setId_A);
-//        JSONObject jsonLbas = this.getId_AById_CId_P(arrayLbaQuery, "lBAsset", setId_A);
-//
-//        List<?> assets = this.getMDContentMany(setId_A, Arrays.asList("info", "aStock"), Asset.class);
-//        JSONObject jsonAssets = this.list2Obj(assets, "id");
-//
-//        List<JSONObject> listBulkAsset = new ArrayList<>();
-//        List<JSONObject> listBulkLsasset = new ArrayList<>();
-//        List<JSONObject> listBulkLbasset = new ArrayList<>();
-//        assetType(order, jsonAssets, jsonLsas, arrayLsasset, jsonProds, listBulkAsset, listBulkLsasset, false, true);
-//        assetType(order, jsonAssets, jsonLbas, arrayLbasset, jsonProds, listBulkAsset, listBulkLbasset, false, false);
-////        qt.setMDContentMany(listBulkAsset, Asset.class);
-////        qt.setESMany("lSAsset", listBulkLsasset);
-////        qt.setESMany("lBAsset", listBulkLbasset);
-//        this.errPrint("new", null, arrayLsasset, arrayLbasset, listBulkAsset, listBulkLsasset, listBulkLbasset);
-//    }
-//
-//    public void assetType(Order order, JSONObject jsonAssets, JSONObject jsonLsas, JSONArray arrayLsasset,
-//                          JSONObject jsonProds, List<JSONObject> listBulkAsset, List<JSONObject> listBulkLsasset,
-//                          Boolean isResv, Boolean isLsa) {
-//        String id_O = order.getId();
-//        JSONArray arrayOItem = order.getOItem().getJSONArray("objItem");
-//        for (int i = 0; i < arrayLsasset.size(); i++) {
-//            JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
-//            JSONObject tokData = jsonLsasset.getJSONObject("tokData");
-//            String id_C = tokData.getString("id_C");
-//            String id_CB = tokData.getString("id_CB");
-//            String id_U = tokData.getString("id_U");
-//            String grpU = tokData.getString("grpU");
-//            JSONObject jsonLog = jsonLsasset.getJSONObject("log");
-//            Integer index = jsonLsasset.getInteger("index");
-//            String id_P = jsonLsasset.getString("id_P");
-//            Double wn2qty = jsonLsasset.getDouble("wn2qty");
-//            JSONObject jsonBulkAsset = null;
-//            JSONObject jsonBulkLsasset = null;
-//            String id_A = null;
-//            String grpA = "";
-//            //index不为空是产品，反之是金钱
-//            if (index != null) {
-//                JSONObject jsonOItem = arrayOItem.getJSONObject(index);
-//                Double wn4price = jsonOItem.getDouble("wn4price");
-//                Double wn4value = DoubleUtils.multiply(wn2qty, wn4price);
-//                String locAddr = jsonLsasset.getString("locAddr");
-//                JSONArray arrayUpdateLocSpace = jsonLsasset.getJSONArray("locSpace");
-//                JSONArray arrayUpdateSpaceQty = jsonLsasset.getJSONArray("spaceQty");
-//                //存在资产
-//                if (jsonLsas.getJSONObject(id_C + "-" + id_P + "-" + locAddr) != null) {
-//                    JSONObject jsonLsa = jsonLsas.getJSONObject(id_C + "-" + id_P + "-" + locAddr);
-//                    id_A = jsonLsa.getString("id_A");
-//                    grpA = jsonLsa.getString("grp");
-//                    JSONObject jsonAsset = jsonAssets.getJSONObject(id_A);
-//                    JSONObject aStock = jsonAsset.getJSONObject("aStock");
-//                    JSONArray arrayLocSpace = aStock.getJSONArray("locSpace");
-//                    JSONArray arraySpaceQty = aStock.getJSONArray("spaceQty");
-//
-//                    //货架的格子
-//                    for (int j = 0; j < arrayLocSpace.size(); j++) {
-//                        //要移动的格子
-//                        for (int k = 0; k < arrayUpdateLocSpace.size(); k++) {
-//                            //格子相等
-//                            if (arrayLocSpace.getInteger(j) == arrayUpdateLocSpace.getInteger(k)) {
-//                                Double spaceQty = arraySpaceQty.getDouble(j);
-//                                //移动数量，移入正数，移出负数
-//                                Double updateSpaceQty = arrayUpdateSpaceQty.getDouble(k);
-//                                Double qty = DoubleUtils.add(spaceQty, updateSpaceQty);
-//                                System.out.println("spaceQty=" + spaceQty);
-//                                System.out.println("updateSpaceQty=" + updateSpaceQty);
-//                                System.out.println("qty=" + qty);
-//                                //货架格子小于移动格子
-////                                if (DoubleUtils.compareTo(qty, 0) == -1) {
-////                                    throw new ErrorResponseException(HttpStatus.OK, DetailsEnum.PROD_NOT_ENOUGH.getCode(), null);
-////                                }
-//                                //大于，减去数量
-//                                if (DoubleUtils.compareTo(qty, 0) == 1) {
-//                                    arraySpaceQty.set(j, qty);
-//                                }
-//                                //等于，删除格子数组和数量数组对应的数组元素
-//                                else {
-//                                    arrayLocSpace.remove(j);
-//                                    arraySpaceQty.remove(j);
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                    if (isResv && aStock.getJSONObject("resvQty") != null &&
-//                            aStock.getJSONObject("resvQty").getDouble(id_O + "-" + index) != null) {
-//                        ///////************SET - aStock resvAsset qty **************//////////
-//                        Double remain = Qt.add(aStock.getDouble("wn2qtyResv"), wn2qty);
-//
-//                        if (aStock.getDouble("wn2qty") == 0 && remain == 0) {
-//                            jsonBulkAsset = this.setJson("type", "delete",
-//                                    "id", id_A);
-//                            jsonBulkLsasset = this.setJson("type", "delete",
-//                                    "id", jsonLsa.getString("id_ES"));
-//                        } else {
-//                            //check if fromSum == resvQty.wn2qty, if so remove that object, else deduct
-//                            JSONObject jsonResvQty = aStock.getJSONObject("resvQty");
-//                            if (Qt.compareTo(jsonResvQty.getDouble(id_O + "-" + index), wn2qty) == 0) {
-//                                jsonResvQty.remove(id_O + "-" + index);
-//                            } else {
-//                                jsonResvQty.put(id_O + "-" + index, Qt.add(jsonResvQty.getDouble(id_O + "-" + index), wn2qty));
-//                            }
-//
-//                            AssetAStock assetAStock = new AssetAStock(
-//                                    wn4price, locAddr, arrayLocSpace, arraySpaceQty, remain, jsonResvQty);
-//                            JSONObject jsonUpdate = this.setJson("aStock", assetAStock);
-//                            jsonBulkAsset = this.setJson("type", "update",
-//                                    "id", id_A,
-//                                    "update", jsonUpdate);
-//
-//                            this.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
-//                                    "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
-//                                    "locSpace", arrayLocSpace,
-//                                    "spaceQty", arraySpaceQty,
-//                                    "wn2qtyResv", remain);
-//                            jsonBulkLsasset = this.setJson("type", "update",
-//                                    "id", jsonLsa.getString("id_ES"),
-//                                    "update", jsonLsa);
-//                        }
-//                    }
-//                    else {
-//                        if (Qt.compareTo(aStock.getDouble("wn2qty"), wn2qty) == 0) {
-//                            jsonBulkAsset = this.setJson("type", "delete",
-//                                    "id", id_A);
-//                            jsonBulkLsasset = this.setJson("type", "delete",
-//                                    "id", jsonLsa.getString("id_ES"));
-//                        } else {
-//                            AssetAStock assetAStock = new AssetAStock(
-//                                    wn4price,
-//                                    locAddr, arrayLocSpace, arraySpaceQty);
-//                            JSONObject jsonUpdate = this.setJson("aStock", assetAStock);
-//                            jsonBulkAsset = this.setJson("type", "update",
-//                                    "id", id_A,
-//                                    "update", jsonUpdate);
-//
-//                            this.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
-//                                    "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
-//                                    "locSpace", arrayLocSpace,
-//                                    "spaceQty", arraySpaceQty);
-//                            jsonBulkLsasset = this.setJson("type", "update",
-//                                    "id", jsonLsa.getString("id_ES"),
-//                                    "update", jsonLsa);
-//                        }
-//                    }
-//                }
-//                //不存在资产，新增资产
-//                else {
-//                    Asset asset = new Asset();
-//                    id_A = this.GetObjectId();
-//                    asset.setId(id_A);
-//                    AssetInfo assetInfo = new AssetInfo(id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
-//                            jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-//                            jsonOItem.getString("pic"), jsonLsasset.getInteger("lAT"));
-//                    asset.setInfo(assetInfo);
-//
-//                    AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayUpdateLocSpace, arrayUpdateSpaceQty);
-//                    asset.setAStock((JSONObject) JSON.toJSON(assetAStock));
-//                    JSONArray view = this.setArray("info", "aStock");
-//                    asset.setView(view);
-//                    jsonBulkAsset = this.setJson("type", "insert",
-//                            "insert", asset);
-//
-////                    lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
-////                            jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-////                            jsonOItem.getString("pic"), 2, wn2qty, wn4price, wn4value);
-////                    lsasset.setLocAddr(locAddr);
-////                    lsasset.setLocSpace(arrayUpdateLocSpace);
-////                    lsasset.setSpaceQty(arrayUpdateSpaceQty);
-//
-//                    if (isLsa) {
-//                        lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
-//                                jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-//                                jsonOItem.getString("pic"), jsonLsasset.getInteger("lAT"), wn2qty, wn4price);
-//                        lsasset.setLocAddr(locAddr);
-//                        lsasset.setLocSpace(arrayUpdateLocSpace);
-//                        lsasset.setSpaceQty(arrayUpdateSpaceQty);
-//
-//                        jsonBulkLsasset = this.setJson("type", "insert",
-//                                "insert", lsasset);
-//                    } else {
-//                        lBAsset lbasset = new lBAsset(id_A, id_C, id_C, id_CB, id_P, jsonOItem.getJSONObject("wrdN"),
-//                                jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-//                                jsonOItem.getString("pic"), jsonLsasset.getInteger("lAT"), wn2qty, wn4price);
-//                        lbasset.setLocAddr(locAddr);
-//                        lbasset.setLocSpace(arrayUpdateLocSpace);
-//                        lbasset.setSpaceQty(arrayUpdateSpaceQty);
-//
-//                        jsonBulkLsasset = this.setJson("type", "insert",
-//                                "insert", lbasset);
-//                    }
-//
-//                }
-//                listBulkAsset.add(jsonBulkAsset);
-//                listBulkLsasset.add(jsonBulkLsasset);
-//
-//                LogFlow log = new LogFlow(tokData, jsonOItem, order.getAction(),
-//                        order.getInfo().getId_CB(), id_O, index, "assetflow", "stoChg",
-//                        jsonOItem.getJSONObject("wrdN").getString("cn") + jsonLog.getString("zcndesc"),
-//                        jsonLog.getInteger("imp"));
-//                log.setLogData_assetflow(wn2qty, wn4price, id_A, grpA);
-//                System.out.println("assetflow=" + log);
-////                ws.sendWS(log);
-//            }
-//            else {
-//                JSONObject prodInfo = jsonProds.getJSONObject(id_P).getJSONObject("info");
-//                //存在金钱
-//                if (jsonLsas.getJSONObject(id_C + "-" + id_P) != null) {
-//                    JSONObject jsonLsa = jsonLsas.getJSONObject(id_C + "-" + id_P);
-//                    id_A = jsonLsa.getString("id_A");
-//                    JSONObject jsonAsset = jsonAssets.getJSONObject(id_A);
-//                    JSONObject assetInfo = jsonAsset.getJSONObject("info");
-//                    JSONObject aStock = jsonAsset.getJSONObject("aStock");
-//                    AssetAStock assetAStock = new AssetAStock( Qt.add(aStock.getDouble("wn4price"), wn2qty),
-//                            "", new JSONArray(), new JSONArray());
-//                    JSONObject jsonUpdate = this.setJson("aStock", assetAStock);
-//                    jsonBulkAsset = this.setJson("type", "update",
-//                            "id", id_A,
-//                            "update", jsonUpdate);
-//
-//                    this.upJson(jsonLsa, "wn4price", Qt.add(aStock.getDouble("wn4price"), wn2qty),
-//                            "wn4value", Qt.add(aStock.getDouble("wn4value"), wn2qty));
-//                    jsonBulkLsasset = this.setJson("type", "update",
-//                            "id", jsonLsa.getString("id_ES"),
-//                            "update", jsonLsa);
-//                }
-//                //不存在金钱，新增
-//                else {
-//                    Asset asset = new Asset();
-//                    id_A = this.GetObjectId();
-//                    asset.setId(id_A);
-////                    JSONObject prodInfo = jsonProds.getJSONObject(id_P).getJSONObject("info");
-//                    AssetInfo assetInfo = new AssetInfo(id_C, id_C, id_P, prodInfo.getJSONObject("wrdN"),
-//                            prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
-//                            prodInfo.getString("pic"), jsonLsasset.getInteger("lAT"));
-//                    asset.setInfo(assetInfo);
-//                    AssetAStock assetAStock = new AssetAStock(wn2qty, "", new JSONArray(), new JSONArray());
-//                    asset.setAStock((JSONObject) JSON.toJSON(assetAStock));
-//                    JSONArray view = this.setArray("info", "aStock");
-//                    asset.setView(view);
-//                    jsonBulkAsset = this.setJson("type", "insert",
-//                            "insert", asset);
-//
-//                    if (isLsa) {
-//                        lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_P, prodInfo.getJSONObject("wrdN"),
-//                                prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
-//                                prodInfo.getString("pic"), jsonLsasset.getInteger("lAT"), 1.0, wn2qty);
-//
-//                        jsonBulkLsasset = this.setJson("type", "insert",
-//                                "insert", lsasset);
-//                    } else {
-//                        lBAsset lbasset = new lBAsset(id_A, id_C, id_C, id_CB, id_P, prodInfo.getJSONObject("wrdN"),
-//                                prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
-//                                prodInfo.getString("pic"), jsonLsasset.getInteger("lAT"), 1.0, wn2qty);
-//
-//                        jsonBulkLsasset = this.setJson("type", "insert",
-//                                "insert", lbasset);
-//                    }
-//
-//                }
-//
-//                listBulkAsset.add(jsonBulkAsset);
-//                listBulkLsasset.add(jsonBulkLsasset);
-//
-//                LogFlow log = new LogFlow("moneyflow", jsonLog.getString("id"), jsonLog.getString("id_FS"),
-//                        "stoChg", id_U, grpU, id_P, jsonLog.getString("grpB"), jsonLog.getString("grp"),
-//                        jsonLog.getString("id_OP"), id_O, jsonLog.getInteger("index"), id_C,
-//                        jsonLog.getString("id_CS"), prodInfo.getString("pic"), tokData.getString("dep"),
-//                        prodInfo.getJSONObject("wrdN").getString("cn") + jsonLog.getString("zcndesc"),
-//                        jsonLog.getInteger("imp"), prodInfo.getJSONObject("wrdN"), tokData.getJSONObject("wrdNU"));
-//                log.setLogData_money(id_A, "", wn2qty);
-//                System.out.println("moneyflow=" + log);
-////                ws.sendWS(log);
-//            }
-//        }
-//    }
-
-//    public JSONObject getId_AById_CId_P(JSONArray arrayQuery, String logType, HashSet setId_A) {
-//        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-//        BoolQueryBuilder shouldQuery = new BoolQueryBuilder();
-//        for (int i = 0; i < arrayQuery.size(); i++) {
-//            JSONObject jsonQuery = arrayQuery.getJSONObject(i);
-//            BoolQueryBuilder mustQuery = new BoolQueryBuilder();
-//            mustQuery.must(QueryBuilders.termQuery("id_C", jsonQuery.getString("id_C")))
-//                    .must(QueryBuilders.termQuery("id_P", jsonQuery.getString("id_P")));
-//            if (jsonQuery.getString("locAddr") != null) {
-//                mustQuery.must(QueryBuilders.termQuery("locAddr", jsonQuery.getString("locAddr")));
-//            }
-//            shouldQuery.should(mustQuery);
-//        }
-//        System.out.println("shouldQuery=" + shouldQuery);
-//        sourceBuilder.query(shouldQuery).size(1000);
-//        try {
-//            SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
-//            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-//            JSONArray arrayEs = this.hit2Array(response);
-//            System.out.println("arrayEs=" + arrayEs);
-//            JSONObject jsonResult = new JSONObject();
-//            for (int i = 0; i < arrayEs.size(); i++) {
-//                JSONObject jsonEs = arrayEs.getJSONObject(i);
-//                String locAddr = jsonEs.getString("locAddr");
-//                if (locAddr == null || locAddr.equals("")) {
-//                    jsonResult.put(jsonEs.getString("id_C") + "-" + jsonEs.getString("id_P"), jsonEs);
-//                } else {
-//                    jsonResult.put(jsonEs.getString("id_C") + "-" + jsonEs.getString("id_P") + "-" + locAddr, jsonEs);
-//                }
-//                setId_A.add(jsonEs.getString("id_A"));
-//            }
-//            System.out.println("jsonResult=" + jsonResult);
-//            return jsonResult;
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
-//        }
-//    }
-
-
 
 }
