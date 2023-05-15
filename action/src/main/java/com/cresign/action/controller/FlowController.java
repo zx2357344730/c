@@ -109,7 +109,7 @@ public class FlowController {
                         tokData.getString("id_C"),
                         reqJson.getLong("teStart"));
             } catch (Exception e) {
-                return getUserToken.err("flowService.getDG", e);
+                return getUserToken.err(reqJson, "flowService.getDG", e);
             }
         }
 
@@ -127,7 +127,7 @@ public class FlowController {
                          reqJson.getLong("teStart"));
             } catch (Exception e)
             {
-                return getUserToken.err("flowService.getDgSingle", e);
+                return getUserToken.err(reqJson, "flowService.getDgSingle", e);
             }
         }
 

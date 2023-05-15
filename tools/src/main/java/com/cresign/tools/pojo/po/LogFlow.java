@@ -1,5 +1,6 @@
 package com.cresign.tools.pojo.po;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DoubleUtils;
@@ -21,6 +22,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor//注解在类上，为类提供一个无参的构造方法
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LogFlow {
+
+//    @Autowired
+//    private Qt qt;
 
     public LogFlow(JSONObject tokData, JSONObject oItem, JSONObject action, String id_CB, String id_O, Integer index, String logType, String subType, String zcndesc, Integer imp) {
 
@@ -171,8 +175,8 @@ public class LogFlow {
     /**
      * FlowControl标识 ID
      */
-    private String id;
-    private String id_FS;
+    private String id = "";
+    private String id_FS = "";
 
     /**
      * 公司id
@@ -185,6 +189,9 @@ public class LogFlow {
      * dep = 部门
      */
     private String id_U; //tokData.getString("id_U")
+
+    private JSONArray id_Us = new JSONArray();
+    private JSONArray id_APPs = new JSONArray();
     private String dep; //tokData.getString("dep")
     private String grpU; //tokData.getString("grpU")
 
@@ -258,6 +265,8 @@ public class LogFlow {
      */
     private Integer imp;
 
+    private String locate;
+
 /**
  * assetflow 用来处理数量更改，prob/action 专注状态bcdstatus 的改变
  * 如果Log是assetflow的，data内加
@@ -287,8 +296,5 @@ public class LogFlow {
  * private String code;
  * private JSONArray cardList;
  */
-
-
-    //private String IpAddress;   // 用户ip
 
 }

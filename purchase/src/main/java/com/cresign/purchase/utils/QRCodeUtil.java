@@ -1,5 +1,6 @@
 package com.cresign.purchase.utils;
 
+import com.cresign.tools.dbTools.CosUpload;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.BitMatrix;

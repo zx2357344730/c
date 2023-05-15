@@ -369,7 +369,6 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //        System.out.println(JSON.toJSONString(oTasks));
         // (数据类型)(最小值+Math.random()*(最大值-最小值+1))
         //   (int)  ( 1 + Math.random()* (  6 - 1 + 1))
-        // TODO: Kevin拿物料日期
         int i = (int) (1 + Math.random() * (6 - 1 + 1));
         System.out.println("i:"+i+" - maxTeDurTotal:"+maxTeDurTotal);
         maxTeDurTotal += i * 86400L;

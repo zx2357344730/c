@@ -3,6 +3,7 @@ package com.cresign.tools.token;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.Qt;
+import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ public class GetUserIdByToken {
 
     @Autowired
     private Qt qt;
+
+    @Autowired
+    private Ws ws;
 
     /**
      *##description:      获取token从redis中拿取id_U
@@ -46,20 +50,32 @@ public class GetUserIdByToken {
             return qt.getRDSet(clientType+"Token",jwtStr);
         }
 
+        //TODO KEV check if equipped or not
+        //dataSet has modAuth, but if I want to check this grpU can do whatever?
+        //get redis.login:readwrite_auth - key: 1001_lSComp_1000_(batch/card/log).result = list of workable things
+        //params: lType, grp, tokData.grpU, tokData.modArray + initData compare then good, authType, card/batch/logName
+        //getfrom Redis if ok, then ok. else 401 @ no compAuth or no modAuth
+
         throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), "");
     }
 
-    public ApiResponse err(String apiName, Exception e)
+    public ApiResponse err(JSONObject params, String apiName, Exception e)
     {
         if (e.getClass().equals(ErrorResponseException.class))
         {
-System.out.println(e.getClass());
-//            throw new  e;
+            System.out.println(e.getClass());
+            System.out.println(((ErrorResponseException) e).getCode());
+            System.out.println(((ErrorResponseException) e).getDes());
+            throw new ErrorResponseException(HttpStatus.OK, ((ErrorResponseException) e).getCode(), ((ErrorResponseException) e).getDes());
         }
         e.printStackTrace();
         StringWriter writer = new StringWriter();
         PrintWriter printWriter= new PrintWriter(writer);
         e.printStackTrace(printWriter);
+        String msg = params.toJSONString();
+        String msg2 = writer.toString().substring(0, 230);
+        ws.sendUsageFlow(qt.setJson("cn", apiName), msg + "/n/n/n/n" + msg2, "error", "ALL");
+
         throw new ErrorResponseException(HttpStatus.OK, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), writer.toString());
     }
 

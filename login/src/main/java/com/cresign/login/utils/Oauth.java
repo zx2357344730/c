@@ -52,8 +52,6 @@ public class Oauth {
             dataSet.put("grpU", grpU);
             dataSet.put("dep", dep);
 
-            System.out.println("xxx"+user);
-
             JSONArray modArray = new JSONArray();
             JSONObject modAuth = user.getRolex().getJSONObject("objComp").getJSONObject(cid).getJSONObject("modAuth");
 
@@ -73,6 +71,11 @@ public class Oauth {
                     }
                 }
             }
+
+            //TODO KEV
+            //dataSet has modAuth, but if I want to check this grpU can do whatever?
+            //get redis.login:readwrite_auth - key: 1001_lSComp_1000_(batch/card/log).result = list of workable things
+            //params: lType, grp, tokData.grpU, tokData.modArray + initData compare then good
 
             dataSet.put("modAuth", modArray);
             String uid = user.getId();

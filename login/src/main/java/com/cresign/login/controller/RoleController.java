@@ -109,12 +109,17 @@ public class RoleController {
     @PostMapping("/v1/updateNewestRole")
     public ApiResponse updateNewestRole(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-
-        return roleService.updateNewestRole(
-                tokData.getString("id_C"),
-                reqJson.getString("listType"),
-                reqJson.getString("grp"),
-                reqJson.getString("grpU"));
+try {
+    return roleService.updateNewestRole(
+            tokData.getString("id_C"),
+            reqJson.getString("listType"),
+            reqJson.getString("grp"),
+            reqJson.getString("grpU"));
+} catch (Exception e)
+{
+    e.printStackTrace();
+    return null;
+}
     }
 
     @SecurityParameter

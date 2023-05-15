@@ -36,17 +36,9 @@ public class RegisterUserUtils {
     @Autowired
     private Qt qt;
 
-
-//    private static final String QD_Key = "qdKey";
-
     @Transactional(noRollbackFor = ResponseException.class)
     public String registerUser(Map<String, Object> info) throws IOException {
 
-        //try {
-
-//            Query initQuery = new Query(new Criteria("_id").is("cn_java"));
-//            initQuery.fields().include("newUser");
-//            InitJava initJava = mongoTemplate.findOne(initQuery, InitJava.class);
 
             InitJava initJava = qt.getInitData(); //qt.getMDContent("cn_java", "newUser", InitJava.class);
 
@@ -113,98 +105,5 @@ public class RegisterUserUtils {
 
     }
 
-
-
-//    @Transactional(noRollbackFor = ResponseException.class)
-//    public String registerUser(JSONObject info) {
-//
-//        try {
-//            // objectId
-//            String addID = qt.GetObjectId();
-//
-//            User addUser = new User();
-//
-//            info.put("def_C", "5f2a2502425e1b07946f52e9");
-//
-//            /*
-//               添加User表
-//             */
-//
-//            // Rolex
-//            //Map<String, Object> rolex = new HashMap<>();
-//            JSONObject rolex = new JSONObject(2);
-//            // objMod 拥有的模块
-//            JSONArray objMod = new JSONArray(2);
-//            JSONObject mod = new JSONObject(4);
-//            mod.put("ref", "a-core");
-//            mod.put("bcdState", 1);
-//            mod.put("bcdLevel", 1);
-//            mod.put("tfin", "-1");
-//            objMod.add(mod);
-//
-//            //Map<String, Object> rolexMap = new HashMap<>();
-//            JSONObject rolexMap = new JSONObject(4);
-//            rolexMap.put("id_C", "5f2a2502425e1b07946f52e9");
-//            rolexMap.put("grpU", "1000");
-//            rolexMap.put("objMod", objMod);
-//
-//            //List<Map<String, Object>> roleList = new ArrayList<>();
-//            JSONArray roleList = new JSONArray();
-//            roleList.add(rolexMap);
-//
-//            rolex.put("objComp", roleList);
-//
-//
-//
-////            List<String> view = new ArrayList<>();
-////            view.add("Vinfo");
-//
-//            addUser.setId(addID);
-//            addUser.setInfo(info);
-//            addUser.setRolex(rolex);
-//            addUser.setView(new JSONArray().fluentAdd("Vinfo"));
-//
-//            mongoTemplate.insert(addUser);
-//
-//            // 查询公司
-//            Query compQuery = new Query(new Criteria("_id").is("5f2a2502425e1b07946f52e9"));
-//            compQuery.fields().include("info");
-//            Comp comp = mongoTemplate.findOne(compQuery, Comp.class);
-//            //JSONObject compOne = (JSONObject) JSON.toJSON(mongoTemplate.findOne(compQuery, Comp.class));
-//
-//            lBUser addLBUser = new lBUser();
-//            addLBUser.setId_CB(comp.getInfo().getString("_id"));
-//            addLBUser.setId_U(addID);
-//            addLBUser.setGrpU("1000");
-//            addLBUser.setPic(info.get("pic").toString());
-//            addLBUser.setRefC(comp.getInfo().getString("ref"));
-//            addLBUser.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//            addLBUser.setTmk(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//            addLBUser.setWrdN(info.getJSONObject("wrdN"));
-//            addLBUser.setWrdNC(comp.getInfo().getJSONObject("wrdN"));
-//
-//            IndexRequest indexRequest = new IndexRequest("lbuser");
-//            indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
-//            try {
-//                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
-//
-//            } catch (IOException e) {
-//
-//            }
-//
-//
-//
-//            return RetResult.jsonResultEncrypt(HttpStatus.OK, CodeEnum.OK.getCode(), null);
-//
-//
-//        } catch (RuntimeException e) {
-//
-//            e.printStackTrace();
-//
-//        }
-//
-//        return "";
-//
-//    }
 
 }

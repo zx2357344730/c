@@ -7,11 +7,11 @@ import com.cresign.chat.client.DetailsClient;
 import com.cresign.chat.common.ChatEnum;
 import com.cresign.chat.config.websocket.WebSocketServerPi;
 import com.cresign.chat.service.LogService;
-import com.cresign.chat.utils.HttpClientUtils;
 import com.cresign.chat.utils.RsaUtil;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.Qt;
+import com.cresign.tools.encrypt.HttpClientUtils;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
@@ -119,7 +119,7 @@ public class LogServiceImpl  implements LogService {
         notification.put("title",title+"_toLP");
         notification.put("body",body);
         notification.put("click_type","startapp");
-        notification.put("url","https://www.baidu.com");
+        notification.put("url","https://www.cresign.cn");
         push_message.put("notification",notification);
         push = new JSONObject();
         push.put("request_id",request_id);
@@ -127,10 +127,6 @@ public class LogServiceImpl  implements LogService {
         push.put("settings",settings);
         push.put("push_message",push_message);
         s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/message", push, heads);
-//        System.out.println("创建message返回结果:");
-//        System.out.println(s);
-//        log.info("创建message返回结果:");
-//        log.info(s);
 
 
         JSONObject re = JSONObject.parseObject(s);
@@ -142,10 +138,7 @@ public class LogServiceImpl  implements LogService {
         push.put("taskid",taskid);
         push.put("is_async",true);
         s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/cid", push, heads);
-//        System.out.println("批量推送创建的message返回结果:");
-//        System.out.println(s);
-//        log.info("批量推送创建的message返回结果:");
-//        log.info(s);
+
     }
 
     @Override

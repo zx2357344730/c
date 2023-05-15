@@ -2,7 +2,6 @@ package com.cresign.purchase.controller;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.purchase.client.WSClient;
 import com.cresign.purchase.service.ActionService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
@@ -75,7 +74,8 @@ public class ActionController {
 
         } catch (Exception e)
         {
-            return getUserToken.err("actionService.dgActivateAll", e);
+
+            return getUserToken.err(reqJson, "actionService.dgActivateAll", e);
         }
     }
 
@@ -93,7 +93,7 @@ public class ActionController {
 
         } catch (Exception e)
         {
-            return getUserToken.err("actionService.task2Prod", e);
+            return getUserToken.err(reqJson, "actionService.task2Prod", e);
         }
     }
 
@@ -115,7 +115,7 @@ public class ActionController {
 
         } catch (Exception e)
         {
-            return getUserToken.err("actionService.dgActivateAll", e);
+            return getUserToken.err(reqJson, "actionService.dgActivateAll", e);
         }
     }
 
@@ -191,7 +191,7 @@ public class ActionController {
                 tokData);
         } catch (Exception e)
         {
-            return getUserToken.err("statusChg", e);
+            return getUserToken.err(reqJson, "statusChg", e);
         }
     }
 
@@ -244,7 +244,7 @@ public class ActionController {
                     tokData.getJSONObject("wrdNU"));
         } catch (Exception e)
         {
-            return getUserToken.err("createTask", e);
+            return getUserToken.err(reqJson, "createTask", e);
         }
     }
 
@@ -285,7 +285,7 @@ public class ActionController {
                     reqJson.getJSONObject("probData"));
         } catch (Exception e)
         {
-            return getUserToken.err("createQuest", e);
+            return getUserToken.err(reqJson, "createQuest", e);
         }
     }
 

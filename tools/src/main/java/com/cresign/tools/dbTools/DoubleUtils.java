@@ -64,7 +64,7 @@ public class DoubleUtils {
     public static double divide(double num1, double num2) {
         BigDecimal decimal1 = new BigDecimal(Double.toString(num1));
         BigDecimal decimal2 = new BigDecimal(Double.toString(num2));
-        return decimal1.divide(decimal2).doubleValue();
+        return decimal1.divide(decimal2, 6, BigDecimal.ROUND_DOWN).doubleValue();
     }
     /**
      * 除

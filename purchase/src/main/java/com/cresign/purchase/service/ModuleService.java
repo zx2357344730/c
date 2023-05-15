@@ -51,7 +51,7 @@ public interface ModuleService {
      * @version 1.0.0
      * @date 2022/9/19
      */
-    ApiResponse addOrUpdateInitMod(JSONObject objLogMod);
+//    ApiResponse addOrUpdateInitMod(JSONObject objLogMod);
 
     /**
      * 根据id_C修改asset的a-auth内role对应的grpU+listType+grp

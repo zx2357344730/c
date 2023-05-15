@@ -47,30 +47,13 @@ public class InitServiceImpl implements InitService {
         if (ver.equals(init.getVer()))
         {
             throw new ErrorResponseException(HttpStatus.OK, CodeEnum.ALREADY_LOCAL.getCode(), stringMap.get("publicKey"));
+//            return retResult.ok(CodeEnum.ALREADY_LOCAL.getCode(), stringMap.get("publicKey"));
         } else {
             JSONObject init2 = qt.toJson(init);
             init2.put("hdKey", re.getString("publicKey"));
             return retResult.ok(CodeEnum.OK.getCode(), init2);
         }
 
-        // 判断 redis 中是否有这个键
-//        if (qt.hasRDKey("initData", lang)) {
-//
-//            JSONObject init = qt.getRDSet("initData", lang);
-//            init.put("hdKey", re.getString("publicKey"));
-//
-//            return retResult.ok(CodeEnum.OK.getCode(), init);
-//        } else {
-//            System.out.println("no hasKey");
-//
-////            Init init = qt.getMDContent(lang,"", Init.class);
-//
-//            qt.setRDSet("initData", lang, JSON.toJSONString(init));
-//
-//            init.setHdKey(re.getString("publicKey"));
-//
-//            return retResult.ok(CodeEnum.OK.getCode(), init);
-//        }
     }
 
     @Override

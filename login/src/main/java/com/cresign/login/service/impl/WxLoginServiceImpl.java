@@ -436,6 +436,7 @@ REGISTER_USER_IS_HAVE.getCode(), null);
 
                 User user = mongoTemplate.findOne(mbnQue, User.class);
 
+
                 // 查到有手机号但是没有id_WX 则自动绑定
                 if (ObjectUtils.isNotEmpty(user)) {
 
@@ -553,15 +554,16 @@ SMS_CODE_NOT_FOUND.getCode(), null);
 
         //List<Map<String, Object>> objModList = new ArrayList<>();
         JSONArray objModArray = new JSONArray();
-        //Map<String, Object> objModMap = new HashMap<>();
         JSONObject objModMap = new JSONObject();
-        objModMap.put("ref", "a-core");
-        objModMap.put("bcdState", 1);
-        objModMap.put("bcdLevel", 4);
-        objModMap.put("tfin", "-1");
+
+        JSONObject objMod = qt.setJson("ref", "a-core-0", "mod", "a-core","bcdState", 1, "bcdLevel", 0, "tfin", -1);
+
+        JSONObject objModAuth = new JSONObject();
+        objModAuth.put("a-core-0", objMod);
 
         objModArray.add(objModMap);
-        comMap.put("objMod", objModArray);
+        comMap.put("modAuth", objModAuth);
+
         objCompDefault.put("5f2a2502425e1b07946f52e9", comMap);
         rolexMap.put("objComp", objCompDefault);
 

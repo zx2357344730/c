@@ -76,7 +76,6 @@ public class WebSocketServerPi {
     /**
      * 连接建立成功调用的方法
      * @param session   连接用户的session
-     * @param id   聊天室id
      * @author tangzejin
      * @ver 1.0.0
      * @updated 2020/8/5 9:14:20
@@ -138,7 +137,6 @@ public class WebSocketServerPi {
 
     /**
      * 连接关闭调用的方法
-     * @param id    聊天室连接id
      * @author tangzejin
      * @ver 1.0.0
      * @updated 2020/8/5 9:14:20
@@ -197,7 +195,6 @@ public class WebSocketServerPi {
 
     /**
      * 群发自定义消息
-     * @param log1   发送消息
      * @author tangzejin
      * @ver 1.0.0
      * @updated 2020/8/5 9:14:20
@@ -248,7 +245,6 @@ public class WebSocketServerPi {
 
     /**
      * 根据key加密log1数据
-     * @param log1	发送的日志数据
      * @param key	AES
      * @return java.util.Map<java.lang.String,java.lang.String>  返回结果: 结果
      * @author tang

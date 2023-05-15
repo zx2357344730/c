@@ -28,12 +28,6 @@ public class CoupaUtil {
     @Autowired
     private Qt qt;
 
-//    public Init getInit(){
-//        Query query = new Query(new Criteria("_id").is("cn_java"));
-//        Field fields = query.fields();
-//        fields.include("logInit");
-//        return mongoTemplate.findOne(query, Init.class);
-//    }
 
     public void updateInitLog(JSONObject logInit){
         // 创建查询条件，并且添加查询条件

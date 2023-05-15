@@ -35,8 +35,7 @@ public class GatewayFilter implements GlobalFilter, Ordered {
     @Autowired
     private StringRedisTemplate redisTemplate0;
 
-//    @Autowired
-//    private GatewayAuthConfig gatewayAuthConfig;
+
 
 
     @Override

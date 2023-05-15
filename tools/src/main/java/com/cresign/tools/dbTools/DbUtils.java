@@ -12,8 +12,6 @@ import com.cresign.tools.pojo.es.lSAsset;
 import com.cresign.tools.pojo.po.*;
 import com.cresign.tools.pojo.po.assetCard.AssetAStock;
 import com.cresign.tools.pojo.po.assetCard.AssetInfo;
-import com.cresign.tools.pojo.po.orderCard.OrderAction;
-import com.cresign.tools.pojo.po.orderCard.OrderStock;
 import com.cresign.tools.reflectTools.ApplicationContextTools;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -47,8 +45,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.lang.Math.abs;
 
 @Service
 public class DbUtils {
@@ -695,22 +691,26 @@ public JSONObject checkCard(Order order)
             }
         }
         wn2fin = du.divide(wn2made, oItem.size());
+        qt.errPrint("div", null, count, oItem.size());
         wn2progress = du.divide(count, oItem.size());
         qt.upJson(listCol, "wn2fin", wn2fin, "wn2progress", wn2progress, "wn2qty", wn2qty, "wn4price", wn4price, "arrP", arrP);
 
         order.getOItem().put("wn2qty", wn2qty);
         order.getOItem().put("wn4price", wn4price);
         order.getOItem().put("arrP", arrP);
-        order.getAction().put("wn2progress", wn2progress);
-        order.getOStock().put("wn2fin", wn2fin);
 
         JSONObject result = new JSONObject();
         result.put("oItem", order.getOItem());
         result.put("view", order.getView());
-        if (oStock != null)
+        if (oStock != null) {
+            order.getOStock().put("wn2fin", wn2fin);
             result.put("oStock", order.getOStock());
-        if (action != null)
+        }
+        if (action != null) {
             result.put("action", order.getAction());
+            order.getAction().put("wn2progress", wn2progress);
+        }
+
         return result;
 
     }
