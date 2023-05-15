@@ -28,6 +28,8 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -49,6 +51,7 @@ import java.util.UUID;
 )
 @Slf4j
 public class WebSocketUserServer implements RocketMQListener<String> {
+
     @Override
     public boolean equals(Object obj){
         return super.equals(obj);
@@ -146,6 +149,25 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         this.userId = uId;
         // 获取当前用户session
         this.session = session;
+
+        try {
+//            String ip = getRemoteAddress(session).getAddress().toString().substring(1);
+
+            String ip = session.getRequestURI().getHost();
+            System.out.println("输出ip信息:");
+            System.out.println(JSON.toJSONString(ip));
+        } catch (Exception e) {
+            System.out.println("出现错误");
+        }
+
+//        RemoteEndpoint.Async async = session.getAsyncRemote();
+//        //在Tomcat 8.0.x版本有效
+//        InetSocketAddress addr0 = (InetSocketAddress) getFieldInstance(async,"base#sos#socketWrapper#socket#sc#remoteAddress");
+//        System.out.println("clientIP0:" + addr0);
+//        //在Tomcat 8.5以上版本有效
+//        InetSocketAddress addr = (InetSocketAddress) getFieldInstance(async, "base#socketWrapper#socket#sc#remoteAddress");
+//        System.out.println("clientIP1:" + addr);
+
         System.out.println("sessionId:"+this.session.getId());
 
         // 字符串转换
@@ -242,6 +264,32 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         System.out.println("开启-在线人数:"+getOnlineCount());
         log.info("在线人数:"+getOnlineCount());
     }
+
+//    private static Object getFieldInstance(Object obj, String fieldPath) {
+//        String fields[] = fieldPath.split("#");
+//        for (String field : fields) {
+//            obj = getField(obj, obj.getClass(), field);
+//            if (obj == null) {
+//                return null;
+//            }
+//        }
+//
+//        return obj;
+//    }
+//
+//    private static Object getField(Object obj, Class<?> clazz, String fieldName) {
+//        for (; clazz != Object.class; clazz = clazz.getSuperclass()) {
+//            try {
+//                Field field;
+//                field = clazz.getDeclaredField(fieldName);
+//                field.setAccessible(true);
+//                return field.get(obj);
+//            } catch (Exception e) {
+//            }
+//        }
+//
+//        return null;
+//    }
 
     /**
      * 连接关闭调用的方法

@@ -1,5 +1,6 @@
 package com.cresign.chat.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.config.websocket.WebSocketLoginServer;
 import com.cresign.chat.config.websocket.WebSocketServerPi;
@@ -35,6 +36,21 @@ public class LogController {
 
     @Autowired
     private HttpServletRequest request;
+
+    @PostMapping("/v1/testFill")
+    public JSONObject testFill(@RequestBody JSONObject jsonObject){
+        System.out.println("进入:testFill");
+        System.out.println(JSON.toJSONString(jsonObject));
+        jsonObject.put("b","222");
+        jsonObject.put("c","333");
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            System.out.println("线程出现问题");
+            return null;
+        }
+        return jsonObject;
+    }
 
     /**
      * 发送

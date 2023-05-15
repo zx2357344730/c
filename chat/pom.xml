@@ -15,6 +15,13 @@
     <dependencies>
 
 
+        <!-- https://mvnrepository.com/artifact/ognl/ognl -->
+<!--        <dependency>-->
+<!--            <groupId>ognl</groupId>-->
+<!--            <artifactId>ognl</artifactId>-->
+<!--            <version>3.1.10</version>-->
+<!--        </dependency>-->
+
         <!-- https://mvnrepository.com/artifact/com.getui.push/restful-sdk -->
         <dependency>
             <groupId>com.getui.push</groupId>

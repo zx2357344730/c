@@ -5,16 +5,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="128c9a26-d44c-4e41-b0e6-dabc284dd13b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/controller/TestController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/CusServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/CusServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/client/WSClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/client/WSClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/fallback/WSFallbackFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/fallback/WSFallbackFactory.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/action/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/resources/bootstrap.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chat/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/chat/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/controller/LogController.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/controller/LogController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chat/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/resources/bootstrap.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/orderCard/OrderCusmsg.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/orderCard/OrderCusmsg.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gateway/src/main/java/com/cresign/gateway/filter/GatewayFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/src/main/java/com/cresign/gateway/filter/GatewayFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/ip/GetUserIpUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/ip/GetUserIpUtil.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -42,7 +55,7 @@
     &quot;last_opened_file_path&quot;: &quot;/Users/kevin/Documents/Important/ccpl2&quot;
   }
 }</component>
-  <component name="RunManager" selected="Application.ChatApp">
+  <component name="RunManager" selected="Application.GatewayApp">
     <configuration name="ActionApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.cresign.action.ActionApp" />
       <module name="action" />
@@ -84,9 +97,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.ActionApp" />
         <item itemvalue="Application.ChatApp" />
         <item itemvalue="Application.GatewayApp" />
-        <item itemvalue="Application.ActionApp" />
       </list>
     </recent_temporary>
   </component>
@@ -111,5 +124,15 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="ognl.NoSuchPropertyException" package="ognl" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
