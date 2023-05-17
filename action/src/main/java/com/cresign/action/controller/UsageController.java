@@ -72,7 +72,7 @@ public class UsageController {
 
     @SecurityParameter
     @PostMapping("/v1/setFav")
-    public ApiResponse setFav(@RequestBody JSONObject json) throws IOException {
+    public ApiResponse setFav(@RequestBody JSONObject json) {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         return usageService.setFav(
                 tokData.getString("id_U"),
@@ -82,18 +82,32 @@ public class UsageController {
     }
 
     @SecurityParameter
+    @PostMapping("/v1/setFavInfo")
+    public ApiResponse setFavInfo(@RequestBody JSONObject json) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        return usageService.setFavInfo(
+                tokData.getString("id_U"),
+                json.getString("id_C"),
+                json.getString("id"),
+                json.getString("listType"),
+                json.getString("grp"),
+                json.getString("pic"),
+                json.getJSONObject("wrdN")
+        );
+    }
+
+    @SecurityParameter
     @PostMapping("/v1/getFav")
-    public ApiResponse getFav(@RequestBody JSONObject json) throws IOException {
+    public ApiResponse getFav(@RequestBody JSONObject json) {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         return usageService.getFav(
                 tokData.getString("id_U")
-//                json.getString("id_U")
         );
     }
 
     @SecurityParameter
     @PostMapping("/v1/delFav")
-    public ApiResponse delFav(@RequestBody JSONObject json) throws IOException {
+    public ApiResponse delFav(@RequestBody JSONObject json) {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         return usageService.delFav(
                 tokData.getString("id_U"),
@@ -103,6 +117,17 @@ public class UsageController {
                 json.getString("id_FS")
         );
     }
+
+    @SecurityParameter
+    @PostMapping("/v1/delFavInfo")
+    public ApiResponse delFavInfo(@RequestBody JSONObject json) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        return usageService.delFavInfo(
+                tokData.getString("id_U"),
+                json.getString("id")
+        );
+    }
+
 
     @SecurityParameter
     @PostMapping("/v1/appointTask")

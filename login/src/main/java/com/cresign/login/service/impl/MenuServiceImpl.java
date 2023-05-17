@@ -195,6 +195,10 @@ public class MenuServiceImpl implements MenuService {
             }
         }
 
+        Asset asset = qt.getConfig(id_C, "a-auth","menu");
+
+        qt.setMDContent(asset.getId(),qt.setJson("menu.mainMenus." + grpU, mainMenusData), Asset.class);
+
         qt.delRD("details:get_menus", "compId-" + id_C);
 
         ws.sendWS_grpU(id_C, id_U,"ud_grpU_mainMenu");

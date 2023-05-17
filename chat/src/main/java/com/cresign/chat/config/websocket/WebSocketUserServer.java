@@ -51,7 +51,6 @@ import java.util.UUID;
 )
 @Slf4j
 public class WebSocketUserServer implements RocketMQListener<String> {
-
     @Override
     public boolean equals(Object obj){
         return super.equals(obj);
@@ -268,32 +267,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     }
 
-//    private static Object getFieldInstance(Object obj, String fieldPath) {
-//        String fields[] = fieldPath.split("#");
-//        for (String field : fields) {
-//            obj = getField(obj, obj.getClass(), field);
-//            if (obj == null) {
-//                return null;
-//            }
-//        }
-//
-//        return obj;
-//    }
-//
-//    private static Object getField(Object obj, Class<?> clazz, String fieldName) {
-//        for (; clazz != Object.class; clazz = clazz.getSuperclass()) {
-//            try {
-//                Field field;
-//                field = clazz.getDeclaredField(fieldName);
-//                field.setAccessible(true);
-//                return field.get(obj);
-//            } catch (Exception e) {
-//            }
-//        }
-//
-//        return null;
-//    }
-
     /**
      * 连接关闭调用的方法
      * @param uId    聊天室连接id
@@ -318,8 +291,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     @OnError
     public void onError(Throwable error) {
         // 输出错误信息
-        String msg = WebSocketUserServer.bz+"-Error: "+error.getMessage();
-        ws.sendUsageFlow(qt.setJson("cn", "Websocket Error"), msg, "wsError", "ALL");
+//        String msg = WebSocketUserServer.bz+"-Error: "+error.getMessage();
+////        ws.sendUsageFlow(qt.setJson("cn", "Websocket Error"), msg, "wsError", "ALL");
     }
 
     /**

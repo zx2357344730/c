@@ -59,7 +59,10 @@ public class DbUtils {
     private Qt qt;
 
     @Autowired
-    private DoubleUtils du;
+    private Ws ws;
+
+    @Autowired
+    private DoubleUtils dub;
 
     /*
         ES
@@ -592,14 +595,17 @@ public JSONObject checkCard(Order order)
     return jsonCard;
 }
 
-// updateAsset , ... ?????, Asset
+    public JSONObject summOrder(Order order, JSONObject listCol)
+    {
+        return this.summOrder(order, listCol, qt.setArray("oStock", "action"));
+    }
     /**
      *
      * @param order
      * @param listCol ES update list
      * @return JSONObject of update String
      */
-    public JSONObject summOrder(Order order, JSONObject listCol)
+    public JSONObject summOrder(Order order, JSONObject listCol, JSONArray cardList)
     {
 
         if (order.getOItem() == null)
@@ -629,22 +635,22 @@ public JSONObject checkCard(Order order)
 
         for (int i = 0; i < oItem.size(); i++)
         {
-            wn2qty = du.add(oItem.getJSONObject(i).getDouble("wn2qtyneed"), wn2qty);
-            wn4price = du.add(wn4price, du.multiply(oItem.getJSONObject(i).getDouble("wn2qtyneed"),oItem.getJSONObject(i).getDouble("wn4price")));
+            wn2qty = dub.add(oItem.getJSONObject(i).getDouble("wn2qtyneed"), wn2qty);
+            wn4price = dub.add(wn4price, dub.multiply(oItem.getJSONObject(i).getDouble("wn2qtyneed"),oItem.getJSONObject(i).getDouble("wn4price")));
             arrP.add(oItem.getJSONObject(i).getString("id_P"));
             oItem.getJSONObject(i).put("index", i);
 
-            if (oStock != null)
+            if (oStock != null && cardList.contains("oStock"))
             {
-                Double madePercent = du.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"),oItem.getJSONObject(i).getDouble("wn2qtyneed"));
-                wn2made = du.add(wn2made, madePercent);
+                Double madePercent = dub.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"),oItem.getJSONObject(i).getDouble("wn2qtyneed"));
+                wn2made = dub.add(wn2made, madePercent);
                 oStock.getJSONObject(i).put("index", i);
 
                 if (action != null)
                 {
                     for (int j = 0; j < action.getJSONObject(i).getJSONArray("upPrnts").size(); j++)
                     {
-                        if (oStock.getJSONObject(i).getJSONArray("objShip").size() < action.getJSONObject(i).getJSONArray("upPrnts").size())
+                        if (oStock.getJSONObject(i).getJSONArray("objShip").getJSONObject(j) == null)
                         {
                             // init it if it is not init yet
                             if (j == 0 || !action.getJSONObject(i).getInteger("bmdpt").equals(1)) {
@@ -656,7 +662,7 @@ public JSONObject checkCard(Order order)
                     }
                 }
             }
-            if (action != null)
+            if (action != null && cardList.contains("action"))
             {
                 count = action.getJSONObject(i).getInteger("bcdStatus") == 2 ? 1: 0 + count;
                 action.getJSONObject(i).put("index", i);
@@ -690,9 +696,9 @@ public JSONObject checkCard(Order order)
                 }
             }
         }
-        wn2fin = du.divide(wn2made, oItem.size());
+        wn2fin = dub.divide(wn2made, oItem.size());
         qt.errPrint("div", null, count, oItem.size());
-        wn2progress = du.divide(count, oItem.size());
+        wn2progress = dub.divide(count, oItem.size());
         qt.upJson(listCol, "wn2fin", wn2fin, "wn2progress", wn2progress, "wn2qty", wn2qty, "wn4price", wn4price, "arrP", arrP);
 
         order.getOItem().put("wn2qty", wn2qty);
@@ -702,11 +708,11 @@ public JSONObject checkCard(Order order)
         JSONObject result = new JSONObject();
         result.put("oItem", order.getOItem());
         result.put("view", order.getView());
-        if (oStock != null) {
+        if (oStock != null && cardList.contains("oStock")) {
             order.getOStock().put("wn2fin", wn2fin);
             result.put("oStock", order.getOStock());
         }
-        if (action != null) {
+        if (action != null && cardList.contains("action")) {
             result.put("action", order.getAction());
             order.getAction().put("wn2progress", wn2progress);
         }
@@ -1054,12 +1060,13 @@ public JSONObject checkCard(Order order)
             if (index != null) {
                 JSONObject jsonOItem = arrayOItem.getJSONObject(index);
                 Double wn4price = jsonOItem.getDouble("wn4price");
-                Double wn4value = DoubleUtils.multiply(wn2qty, wn4price);
+                Double wn4value = dub.multiply(wn2qty, wn4price);
                 String locAddr = assetChgObj.getString("locAddr");
                 JSONArray arrayUpdateLocSpace = assetChgObj.getJSONArray("locSpace");
                 JSONArray arrayUpdateSpaceQty = assetChgObj.getJSONArray("spaceQty");
                 //Type 1: 存在资产
-                if (assetChgObj.getJSONObject("jsonLsa") != null) {
+                if (assetChgObj.getJSONObject("jsonLsa") != null)
+                {
                     JSONObject jsonLsa = assetChgObj.getJSONObject("jsonLsa");
                     id_A = jsonLsa.getString("id_A");
                     grpA = jsonLsa.getString("grp");
@@ -1078,16 +1085,16 @@ public JSONObject checkCard(Order order)
                                 Double spaceQty = arraySpaceQty.getDouble(j);
                                 //移动数量，移入正数，移出负数
                                 Double updateSpaceQty = arrayUpdateSpaceQty.getDouble(k);
-                                Double qty = DoubleUtils.add(spaceQty, updateSpaceQty);
+                                Double qty = dub.add(spaceQty, updateSpaceQty);
                                 System.out.println("spaceQty=" + spaceQty);
                                 System.out.println("updateSpaceQty=" + updateSpaceQty);
                                 System.out.println("qty=" + qty);
                                 //货架格子小于移动格子
-                                if (DoubleUtils.compareTo(qty, 0) == -1) {
+                                if (dub.compareTo(qty, 0) == -1) {
                                     throw new ErrorResponseException(HttpStatus.OK, ToolEnum.PROD_NOT_ENOUGH.getCode(), null);
                                 }
                                 //大于，减去数量
-                                if (DoubleUtils.compareTo(qty, 0) == 1) {
+                                if (dub.compareTo(qty, 0) == 1) {
                                     arraySpaceQty.set(j, qty);
                                 }
                                 //等于，删除格子数组和数量数组对应的数组元素
@@ -1104,7 +1111,7 @@ public JSONObject checkCard(Order order)
                     if (isResv && aStock.getJSONObject("resvQty") != null &&
                             aStock.getJSONObject("resvQty").getDouble(id_O + "-" + index) != null) {
                         ///////************SET - aStock resvAsset qty **************//////////
-                        Double remain = DoubleUtils.add(aStock.getDouble("wn2qtyResv"), wn2qty);
+                        Double remain = dub.add(aStock.getDouble("wn2qtyResv"), wn2qty);
 
                         if (aStock.getDouble("wn2qty") == 0 && remain == 0) {
                             jsonBulkAsset = qt.setJson("type", "delete",
@@ -1114,10 +1121,10 @@ public JSONObject checkCard(Order order)
                         } else {
                             //check if fromSum == resvQty.wn2qty, if so remove that object, else deduct
                             JSONObject jsonResvQty = aStock.getJSONObject("resvQty");
-                            if (DoubleUtils.doubleEquals(jsonResvQty.getDouble(id_O + "-" + index), wn2qty)) {
+                            if (dub.doubleEquals(jsonResvQty.getDouble(id_O + "-" + index), wn2qty)) {
                                 jsonResvQty.remove(id_O + "-" + index);
                             } else {
-                                jsonResvQty.put(id_O + "-" + index, DoubleUtils.add(jsonResvQty.getDouble(id_O + "-" + index), wn2qty));
+                                jsonResvQty.put(id_O + "-" + index, dub.add(jsonResvQty.getDouble(id_O + "-" + index), wn2qty));
                             }
 
                             AssetAStock assetAStock = new AssetAStock(
@@ -1127,8 +1134,8 @@ public JSONObject checkCard(Order order)
                                     "id", id_A,
                                     "update", jsonUpdate);
 
-                            qt.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
-                                    "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
+                            qt.upJson(jsonLsa, "wn2qty", dub.add(aStock.getDouble("wn2qty"), wn2qty),
+                                    "wn4value", dub.add(aStock.getDouble("wn4value"), wn4value),
                                     "locSpace", arrayLocSpace,
                                     "spaceQty", arraySpaceQty,
                                     "wn2qtyResv", remain);
@@ -1138,7 +1145,7 @@ public JSONObject checkCard(Order order)
                         }
                     }
                     else {
-                        if (DoubleUtils.doubleEquals(aStock.getDouble("wn2qty"), wn2qty)) {
+                        if (dub.doubleEquals(aStock.getDouble("wn2qty"), wn2qty)) {
                             jsonBulkAsset = qt.setJson("type", "delete",
                                     "id", id_A);
                             jsonBulkLsasset = qt.setJson("type", "delete",
@@ -1152,8 +1159,8 @@ public JSONObject checkCard(Order order)
                                     "id", id_A,
                                     "update", jsonUpdate);
 
-                            qt.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
-                                    "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
+                            qt.upJson(jsonLsa, "wn2qty", dub.add(aStock.getDouble("wn2qty"), wn2qty),
+                                    "wn4value", dub.add(aStock.getDouble("wn4value"), wn4value),
                                     "locSpace", arrayLocSpace,
                                     "spaceQty", arraySpaceQty);
                             jsonBulkLsasset = qt.setJson("type", "update",
@@ -1219,7 +1226,7 @@ public JSONObject checkCard(Order order)
                         jsonLog.getInteger("imp"));
                 log.setLogData_assetflow(wn2qty, wn4price, id_A, grpA);
                 System.out.println("assetflow=" + JSON.toJSON(log));
-//                ws.sendWS(log);
+               ws.sendWS(log);
             }
             else {
                 JSONObject prodInfo = assetChgObj.getJSONObject("jsonProd").getJSONObject("info");
@@ -1229,7 +1236,7 @@ public JSONObject checkCard(Order order)
                     id_A = jsonLsa.getString("id_A");
                     JSONObject jsonAsset = assetChgObj.getJSONObject("jsonAsset");
                     JSONObject aStock = jsonAsset.getJSONObject("aStock");
-                    AssetAStock assetAStock = new AssetAStock(DoubleUtils.add(aStock.getDouble("wn4price"), wn2qty));
+                    AssetAStock assetAStock = new AssetAStock(dub.add(aStock.getDouble("wn4price"), wn2qty));
                     JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
                     jsonBulkAsset = qt.setJson("type", "update",
                             "id", id_A,
@@ -1237,16 +1244,16 @@ public JSONObject checkCard(Order order)
 
                     if (!isLsa && !id_C.equals(id_CB)) {
                         JSONObject jsonLba = assetChgObj.getJSONObject("jsonLba");
-                        qt.upJson(jsonLba, "wn4price", DoubleUtils.add(aStock.getDouble("wn4price"), wn2qty),
-                                "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn2qty));
+                        qt.upJson(jsonLba, "wn4price", dub.add(aStock.getDouble("wn4price"), wn2qty),
+                                "wn4value", dub.add(aStock.getDouble("wn4value"), wn2qty));
                         JSONObject jsonBulkLbasset = qt.setJson("type", "update",
                                 "id", jsonLba.getString("id_ES"),
                                 "update", jsonLba);
                         listBulkLbasset.add(jsonBulkLbasset);
                     }
 
-                    qt.upJson(jsonLsa, "wn4price", DoubleUtils.add(aStock.getDouble("wn4price"), wn2qty),
-                            "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn2qty));
+                    qt.upJson(jsonLsa, "wn4price", dub.add(aStock.getDouble("wn4price"), wn2qty),
+                            "wn4value", dub.add(aStock.getDouble("wn4value"), wn2qty));
                     jsonBulkLsasset = qt.setJson("type", "update",
                             "id", jsonLsa.getString("id_ES"),
                             "update", jsonLsa);
@@ -1316,7 +1323,7 @@ public JSONObject checkCard(Order order)
 ////        Integer logStatus = order.getAction().getJSONArray("objAction").getJSONObject(index).getInteger("bcdStatus");
 //                log.setLogData_assetflow(abs(wn2qtySum), logPrice, jsonFromHit.getString("id_A"), jsonFromHit.getString("grp"));
 //
-//                ws.sendWS(log);
+                ws.sendWS(log);
             }
         }
     }
