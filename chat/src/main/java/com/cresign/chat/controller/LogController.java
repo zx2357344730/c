@@ -2,6 +2,7 @@ package com.cresign.chat.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.chat.client.LoginClient;
 import com.cresign.chat.config.websocket.WebSocketLoginServer;
 import com.cresign.chat.config.websocket.WebSocketServerPi;
 import com.cresign.chat.config.websocket.WebSocketUserServer;
@@ -11,10 +12,7 @@ import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.token.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -36,6 +34,16 @@ public class LogController {
 
     @Autowired
     private HttpServletRequest request;
+
+    @Autowired
+    private LoginClient loginClient;
+
+    @GetMapping("/v1/refreshToken")
+    public String refreshToken(@RequestParam("id_U") String id_U, @RequestParam("id_C") String id_C
+            ,@RequestParam("ton") String ton,@RequestParam("web") String web){
+        System.out.println("进入方法:");
+        return loginClient.refreshToken2(id_U,id_C,ton,web);
+    }
 
     @PostMapping("/v1/testFill")
     public JSONObject testFill(@RequestBody JSONObject jsonObject){

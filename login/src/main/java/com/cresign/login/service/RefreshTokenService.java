@@ -43,4 +43,13 @@ public interface RefreshTokenService {
      */
     ApiResponse refreshToken(String refreshToken, String id_C, String clientType, String id_U);
 
+    /**
+     *##description:      获取 refreshToken 重新给前端生成 token
+     *@param            refreshToken:刷新token, clientType: 客户端类型, id_U: 用户id
+     *@return           返回token或者状态码信息
+     *@author           JackSon
+     *@updated             2020/5/15 19:00
+     */
+    String refreshToken2(String refreshToken, String id_C, String clientType, String id_U);
+
 }

@@ -59,4 +59,14 @@ public class RefreshTokenController {
 
     }
 
+    @GetMapping("/v1/refreshToken2")
+    public String refreshToken2(@RequestParam("id_U") String id_U, @RequestParam("id_C") String id_C
+            ,@RequestParam("ton") String ton,@RequestParam("web") String web) {
+
+
+
+        return refreshTokenService.refreshToken2(ton, id_C, web,id_U);
+
+    }
+
 }

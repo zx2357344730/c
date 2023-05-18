@@ -3,10 +3,12 @@ package com.cresign.chat.config.websocket;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.chat.client.LoginClient;
 import com.cresign.chat.config.mq.MqToEs;
 import com.cresign.chat.service.LogService;
 import com.cresign.chat.utils.AesUtil;
 import com.cresign.chat.utils.RsaUtil;
+import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
@@ -101,6 +103,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * 注入RocketMQ模板
      */
     private static RocketMQTemplate rocketMQTemplate;
+    /**
+     * 注入RocketMQ模板
+     */
+    private static LoginClient loginClient;
 
     /**
      * 用户自身编号
@@ -125,14 +131,14 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      */
     @Autowired
     public void setWebSocketUserServer(Qt qt, Ws ws, LogService logService
-            , StringRedisTemplate redisTemplate0, RocketMQTemplate rocketMQTemplate) {
+            , StringRedisTemplate redisTemplate0, RocketMQTemplate rocketMQTemplate,LoginClient loginClient) {
         WebSocketUserServer.logService = logService;
         WebSocketUserServer.qt = qt;
         WebSocketUserServer.ws = ws;
 
         WebSocketUserServer.redisTemplate0 = redisTemplate0;
         WebSocketUserServer.rocketMQTemplate = rocketMQTemplate;
-
+        WebSocketUserServer.loginClient = loginClient;
     }
 
     /**
@@ -150,24 +156,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         this.userId = uId;
         // 获取当前用户session
         this.session = session;
-
-        try {
-//            String ip = getRemoteAddress(session).getAddress().toString().substring(1);
-
-            String ip = session.getRequestURI().getHost();
-            System.out.println("输出ip信息:");
-            System.out.println(JSON.toJSONString(ip));
-        } catch (Exception e) {
-            System.out.println("出现错误");
-        }
-
-//        RemoteEndpoint.Async async = session.getAsyncRemote();
-//        //在Tomcat 8.0.x版本有效
-//        InetSocketAddress addr0 = (InetSocketAddress) getFieldInstance(async,"base#sos#socketWrapper#socket#sc#remoteAddress");
-//        System.out.println("clientIP0:" + addr0);
-//        //在Tomcat 8.5以上版本有效
-//        InetSocketAddress addr = (InetSocketAddress) getFieldInstance(async, "base#socketWrapper#socket#sc#remoteAddress");
-//        System.out.println("clientIP1:" + addr);
 
         System.out.println("sessionId:"+this.session.getId());
 
@@ -464,7 +452,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         // 创建返回存储map
         JSONObject stringMap = new JSONObject();
         try {
-
             // 根据key加密logContent数据
             String data2 = AesUtil.encrypt(JSON.toJSONString(logContent), key);
 
@@ -513,14 +500,27 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             } else if ("4".equals(id)) {
                 System.out.println(JSON.toJSONString(WebSocketUserServer.clients));
             } else {
+
                 // 调用解密并且发送信息方法
                 LogFlow logData = RsaUtil.encryptionSend(map, WebSocketUserServer.keyJava.get(this.session.getId())
                         .getString("privateKeyJava"));
-
-                logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-                ws.sendWS(logData);
-
+                if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())) {
+                    System.out.println("在本服务:");
+                    if ("refreshToken".equals(logData.getLogType())) {
+                        JSONObject data = logData.getData();
+                        String apiResponse = loginClient.refreshToken2(logData.getId_U()
+                                , logData.getId_C(),data.getString("refreshTokenJiu"),data.getString("clientType"));
+                        System.out.println("输出请求refreshToken:");
+                        System.out.println(apiResponse);
+                        data.put("refreshToken",apiResponse);
+                        logData.setData(data);
+                    }
+                    logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                    ws.sendWS(logData);
+                } else {
+                    System.out.println("不在本服务:");
+                    ws.sendWSOnly(logData);
+                }
             }
         }
     }

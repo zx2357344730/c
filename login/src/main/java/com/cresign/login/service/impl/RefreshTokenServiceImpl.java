@@ -153,8 +153,73 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
                             user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
                             user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
                             clientType);
+                    System.out.println("tok:");
+                    System.out.println(token);
 
                     return retResult.ok(CodeEnum.OK.getCode(), token);
+
+                } else {
+
+                    throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_VALIDATE_ERROR.getCode(), null);
+
+                }
+
+            }
+
+            throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
+        }
+
+        throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+    }
+
+    @Override
+    public String refreshToken2(String refreshToken, String id_C, String clientType, String id_U) {
+        // 判断 传过来的参数是否为空
+        if (StringUtils.isNotEmpty(refreshToken)) {
+
+//            // 从redis 中查询出该用户的 refreshToken
+            String refreshTokenResult = null;
+//
+//            if (clientType.equals(ClientEnum.WX_CLIENT.getClientType())) {
+//
+//                refreshTokenResult = redisTemplate0.opsForValue().get("wxRefreshToken:" + refreshToken);
+//
+//            } else if (clientType.equals(ClientEnum.APP_CLIENT.getClientType())) {
+//
+//                refreshTokenResult = redisTemplate0.opsForValue().get("appRefreshToken:" + refreshToken);
+//
+//            } else {
+
+//                refreshTokenResult = redisTemplate0.opsForValue().get("webRefreshToken:" + refreshToken);
+            refreshTokenResult = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
+
+//            }
+
+            // 判断 refreshToken 是否为空
+            if (StringUtils.isNotEmpty(refreshTokenResult)) {
+
+                // 不为空则判断 传过来的 refreshToken 是否与 redis中的 refreshToken一致
+                if (refreshTokenResult.equals(id_U)) {
+
+                    // 通过id_U查询该用户
+                    Query query = new Query(new Criteria("_id").is(id_U));
+                    query.fields().include("info").include("rolex.objComp."+ id_C);
+                    User user = mongoTemplate.findOne(query, User.class);
+
+                    // System.out.println("user is"+ user);
+
+                    String token = "";
+
+                    token = oauth.setToken(
+                            user,
+                            id_C,
+                            user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
+                            user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
+                            clientType);
+                    System.out.println("tok:");
+                    System.out.println(token);
+
+                    return token;
 
                 } else {
 

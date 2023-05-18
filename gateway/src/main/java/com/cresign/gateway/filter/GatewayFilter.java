@@ -55,6 +55,7 @@ public class GatewayFilter implements GlobalFilter, Ordered {
         if(url.startsWith("/chat/wsU/")
                 || url.equals("/login/init/v1/getInit")
                 || url.equals("/login/refreshToken/v1/refreshToken")
+                || url.equals("/login/refreshToken/v1/refreshToken2")
                 || url.equals("/login/refreshToken/v1/login")
                 || url.equals("/login/wx/v1/getwxWebLogin")
                 || url.equals("/login/linked/v1/LinkedWebLogin")
@@ -81,6 +82,7 @@ public class GatewayFilter implements GlobalFilter, Ordered {
                 || url.equals("/action/test/v1/testFill")
 
                 || url.equals("/chat/log/v1/getIp")
+                || url.equals("/chat/log/v1/refreshToken")
 
 //                || url.equals("/file/picture/v1/picUpload")
         ){

@@ -180,38 +180,49 @@ public class Ws {
 
 
 
-    public void sendWS_grpU(String id_C,String grpU,String noticeType){
+    public void sendWS_grpU(String id_C,String id_U,String noticeType){
             
-            ///////////////////
-            LogFlow logContent = LogFlow.getInstance();
-            logContent.setId_C(id_C);
-//            logContent.setId_U(id_U);
-            logContent.setLogType("usageflow");
-            logContent.setSubType("setAuth"); //"hd"
-            logContent.setId(null);
-            logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-            ///////////////
+//            ///////////////////
+//            LogFlow logContent = LogFlow.getInstance();
+//            logContent.setId_C(id_C);
+////            logContent.setId_U(id_U);
+//            logContent.setLogType("usageflow");
+//            logContent.setSubType("setAuth"); //"hd"
+//            logContent.setId(null);
+//            logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//            ///////////////
+//
+//            JSONArray result = qt.getES("lBUser", qt.setESFilt("id_CB",id_C,"grpU",grpU));
+//            JSONArray id_Us = new JSONArray();
+//            JSONArray id_Apps = new JSONArray();
+//            for (int i = 0; i < result.size(); i++) {
+//                JSONObject jsonObject = result.getJSONObject(i);
+//                id_Us.add(jsonObject.getString("id_U"));
+//                id_Apps.add(jsonObject.getString("id_APP"));
+//
+////                if (thisUser.getInteger("imp") <= logContent.getImp()) {
+////                    String id_client = thisUser.getString("id_APP");
+////                    if (null != id_client && !"".equals(id_client)) {
+////                        id_Apps.add(id_client);
+////                    }
+////                }
+//            }
+//
+//        logContent.getData().put("type", noticeType);
+//        logContent.setId_Us(id_Us);
+//        logContent.setId_APPs(id_Apps);
+//        sendWS(logContent);
 
-            JSONArray result = qt.getES("lBUser", qt.setESFilt("id_CB",id_C,"grpU",grpU));
+            LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "setAuth",id_U,"1001","", "1000", "1000",
+                    "","",0,id_C,"","https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg","", "更新菜单", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
+            log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             JSONArray id_Us = new JSONArray();
-            JSONArray id_Apps = new JSONArray();
-            for (int i = 0; i < result.size(); i++) {
-                JSONObject jsonObject = result.getJSONObject(i);
-                id_Us.add(jsonObject.getString("id_U"));
-                id_Apps.add(jsonObject.getString("id_APP"));
-
-//                if (thisUser.getInteger("imp") <= logContent.getImp()) {
-//                    String id_client = thisUser.getString("id_APP");
-//                    if (null != id_client && !"".equals(id_client)) {
-//                        id_Apps.add(id_client);
-//                    }
-//                }
-            }
-            
-        logContent.getData().put("type", noticeType);
-        logContent.setId_Us(id_Us);
-        logContent.setId_APPs(id_Apps);
-        sendWS(logContent);
+            JSONArray id_APPs = new JSONArray();
+            this.prepareMqUserInfo(id_C, log, id_Us, id_APPs );
+            log.getData().put("type", noticeType);
+            log.setId_Us(id_Us);
+            log.setId_APPs(id_APPs);
+            sendWS(log);
         }
 
     public void sendPushBatch(JSONArray cidArray,String title,String body){
