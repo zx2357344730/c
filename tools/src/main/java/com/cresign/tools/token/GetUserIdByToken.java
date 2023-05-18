@@ -50,11 +50,7 @@ public class GetUserIdByToken {
             return qt.getRDSet(clientType+"Token",jwtStr);
         }
 
-        //TODO KEV check if equipped or not
-        //dataSet has modAuth, but if I want to check this grpU can do whatever?
-        //get redis.login:readwrite_auth - key: 1001_lSComp_1000_(batch/card/log).result = list of workable things
-        //params: lType, grp, tokData.grpU, tokData.modArray + initData compare then good, authType, card/batch/logName
-        //getfrom Redis if ok, then ok. else 401 @ no compAuth or no modAuth
+
 
         throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), "");
     }
@@ -74,13 +70,20 @@ public class GetUserIdByToken {
         e.printStackTrace(printWriter);
         String msg = params.toJSONString();
         String msg2 = writer.toString().substring(0, 230);
-        ws.sendUsageFlow(qt.setJson("cn", apiName), msg + "/n/n/n/n" + msg2, "error", "ALL");
+        ws.sendUsageFlow(qt.setJson("cn", apiName), apiName + "/n" + msg + "/n/n" + msg2, "error", "ALL");
 
         throw new ErrorResponseException(HttpStatus.OK, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), writer.toString());
     }
 
 
     public JSONObject getTokenDataX(String jwtStr, String clientType,String mod,Integer lev) {
+
+        //TODO KEV check if equipped or not
+        //dataSet has modAuth, but if I want to check this grpU can do whatever?
+        //get redis.login:readwrite_auth - key: 1001_lSComp_1000_(batch/card/log).result = list of workable things
+        //params: lType, grp, tokData.grpU, tokData.modArray + initData compare then good, authType, card/batch/logName
+        //getfrom Redis if ok, then ok. else 401 @ no compAuth or no modAuth
+
 
         // get lType, check authType (card/batch/log/none),  and grp
         if(qt.hasRDKey(clientType+"Token", jwtStr)) {

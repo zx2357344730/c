@@ -56,7 +56,7 @@ public class CosUpload {
      * @Return java.lang.String
      * @Card
      **/
-    public static String uploadCresignV1(File file, String path, String name) throws IOException {
+    public static String uploadCresignPic(File file, String path, String name) throws IOException {
         COSClient cosClient = new COSClient(cred, clientConfig);
         String fileName = file.getName();
         String prefix = fileName.substring(fileName.lastIndexOf("."));
@@ -67,7 +67,9 @@ public class CosUpload {
             fileName = path + name + prefix;
         }
         boolean bool = cosClient.doesObjectExist(bucketName, fileName);
-        String url = "https://" + bucketName + ".cos.ap-guangzhou.myqcloud.com/" + fileName;
+//        String url = "https://" + bucketName + ".cos.ap-guangzhou.myqcloud.com/" + fileName;
+        String url = fileName;
+
         if (!bool) {
             PutObjectRequest request = new PutObjectRequest(bucketName, fileName, file);
             cosClient.putObject(request);
@@ -77,7 +79,7 @@ public class CosUpload {
         return url;
     }
 
-    public static JSONObject uploadCresign(File file, String path, String name) throws IOException {
+    public static JSONObject uploadCresignStat(File file, String path, String name) throws IOException {
         COSClient cosClient = new COSClient(cred, clientConfig);
         String fileName = file.getName();
         String prefix = fileName.substring(fileName.lastIndexOf("."));
@@ -90,6 +92,8 @@ public class CosUpload {
         boolean bool = cosClient.doesObjectExist(bucketName, fileName);
         JSONObject jsonResult = new JSONObject();
         jsonResult.put("url", "https://" + bucketName + ".cos.ap-guangzhou.myqcloud.com/" + fileName);
+//        jsonResult.put("url", fileName);
+
         if (bool) {
             jsonResult.put("size", 0);
         } else {

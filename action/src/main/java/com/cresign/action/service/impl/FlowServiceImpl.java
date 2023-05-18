@@ -1383,16 +1383,22 @@ public class FlowServiceImpl implements FlowService {
 
                     do {
                         // if it's already the first item or prior 2 steps away, stop
+
                         if (checkPrev < 0 || (myPrior - 2) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
                             keepGoing = false;
-                        } else if (myPrior != partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                            if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                                // else prior need add PrtPrev
-                                JSONObject idAndIndex = new JSONObject();
-                                idAndIndex.put("id_O", partArray.getJSONObject(checkPrev).getString("fin_O"));
-                                idAndIndex.put("index", partArray.getJSONObject(checkPrev).getInteger("fin_Ind"));
-                                // Here, I put the checking IdIndex into my own list of prtPrev
-                                unitAction.getPrtPrev().add(idAndIndex);
+                        } else {
+                            JSONObject idAndIndex = new JSONObject();
+                            idAndIndex.put("id_O", partArray.getJSONObject(checkPrev).getString("fin_O"));
+                            idAndIndex.put("index", partArray.getJSONObject(checkPrev).getInteger("fin_Ind"));
+                            if (unitAction.getPrtPrev().contains(idAndIndex)){
+                                System.out.println("repeated");
+
+                            } else if (myPrior != partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
+                                if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
+
+                                    // Here, I put the checking IdIndex into my own list of prtPrev
+                                    unitAction.getPrtPrev().add(idAndIndex);
+                                }
                             }
                         }
                         checkPrev--; // move 1 step previous
@@ -1651,33 +1657,36 @@ public class FlowServiceImpl implements FlowService {
         OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(objActionCollection.get(finO).get(fin_Ind)),OrderAction.class);
 
         try {
-
-
             do {
                 //***** part getIntwn0prior Null pointer
                 if (checkPrev < 0 || (myPrior - 2) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
                     keepGoing = false;
                 } else {
-                    if (!myPrior.equals(partArray.getJSONObject(checkPrev).getInteger("wn0prior"))) {
-                        if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
-                            JSONObject idAndIndex = new JSONObject();
-                            idAndIndex.put("id_O", finO);
-                            idAndIndex.put("index", fin_Ind);
-                            // Here, I put the checking IdIndex into my own list of prtPrev
-                            unitAction.getPrtPrev().add(idAndIndex);
+                    JSONObject idAndIndex = new JSONObject();
+                    idAndIndex.put("id_O", finO);
+                    idAndIndex.put("index", fin_Ind);
+
+                    if (unitAction.getPrtPrev().contains(idAndIndex) ||
+                            (finO.equals(unitOItem.getId_O()) && fin_Ind.equals(unitOItem.getIndex()))){
+                        System.out.println("repeated");
+
+                    } else {
+                        if (!myPrior.equals(partArray.getJSONObject(checkPrev).getInteger("wn0prior"))) {
+                            if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
+                                unitAction.getPrtPrev().add(idAndIndex);
+                            }
                         }
                     }
                 }
                 checkPrev--;
             } while (keepGoing);
-
         } catch (Exception e)
         {
             System.out.println(e);
             e.printStackTrace();
         }
 
-                unitAction.setSumPrev(unitAction.getPrtPrev().size());
+        unitAction.setSumPrev(unitAction.getPrtPrev().size());
 //                keepGoing = true;
 //
 //                do {

@@ -8,12 +8,15 @@ import java.io.IOException;
 
 public interface UsageService {
    ApiResponse setFav(String id_U, String id_C, JSONObject content);
+   ApiResponse setFavInfo(String id_U, String id_C, String id, String listType, String grp, String pic, JSONObject wrdN);
 
     ApiResponse getFav(String id_U);
 
     ApiResponse delFav(String id_U, String id_O, Integer index, String id, String id_FS);
 
-    //    ApiResponse appointTask(JSONArray arrayId_U, String id_C, String id_O, Integer index, String id, String id_FS) throws IOException;
+    ApiResponse delFavInfo(String id_U, String id);
+
+        //    ApiResponse appointTask(JSONArray arrayId_U, String id_C, String id_O, Integer index, String id, String id_FS) throws IOException;
     ApiResponse appointTask(JSONArray arrayId_U, String id_UManager, String id_C, JSONObject content) throws IOException;
 
 

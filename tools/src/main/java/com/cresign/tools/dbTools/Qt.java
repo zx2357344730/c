@@ -1021,10 +1021,8 @@ import java.util.concurrent.TimeUnit;
         }
 
         public void checkCapacity(String id_C, Long fileSize) {
-//            String id_A = getId_A(id_C, "a-core");
-//            Asset asset = getMDContent(id_A, "powerup.capacity", Asset.class);
-            Asset asset = getConfig(id_C, "a-core", Arrays.asList("powerup.capacity", "view"));
 
+            Asset asset = getConfig(id_C, "a-core", Arrays.asList("powerup.capacity", "view"));
             if (asset.getPowerup() == null)
             {
                 JSONObject power =  this.getInitData().getNewComp().getJSONObject("a-core").getJSONObject("powerup");

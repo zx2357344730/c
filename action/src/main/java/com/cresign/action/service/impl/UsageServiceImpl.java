@@ -63,18 +63,23 @@ public class UsageServiceImpl implements UsageService {
     }
 
     @Override
+    public ApiResponse setFavInfo(String id_U, String id_C, String id, String listType, String grp, String pic, JSONObject wrdN) {
+        JSONObject content = qt.setJson("id", id, "id_C", id_C, "listType", listType,
+                "grp", grp, "pic", pic, "wrdN", wrdN);
+        qt.pushMDContent(id_U, "fav.objInfo", content, User.class);
+        return retResult.ok(CodeEnum.OK.getCode(), null);
+    }
+
+    @Override
     public ApiResponse getFav(String id_U) {
         User user = qt.getMDContent(id_U, "fav", User.class);
         if (user.getFav() == null)
         {
-            JSONObject initFav = new JSONObject();
-            initFav.put("objFav", new JSONArray());
+            JSONObject initFav = qt.setJson("objFav", new JSONArray(), "objInfo", new JSONArray());
             qt.setMDContent(id_U, qt.setJson("fav", initFav), User.class);
             user.setFav(initFav);
         }
-        JSONArray arrayFav = user.getFav().getJSONArray("objFav");
-        System.out.println(arrayFav);
-        return retResult.ok(CodeEnum.OK.getCode(), arrayFav);
+        return retResult.ok(CodeEnum.OK.getCode(), user.getFav());
     }
 
     @Override
@@ -82,6 +87,13 @@ public class UsageServiceImpl implements UsageService {
         JSONObject jsonFav = qt.setJson("id_O", id_O, "index", index, "id", id, "id_FS", id_FS);
         qt.pullMDContent(id_U, "fav.objFav", jsonFav, User.class);
         qt.pullMDContent(id_O, "action.objAction." + index + ".arrUA", id_U, Order.class);
+        return retResult.ok(CodeEnum.OK.getCode(), "");
+    }
+
+    @Override
+    public ApiResponse delFavInfo(String id_U, String id) {
+        JSONObject jsonFav = qt.setJson("id", id);
+        qt.pullMDContent(id_U, "fav.objInfo", jsonFav, User.class);
         return retResult.ok(CodeEnum.OK.getCode(), "");
     }
 
