@@ -195,6 +195,9 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
 
 //            }
 
+            System.out.println("refreshTokenResult: "+refreshTokenResult);
+            System.out.println("id_U: "+id_U);
+            System.out.println("clientType: "+clientType);
             // 判断 refreshToken 是否为空
             if (StringUtils.isNotEmpty(refreshTokenResult)) {
 
@@ -218,6 +221,7 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
                             clientType);
                     System.out.println("tok:");
                     System.out.println(token);
+                    qt.setRDSet(clientType + "RefreshToken", token, id_U, 1800L);
 
                     return token;
 

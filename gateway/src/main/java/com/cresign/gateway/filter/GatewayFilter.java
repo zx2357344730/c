@@ -84,6 +84,7 @@ public class GatewayFilter implements GlobalFilter, Ordered {
                 || url.equals("/chat/log/v1/getIp")
                 || url.equals("/chat/log/v1/refreshToken")
 
+//                || url.equals("/login/redirect/v1/scanLogCode")
 //                || url.equals("/file/picture/v1/picUpload")
         ){
             return chain.filter(exchange);

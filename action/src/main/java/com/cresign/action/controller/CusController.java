@@ -35,18 +35,42 @@ public class CusController {
     @Autowired
     private GetUserIdByToken getUserToken;
 
+    /**
+     * 顾客发送日志api
+     * @param reqJson	请求参数
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/4/24
+     * @ver 版本号: 1.0.0
+     */
     @SecurityParameter
     @PostMapping("/v1/sendUserCusCustomer")
     public ApiResponse sendUserCusCustomer(@RequestBody JSONObject reqJson){
         return cusService.sendUserCusCustomer(JSONObject.parseObject(JSON.toJSONString(reqJson), LogFlow.class));
     }
 
+    /**
+     * 客服发送日志api
+     * @param reqJson	请求参数
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/4/24
+     * @ver 版本号: 1.0.0
+     */
     @SecurityParameter
     @PostMapping("/v1/sendUserCusService")
     public ApiResponse sendUserCusService(@RequestBody JSONObject reqJson){
         return cusService.sendUserCusService(JSONObject.parseObject(JSON.toJSONString(reqJson), LogFlow.class));
     }
 
+    /**
+     * 客服操作api
+     * @param reqJson 请求参数
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/4/24
+     * @ver 版本号: 1.0.0
+     */
     @SecurityParameter
     @PostMapping("/v1/cusOperate")
     public ApiResponse cusOperate(@RequestBody JSONObject reqJson){
@@ -56,4 +80,51 @@ public class CusController {
                 ,reqJson.getInteger("bcdStatus"));
     }
 
+    /**
+     * 根据id_C获取公司的聊天群信息
+     * @param reqJson	请求参数
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    @SecurityParameter
+    @PostMapping("/v1/getLogList")
+    public ApiResponse getLogList(@RequestBody JSONObject reqJson){
+        return cusService.getLogList(reqJson.getString("id_C"));
+    }
+
+    /**
+     * 更新修改群关联信息
+     * @param reqJson 请求参数
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    @SecurityParameter
+    @PostMapping("/v1/updateLogListGl")
+    public ApiResponse updateLogListGl(@RequestBody JSONObject reqJson){
+        System.out.println("进入方法:");
+        System.out.println(JSON.toJSONString(reqJson));
+        return cusService.updateLogListGl(reqJson.getString("id_C")
+                , reqJson.getString("logId"), reqJson.getJSONArray("glId") );
+    }
+
+    /**
+     * 获取公司的日志权限信息
+     * @param reqJson 请求参数
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    @SecurityParameter
+    @PostMapping("/v1/getLogAuth")
+    public ApiResponse getLogAuth(@RequestBody JSONObject reqJson){
+        System.out.println("进入方法:");
+        System.out.println(JSON.toJSONString(reqJson));
+        return cusService.getLogAuth(reqJson.getString("id_C")
+                , reqJson.getString("grpUW"), reqJson.getString("grpUN"),reqJson.getString("type"));
+    }
 }

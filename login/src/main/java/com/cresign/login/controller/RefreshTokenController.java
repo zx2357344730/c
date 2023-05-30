@@ -62,9 +62,7 @@ public class RefreshTokenController {
     @GetMapping("/v1/refreshToken2")
     public String refreshToken2(@RequestParam("id_U") String id_U, @RequestParam("id_C") String id_C
             ,@RequestParam("ton") String ton,@RequestParam("web") String web) {
-
-
-
+        System.out.println("进入-refreshToken2-方法:");
         return refreshTokenService.refreshToken2(ton, id_C, web,id_U);
 
     }

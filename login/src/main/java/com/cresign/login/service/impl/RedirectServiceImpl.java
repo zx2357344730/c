@@ -1,5 +1,6 @@
 package com.cresign.login.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.enumeration.SearchEnum;
@@ -9,14 +10,12 @@ import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
+import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.lBUser;
-import com.cresign.tools.pojo.po.Comp;
-import com.cresign.tools.pojo.po.Order;
-import com.cresign.tools.pojo.po.Prod;
-import com.cresign.tools.pojo.po.User;
+import com.cresign.tools.pojo.po.*;
 import com.cresign.tools.uuid.UUID19;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +46,7 @@ public class RedirectServiceImpl implements RedirectService {
     public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T = "https://www.cresign.cn/qrCodeTest?qrType=shareprod&t=";
     public static final String SCANCODE_JOINCOMP = "scancode_joincomp";
     public static final String HTTP_JOINCOMP = "https://www.cresign.cn/qrCodeTest?qrType=joinComp&t=";
+    public static final String HTTP_LOG = "https://www.cresign.cn/qrCodeTest?qrType=log&t=";
 
 
     @Autowired
@@ -66,6 +66,74 @@ public class RedirectServiceImpl implements RedirectService {
 
     @Autowired
     private Qt qt;
+
+    @Autowired
+    private Ws ws;
+
+    /**
+     * 获取发送日志二维码方法
+     * @param id_C	公司编号
+     * @param id_U	用户编号
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    @Override
+    public ApiResponse generateLogCode(String id_C, String id_U) {
+        // 获取token
+        String token = UUID19.uuid();
+        System.out.println("进入获取二维码:");
+        // 添加基础信息到redis
+        qt.putRDHashMany("scancode_log", token, qt.setJson("id_C", id_C, "tmk"
+                ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()),
+                "tdur", "300","id_U",id_U), 300L);
+        // 拼接二维码路径
+        String url = HTTP_LOG + token;
+        System.out.println(token);
+        // 返回结果
+        return retResult.ok(CodeEnum.OK.getCode(), url);
+    }
+
+    /**
+     * 扫码（扫描）发送日志二维码后请求的方法
+     * @param token	token
+     * @param longitude	经度
+     * @param latitude	纬度
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    @Override
+    public ApiResponse scanLogCode(String token,String longitude,String latitude){
+        // 判断token为空
+        if (!qt.hasRDKey("scancode_log", token)) {
+            throw new ErrorResponseException(HttpStatus.OK, "4111","操作失败");
+        }
+        // 获取到整个hash
+        Map<Object, Object> entries = qt.getRDHashAll("scancode_log", token);
+        System.out.println("scanJoinLogCode输出:"+longitude+" , "+latitude);
+        System.out.println(JSON.toJSONString(entries));
+        // 生成日志信息
+        LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "addressNew"
+                ,entries.get("id_U").toString(),"","", "", "",
+                "","",0,entries.get("id_C").toString(),""
+                ,"https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg"
+                ,"", "经纬度地址信息", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
+        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        JSONArray id_Us = new JSONArray();
+        id_Us.add(entries.get("id_U").toString());
+        JSONObject data = log.getData();
+        data.put("type", "addressNew");
+        data.put("longitude",longitude);
+        data.put("latitude",latitude);
+        log.setData(data);
+        log.setId_Us(id_Us);
+        // 发送日志
+        ws.sendWSOnly(log);
+        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+    }
 
     @Override
     @Transactional

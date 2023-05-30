@@ -114,7 +114,7 @@ public class MenuController {
     @PostMapping("/v1/ud_grpU_mainMenu")
     public ApiResponse updateMenuData(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-
+        System.out.println("进入修改GrpU——mainMenu菜单:");
         return menuService.updateMenuData(
                 tokData.getString("id_U"),
                 tokData.getString("id_C"),

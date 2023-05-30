@@ -6,10 +6,7 @@ import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.token.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -32,6 +29,41 @@ public class RedirectController {
 
     @Autowired
     private RedirectService redirectService;
+
+    /**
+     * 获取发送日志二维码方法
+     * @param reqJson 请求数据
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    @SecurityParameter
+    @PostMapping("/v1/createLogCode")
+    public ApiResponse generateLogCode(@RequestBody JSONObject reqJson) {
+        return redirectService.generateLogCode(
+                reqJson.getString("id_C"),
+                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+        );
+    }
+
+    /**
+     * 扫码（扫描）发送日志二维码后请求的方法
+     * @param reqJson 请求数据
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    @SecurityParameter
+    @PostMapping("/v1/scanLogCode")
+    public ApiResponse scanLogCode(@RequestBody JSONObject reqJson) {
+        System.out.println("进入扫码后的方法:");
+        return redirectService.scanLogCode(
+                reqJson.getString("token"),
+                reqJson.getString("longitude"), reqJson.getString("latitude")
+        );
+    }
 
     @SecurityParameter
     @PostMapping("/v1/generateProdCode")

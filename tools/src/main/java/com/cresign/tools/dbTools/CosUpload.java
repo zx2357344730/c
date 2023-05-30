@@ -1,5 +1,6 @@
 package com.cresign.tools.dbTools;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.md5.MD5Util;
 import com.qcloud.cos.COSClient;
@@ -31,6 +32,7 @@ public class CosUpload {
     private static final String bucketName = "cresign-1253919880";
 
     private static final String bucketName2 = "cfiles-1253919880";
+    private static final String bucketName3 = "cfiles-1253919880/testTang";
 
 
     //    @Value("${cosBrowser.appId}")
@@ -287,22 +289,22 @@ public class CosUpload {
             fileName = path + name + substring;
 
             // 放入文件
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName2, fileName , localFile);
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName3, fileName , localFile);
 
             // 上传腾讯云cos服务器
-            cosclient.putObject(putObjectRequest);
-
+            PutObjectResult putObjectResult =cosclient.putObject(putObjectRequest);
+            System.out.println(JSON.toJSONString(putObjectResult));
             if (nameIS == 1) {
                 // 获取到图片的httpUrl
                 if (null != expiration) {
 
-                    url = cosclient.generatePresignedUrl(bucketName2, fileName, expiration);
+                    url = cosclient.generatePresignedUrl(bucketName3, fileName, expiration);
 
                 } else {
 
                     Date expirationTime = new Date(System.currentTimeMillis() + 1000*24*365*100 );
 
-                    url = cosclient.generatePresignedUrl(bucketName2, fileName, expirationTime);
+                    url = cosclient.generatePresignedUrl(bucketName3, fileName, expirationTime);
 
                 }
             } else {

@@ -3,6 +3,7 @@ package com.cresign.login.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.MenuService;
 import com.cresign.tools.advice.RetResult;
@@ -158,7 +159,7 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
+//    @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
     public ApiResponse updateMenuData(String id_U, String id_C, String grpU, List<MainMenuBO> mainMenusData) {
 
         authCheck.getUserUpdateAuth(id_U, id_C, "lSAsset", "1003", "card", new JSONArray().fluentAdd("menu"));
@@ -195,13 +196,59 @@ public class MenuServiceImpl implements MenuService {
             }
         }
 
-        Asset asset = qt.getConfig(id_C, "a-auth","menu");
+        JSONArray es = qt.getES("lBUser", qt.setESFilt("id_CB", id_C, "grpU", grpU));
+        System.out.println("es:");
+        System.out.println(JSON.toJSONString(es));
+        JSONArray id_Us = new JSONArray();
+        for (int i = 0; i < es.size(); i++) {
+            JSONObject esSon = es.getJSONObject(i);
+            id_Us.add(esSon.getString("id_U"));
+        }
+
+        Asset asset = qt.getConfig(id_C, "a-auth",qt.strList("menu","flowControl.objData"));
 
         qt.setMDContent(asset.getId(),qt.setJson("menu.mainMenus." + grpU, mainMenusData), Asset.class);
 
         qt.delRD("details:get_menus", "compId-" + id_C);
 
-        ws.sendWS_grpU(id_C, id_U,"ud_grpU_mainMenu");
+//        System.out.println("mainMenusData:");
+//        System.out.println(JSON.toJSONString(mainMenusData));
+        // 定义data
+        JSONObject data = new JSONObject();
+//        // 当前职位的主菜单数组
+//        JSONArray grpUMainMenus = asset.getMenu().getJSONObject("mainMenus").getJSONArray(grpU);
+        // 子菜单数组
+        JSONArray subMenus = asset.getMenu().getJSONArray("subMenus");
+        // 存储修改的返回信息
+        JSONArray result = new JSONArray();
+        // 遍历当前修改的菜单
+        for (MainMenuBO mainMenusDatum : mainMenusData) {
+            JSONObject mainMenuJson = qt.cloneObj(qt.toJson(mainMenusDatum));
+//            String s = JSON.toJSONString(mainMenusDatum, SerializerFeature.DisableCircularReferenceDetect);
+//            JSONObject mainMenuJson = JSONObject.parseObject(s);
+            // 该主菜单下的子菜单
+            JSONArray mainSubMenus = mainMenuJson.getJSONArray("subMenus");
+            // 用来包含子菜单数组
+            JSONArray subMenusArray = new JSONArray();
+            for (int j = 0; j < mainSubMenus.size(); j++) {
+                String subMenuRef = mainSubMenus.getString(j);
+                for (int z = 0; z < subMenus.size(); z++) {
+                    JSONObject subMenuJson = subMenus.getJSONObject(z);
+                    // 判断ref一样，并添加对应的ref信息
+                    if (subMenuRef.equals(subMenuJson.getString("ref"))) {
+                        subMenusArray.add(subMenuJson);
+                    }
+                }
+            }
+            mainMenuJson.put("subMenus", subMenusArray);
+            result.add(mainMenuJson);
+        }
+        data.put("mainMenusData",JSON.toJSONString(result, SerializerFeature.DisableCircularReferenceDetect));
+        data.put("type", "ud_grpU_mainMenu");
+        System.out.println("result:");
+        System.out.println(JSON.toJSONString(result, SerializerFeature.DisableCircularReferenceDetect));
+        // 发送日志
+        ws.sendWS_SetAuth(id_C, id_U,data,id_Us,new JSONArray());
 
         return retResult.ok(CodeEnum.OK.getCode(), null);
 

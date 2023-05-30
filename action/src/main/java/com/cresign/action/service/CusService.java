@@ -1,5 +1,6 @@
 package com.cresign.action.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.pojo.po.LogFlow;
 
@@ -73,4 +74,38 @@ public interface CusService {
 
     ApiResponse restoreCusLog(String id_O,String id_CCus);
 
+    /**
+     * 根据id_C获取公司的聊天群信息
+     * @param id_C	公司编号
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    ApiResponse getLogList(String id_C);
+
+    /**
+     * 更新修改群关联信息
+     * @param id_C	公司编号
+     * @param logId	群编号
+     * @param glId	关联信息
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    ApiResponse updateLogListGl(String id_C, String logId, JSONArray glId);
+
+    /**
+     * 获取公司的日志权限信息
+     * @param id_C	公司编号
+     * @param grpUW	外层组别
+     * @param grpUN	内层组别
+     * @param type	获取类型
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    ApiResponse getLogAuth(String id_C,String grpUW,String grpUN,String type);
 }

@@ -63,7 +63,6 @@ public class Ws {
      * 发送MQ信息给 WS 来群发
      * 发给MQ ES 来 add ES to flow
      * 发Push to cidArray (get from flowControl)
-     * @return 返回结果:
      * @author tang
      * @date 创建时间: 2023/4/15
      * @ver 版本号: 1.0.0
@@ -97,10 +96,12 @@ public class Ws {
             if (id_CS != null && !id_C.equals(id_CS)) {
                 prepareMqUserInfo(id_CS, logContent, id_Us, cidArray);
             }
+            logContent.setId_Us(id_Us);
         }
 
         qt.errPrint("what is going", null, logContent, id_Us, cidArray);
-
+        System.out.println("sendWS:");
+        System.out.println(JSON.toJSONString(logContent));
         this.sendWSOnly(logContent);
 
         if (cidArray.size() > 0) {
@@ -123,7 +124,73 @@ public class Ws {
 
     }
 
+    /**
+     * 发送MQ信息给 WS 来群发
+     * 发给MQ ES 来 add ES to flow
+     * 发Push to cidArray (get from flowControl)
+     * @author tang
+     * @date 创建时间: 2023/4/15
+     * @ver 版本号: 1.0.0
+     */
+    public void sendWSNew(LogFlow logContent){
 
+        // the log's id_Us may have users
+        // if so, getES and get id_APP to push
+        // else set id_Us + cidArray as usual
+//        JSONArray id_Us = new JSONArray();
+
+//        JSONArray cidArray = new JSONArray();
+//        // 获取公司编号
+//        String id_C = logContent.getId_C();
+//        // 获取供应商编号
+//        String id_CS = logContent.getId_CS();
+
+//        if (logContent.getId_Us() == null)
+//            logContent.setId_Us(new JSONArray());
+//
+//        // fill up id_Us and cidArray (user array info)
+//        // by FlowControl... and you can do things like, you
+//        // my comp first then CS comp
+//        // if id_Us is listed, i should not change that
+//        if (logContent.getId_Us().size() > 0)
+//        {
+//            cidArray = logContent.getId_APPs();
+//        } else {
+//            // get from flowControl
+//            prepareMqUserInfo(id_C, logContent, id_Us, cidArray);
+//            if (id_CS != null && !id_C.equals(id_CS)) {
+//                prepareMqUserInfo(id_CS, logContent, id_Us, cidArray);
+//            }
+//            logContent.setId_Us(id_Us);
+//        }
+
+//        qt.errPrint("what is going", null, logContent, id_Us, cidArray);
+        System.out.println("sendWS:");
+        System.out.println(JSON.toJSONString(logContent));
+//        this.sendWSOnly(logContent);
+        rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(logContent));
+        System.out.println("发送WS完成");
+
+//        if (logContent.getId_APPs().size() > 0) {
+//            String wrdNUC = "小银【系统】";
+//            JSONObject wrdNU = logContent.getWrdNU();
+//            if (null != wrdNU && null != wrdNU.getString("cn")) {
+//                wrdNUC = wrdNU.getString("cn");
+//            }
+//            // 调用推送集合消息方法
+//            this.sendPushBatch(logContent.getId_APPs(), wrdNUC, logContent.getZcndesc());
+//        }
+
+        // remove id_Us and id_APPs
+        logContent.setId_Us(null);
+        logContent.setId_APPs(null);
+
+        System.out.println("发送ES"+logContent);
+
+//        this.sendESOnly(logContent);
+        rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(logContent));
+        System.out.println("发送ES完成");
+    }
 
     private void prepareMqUserInfo(String id_C, LogFlow logContent, JSONArray id_Us, JSONArray cidArray)
     {
@@ -224,6 +291,36 @@ public class Ws {
             log.setId_APPs(id_APPs);
             sendWS(log);
         }
+
+    public void sendWS_SetAuth(String id_C,String id_U,JSONObject data,JSONArray id_Us,JSONArray id_APPs){
+
+        LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "setAuth",id_U,"1001","", "1000", "1000",
+                "","",0,id_C,"","https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg","", "更新菜单", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
+        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//        JSONArray id_Us = new JSONArray();
+//        JSONArray id_APPs = new JSONArray();
+//        this.prepareMqUserInfo(id_C, log, id_Us, id_APPs );
+        log.setId_Us(id_Us);
+        log.setId_APPs(id_APPs);
+        log.setData(data);
+        try {
+            rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(log));
+            System.out.println("发送WS完成");
+
+            System.out.println("sendWS:");
+            System.out.println(JSON.toJSONString(log));
+
+            log.setId_Us(null);
+            log.setId_APPs(null);
+            System.out.println("发送ES"+log);
+            rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
+            System.out.println("发送ES完成");
+        } catch (Exception e){
+            System.out.println("出现错误:"+e.getMessage());
+            e.printStackTrace();
+        }
+        sendWSNew(log);
+    }
 
     public void sendPushBatch(JSONArray cidArray,String title,String body){
         String s;

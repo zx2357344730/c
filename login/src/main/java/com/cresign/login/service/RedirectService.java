@@ -14,6 +14,29 @@ import java.io.IOException;
 public interface RedirectService {
 
     /**
+     * 获取发送日志二维码方法
+     * @param id_C	公司编号
+     * @param id_U	用户编号
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    ApiResponse generateLogCode(String id_C, String id_U);
+
+    /**
+     * 扫码（扫描）发送日志二维码后请求的方法
+     * @param token	token
+     * @param longitude	经度
+     * @param latitude	纬度
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    ApiResponse scanLogCode(String token,String longitude,String latitude);
+
+    /**
      * 生成产品二维码
      * @author JackSon
      * @param id_C

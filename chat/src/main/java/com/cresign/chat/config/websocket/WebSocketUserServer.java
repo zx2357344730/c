@@ -470,7 +470,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 stringMap.put("en",false);
 
                 this.sendMessage(stringMap,null,false);
-            } else if ("4".equals(id)) {
+            }
+            else if ("4".equals(id)) {
                 System.out.println(JSON.toJSONString(WebSocketUserServer.clients));
             } else {
 
@@ -479,21 +480,26 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                         .getString("privateKeyJava"));
                 if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())) {
                     System.out.println("在本服务:");
+                    System.out.println(JSON.toJSONString(logData));
                     if ("refreshToken".equals(logData.getLogType())) {
                         JSONObject data = logData.getData();
+                        System.out.println("请求api:");
                         String apiResponse = loginClient.refreshToken2(logData.getId_U()
                                 , logData.getId_C(),data.getString("refreshTokenJiu"),data.getString("clientType"));
                         System.out.println("输出请求refreshToken:");
                         System.out.println(apiResponse);
                         data.put("refreshToken",apiResponse);
                         logData.setData(data);
+                        JSONArray array = new JSONArray();
+                        array.add(logData.getId_U());
+                        logData.setId_Us(array);
                     }
                     logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
                     ws.sendWS(logData);
                 } else {
                     System.out.println("不在本服务:");
-                    ws.sendWSOnly(logData);
                 }
+                ws.sendWSOnly(logData);
             }
         }
     }
@@ -508,6 +514,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     @Override
     public void onMessage(String msg)
     {
+        System.out.println("MQ收到消息:");
+        System.out.println(msg);
         JSONObject json = JSONObject.parseObject(msg);
 
         LogFlow logContent = qt.jsonTo(json, LogFlow.class);
@@ -519,14 +527,24 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         JSONObject stringMap = aes(logContent,key);
         stringMap.put("en",true);
 
-        JSONArray id_Us = json.getJSONArray("id_Us");
-        for (int i = 0; i < id_Us.size(); i++)
-        {
-            System.out.println("idU"+id_Us.getString(i));
-            if (WebSocketUserServer.webSocketSet.containsKey(id_Us.getString(i))) {
-                WebSocketUserServer.webSocketSet.get(id_Us.getString(i)).values()
-                        .forEach(w -> w.sendMessage(stringMap
-                                ,key,true));
+        if (logContent.getId_Us().size() == 0) {
+//            System.out.println("单消息:");
+//            if (WebSocketUserServer.webSocketSet.containsKey(logContent.getId_U())) {
+//                WebSocketUserServer.webSocketSet.get(logContent.getId_U()).values()
+//                        .forEach(w -> w.sendMessage(stringMap
+//                                ,key,true));
+//            }
+        } else {
+            System.out.println("群消息:");
+            JSONArray id_Us = json.getJSONArray("id_Us");
+            for (int i = 0; i < id_Us.size(); i++)
+            {
+                System.out.println("idU"+id_Us.getString(i));
+                if (WebSocketUserServer.webSocketSet.containsKey(id_Us.getString(i))) {
+                    WebSocketUserServer.webSocketSet.get(id_Us.getString(i)).values()
+                            .forEach(w -> w.sendMessage(stringMap
+                                    ,key,true));
+                }
             }
         }
 

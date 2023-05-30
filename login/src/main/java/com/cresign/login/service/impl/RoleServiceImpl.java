@@ -1,5 +1,6 @@
 package com.cresign.login.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.enumeration.LoginEnum;
@@ -425,10 +426,13 @@ public class RoleServiceImpl implements RoleService {
         //1. check control has that mod?
         //2. get a list of all CardBatchLog we have now
         InitJava initJson = qt.getInitData();
+        System.out.println("获取初始化数据:");
+        System.out.println(JSON.toJSONString(initJson));
 
         JSONObject resultModObj = qt.getConfig(id_C, "a-core", "control").getControl().getJSONObject("objMod");
 
         JSONObject myModObject = qt.cloneObj(resultModObj);
+        System.out.println(JSON.toJSONString(myModObject));
 
         JSONObject cardInit = initJson.getCardInit();
         JSONObject batchInit = initJson.getBatchInit();
@@ -490,7 +494,8 @@ public class RoleServiceImpl implements RoleService {
                         for (String modKey : myModObject.keySet()) {
                             String modArrayRef = myModObject.getJSONObject(modKey).getString("mod");
                             Integer modArrayLevel = myModObject.getJSONObject(modKey).getInteger("bcdLevel");
-
+//                            System.out.println(logJson.getString("ref")+" , modArrayRef:"+modArrayRef+" , modRef:"+logJson.getString("modRef"));
+//                            System.out.println(logJson.getString("ref")+" , modArrayLevel:"+modArrayLevel+" , bcdLevel:"+logJson.getInteger("bcdLevel"));
                             if (modArrayRef.equals(logJson.getString("modRef")) && modArrayLevel >= (logJson.getInteger("bcdLevel"))) {
                                 resultLogObj.put(logJson.getString("ref"), 0);
                             }

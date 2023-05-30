@@ -1456,6 +1456,20 @@ public class ActionServiceImpl implements ActionService {
             logType = StringUtils.strip(logType, "SL");
             id_FS = id_FC;
             id_FC = "";
+            if ("cusmsgSL".equals(logType)) {
+                Asset asset = qt.getConfig(myCompId, "a-auth",qt.strList("flowControl.objData"));
+                JSONObject flowControl = asset.getFlowControl();
+                JSONArray objData = flowControl.getJSONArray("objData");
+                String id_FCNew = "";
+                for (int i = 0; i < objData.size(); i++) {
+                    JSONObject objDataSon = objData.getJSONObject(i);
+                    if (id_FS.equals(objDataSon.getString("id"))) {
+                        id_FCNew = objDataSon.getJSONArray("glId").getString(0);
+                        break;
+                    }
+                }
+                id_FC = id_FCNew;
+            }
         }
 
         // Make sure index = 0 works by init the oItem[]
