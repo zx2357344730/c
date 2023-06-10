@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @ClassName RpiServiceImpl
@@ -127,6 +128,7 @@ public class RpiServiceImpl implements RpiService {
                 rnameRedisData.put("id_C","");
                 rnameRedisData.put("piSon",new JSONObject());
                 redisTemplate0.opsForValue().set(PI + rname, JSON.toJSONString(rnameRedisData));
+                redisTemplate0.expire(PI + rname, 300L, TimeUnit.SECONDS);
                 return retResult.ok(CodeEnum.OK.getCode(), "删除公司绑定成功");
             } else {
                 // 否则输出异常信息
@@ -244,10 +246,12 @@ public class RpiServiceImpl implements RpiService {
                 rnameData.put(gp,token);
                 // 设置树莓派gpio信息
                 redisTemplate0.opsForValue().set(PI_GPIO + token,JSON.toJSONString(redisJ));
+                redisTemplate0.expire(PI_GPIO + token, 300L, TimeUnit.SECONDS);
             });
             piData.put("piSon",piDataSon);
             // 设置树莓派信息
             redisTemplate0.opsForValue().set(PI + rname,JSON.toJSONString(piData));
+            redisTemplate0.expire(PI + rname, 300L, TimeUnit.SECONDS);
             rnames.put(rname,rnameData);
 //            rpi.put("rnames",rnames);
 //            // 定义存储flowControl字典
@@ -388,6 +392,7 @@ public class RpiServiceImpl implements RpiService {
             System.out.println(JSON.toJSONString(logFlow));
             // 更新redis
             redisTemplate0.opsForValue().set(PI_GPIO + token,JSON.toJSONString(gpioData));
+            redisTemplate0.expire(PI_GPIO + token, 300L, TimeUnit.SECONDS);
             return retResult.ok(CodeEnum.OK.getCode(), "绑定gpIo成功");
         } else {
             return errResultPi(status);
@@ -438,6 +443,7 @@ public class RpiServiceImpl implements RpiService {
             System.out.println(JSON.toJSONString(logFlow));
             // 更新redis
             redisTemplate0.opsForValue().set(PI_GPIO + token,JSON.toJSONString(gpioData));
+            redisTemplate0.expire(PI_GPIO + token, 300L, TimeUnit.SECONDS);
             return retResult.ok(CodeEnum.OK.getCode(), "解除绑定gpIo成功");
         } else {
             return errResultPi(status);

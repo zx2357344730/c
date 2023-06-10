@@ -53,6 +53,12 @@ public class Ws {
 
         }
 
+    public void sendWSOnlyByObj(JSONObject obj){
+        rocketMQTemplate.convertAndSend("testTopic:testTap", JSON.toJSONString(obj));
+        System.out.println("发送WS完成");
+
+    }
+
         public void sendESOnly(LogFlow log){
             rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
             System.out.println("发送ES完成");
@@ -319,7 +325,67 @@ public class Ws {
             System.out.println("出现错误:"+e.getMessage());
             e.printStackTrace();
         }
-        sendWSNew(log);
+//        sendWSNew(log);
+    }
+
+    public void sendWS_Warehouse(String id_C,String id_U,JSONObject data,JSONArray id_Us){
+
+        LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "allUser",id_U,"1001","", "1000", "1000",
+                "","",0,id_C,"","https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg","", "仓库信息更新", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
+        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        log.setId_Us(id_Us);
+//        log.setId_APPs(id_APPs);
+        log.setData(data);
+        try {
+            rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(log));
+            System.out.println("发送WS完成");
+
+            System.out.println("sendWS:");
+            System.out.println(JSON.toJSONString(log));
+
+            log.setId_Us(null);
+            log.setId_APPs(null);
+            System.out.println("发送ES"+log);
+            rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
+            System.out.println("发送ES完成");
+        } catch (Exception e){
+            System.out.println("出现错误:"+e.getMessage());
+            e.printStackTrace();
+        }
+//        sendWSNew(log);
+    }
+
+    public void sendWS_SetSwComp(String id_C,String id_U,JSONObject data,JSONArray id_Us,JSONArray id_APPs){
+
+        LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "setSwComp"
+                ,id_U,"1001","", "1000", "1000",
+                "","",0,id_C,""
+                ,"https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg"
+                ,"", "更新菜单", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
+        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//        JSONArray id_Us = new JSONArray();
+//        JSONArray id_APPs = new JSONArray();
+//        this.prepareMqUserInfo(id_C, log, id_Us, id_APPs );
+        log.setId_Us(id_Us);
+        log.setId_APPs(id_APPs);
+        log.setData(data);
+        try {
+            rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(log));
+            System.out.println("发送WS完成");
+
+            System.out.println("sendWS:");
+            System.out.println(JSON.toJSONString(log));
+
+            log.setId_Us(null);
+            log.setId_APPs(null);
+            System.out.println("发送ES"+log);
+            rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
+            System.out.println("发送ES完成");
+        } catch (Exception e){
+            System.out.println("出现错误:"+e.getMessage());
+            e.printStackTrace();
+        }
+//        sendWSNew(log);
     }
 
     public void sendPushBatch(JSONArray cidArray,String title,String body){

@@ -3,6 +3,7 @@ package com.cresign.gateway.filter;
 
 //import com.cresign.gateway.config.GatewayAuthConfig;
 
+import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -52,7 +53,9 @@ public class GatewayFilter implements GlobalFilter, Ordered {
 //        if(Arrays.asList(gatewayAuthConfig.getSkipUrls()).contains(url)){
 //            return chain.filter(exchange);
 //        }
-        if(url.startsWith("/chat/wsU/")
+        System.out.println("进入gateway:"+url);
+//        System.out.println(JSON.toJSONString(exchange));
+        if(url.startsWith("/chat/wsU/") || url.startsWith("/chat2/wsU/")
                 || url.equals("/login/init/v1/getInit")
                 || url.equals("/login/refreshToken/v1/refreshToken")
                 || url.equals("/login/refreshToken/v1/refreshToken2")
@@ -82,7 +85,6 @@ public class GatewayFilter implements GlobalFilter, Ordered {
                 || url.equals("/action/test/v1/testFill")
 
                 || url.equals("/chat/log/v1/getIp")
-                || url.equals("/chat/log/v1/refreshToken")
 
 //                || url.equals("/login/redirect/v1/scanLogCode")
 //                || url.equals("/file/picture/v1/picUpload")

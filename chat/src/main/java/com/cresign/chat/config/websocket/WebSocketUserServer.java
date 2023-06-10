@@ -4,19 +4,15 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.client.LoginClient;
-import com.cresign.chat.config.mq.MqToEs;
 import com.cresign.chat.service.LogService;
 import com.cresign.chat.utils.AesUtil;
 import com.cresign.chat.utils.RsaUtil;
-import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.DateEnum;
-import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import io.netty.channel.ChannelHandler.Sharable;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.rocketmq.spring.annotation.MessageModel;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
@@ -30,8 +26,6 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -51,7 +45,7 @@ import java.util.UUID;
         messageModel = MessageModel.BROADCASTING,
         consumerGroup = "topicF-chat"
 )
-@Slf4j
+//@Slf4j
 public class WebSocketUserServer implements RocketMQListener<String> {
     @Override
     public boolean equals(Object obj){
@@ -150,7 +144,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     @OnOpen
     public void onOpen(Session session, @PathParam("uId") String uId,@PathParam("publicKey") String publicKey
             ,@PathParam("token") String token,@PathParam("client")String client) {
-        log.info(WebSocketUserServer.bz+"-ws打开:"+uId);
+//        log.info(WebSocketUserServer.bz+"-ws打开:"+uId);
         System.out.println(WebSocketUserServer.bz+"-ws打开:"+uId);
         this.userId = uId;
         // 获取当前用户session
@@ -489,6 +483,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                         System.out.println("输出请求refreshToken:");
                         System.out.println(apiResponse);
                         data.put("refreshToken",apiResponse);
+                        data.remove("refreshTokenJiu");
                         logData.setData(data);
                         JSONArray array = new JSONArray();
                         array.add(logData.getId_U());
@@ -539,7 +534,11 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             JSONArray id_Us = json.getJSONArray("id_Us");
             for (int i = 0; i < id_Us.size(); i++)
             {
-                System.out.println("idU"+id_Us.getString(i));
+                System.out.println("idU:"+id_Us.getString(i));
+//                System.out.println(JSON.toJSONString(WebSocketUserServer.webSocketSet));
+                if (id_Us.getString(i).equals("6256789ae1908c03460f906f")) {
+                    System.out.println(JSON.toJSONString(WebSocketUserServer.webSocketSet));
+                }
                 if (WebSocketUserServer.webSocketSet.containsKey(id_Us.getString(i))) {
                     WebSocketUserServer.webSocketSet.get(id_Us.getString(i)).values()
                             .forEach(w -> w.sendMessage(stringMap

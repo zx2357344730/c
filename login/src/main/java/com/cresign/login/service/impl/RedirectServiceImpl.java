@@ -478,6 +478,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
     @Override
     @Transactional
     public ApiResponse scanJoinCompCode(String token, String join_user) throws IOException {
+        System.out.println("进入扫码后的方法:");
 
 //        String keyName = SCANCODE_JOINCOMP + token;
 //        Boolean hasKey = redisTemplate0.hasKey(keyName);
@@ -677,6 +678,22 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
                     userJson.getInfo().getMbn(), "", userJson.getInfo().getId_WX(), userJson.getInfo().getPic());
 
             qt.addES("lbuser",qt.toJson(addLBUser));
+
+            JSONObject data = new JSONObject();
+            JSONObject switchCompList = new JSONObject();
+            switchCompList.put("compId",compOne.getInfo().getId_C());
+            switchCompList.put("pic",compOne.getInfo().getPic());
+            JSONObject wrdN = new JSONObject();
+            wrdN.put("cn",compOne.getInfo().getWrdN().getString("cn"));
+            switchCompList.put("wrdN",wrdN);
+            data.put("switchCompListSon",switchCompList);
+            JSONArray id_Us = new JSONArray();
+            id_Us.add(join_user);
+            System.out.println("sw-发送日志:");
+            System.out.println(join_user);
+            System.out.println(entries.get("id_C").toString());
+            System.out.println(JSON.toJSONString(data));
+            ws.sendWS_SetSwComp(entries.get("id_C").toString(),join_user,data,id_Us,new JSONArray());
 
 //            IndexRequest indexRequest = new IndexRequest("lbuser");
 //            indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);

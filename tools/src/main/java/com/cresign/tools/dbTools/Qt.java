@@ -18,7 +18,6 @@ import com.cresign.tools.pojo.po.*;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.lang.StringUtils;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.bson.types.ObjectId;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -69,11 +68,11 @@ import java.util.concurrent.TimeUnit;
 
         public static final String appId = "KVB0qQq0fRArupojoL4WM9";
 
-    /**
-         * 注入RocketMQ模板
-         */
-        @Autowired
-        private RocketMQTemplate rocketMQTemplate;
+//    /**
+//         * 注入RocketMQ模板
+//         */
+//        @Autowired
+//        private RocketMQTemplate rocketMQTemplate;
 
         //MDB - done: get, getMany, del, new, inc, set, push, pull
         //MDB - need: ops, opsExec

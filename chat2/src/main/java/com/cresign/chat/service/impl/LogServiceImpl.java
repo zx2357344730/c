@@ -11,7 +11,6 @@ import com.cresign.chat.utils.RsaUtil;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.Qt;
-import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.encrypt.HttpClientUtils;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -41,9 +40,6 @@ public class LogServiceImpl  implements LogService {
 
     @Autowired
     private DetailsClient detailsClient;
-
-    @Autowired
-    private Ws ws;
 
     public static final String appId = "KVB0qQq0fRArupojoL4WM9";
 
@@ -350,19 +346,4 @@ public class LogServiceImpl  implements LogService {
 //                , push, heads);
 //    }
 
-    @Override
-    public ApiResponse sendWarehouseLog(String id_C,String id_U,JSONObject data) {
-        JSONArray es = qt.getES("lBUser", qt.setESFilt("id_CB", id_C));
-        System.out.println("es:");
-        System.out.println(JSON.toJSONString(es));
-        JSONArray id_Us = new JSONArray();
-        for (int i = 0; i < es.size(); i++) {
-            JSONObject esSon = es.getJSONObject(i);
-            id_Us.add(esSon.getString("id_U"));
-        }
-        JSONObject logData = new JSONObject();
-        logData.put("loc",data);
-        ws.sendWS_Warehouse(id_C,id_U,logData,id_Us);
-        return retResult.ok(CodeEnum.OK.getCode(), "操作成功!");
-    }
 }

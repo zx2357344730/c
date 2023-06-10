@@ -2,10 +2,8 @@ package com.cresign.chat.config.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
 import io.netty.channel.ChannelHandler.Sharable;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,15 +33,15 @@ import java.util.Map;
 //        messageModel = MessageModel.BROADCASTING,
 //        consumerGroup = "topicF-chat-test"
 //)
-@Slf4j
+//@Slf4j
 public class WebSocketTest
 //        implements RocketMQListener<String>
 {
 
-    /**
-     * 注入redis工具类
-     */
-    private static Qt qt;
+//    /**
+//     * 注入redis工具类
+//     */
+//    private static Qt qt;
 
     private static Ws ws;
     private String name;
@@ -61,14 +59,16 @@ public class WebSocketTest
     private Session session;
     /**
      * 注入的时候，给类的 service 注入
-     * @param qt	DB工具类
+//     * @param qt	DB工具类
      * @author tang
      * @ver 1.0.0
      * @date 2022/6/22
      */
     @Autowired
-    public void setWebSocketUserServer(Qt qt,Ws ws) {
-        WebSocketTest.qt = qt;
+    public void setWebSocketUserServer(
+//            Qt qt,
+                                       Ws ws) {
+//        WebSocketTest.qt = qt;
         WebSocketTest.ws = ws;
     }
 

@@ -164,15 +164,4 @@ public class LogController {
 //        return logService.getIdCAndRpI();
 //    }
 
-    @SecurityParameter
-    @PostMapping("/v1/sendWarehouseLog")
-    public ApiResponse sendWarehouseLog(@RequestBody JSONObject reqJson){
-
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization")
-                , request.getHeader("clientType"),"core",1);
-
-        System.out.println("进入发送仓库全局日志");
-        return logService.sendWarehouseLog(reqJson.getString("id_C")
-                ,tokData.getString("id_U"),reqJson.getJSONObject("data"));
-    }
 }
