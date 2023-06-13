@@ -79,6 +79,12 @@ public class UsageServiceImpl implements UsageService {
             qt.setMDContent(id_U, qt.setJson("fav", initFav), User.class);
             user.setFav(initFav);
         }
+        if (user.getFav().getJSONArray("objInfo") == null)
+        {
+//            JSONObject initFav = qt.setJson("objFav", new JSONArray(), "objInfo", new JSONArray());
+//            qt.setMDContent(id_U, qt.setJson("fav", initFav), User.class);
+//            user.setFav(initFav);
+        }
         return retResult.ok(CodeEnum.OK.getCode(), user.getFav());
     }
 

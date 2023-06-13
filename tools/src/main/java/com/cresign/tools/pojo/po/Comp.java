@@ -43,6 +43,8 @@ public class Comp {
 
     private JSONObject summx;
 
+    private JSONObject tag;
+
     private Integer bcdNet ;
 
     private Integer tvs = 1;

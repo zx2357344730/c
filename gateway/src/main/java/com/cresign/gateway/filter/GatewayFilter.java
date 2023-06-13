@@ -3,7 +3,6 @@ package com.cresign.gateway.filter;
 
 //import com.cresign.gateway.config.GatewayAuthConfig;
 
-import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -53,12 +52,9 @@ public class GatewayFilter implements GlobalFilter, Ordered {
 //        if(Arrays.asList(gatewayAuthConfig.getSkipUrls()).contains(url)){
 //            return chain.filter(exchange);
 //        }
-        System.out.println("进入gateway:"+url);
-//        System.out.println(JSON.toJSONString(exchange));
         if(url.startsWith("/chat/wsU/") || url.startsWith("/chat2/wsU/")
                 || url.equals("/login/init/v1/getInit")
                 || url.equals("/login/refreshToken/v1/refreshToken")
-                || url.equals("/login/refreshToken/v1/refreshToken2")
                 || url.equals("/login/refreshToken/v1/login")
                 || url.equals("/login/wx/v1/getwxWebLogin")
                 || url.equals("/login/linked/v1/LinkedWebLogin")
@@ -77,16 +73,6 @@ public class GatewayFilter implements GlobalFilter, Ordered {
                 || url.equals("/login/facebook/v1/faceBookRegister")
                 || url.equals("/file/cos/v1/get_objurl_token")
                 || url.equals("/file/cos/v1/get_multi_token")
-
-                || url.equals("/action/cus/v1/sendUserCusCustomer")
-                || url.equals("/action/cus/v1/sendUserCusService")
-                || url.equals("/action/cus/v1/cusOperate")
-
-                || url.equals("/action/test/v1/testFill")
-
-                || url.equals("/chat/log/v1/getIp")
-
-//                || url.equals("/login/redirect/v1/scanLogCode")
 //                || url.equals("/file/picture/v1/picUpload")
         ){
             return chain.filter(exchange);

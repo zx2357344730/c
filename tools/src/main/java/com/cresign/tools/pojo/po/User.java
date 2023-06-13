@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -37,6 +38,9 @@ public class User {
     private JSONObject table00s;
 
     private JSONObject grid;
+
+    @JsonProperty("uDate")
+    private JSONObject uDate;
 
     private JSONObject picroll00s;
 

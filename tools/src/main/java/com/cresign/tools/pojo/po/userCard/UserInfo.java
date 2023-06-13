@@ -40,10 +40,13 @@ public class UserInfo {
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
+    // 小程序的 ID
     private String id_WX;
 
+    // 推送专用ID
     private String id_APP;
 
+    // App 端的微信登录 ID
     private String id_AUN;
 
     private JSONObject wrdN;

@@ -53,12 +53,6 @@ public class Ws {
 
         }
 
-    public void sendWSOnlyByObj(JSONObject obj){
-        rocketMQTemplate.convertAndSend("testTopic:testTap", JSON.toJSONString(obj));
-        System.out.println("发送WS完成");
-
-    }
-
         public void sendESOnly(LogFlow log){
             rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
             System.out.println("发送ES完成");
@@ -69,9 +63,12 @@ public class Ws {
      * 发送MQ信息给 WS 来群发
      * 发给MQ ES 来 add ES to flow
      * 发Push to cidArray (get from flowControl)
+     * @return 返回结果:
      * @author tang
      * @date 创建时间: 2023/4/15
      * @ver 版本号: 1.0.0
+     *  1. id / id_FS || 2. id_Us[], getES(lBUser), id_APP[]
+     *  logContrent.getJSONArray("id_Us") / id_APPs[]
      */
     public void sendWS(LogFlow logContent){
 
@@ -98,9 +95,9 @@ public class Ws {
             cidArray = logContent.getId_APPs();
         } else {
             // get from flowControl
-            prepareMqUserInfo(id_C, logContent, id_Us, cidArray);
+            setUserListByFlowId(id_C, logContent, id_Us, cidArray);
             if (id_CS != null && !id_C.equals(id_CS)) {
-                prepareMqUserInfo(id_CS, logContent, id_Us, cidArray);
+                setUserListByFlowId(id_CS, logContent, id_Us, cidArray);
             }
             logContent.setId_Us(id_Us);
         }
@@ -129,77 +126,23 @@ public class Ws {
         this.sendESOnly(logContent);
 
     }
+    public void setUserListByGrpU(LogFlow log, String id_C, String grpU)
+    {
+        JSONArray userList = qt.getES("lBUser", qt.setESFilt("id_CB", id_C, "grpU", grpU));
 
-    /**
-     * 发送MQ信息给 WS 来群发
-     * 发给MQ ES 来 add ES to flow
-     * 发Push to cidArray (get from flowControl)
-     * @author tang
-     * @date 创建时间: 2023/4/15
-     * @ver 版本号: 1.0.0
-     */
-    public void sendWSNew(LogFlow logContent){
+        JSONArray userIds = new JSONArray();
+        JSONArray userPushIds = new JSONArray();
 
-        // the log's id_Us may have users
-        // if so, getES and get id_APP to push
-        // else set id_Us + cidArray as usual
-//        JSONArray id_Us = new JSONArray();
-
-//        JSONArray cidArray = new JSONArray();
-//        // 获取公司编号
-//        String id_C = logContent.getId_C();
-//        // 获取供应商编号
-//        String id_CS = logContent.getId_CS();
-
-//        if (logContent.getId_Us() == null)
-//            logContent.setId_Us(new JSONArray());
-//
-//        // fill up id_Us and cidArray (user array info)
-//        // by FlowControl... and you can do things like, you
-//        // my comp first then CS comp
-//        // if id_Us is listed, i should not change that
-//        if (logContent.getId_Us().size() > 0)
-//        {
-//            cidArray = logContent.getId_APPs();
-//        } else {
-//            // get from flowControl
-//            prepareMqUserInfo(id_C, logContent, id_Us, cidArray);
-//            if (id_CS != null && !id_C.equals(id_CS)) {
-//                prepareMqUserInfo(id_CS, logContent, id_Us, cidArray);
-//            }
-//            logContent.setId_Us(id_Us);
-//        }
-
-//        qt.errPrint("what is going", null, logContent, id_Us, cidArray);
-        System.out.println("sendWS:");
-        System.out.println(JSON.toJSONString(logContent));
-//        this.sendWSOnly(logContent);
-        rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(logContent));
-        System.out.println("发送WS完成");
-
-//        if (logContent.getId_APPs().size() > 0) {
-//            String wrdNUC = "小银【系统】";
-//            JSONObject wrdNU = logContent.getWrdNU();
-//            if (null != wrdNU && null != wrdNU.getString("cn")) {
-//                wrdNUC = wrdNU.getString("cn");
-//            }
-//            // 调用推送集合消息方法
-//            this.sendPushBatch(logContent.getId_APPs(), wrdNUC, logContent.getZcndesc());
-//        }
-
-        // remove id_Us and id_APPs
-        logContent.setId_Us(null);
-        logContent.setId_APPs(null);
-
-        System.out.println("发送ES"+logContent);
-
-//        this.sendESOnly(logContent);
-        rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(logContent));
-        System.out.println("发送ES完成");
+        for (int i = 0; i < userList.size(); i++) {
+            userIds.add(userList.getJSONObject(i).getString("id_U"));
+            userPushIds.add(userList.getJSONObject(i).getString("id_APPs"));
+        }
+        log.setId_Us(userIds);
+        log.setId_APPs(userPushIds);
     }
 
-    private void prepareMqUserInfo(String id_C, LogFlow logContent, JSONArray id_Us, JSONArray cidArray)
-    {
+    private void setUserListByFlowId(String id_C, LogFlow logContent, JSONArray id_Us, JSONArray cidArray)
+    { // id_Us[] and id_APPs use flowcontrol (prepareUserList)
         
             Asset asset = qt.getConfig(id_C,"a-auth","flowControl");
             if (asset.getId().equals("none"))
@@ -248,144 +191,98 @@ public class Ws {
                     }
                 }
             }
-        
     }
 
 
 
-    public void sendWS_grpU(String id_C,String id_U,String noticeType){
-            
-//            ///////////////////
-//            LogFlow logContent = LogFlow.getInstance();
-//            logContent.setId_C(id_C);
-////            logContent.setId_U(id_U);
-//            logContent.setLogType("usageflow");
-//            logContent.setSubType("setAuth"); //"hd"
-//            logContent.setId(null);
-//            logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//            ///////////////
+//    public void prepareUserByGrpU(String id_C,String grpU,LogFlow logContent){
+////
+//        JSONArray userList = qt.getES("lBUser", qt.setESFilt("id_CB", id_C, "grpU", grpU));
 //
-//            JSONArray result = qt.getES("lBUser", qt.setESFilt("id_CB",id_C,"grpU",grpU));
-//            JSONArray id_Us = new JSONArray();
-//            JSONArray id_Apps = new JSONArray();
-//            for (int i = 0; i < result.size(); i++) {
-//                JSONObject jsonObject = result.getJSONObject(i);
-//                id_Us.add(jsonObject.getString("id_U"));
-//                id_Apps.add(jsonObject.getString("id_APP"));
+//        JSONArray id_Us = new JSONArray();
+//        JSONArray id_APPs = new JSONArray();
 //
-////                if (thisUser.getInteger("imp") <= logContent.getImp()) {
-////                    String id_client = thisUser.getString("id_APP");
-////                    if (null != id_client && !"".equals(id_client)) {
-////                        id_Apps.add(id_client);
-////                    }
-////                }
-//            }
-//
-//        logContent.getData().put("type", noticeType);
+//        for (int i = 0; i < userList.size(); i++) {
+//            id_Us.add(userList.getJSONObject(i).getString("id_U"));
+//            id_APPs.add(userList.getJSONObject(i).getString("id_APPs"));
+//        }
 //        logContent.setId_Us(id_Us);
-//        logContent.setId_APPs(id_Apps);
-//        sendWS(logContent);
-
-            LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "setAuth",id_U,"1001","", "1000", "1000",
-                    "","",0,id_C,"","https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg","", "更新菜单", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
-            log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-            JSONArray id_Us = new JSONArray();
-            JSONArray id_APPs = new JSONArray();
-            this.prepareMqUserInfo(id_C, log, id_Us, id_APPs );
-            log.getData().put("type", noticeType);
-            log.setId_Us(id_Us);
-            log.setId_APPs(id_APPs);
-            sendWS(log);
-        }
-
-    public void sendWS_SetAuth(String id_C,String id_U,JSONObject data,JSONArray id_Us,JSONArray id_APPs){
-
-        LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "setAuth",id_U,"1001","", "1000", "1000",
-                "","",0,id_C,"","https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg","", "更新菜单", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
-        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//        JSONArray id_Us = new JSONArray();
-//        JSONArray id_APPs = new JSONArray();
-//        this.prepareMqUserInfo(id_C, log, id_Us, id_APPs );
-        log.setId_Us(id_Us);
-        log.setId_APPs(id_APPs);
-        log.setData(data);
-        try {
-            rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(log));
-            System.out.println("发送WS完成");
-
-            System.out.println("sendWS:");
-            System.out.println(JSON.toJSONString(log));
-
-            log.setId_Us(null);
-            log.setId_APPs(null);
-            System.out.println("发送ES"+log);
-            rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
-            System.out.println("发送ES完成");
-        } catch (Exception e){
-            System.out.println("出现错误:"+e.getMessage());
-            e.printStackTrace();
-        }
-//        sendWSNew(log);
-    }
-
-    public void sendWS_Warehouse(String id_C,String id_U,JSONObject data,JSONArray id_Us){
-
-        LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "allUser",id_U,"1001","", "1000", "1000",
-                "","",0,id_C,"","https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg","", "仓库信息更新", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
-        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-        log.setId_Us(id_Us);
+//        logContent.setId_APPs(id_APPs);
+//    }
+//
+//    public void sendWS_grpU(String id_C,String id_U,String noticeType){
+//
+//            LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "setAuth",id_U,"1001","", "1000", "1000",
+//                    "","",0,id_C,"","https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg","", "更新菜单", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
+//            log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//            JSONArray id_Us = new JSONArray();
+//            JSONArray id_APPs = new JSONArray();
+////            this.setUserListByFlowId(id_C, log, id_Us, id_APPs );
+//            // this is wrong, need to getES lBUser
+//            log.getData().put("type", noticeType);
+//            log.setId_Us(id_Us);
+//            log.setId_APPs(id_APPs);
+//            sendWS(log);
+//        }
+//
+//    public void sendWS_SetAuth(String id_C,String id_U,JSONObject data,JSONArray id_Us,JSONArray id_APPs){
+//
+//        LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "setMenuAuth",id_U,"1001","", "1000", "1000",
+//                "","",0,id_C,"","https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg","", "更新菜单", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
+//        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+////        JSONArray id_Us = new JSONArray();
+////        JSONArray id_APPs = new JSONArray();
+//        log.setId_Us(id_Us);
 //        log.setId_APPs(id_APPs);
-        log.setData(data);
-        try {
-            rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(log));
-            System.out.println("发送WS完成");
+//        log.setData(data);
+//        try {
+//            rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(log));
+//            System.out.println("发送WS完成");
+//
+//            System.out.println("sendWS:");
+//            System.out.println(JSON.toJSONString(log));
+//
+//            log.setId_Us(null);
+//            log.setId_APPs(null);
+//            System.out.println("发送ES"+log);
+//            rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
+//            System.out.println("发送ES完成");
+//        } catch (Exception e){
+//            System.out.println("出现错误:"+e.getMessage());
+//            e.printStackTrace();
+//        }
+////        sendWSNew(log);
+//        this.sendWSOnly(log);
+//    }
+//
+//
 
-            System.out.println("sendWS:");
-            System.out.println(JSON.toJSONString(log));
+    public void sendUsageFlow(JSONObject wrdN, String msg, String subType, String type)
+    {
+        // set sys log format:
+        LogFlow log = new LogFlow();
+        log.setSysLog("6141b6797e8ac90760913fd0", subType, msg, 3, wrdN);
 
-            log.setId_Us(null);
-            log.setId_APPs(null);
-            System.out.println("发送ES"+log);
-            rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
-            System.out.println("发送ES完成");
-        } catch (Exception e){
-            System.out.println("出现错误:"+e.getMessage());
-            e.printStackTrace();
+
+        JSONArray id_Us = new JSONArray();
+        JSONArray id_APPs = new JSONArray();
+
+        // find all users in the "system usageflow group
+        this.setUserListByFlowId("6141b6797e8ac90760913fd0", log, id_Us, id_APPs );
+        if (type.equals("ALL"))
+        {   //send WS, write ES, send push
+            this.sendWS(log);
+        } else if (type.equals("WSES"))
+        {  // no Push
+            this.sendESOnly(log);
+            this.sendWSOnly(log);
+        } else if (type.equals("ES"))
+        {
+            this.sendESOnly(log);
+        } else if (type.equals("WS"))
+        {
+            this.sendWSOnly(log);
         }
-//        sendWSNew(log);
-    }
-
-    public void sendWS_SetSwComp(String id_C,String id_U,JSONObject data,JSONArray id_Us,JSONArray id_APPs){
-
-        LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "setSwComp"
-                ,id_U,"1001","", "1000", "1000",
-                "","",0,id_C,""
-                ,"https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg"
-                ,"", "更新菜单", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
-        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//        JSONArray id_Us = new JSONArray();
-//        JSONArray id_APPs = new JSONArray();
-//        this.prepareMqUserInfo(id_C, log, id_Us, id_APPs );
-        log.setId_Us(id_Us);
-        log.setId_APPs(id_APPs);
-        log.setData(data);
-        try {
-            rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(log));
-            System.out.println("发送WS完成");
-
-            System.out.println("sendWS:");
-            System.out.println(JSON.toJSONString(log));
-
-            log.setId_Us(null);
-            log.setId_APPs(null);
-            System.out.println("发送ES"+log);
-            rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
-            System.out.println("发送ES完成");
-        } catch (Exception e){
-            System.out.println("出现错误:"+e.getMessage());
-            e.printStackTrace();
-        }
-//        sendWSNew(log);
     }
 
     public void sendPushBatch(JSONArray cidArray,String title,String body){
@@ -419,40 +316,19 @@ public class Ws {
 
         s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/message", push, heads);
 
-
         JSONObject re = JSONObject.parseObject(s);
-        String taskid = re.getJSONObject("data").getString("taskid");
-        JSONObject audience = new JSONObject();
-        audience.put("cid",cidArray);
-        push = new JSONObject();
-        push.put("audience",audience);
-        push.put("taskid",taskid);
-        push.put("is_async",true);
-        s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/cid", push, heads);
 
-    }
-
-    public void sendUsageFlow(JSONObject wrdN, String msg, String subType, String type)
-    {
-        LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", subType,"6459fcb946c4cb3525b63b8a","1001","", "1000", "1000",
-                "","",0,"6141b6797e8ac90760913fd0","","https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg","", msg, 3, wrdN, qt.setJson("cn", "小银【系统】"));
-        JSONArray id_Us = new JSONArray();
-        JSONArray id_APPs = new JSONArray();
-        this.prepareMqUserInfo("6141b6797e8ac90760913fd0", log, id_Us, id_APPs );
-        if (type.equals("ALL"))
-        {
-            this.sendWS(log);
-        } else if (type.equals("WSES"))
-        {
-            this.sendESOnly(log);
-            this.sendWSOnly(log);
-        } else if (type.equals("ES"))
-        {
-            this.sendESOnly(log);
-        } else if (type.equals("WS"))
-        {
-            this.sendWSOnly(log);
+        if (re != null) {
+            String taskid = re.getJSONObject("data").getString("taskid");
+            JSONObject audience = new JSONObject();
+            audience.put("cid", cidArray);
+            push = new JSONObject();
+            push.put("audience", audience);
+            push.put("taskid", taskid);
+            push.put("is_async", true);
+            s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/cid", push, heads);
         }
+
     }
 
     public String getPushToken(){

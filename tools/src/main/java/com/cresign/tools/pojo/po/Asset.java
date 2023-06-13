@@ -79,6 +79,9 @@ public class Asset {
 
     private JSONObject refAuto;
 
+    @JsonProperty("cSetup")
+    private JSONObject cSetup;
+
     private JSONObject summ00s;
 
 //    private JSONObject grpDetail;

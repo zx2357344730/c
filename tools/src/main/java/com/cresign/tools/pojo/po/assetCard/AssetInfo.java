@@ -29,6 +29,8 @@ public class AssetInfo {
         this.wrdN = wrdN == null ? (JSONObject) wrdEmpty.clone(): wrdN;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
         this.grp = grp == null ? "": grp;
+        this.grpB = grp == null ? "": grpB;
+
         this.ref = ref == null ? "": ref;
         this.pic = pic == null ? "": pic;
         this.lAT = lAT == null ? 0: lAT;
@@ -50,7 +52,11 @@ public class AssetInfo {
 
     private String grp;
 
+    private String grpB;
+
     private String ref;
+
+    private String refB;
 
     private String pic;
 

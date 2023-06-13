@@ -96,10 +96,10 @@ public class SetAuthServicelmpl implements SetAuthService {
         }
         System.out.println("batch "+batchArray.toJSONString());
 
-
-        if (ObjectUtils.isEmpty(batchArray)) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
-        }
+//
+//        if (ObjectUtils.isEmpty(batchArray)) {
+//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+//        }
 
 //        // 最终返回batch
 //        JSONArray result = new JSONArray();

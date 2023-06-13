@@ -74,7 +74,6 @@ public class AuthCheck {
             qt.putRDHash("login:get_read_auth", "compId-" + id_C,
                     user_grpU + "_" + listType + "_" + grp + "_" + authType,result.toJSONString());
 
-//            redisTemplate0.opsForHash().put("login:get_read_auth:compId-" + id_C, user_grpU + "_" + listType + "_" + grp + "_" + authType, result.toJSONString());
         }
 
         return enabledArray;

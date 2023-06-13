@@ -36,7 +36,6 @@ import java.util.Map;
  * @ver 1.0
  */
 @Service
-@Slf4j
 public class AccountLoginServiceImpl implements AccountLoginService {
 
     //降低 Autowired 检测的级别，将 Severity 的级别由之前的 error 改成 warning 或其它可以忽略的级别。

@@ -24,7 +24,6 @@ import java.util.Map;
  * @ver 1.0.0
  * ##description: 作者很懒, 什么也没写...
  */
-@Slf4j
 @Component
 public class RetResult {
 
@@ -286,14 +285,14 @@ public class RetResult {
                 map.put("err","0");
                 return map;
             } else {
-                log.error("id对应秘钥信息为空");
+//                log.error("id对应秘钥信息为空");
                 Map<String, String> map = new HashMap<>();
                 map.put("err","1");
                 map.put("desc","id对应秘钥信息为空");
                 return map;
             }
         } catch (Exception e) {
-            log.error("对方法method :【" +"】返回数据进行解密出现异常：" + e.getMessage());
+//            log.error("对方法method :【" +"】返回数据进行解密出现异常：" + e.getMessage());
             Map<String, String> map = new HashMap<>();
             map.put("err","1");
             map.put("desc","对方法method :【" +"】返回数据进行解密出现异常：" + e.getMessage());

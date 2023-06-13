@@ -50,8 +50,6 @@ public interface LogService {
 
     String getToken();
 
-    ApiResponse sendWarehouseLog(String id_C,String id_U,JSONObject data);
-
 
 //    /**
 //     * 根据can获取单个用户信息

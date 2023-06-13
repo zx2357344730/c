@@ -650,9 +650,9 @@ public JSONObject checkCard(Order order)
                 {
                     for (int j = 0; j < action.getJSONObject(i).getJSONArray("upPrnts").size(); j++)
                     {
-                        if (oStock.getJSONObject(i).getJSONArray("objShip").getJSONObject(j) == null)
+                        if (oStock.getJSONObject(i).getJSONArray("objShip").size() - 1 < j)
                         {
-                            // init it if it is not init yet
+                            // init it if it is not init yet, if bmdpt == 1 it is process, process only need 1 objShip[0]
                             if (j == 0 || !action.getJSONObject(i).getInteger("bmdpt").equals(1)) {
                                 JSONObject newObjShip = qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
                                         "wn2qtyneed", oItem.getJSONObject(i).getDouble("wn2qtyneed"));
@@ -844,8 +844,10 @@ public JSONObject checkCard(Order order)
         if (index != null) {
             id_OP = action.getJSONArray("objAction").getJSONObject(index).getString("id_OP");
         }
-        String id = action.getJSONObject("grpBGroup").getJSONObject(oMoney.getString("grpB")).getString("id_Money");
-        String id_FS = action.getJSONObject("grpGroup").getJSONObject(oMoney.getString("grp")).getString("id_Money");
+//        String id = action.getJSONObject("grpBGroup").getJSONObject(oMoney.getString("grpB")).getString("id_Money");
+//        String id_FS = action.getJSONObject("grpGroup").getJSONObject(oMoney.getString("grp")).getString("id_Money");
+        String id = "1000"; String id_FS = "1000";
+
         JSONObject jsonLog = qt.setJson("id", id,
                 "id_FS", id_FS,
                 "grpB", oMoney.getString("grpB"),
@@ -866,9 +868,9 @@ public JSONObject checkCard(Order order)
 
 
     public void updateAsset(Order order, JSONArray arrayLsasset, JSONArray arrayLbasset) {
-        BoolQueryBuilder shouldQuery = new BoolQueryBuilder();
-        BoolQueryBuilder shouldQueryB = new BoolQueryBuilder();
         HashSet setId_P = new HashSet();
+        JSONArray filtVal = new JSONArray();
+        JSONArray filtValB = new JSONArray();
         for (int i = 0; i < arrayLsasset.size(); i++) {
             JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
             String id_C = jsonLsasset.getJSONObject("tokData").getString("id_C");
@@ -877,14 +879,13 @@ public JSONObject checkCard(Order order)
             setId_P.add(id_P);
             String locAddr = jsonLsasset.getString("locAddr");
 
-            BoolQueryBuilder mustQuery = new BoolQueryBuilder();
-            mustQuery.must(QueryBuilders.termQuery("id_C", id_C))
-                    .must(QueryBuilders.termQuery("id_CB", id_CB))
-                    .must(QueryBuilders.termQuery("id_P", id_P));
+            JSONObject jsonVal = qt.setJson("id_C", id_C,
+                    "id_CB", id_CB,
+                    "id_P", id_P);
             if (locAddr != null) {
-                mustQuery.must(QueryBuilders.termQuery("locAddr", locAddr));
+                jsonVal.put("locAddr", locAddr);
             }
-            shouldQuery.should(mustQuery);
+            filtVal.add(jsonVal);
         }
         //TODO RACH make a new should(must[]) @ filterBuilder
         for (int i = 0; i < arrayLbasset.size(); i++) {
@@ -894,24 +895,27 @@ public JSONObject checkCard(Order order)
             String id_P = jsonLbasset.getString("id_P");
             setId_P.add(id_P);
 
-            BoolQueryBuilder mustQueryB = new BoolQueryBuilder();
             //id_C=id_CB，内部负债，连接一个lbasset
-            mustQueryB.must(QueryBuilders.termQuery("id_C", id_C))
-                    .must(QueryBuilders.termQuery("id_CB", id_CB))
-                    .must(QueryBuilders.termQuery("id_P", id_P));
-            shouldQueryB.should(mustQueryB);
-            //id_C!=id_CB，外部负债，两个公司共用，连接两个lbasset
+            JSONObject jsonValB = qt.setJson("id_C", id_C,
+                    "id_CB", id_CB,
+                    "id_P", id_P);
+            //id_C!=id_CB，外部负债，两个公司共用，连接买方lsasset和卖房lbasset
             if (!id_C.equals(id_CB)) {
-                mustQueryB = new BoolQueryBuilder();
-                mustQueryB.must(QueryBuilders.termQuery("id_C", id_CB))
-                        .must(QueryBuilders.termQuery("id_CB", id_C))
-                        .must(QueryBuilders.termQuery("id_P", id_P));
-                shouldQueryB.should(mustQueryB);
+                JSONObject jsonVal = qt.setJson("id_C", id_CB,
+                        "id_CB", id_C,
+                        "id_P", id_P);
+                filtVal.add(jsonVal);
             }
+            filtValB.add(jsonValB);
         }
+        JSONArray filterArray = qt.setESFilt(null, "shouldeq", filtVal);
+        JSONArray filterArrayB = qt.setESFilt(null, "shouldeq", filtValB);
+        JSONArray arrayLsa = qt.getES("lSAsset", filterArray);
+        JSONArray arrayLba = qt.getES("lBAsset", filterArrayB);
+
         HashSet setId_A = new HashSet();
-        JSONObject jsonLsas = this.getAssetListByQuery(shouldQuery, "lSAsset", setId_A);
-        JSONObject jsonLbas = this.getAssetListByQuery(shouldQueryB, "lBAsset", setId_A);
+        JSONObject jsonLsas = this.getAssetListByQuery(arrayLsa, setId_A);
+        JSONObject jsonLbas = this.getAssetListByQuery(arrayLba, setId_A);
 
         List<?> assets = qt.getMDContentMany(setId_A, Arrays.asList("info", "aStock"), Asset.class);
         JSONObject allAssetObj = qt.list2Obj(assets, "id");
@@ -952,8 +956,8 @@ public JSONObject checkCard(Order order)
                 jsonLbasset.put("jsonAsset", jsonAsset);
                 jsonLbasset.put("jsonLsa", jsonLba);
                 if (!id_C.equals(id_CB)) {
-                    JSONObject jsonLbaB = jsonLbas.getJSONObject(id_CB + "-" + id_C + "-" + id_P);
-                    jsonLbasset.put("jsonLba", jsonLbaB);
+                    JSONObject jsonLsa = jsonLsas.getJSONObject(id_CB + "-" + id_C + "-" + id_P);
+                    jsonLbasset.put("jsonLba", jsonLsa);
                 }
             }
             JSONObject jsonProd = allProdObj.getJSONObject(id_P);
@@ -978,54 +982,29 @@ public JSONObject checkCard(Order order)
         qt.setESMany("lBAsset", listBulkLbasset);
     }
 
-    public JSONObject getAssetListByQuery(BoolQueryBuilder queryBuilder, String listType, HashSet setId_A) {
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.query(queryBuilder).size(1000);
-        try {
-            SearchRequest request = new SearchRequest(listType).source(sourceBuilder);
-            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-            JSONArray arrayEs = qt.hit2Array(response);
-            //TODO Rach above into filterbuilder
-            System.out.println("arrayEs=" + arrayEs);
-            JSONObject jsonResult = new JSONObject();
+    public JSONObject getAssetListByQuery(JSONArray arrayEs, HashSet setId_A) {
+        JSONObject jsonResult = new JSONObject();
+        for (int i = 0; i < arrayEs.size(); i++) {
+            JSONObject jsonEs = arrayEs.getJSONObject(i);
+            String locAddr = jsonEs.getString("locAddr");
+            //if (locAddr == null || locAddr.equals("")) {
+            if (jsonEs.getString("lAT").equals("2") || jsonEs.getString("lAT").equals("3") &&
+                    (locAddr != null || !locAddr.equals(""))) {
 
-            //TODO RACH need check lAT = 产品/零件 because lSA also has "no locAddr" money
-//            if (listType.equals("lSAsset")) {
-            for (int i = 0; i < arrayEs.size(); i++) {
-                JSONObject jsonEs = arrayEs.getJSONObject(i);
-                String locAddr = jsonEs.getString("locAddr");
-                //if (locAddr == null || locAddr.equals("")) {
-                if (jsonEs.getString("lAT").equals("2") || jsonEs.getString("lAT").equals("3") &&
-                        (locAddr != null || !locAddr.equals(""))) {
-
-                    jsonResult.put(jsonEs.getString("id_C") + "-" +
-                                    jsonEs.getString("id_CB") + "-" +
-                                    jsonEs.getString("id_P") + "-" + locAddr
-                            , jsonEs);
-                } else {
-                    jsonResult.put(jsonEs.getString("id_C") + "-" +
-                                    jsonEs.getString("id_CB") + "-" +
-                                    jsonEs.getString("id_P"),
-                            jsonEs);
-                }
-                setId_A.add(jsonEs.getString("id_A"));
+                jsonResult.put(jsonEs.getString("id_C") + "-" +
+                                jsonEs.getString("id_CB") + "-" +
+                                jsonEs.getString("id_P") + "-" + locAddr
+                        , jsonEs);
+            } else {
+                jsonResult.put(jsonEs.getString("id_C") + "-" +
+                                jsonEs.getString("id_CB") + "-" +
+                                jsonEs.getString("id_P"),
+                        jsonEs);
             }
-//            } else {
-//                for (int i = 0; i < arrayEs.size(); i++) {
-//                    JSONObject jsonEs = arrayEs.getJSONObject(i);
-//                    jsonResult.put(jsonEs.getString("id_C") + "-" +
-//                            jsonEs.getString("id_CB") + "-" +
-//                            jsonEs.getString("id_P"),
-//                            jsonEs);
-//                    setId_A.add(jsonEs.getString("id_A"));
-//                }
-//            }
-            System.out.println("jsonResult=" + jsonResult);
-            return jsonResult;
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            setId_A.add(jsonEs.getString("id_A"));
         }
+        System.out.println("jsonResult=" + jsonResult);
+        return jsonResult;
     }
 
     public void assetValueChange(Order order, JSONArray arrayAssetChg, List<JSONObject> listBulkAsset, List<JSONObject> listBulkLsasset,
@@ -1057,7 +1036,7 @@ public JSONObject checkCard(Order order)
 
 
             //K - should use lAT to check if this is Stock
-            if (index != null) {
+            if (assetChgObj.getString("locAddr") != null) {
                 JSONObject jsonOItem = arrayOItem.getJSONObject(index);
                 Double wn4price = jsonOItem.getDouble("wn4price");
                 Double wn4value = dub.multiply(wn2qty, wn4price);
@@ -1659,6 +1638,23 @@ public JSONObject checkCard(Order order)
             e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
         }
+    }
+
+    public void setBulkInsert(List<JSONObject> listBulk, Object obj) {
+        JSONObject jsonBulk = qt.setJson("type", "insert",
+                "insert", obj);
+        listBulk.add(jsonBulk);
+    }
+    public void setBulkDelete(List<JSONObject> listBulk, String id) {
+        JSONObject jsonBulk = qt.setJson("type", "delete",
+                "id", id);
+        listBulk.add(jsonBulk);
+    }
+    public void setBulkUpdate(List<JSONObject> listBulk, String id, JSONObject json) {
+        JSONObject jsonBulk = qt.setJson("type", "update",
+                "id", id,
+                "update", json);
+        listBulk.add(jsonBulk);
     }
 
 

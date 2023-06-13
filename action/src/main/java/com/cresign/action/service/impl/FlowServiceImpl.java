@@ -18,10 +18,7 @@ import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.es.lSBOrder;
-import com.cresign.tools.pojo.po.Asset;
-import com.cresign.tools.pojo.po.Comp;
-import com.cresign.tools.pojo.po.Order;
-import com.cresign.tools.pojo.po.Prod;
+import com.cresign.tools.pojo.po.*;
 import com.cresign.tools.pojo.po.chkin.Task;
 import com.cresign.tools.pojo.po.orderCard.OrderAction;
 import com.cresign.tools.pojo.po.orderCard.OrderInfo;
@@ -148,17 +145,19 @@ public class FlowServiceImpl implements FlowService {
 
         for (int item = 0; item < oParent_objItem.size(); item++) {
 
-            OrderOItem objOItem = JSONObject.parseObject(JSON.toJSONString(oParent_objItem.getJSONObject(item)),OrderOItem.class);
-            objOItem.setPriority(oParent_prior);
-            OrderAction objAction = new OrderAction(100,0,0,1,salesOrderData.getId(),
-                    refOP, objOItem.getId_P(),id_OParent,item,objOItem.getRKey(),0,0,
-                    new JSONArray(),new JSONArray(), new JSONArray(), new JSONArray(), salesOrderData.getInfo().getWrdN(), objOItem.getWrdN());
+            if (!oParent_objItem.getJSONObject(item).getString("seq").equals(3)) {
+
+                OrderOItem objOItem = JSONObject.parseObject(JSON.toJSONString(oParent_objItem.getJSONObject(item)), OrderOItem.class);
+                objOItem.setPriority(oParent_prior);
+                OrderAction objAction = new OrderAction(100, 0, 0, 1, salesOrderData.getId(),
+                        refOP, objOItem.getId_P(), id_OParent, item, objOItem.getRKey(), 0, 0,
+                        new JSONArray(), new JSONArray(), new JSONArray(), new JSONArray(), salesOrderData.getInfo().getWrdN(), objOItem.getWrdN());
 
                 ////////////////actually dg ///////////////////////
-            JSONObject isJsLj = new JSONObject();
-            isJsLj.put("1",0);
-            //dgType: 1 = firstLayer (sales Items), 2 = regular/subTask or subProd, 3 = depSplit regular
-            // T/P - T/P -T/P.... problem is id_P == ""?
+                JSONObject isJsLj = new JSONObject();
+                isJsLj.put("1", 0);
+                //dgType: 1 = firstLayer (sales Items), 2 = regular/subTask or subProd, 3 = depSplit regular
+                // T/P - T/P -T/P.... problem is id_P == ""?
 
 
                 this.dgProcess(
@@ -168,7 +167,8 @@ public class FlowServiceImpl implements FlowService {
                         oParent_objItem, item,
                         objOItemCollection, objActionCollection,
                         pidActionCollection,
-                        objOItem.getId_P(), oDates,oTasks,mergeJ,0,null,isJsLj);
+                        objOItem.getId_P(), oDates, oTasks, mergeJ, 0, null, isJsLj);
+            }
         }
 
         // 判断递归结果是否为空
@@ -385,7 +385,8 @@ public class FlowServiceImpl implements FlowService {
                     System.out.print("got1"+thisOrderId);
 
                 // priority is BY order, get from info and write into ALL oItem
-                OrderInfo newPO_Info = new OrderInfo(prodCompId,targetCompId,unitOItem.get(0).getId_CP(),"", id_OParent,"","",grpO,grpOB,oParent_prior,unitOItem.get(0).getPic(),4,0,orderNameCas,null);
+                OrderInfo newPO_Info = new OrderInfo(prodCompId,targetCompId,unitOItem.get(0).getId_CP(),"", id_OParent,"","",
+                        grpO,grpOB,oParent_prior,unitOItem.get(0).getPic(),4,0,orderNameCas,null);
 
                 // 设置订单info信息
                 newPO.setInfo(newPO_Info);
@@ -451,9 +452,12 @@ public class FlowServiceImpl implements FlowService {
 
                 newPO.setAction(newPO_Action);
 
-                dbu.summOrder(newPO, new JSONObject());
+                JSONObject listCol = new JSONObject();
+
+                dbu.summOrder(newPO, listCol);
                 // 新增订单
                     qt.addMD(newPO);
+//                    qt.setES(....)
                     System.out.println("sales order SAVED "+ newPO.getInfo().getWrdN().getString("cn"));
 
 
@@ -1297,7 +1301,7 @@ public class FlowServiceImpl implements FlowService {
             objOItem.setSeq("3"); // set DGAction specific seq = 3
 
             // if C=CB and bmdpt =1 means it's my own process, I cannot set grp
-            if (prodCompId.equals(myCompId) && partInfo.getInteger("bmdpt") == 1)
+            if (prodCompId.equals(myCompId) && partInfo.getInteger("bmdpt").equals(1))
             {
                 objOItem.setGrp("");
             }
@@ -2060,13 +2064,6 @@ public class FlowServiceImpl implements FlowService {
 
             for (int i = 0; i < arrayObjItem.size(); i++) {
                 String id_P = arrayObjItem.getJSONObject(i).getString("id_P");
-
-//                if (recurCheckList.getString(id_P) != null) {
-//                    throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), "");
-//                }
-//                if (arrayObjItem.getJSONObject(i).getInteger("bmdpt").equals(2)) {
-//                    recurCheckList.put(id_P, "");
-//                }
                 if (!setId_P.contains(id_P))
                 {
                     setId_P.add(id_P);
@@ -2090,9 +2087,69 @@ public class FlowServiceImpl implements FlowService {
                 }
                 arrayChildren.add(jsonChildren);
             }
-
             return arrayChildren;
+    }
 
+    @Override
+    public ApiResponse infoPart(String id_I) {
+        JSONObject jsonPart = new JSONObject();
+
+        Info info = qt.getMDContent(id_I, Arrays.asList("info", "subInfo"), Info.class);
+        JSONArray arrayObjItem = info.getSubInfo().getJSONArray("objItem");
+
+        JSONObject stat = new JSONObject();
+        stat.put("count", 1);
+        stat.put("allCount", info.getSubInfo().getInteger("wn0Count") == null ?
+                300 : info.getSubInfo().getInteger("wn0Count"));
+
+
+        jsonPart.put("name", info.getInfo().getWrdN().getString("cn"));
+        jsonPart.putAll(JSON.parseObject(JSON.toJSONString(info.getInfo())));
+
+        jsonPart.put("children", recursionInfoPart(arrayObjItem, stat));
+
+        return retResult.ok(CodeEnum.OK.getCode(), jsonPart);
+
+    }
+
+    public Object recursionInfoPart(JSONArray arrayObjItem, JSONObject stat) {
+
+        JSONArray arrayChildren = new JSONArray();
+        HashSet<String> setid_I = new HashSet();
+
+        if (stat.getInteger("count") > stat.getInteger("allCount")) {
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), "产品需要重新检查");
+        }
+        stat.put("count", stat.getInteger("count") + 1);
+
+        // Here if it is already loop too much by over the checked wn0Count by our dgCheck
+        // throw error, and ask for redg
+
+        for (int i = 0; i < arrayObjItem.size(); i++) {
+            String id_I = arrayObjItem.getJSONObject(i).getString("id_I");
+            if (!setid_I.contains(id_I))
+            {
+                setid_I.add(id_I);
+            }
+        }
+        List<Info> infos = (List<Info>) qt.getMDContentMany(setid_I, "subInfo", Info.class);
+        JSONObject jsonProdPart = new JSONObject();
+        for (Info info : infos) {
+            jsonProdPart.put(info.getId(), info.getSubInfo());
+        }
+        for (int i = 0; i < arrayObjItem.size(); i++) {
+            JSONObject jsonObjItem = arrayObjItem.getJSONObject(i);
+            JSONObject jsonChildren = new JSONObject();
+            jsonChildren.put("name", jsonObjItem.getJSONObject("wrdN").getString("cn"));
+            jsonChildren.putAll(jsonObjItem);
+            //有下一层
+            if (jsonProdPart.getJSONObject(jsonObjItem.getString("id_I")) != null) {
+                JSONArray arrayPartObjItem = jsonProdPart.getJSONObject(jsonObjItem.getString("id_I")).getJSONArray("objItem");
+                jsonChildren.put("children", recursionProdPart(arrayPartObjItem, stat));
+            }
+            arrayChildren.add(jsonChildren);
+        }
+        return arrayChildren;
     }
 
     /**

@@ -74,6 +74,9 @@ public class Order {
 
     private JSONObject summx;
 
+    private JSONObject tax;
+
+
     private JSONObject tempa;
 
     private Integer tvs = 1;
