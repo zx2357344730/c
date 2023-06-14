@@ -275,6 +275,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         // 输出错误信息
 //        String msg = WebSocketUserServer.bz+"-Error: "+error.getMessage();
 ////        ws.sendUsageFlow(qt.setJson("cn", "Websocket Error"), msg, "wsError", "ALL");
+        System.out.println("WebSocket出现异常:"+error.toString());
+        error.printStackTrace();
     }
 
     /**
