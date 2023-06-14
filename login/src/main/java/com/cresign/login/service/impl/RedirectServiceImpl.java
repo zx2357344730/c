@@ -80,7 +80,7 @@ public class RedirectServiceImpl implements RedirectService {
      * @ver 版本号: 1.0.0
      */
     @Override
-    public ApiResponse generateLogCode(String id_C, String id_U) {
+    public ApiResponse generateSaleChkinCode(String id_C, String id_U) {
         // 获取token
         String token = UUID19.uuid();
         System.out.println("进入获取二维码:");
@@ -106,14 +106,14 @@ public class RedirectServiceImpl implements RedirectService {
      * @ver 版本号: 1.0.0
      */
     @Override
-    public ApiResponse scanLogCode(String token,String longitude,String latitude){
+    public ApiResponse scanSaleChkinCode(String token,String longitude,String latitude){
         // 判断token为空
         if (!qt.hasRDKey("scancode_log", token)) {
             throw new ErrorResponseException(HttpStatus.OK, "4111","操作失败");
         }
         // 获取到整个hash
         Map<Object, Object> entries = qt.getRDHashAll("scancode_log", token);
-        System.out.println("scanJoinLogCode输出:"+longitude+" , "+latitude);
+        System.out.println("scanJoinSaleChkinCode输出:"+longitude+" , "+latitude);
         System.out.println(JSON.toJSONString(entries));
         // 生成日志信息
         LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "addressNew"
@@ -478,7 +478,6 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
     @Override
     @Transactional
     public ApiResponse scanJoinCompCode(String token, String join_user) throws IOException {
-        System.out.println("进入扫码后的方法:");
 
 //        String keyName = SCANCODE_JOINCOMP + token;
 //        Boolean hasKey = redisTemplate0.hasKey(keyName);
@@ -679,22 +678,6 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
             qt.addES("lbuser",qt.toJson(addLBUser));
 
-            JSONObject data = new JSONObject();
-            JSONObject switchCompList = new JSONObject();
-            switchCompList.put("compId",compOne.getInfo().getId_C());
-            switchCompList.put("pic",compOne.getInfo().getPic());
-            JSONObject wrdN = new JSONObject();
-            wrdN.put("cn",compOne.getInfo().getWrdN().getString("cn"));
-            switchCompList.put("wrdN",wrdN);
-            data.put("switchCompListSon",switchCompList);
-            JSONArray id_Us = new JSONArray();
-            id_Us.add(join_user);
-            System.out.println("sw-发送日志:");
-            System.out.println(join_user);
-            System.out.println(entries.get("id_C").toString());
-            System.out.println(JSON.toJSONString(data));
-            ws.sendWS_SetSwComp(entries.get("id_C").toString(),join_user,data,id_Us,new JSONArray());
-
 //            IndexRequest indexRequest = new IndexRequest("lbuser");
 //            indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
 //            try {
@@ -704,6 +687,10 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 //
 //                throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_JOIN_COMP_ERROR.getCode(), null);
 //            }
+            //TODO ZEJIN
+            //在这里发switchComp 的日志
+
+
             return retResult.ok(CodeEnum.OK.getCode(), null);
 
         }

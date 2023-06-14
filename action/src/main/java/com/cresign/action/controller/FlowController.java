@@ -81,6 +81,14 @@ public class FlowController {
         }
 
         @SecurityParameter
+        @PostMapping("/v1/infoPart")
+        public ApiResponse infoPart(@RequestBody JSONObject json) {
+
+            return flowService.infoPart(json.getString("id_I"));
+
+        }
+
+        @SecurityParameter
         @PostMapping("/v1/dgTaskOrder")
         public ApiResponse dgTaskOrder(@RequestBody JSONObject reqJson){
             return flowService.dgTaskOrder(

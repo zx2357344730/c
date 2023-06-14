@@ -33,8 +33,8 @@ import org.springframework.stereotype.Service;
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
 
-    @Autowired
-    private StringRedisTemplate redisTemplate0;
+//    @Autowired
+//    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -64,18 +64,17 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 String id_U = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
 
                 // 通过id_U查询该用户
-                Query query = new Query(new Criteria("_id").is(id_U));
-                query.fields().include("info").include("rolex.objComp");
-                User user = mongoTemplate.findOne(query, User.class);
+//                Query query = new Query(new Criteria("_id").is(id_U));
+//                query.fields().include("info").include("rolex.objComp");
+//                User user = mongoTemplate.findOne(query, User.class);
+                User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp"), User.class);
 
                 // 获取登录数据给返回给前端
                 JSONObject allResult = loginResult.allResult(user, clientType, "refreshToken");
 
                 return retResult.ok(CodeEnum.OK.getCode(), allResult);
             }
-
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-REFRESHTOKEN_NOT_FOUND.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.REFRESHTOKEN_NOT_FOUND.getCode(), null);
         }
 
         throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
@@ -103,10 +102,10 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
         }
         throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
     }
-
-
-    @Autowired
-    private JwtUtil jwtUtil;
+//
+//
+//    @Autowired
+//    private JwtUtil jwtUtil;
 
     @Override
     public ApiResponse refreshToken(String refreshToken, String id_C, String clientType, String id_U) {
@@ -115,22 +114,10 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
         if (StringUtils.isNotEmpty(refreshToken)) {
 
 //            // 从redis 中查询出该用户的 refreshToken
-            String refreshTokenResult = null;
-//
-//            if (clientType.equals(ClientEnum.WX_CLIENT.getClientType())) {
-//
-//                refreshTokenResult = redisTemplate0.opsForValue().get("wxRefreshToken:" + refreshToken);
-//
-//            } else if (clientType.equals(ClientEnum.APP_CLIENT.getClientType())) {
-//
-//                refreshTokenResult = redisTemplate0.opsForValue().get("appRefreshToken:" + refreshToken);
-//
-//            } else {
+//            String refreshTokenResult = null;
 
-//                refreshTokenResult = redisTemplate0.opsForValue().get("webRefreshToken:" + refreshToken);
-                refreshTokenResult = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
+            String refreshTokenResult = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
 
-//            }
 
             // 判断 refreshToken 是否为空
             if (StringUtils.isNotEmpty(refreshTokenResult)) {
@@ -139,36 +126,23 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
                 if (refreshTokenResult.equals(id_U)) {
 
                     // 通过id_U查询该用户
-                    Query query = new Query(new Criteria("_id").is(id_U));
-                    query.fields().include("info").include("rolex.objComp."+ id_C);
-                    User user = mongoTemplate.findOne(query, User.class);
-
-                   // System.out.println("user is"+ user);
-
+                    User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp."+ id_C), User.class);
                     String token = "";
-
                     token = oauth.setToken(
                             user,
                             id_C,
                             user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
                             user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
                             clientType);
-                    System.out.println("tok:");
-                    System.out.println(token);
 
                     return retResult.ok(CodeEnum.OK.getCode(), token);
 
                 } else {
-
                     throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_VALIDATE_ERROR.getCode(), null);
-
                 }
-
             }
-
             throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
         }
-
         throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
     }
 
@@ -179,25 +153,9 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
 
 //            // 从redis 中查询出该用户的 refreshToken
             String refreshTokenResult = null;
-//
-//            if (clientType.equals(ClientEnum.WX_CLIENT.getClientType())) {
-//
-//                refreshTokenResult = redisTemplate0.opsForValue().get("wxRefreshToken:" + refreshToken);
-//
-//            } else if (clientType.equals(ClientEnum.APP_CLIENT.getClientType())) {
-//
-//                refreshTokenResult = redisTemplate0.opsForValue().get("appRefreshToken:" + refreshToken);
-//
-//            } else {
 
-//                refreshTokenResult = redisTemplate0.opsForValue().get("webRefreshToken:" + refreshToken);
             refreshTokenResult = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
 
-//            }
-
-            System.out.println("refreshTokenResult: "+refreshTokenResult);
-            System.out.println("id_U: "+id_U);
-            System.out.println("clientType: "+clientType);
             // 判断 refreshToken 是否为空
             if (StringUtils.isNotEmpty(refreshTokenResult)) {
 
@@ -205,22 +163,15 @@ REFRESHTOKEN_NOT_FOUND.getCode(), null);
                 if (refreshTokenResult.equals(id_U)) {
 
                     // 通过id_U查询该用户
-                    Query query = new Query(new Criteria("_id").is(id_U));
-                    query.fields().include("info").include("rolex.objComp."+ id_C);
-                    User user = mongoTemplate.findOne(query, User.class);
-
-                    // System.out.println("user is"+ user);
-
+                    User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp."+ id_C), User.class);
                     String token = "";
-
                     token = oauth.setToken(
                             user,
                             id_C,
                             user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
                             user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
                             clientType);
-                    System.out.println("tok:");
-                    System.out.println(token);
+
                     qt.setRDSet(clientType + "RefreshToken", token, id_U, 1800L);
 
                     return token;

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DoubleUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.orderCard.OrderAction;
 import com.cresign.tools.pojo.po.orderCard.OrderOItem;
@@ -23,8 +24,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LogFlow {
 
-//    @Autowired
-//    private Qt qt;
 
     public LogFlow(JSONObject tokData, JSONObject oItem, JSONObject action, String id_CB, String id_O, Integer index, String logType, String subType, String zcndesc, Integer imp) {
 
@@ -114,11 +113,48 @@ public class LogFlow {
         data.put("ex_wrdNP",orderAction.getWrdNP());
         data.put("ex_wrdN",orderAction.getWrdN());
 
-
         this.id_OP = orderOItem.getId_OP();
         this.setLogType("action");
 
         this.data = data;
+    }
+
+
+    public void setSysLog(String id_C, String subType, String zcndesc, Integer imp, JSONObject wrdN) {
+
+        this.id = "BNyYCj2P4j3zBCzSafJz6aei";
+        this.id_FS = "";
+        this.logType = "usageflow";
+        this.subType = subType;
+        this.dep = "";
+        this.grpU = "1001";
+        this.grpB = "1000";
+        this.grp = "1000";
+        this.id_U = "6459fcb946c4cb3525b63b8a";
+        this.id_P = "";
+        this.id_O = "";
+        this.id_OP = "";
+        this.index = 0;
+        this.id_C = id_C;
+        this.id_CS = "";
+        this.wrdN = wrdN;
+        this.imp = imp;
+        JSONObject bot = new JSONObject();
+        bot.put("cn", "小银【系统】");
+        this.wrdNU = bot;
+        this.pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg";
+        this.lang = "cn";
+        this.zcndesc = zcndesc;
+        this.tzone = 8;
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+    }
+
+
+    public void setActionTime (Long taStart, Long taFin, String type) {
+        JSONObject data = this.getData();
+        data.put("taStart", taStart);
+        data.put("taFin",taFin);
+        data.put("type", type);
     }
 
     public void setLogData_money (String id_A, String id_Afrom, Double wn2mny) {
@@ -136,8 +172,6 @@ public class LogFlow {
         data.put("taFin",taFin);
         data.put("type", type);
         this.data = data;
-        this.setLogType("duraflow");
-
     }
 
     public void setLogData_assetflow (Double qtynow, Double price, String id_A, String grpA) {

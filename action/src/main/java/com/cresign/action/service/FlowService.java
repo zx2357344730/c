@@ -23,6 +23,8 @@ public interface FlowService {
 
     ApiResponse prodPart(String id_P);
 
+    ApiResponse infoPart(String id_I);
+
     /**
          * 递归验证 - 注释完成
          * @param id_P 产品编号

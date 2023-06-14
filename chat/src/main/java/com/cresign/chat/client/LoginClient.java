@@ -1,6 +1,7 @@
 package com.cresign.chat.client;
 
 import com.cresign.chat.service.fallback.LoginFallbackFactory;
+import com.cresign.tools.apires.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +22,6 @@ public interface LoginClient {
 
     @GetMapping("/refreshToken/v1/refreshToken2")
     String refreshToken2(@RequestParam("id_U") String id_U, @RequestParam("id_C") String id_C
-            ,@RequestParam("ton") String ton,@RequestParam("web") String web);
+            ,@RequestParam("token") String ton,@RequestParam("web") String web);
 
 }

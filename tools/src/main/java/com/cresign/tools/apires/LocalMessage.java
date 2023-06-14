@@ -16,7 +16,6 @@ import java.util.Objects;
  * @ver 1.0
  */
 @Component
-@Slf4j
 public class LocalMessage {
 
     @Autowired
@@ -36,7 +35,7 @@ public class LocalMessage {
             return messageSource.getMessage(code, params, locale);
         } catch (Exception e) {
             if (code != "200") {
-                log.warn("Warning: {}, {}", code, params);
+//                log.warn("Warning: {}, {}", code, params);
             }
             return defaultMsg;
         }

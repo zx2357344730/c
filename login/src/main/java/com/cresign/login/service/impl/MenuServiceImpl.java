@@ -9,13 +9,16 @@ import com.cresign.login.service.MenuService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.AuthCheck;
+import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.InitJava;
+import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.assetCard.MainMenuBO;
 import com.cresign.tools.pojo.po.assetCard.SubMenuBO;
 import org.apache.commons.lang3.ObjectUtils;
@@ -196,15 +199,6 @@ public class MenuServiceImpl implements MenuService {
             }
         }
 
-        JSONArray es = qt.getES("lBUser", qt.setESFilt("id_CB", id_C, "grpU", grpU));
-        System.out.println("es:");
-        System.out.println(JSON.toJSONString(es));
-        JSONArray id_Us = new JSONArray();
-        for (int i = 0; i < es.size(); i++) {
-            JSONObject esSon = es.getJSONObject(i);
-            id_Us.add(esSon.getString("id_U"));
-        }
-
         Asset asset = qt.getConfig(id_C, "a-auth",qt.strList("menu","flowControl.objData"));
 
         qt.setMDContent(asset.getId(),qt.setJson("menu.mainMenus." + grpU, mainMenusData), Asset.class);
@@ -243,12 +237,16 @@ public class MenuServiceImpl implements MenuService {
             mainMenuJson.put("subMenus", subMenusArray);
             result.add(mainMenuJson);
         }
+
         data.put("mainMenusData",JSON.toJSONString(result, SerializerFeature.DisableCircularReferenceDetect));
         data.put("type", "ud_grpU_mainMenu");
-        System.out.println("result:");
-        System.out.println(JSON.toJSONString(result, SerializerFeature.DisableCircularReferenceDetect));
+
         // 发送日志
-        ws.sendWS_SetAuth(id_C, id_U,data,id_Us,new JSONArray());
+        LogFlow log = new LogFlow();
+        log.setSysLog(id_C, "setMenuAuth", "更新菜单", 3, qt.setJson("cn", "系统权限更新"));// logtype = usageflow
+        log.setData(data); // set log data
+        ws.setUserListByGrpU(log, id_C, grpU); // set log id_Us id_APPs
+        ws.sendWS(log);
 
         return retResult.ok(CodeEnum.OK.getCode(), null);
 

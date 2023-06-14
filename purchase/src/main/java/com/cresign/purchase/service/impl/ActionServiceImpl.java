@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 
 @Service
-@Slf4j
 public class ActionServiceImpl implements ActionService {
 
     /***
@@ -286,7 +285,7 @@ public class ActionServiceImpl implements ActionService {
 
                 /***
                  * logStatus(wn0prog) = 2@推送 3@开始 1@停 -1@再开 -6@取消 5@完成
-                 * bcdStatus = 0, 1 start, 2 end, 3 resume, 8 stop, 9 cancel
+                 * bcdStatus = 0, 1 start, 2 end, -8 resume, 8 stop, 9 cancel
                  * 0 about, 1 process, 9 stop, -8(3) resume/process, 3 finished, 10 cancel, 8 process(with next started)
                  * rePush = > -2,
                  *
@@ -467,9 +466,32 @@ public class ActionServiceImpl implements ActionService {
                             id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
                             orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), message, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
 
+                    // Here set time info into action's log
+
+                    if (duraType.equals("start") || duraType.equals("resume")) {
+                        logL.setActionTime(DateUtils.getTimeStamp(), 0L, duraType);
+                    } else if (duraType.equals("end") || duraType.equals("pause") || duraType.equals("allEnd")) {
+                        logL.setActionTime(0L, DateUtils.getTimeStamp(), duraType);
+                    }
+
                     logL.setLogData_action(orderAction, orderOItem);
                     ws.sendWS(logL);
                 }
+
+                // setup User's Fav card
+                if (duraType.equals("start"))
+                    this.setFavRecent(tokData.getString("id_C"), tokData.getString("id_U"), id_O, index, id_FC, id_FS,
+                            orderOItem.getWrdN(), orderOItem.getPic());
+                else if (duraType.equals("end")) {
+                    this.removeFavRecent(qt.setArray(tokData.getString("id_U")), id_O, index, id_FC, id_FS, orderAction.getArrUA());
+                    orderAction.getId_Us().remove(tokData.getString("id_U"));
+                }
+                else if (duraType.equals("allEnd"))
+                {
+                    this.removeFavRecent(orderAction.getId_Us(), id_O, index, id_FC, id_FS, orderAction.getArrUA());
+                    orderAction.setId_Us(new JSONArray());
+                }
+
 
                 LogFlow logL = new LogFlow("duraflow", id_FC,
                         id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
@@ -480,32 +502,21 @@ public class ActionServiceImpl implements ActionService {
                     logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, duraType);
                     logL.setZcndesc("任务计时开始");
                     ws.sendWS(logL);
-                    if (duraType.equals("start"))
-                    {
-                        this.setFavRecent(tokData.getString("id_C"), tokData.getString("id_U"), id_O, index, id_FC, id_FS,
-                                orderOItem.getWrdN(), orderOItem.getPic());
-                    }
+//casItemx, summ00s
                 } else if (duraType.equals("end") || duraType.equals("pause")) { //type end
                     // End making log with data
                     logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
                     logL.setZcndesc("任务计时停止");
                     ws.sendWS(logL);
-                    if (duraType.equals("end"))
-                    {
-                        this.removeFavRecent(qt.setArray(tokData.getString("id_U")),  id_O, index, id_FC, id_FS, orderAction.getArrUA());
-                    }
+
                 } else if (duraType.equals("allEnd")) { // type allEnd
                     for (int i = 0; i < orderAction.getId_Us().size(); i++) {
                         logL.setId_U(orderAction.getId_Us().getString(i));
                         logL.setGrpU("1000");
                         logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
                         logL.setZcndesc("任务结束");
-
                         ws.sendWS(logL);
                     }
-                    this.removeFavRecent(orderAction.getId_Us(), id_O, index, id_FC, id_FS, orderAction.getArrUA());
-
-                    orderAction.setId_Us(new JSONArray());
 
                 }
                 try {
@@ -600,6 +611,8 @@ public class ActionServiceImpl implements ActionService {
                                         orderAction1.getId_OP(), nextId, nextIndex, tokData.getString("id_C"), orderOItem1.getId_C(),
                                         "", tokData.getString("dep"), orderOItem1.getWrdN().get("cn") + "准备开始", 3, orderOItem1.getWrdN(), tokData.getJSONObject("wrdNU"));
                                 logL.setLogData_action(orderAction1, orderOItem1);
+                                logL.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+
                                 logL.getData().put("wn0prog", 2);
 
                                 // 调用发送日志方法
@@ -628,6 +641,8 @@ public class ActionServiceImpl implements ActionService {
                                         orderAction1.getId_OP(), nextId, nextIndex, tokData.getString("id_C"), orderOItem1.getId_C(),
                                         "", tokData.getString("dep"), orderOItem1.getWrdN().get("cn") + "准备开始", 3, orderOItem1.getWrdN(), tokData.getJSONObject("wrdNU"));
                                 logL.setLogData_action(orderAction1, orderOItem1);
+                                logL.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+
                                 logL.getData().put("wn0prog", 2);
 
                                 // 调用发送日志方法
@@ -737,6 +752,8 @@ public class ActionServiceImpl implements ActionService {
                         System.out.println(" sending log here"+ logL);
 
                         logL.setLogData_action(unitActionPrnt, unitOItemPrnt);
+                        logL.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+
 
                         ws.sendWS(logL);
                     }
@@ -1131,17 +1148,18 @@ public class ActionServiceImpl implements ActionService {
                         unitAction.getId_OP(), id_O, unitAction.getIndex(), myCompId, unitOItem.getId_C(),
                         "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
                 logLP.setLogData_action(unitAction, unitOItem);
+                logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
 
                 ws.sendWS(logLP);
 
-                LogFlow logL = new LogFlow("duraflow", actData.getString("id_FC"),
-                        actData.getString("id_FS"), "userStat",
-                        id_U, grpU, unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(),
-                        "", id_O, unitAction.getIndex(), myCompId, unitOItem.getId_C(),
-                        "", dep, "任务推送", 3, unitOItem.getWrdN(), wrdNU);
-
-                logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
-                ws.sendWS(logL);
+//                LogFlow logL = new LogFlow("duraflow", actData.getString("id_FC"),
+//                        actData.getString("id_FS"), "userStat",
+//                        id_U, grpU, unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(),
+//                        "", id_O, unitAction.getIndex(), myCompId, unitOItem.getId_C(),
+//                        "", dep, "任务推送", 3, unitOItem.getWrdN(), wrdNU);
+//
+//                logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
+//                ws.sendWS(logL);
             }
 
 //            } else {
@@ -1225,17 +1243,18 @@ public class ActionServiceImpl implements ActionService {
                                             myCompId, subOItem.getId_C(),
                                             "", dep, "准备开始", 3, subOItem.getWrdN(), wrdNU);
                                     logLP.setLogData_action(subAction, subOItem);
+                                    logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
 
                                     ws.sendWS(logLP);
-                                    LogFlow logL = new LogFlow("duraflow", subOrderData.getString("id_FC"),
-                                            subOrderData.getString("id_FS"), "userStat",
-                                            id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
-                                            id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
-                                            unitAction.getSubParts().getJSONObject(k).getInteger("index"),
-                                            myCompId, subOItem.getId_C(), "", dep, "任务推送", 3, subOItem.getWrdN(), wrdNU);
-
-                                    logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
-                                    ws.sendWS(logL);
+//                                    LogFlow logL = new LogFlow("duraflow", subOrderData.getString("id_FC"),
+//                                            subOrderData.getString("id_FS"), "userStat",
+//                                            id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
+//                                            id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
+//                                            unitAction.getSubParts().getJSONObject(k).getInteger("index"),
+//                                            myCompId, subOItem.getId_C(), "", dep, "任务推送", 3, subOItem.getWrdN(), wrdNU);
+//
+//                                    logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
+//                                    ws.sendWS(logL);
 
 
                                 } else {
@@ -1277,6 +1296,8 @@ public class ActionServiceImpl implements ActionService {
                                     unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(), id_O, unitAction.getId_O(), unitAction.getIndex(),
                                     myCompId, unitOItem.getId_C(), "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
                             logLP.setLogData_action(unitAction, unitOItem);
+                            logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+
 
                             System.out.println(logLP);
                             ws.sendWS(logLP);
@@ -1364,17 +1385,19 @@ public class ActionServiceImpl implements ActionService {
                                         myCompId, subOItem.getId_C(),
                                         "", dep, "准备开始", 3, subOItem.getWrdN(), wrdNU);
                                 logLP.setLogData_action(subAction, subOItem);
+                                logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+
 
                                 ws.sendWS(logLP);
-                                LogFlow logL = new LogFlow("duraflow", subOrderData.getString("id_FC"),
-                                        subOrderData.getString("id_FS"), "userStat",
-                                        id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
-                                        id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
-                                        unitAction.getSubParts().getJSONObject(k).getInteger("index"),
-                                        myCompId, subOItem.getId_C(), "", dep, "任务推送", 3, subOItem.getWrdN(), wrdNU);
-
-                                logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
-                                ws.sendWS(logL);
+//                                LogFlow logL = new LogFlow("duraflow", subOrderData.getString("id_FC"),
+//                                        subOrderData.getString("id_FS"), "userStat",
+//                                        id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
+//                                        id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
+//                                        unitAction.getSubParts().getJSONObject(k).getInteger("index"),
+//                                        myCompId, subOItem.getId_C(), "", dep, "任务推送", 3, subOItem.getWrdN(), wrdNU);
+//
+//                                logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
+//                                ws.sendWS(logL);
 
 
                             } else {
@@ -1415,6 +1438,8 @@ public class ActionServiceImpl implements ActionService {
                                 unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(), id_O, unitAction.getId_O(), unitAction.getIndex(),
                                 myCompId, unitOItem.getId_C(), "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
                         logLP.setLogData_action(unitAction, unitOItem);
+                        logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+
 
                         System.out.println(logLP);
                         ws.sendWS(logLP);
@@ -1456,20 +1481,6 @@ public class ActionServiceImpl implements ActionService {
             logType = StringUtils.strip(logType, "SL");
             id_FS = id_FC;
             id_FC = "";
-            if ("cusmsgSL".equals(logType)) {
-                Asset asset = qt.getConfig(myCompId, "a-auth",qt.strList("flowControl.objData"));
-                JSONObject flowControl = asset.getFlowControl();
-                JSONArray objData = flowControl.getJSONArray("objData");
-                String id_FCNew = "";
-                for (int i = 0; i < objData.size(); i++) {
-                    JSONObject objDataSon = objData.getJSONObject(i);
-                    if (id_FS.equals(objDataSon.getString("id"))) {
-                        id_FCNew = objDataSon.getJSONArray("glId").getString(0);
-                        break;
-                    }
-                }
-                id_FC = id_FCNew;
-            }
         }
 
         // Make sure index = 0 works by init the oItem[]
@@ -1514,13 +1525,15 @@ public class ActionServiceImpl implements ActionService {
                 id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
                 oItemData.getString("pic"),dep,"准备开始",3,oItemData.getJSONObject("wrdN"),wrdNU);
        logLP.setLogData_action(unitAction,unitOItem);
+        logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
 
-        LogFlow logL = new LogFlow("duraflow",id_FC,
-                id_FS,"userStat", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
-                oItemData.getString("pic"),dep,"任务推送",3,oItemData.getJSONObject("wrdN"),wrdNU);
 
-        logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
-        ws.sendWS(logL);
+//        LogFlow logL = new LogFlow("duraflow",id_FC,
+//                id_FS,"userStat", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
+//                oItemData.getString("pic"),dep,"任务推送",3,oItemData.getJSONObject("wrdN"),wrdNU);
+//
+//        logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
+//        ws.sendWS(logL);
 
 
 
@@ -1631,6 +1644,8 @@ public class ActionServiceImpl implements ActionService {
                 probData.getString("pic"),dep,"准备解决",3,probData.getJSONObject("wrdN"),wrdNU);
 
                logProb.setLogData_action(unitAction,unitOItem);
+        logProb.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+
 //        logProb.setActionData(unitAction.getBisactivate(),unitAction.getBcdStatus(),unitAction.getId_Us(),1.0,
 //                orderOItem.getId_P(), id_O,index,1,unitAction.getWrdNP(),unitOItem.getWrdN());
 

@@ -1,6 +1,5 @@
 package com.cresign.action.service.fallback;
 
-import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.client.WSClient;
 import com.cresign.tools.pojo.po.LogFlow;
 import feign.hystrix.FallbackFactory;
@@ -34,12 +33,6 @@ public class WSFallbackFactory implements FallbackFactory<WSClient> {
         {
             @Override
             public void sendWS(@RequestBody LogFlow logData){ }
-
-            @Override
-            public JSONObject testFill(JSONObject object) {
-                System.out.println("testFill:出现异常");
-                return null;
-            }
 
         };
     }

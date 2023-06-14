@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
  * ##description: 通用工具类
  */
 @Service
-@Slf4j
 public class Ut {
 
     public static final String DEF_CHATSET = "UTF-8";
@@ -493,7 +492,7 @@ public class Ut {
             } catch (Exception e /*捕捉所有异常*/) {
 
                 //抛出异常信息
-                log.debug("出现错误：" + e.getMessage());
+//                log.debug("出现错误：" + e.getMessage());
             }
 
             //返回结果
@@ -612,15 +611,17 @@ public class Ut {
 
             if (listType.equals("lBProd") || listType.equals("lSProd")) {
                 contentMap.put("id", contentMap.get("id_P"));
-            }else if (listType.equals("lBOrder") || listType.equals("lSOrder") ) {
+            } else if (listType.equals("lBInfo") || listType.equals("lSInfo") ) {
+                contentMap.put("id", contentMap.get("id_I"));
+            } else if (listType.equals("lBOrder") || listType.equals("lSOrder") ) {
                 contentMap.put("id", contentMap.get("id_O"));
             } else if (listType.equals("lBComp")) {
                 contentMap.put("id", contentMap.get("id_C"));
-            } else if (listType.equals("lBUser")) {
+            } else if (listType.equals("lBUser") || listType.equals("lSUser") ) {
                 contentMap.put("id", contentMap.get("id_U"));
             } else if (listType.equals("lSComp")) {
                 contentMap.put("id", contentMap.get("id_CB"));
-            } else if (listType.equals("lSAsset")) {
+            } else if (listType.equals("lSAsset") || listType.equals("lBAsset") ) {
                 contentMap.put("id", contentMap.get("id_A"));
             }
 
@@ -630,110 +631,68 @@ public class Ut {
         return contentList;
     }
 
-//    public Object getMongoOneFields(String id, List<String> listField, Class<?> classType) {
-//        Query query = new Query(new Criteria("_id").is(id));
-//        listField.forEach(query.fields()::include);
-//        return mongoTemplate.findOne(query, classType);
-//    }
-
-
-    /**
-     * 检查公司ref是否唯一
-     * @param ref 编号
-     * @return
-     * Jevon
-     */
-    public String chkRef(String ref, String id_C, String listType , Class<?> classType) {
-//        public static <T> T jsonTo(Object data, Class<T> classType){
-
-//        public <T> T save(     T objectToSave )
-
-        //TODO Rachel
-        // 1.get from lSBxxx, filter id_C
-        // use ES don't use MDB
-        // if found, return String false,
-        // else return ref
-        Query query = new Query();
-
-        // 创建查询条件
-        query.addCriteria(
-                new Criteria("info").exists(true));
-
-        List<?> comps = mongoTemplate.find(query, classType);
-
-        boolean judge = false;
-
-        for (int i = 0; i < comps.size(); i++) {
-
-            // 获取 查询出来的整个详细信息
-            JSONObject jsonObject = (JSONObject) JSONObject.toJSON(comps.get(i));
-
-            // 只拿出其中的info
-            JSONObject info = (JSONObject) jsonObject.get("info");
-
-            if (info.get("ref") == null || info.get("ref").equals("")) {
-                continue;
-            }
-            // 获取 info 中的 ref
-            String refResult = info.get("ref").toString();
-
-        /*
-            进行判断 前端传入的参数 ref 是否 和 后端数据库查询出来的ref 相同
-            1. 如果相同则提示不可使用
-            2. 如果不相同或者为空则提示可用
-            有相同的马上跳出
-         */
-            if (refResult.equals(ref)) {
-                judge = true;
-                break;
-            } else {
-                judge = false;
-            }
-        }
-        //如果等于true证明有相同，否则就是没有
-        if (judge) {
-            return ref;
-        } else {
-            return "";
-        }
-    }
-
-
-
-
-
-    /**
-     * @描述 两个数组取差集, 从多的里面取。。。
-     * @参数 [fids, pids] fids是多的数组；pids是少的数组
-     * @返回值 java.lang.String
-     * @创建人 jackson
-     * @创建时间 2020/7/3
-     **/
-//    public static List<Set<String>> getDifSet(List<String> mores, List<String> lesss) {
-//        //将多转换为set fid 肯定不是小的
-//        Set<String> set = new HashSet<String>(mores);
-//        for (String p : lesss) {
-//            // 如果集合里有相同的就删掉，如果没有就将值添加到集合
-//            if (set.contains(p)) {
-//                set.remove(p);
+//    /**
+//     * 检查公司ref是否唯一
+//     * @param ref 编号
+//     * @return
+//     * Jevon
+//     */
+//    public String chkRef(String ref, String id_C, String listType , Class<?> classType) {
+////        public static <T> T jsonTo(Object data, Class<T> classType){
+//
+////        public <T> T save(     T objectToSave )
+//
+//        //TODO Rachel
+//        // 1.get from lSBxxx, filter id_C
+//        // use ES don't use MDB
+//        // if found, return String false,
+//        // else return ref
+//        Query query = new Query();
+//
+//        // 创建查询条件
+//        query.addCriteria(
+//                new Criteria("info").exists(true));
+//
+//        List<?> comps = mongoTemplate.find(query, classType);
+//
+//        boolean judge = false;
+//
+//        for (int i = 0; i < comps.size(); i++) {
+//
+//            // 获取 查询出来的整个详细信息
+//            JSONObject jsonObject = (JSONObject) JSONObject.toJSON(comps.get(i));
+//
+//            // 只拿出其中的info
+//            JSONObject info = (JSONObject) jsonObject.get("info");
+//
+//            if (info.get("ref") == null || info.get("ref").equals("")) {
+//                continue;
+//            }
+//            // 获取 info 中的 ref
+//            String refResult = info.get("ref").toString();
+//
+//        /*
+//            进行判断 前端传入的参数 ref 是否 和 后端数据库查询出来的ref 相同
+//            1. 如果相同则提示不可使用
+//            2. 如果不相同或者为空则提示可用
+//            有相同的马上跳出
+//         */
+//            if (refResult.equals(ref)) {
+//                judge = true;
+//                break;
 //            } else {
-//                set.add(p);
+//                judge = false;
 //            }
 //        }
-//        return Arrays.asList(set);
+//        //如果等于true证明有相同，否则就是没有
+//        if (judge) {
+//            return ref;
+//        } else {
+//            return "";
+//        }
 //    }
 //
-//    public static void main(String[] args){
-//        List<String> objArray = new ArrayList();
-//        JSONArray objArray2 = new JSONArray();
-//         objArray2.add(0,"info");
-//        objArray.add(0,"info");
-//        objArray.add(1,"view");
-//        objArray.add(2,"task00s");
-//
-//        objArray.removeAll(objArray2);
-//
-//    }
+
 
     /**
      * 根据getUserIdForToken和request获取用户id
@@ -837,38 +796,6 @@ public class Ut {
 //        }
 //    }
 
-    /**
-     * 发送日志方法，带推送
-     * @param logL	需要发送的日志
-     * @return void  返回结果: 结果
-     * @author tang
-     * @ver 1.0.0
-     * ##Updated: 2020/8/6 9:26
-     */
-////    @SuppressWarnings("unchecked")
-//    public static void sendLog(LogFlow logL, StringRedisTemplate redisTemplate1
-//            , RestHighLevelClient client, MongoTemplate mongoTemplate){
-//
-//
-//        List<String> id_APPList = redisTemplate1.opsForList().range("userPush_" + logL.getId_C() + "_" + logL.getId(), 0, -1);
-//
-//        for (int i = 0; i < id_APPList.size(); i++) {
-//
-////            boolean clientID = AppPushUtil.getClientIdStatus(id_APPList.get(i));
-////            if (!clientID) {
-////                //不在线     这里应该进入一个方法，这个方法是获取redis数据的，数据充当
-////                String title = logL.getLogType();  //通知栏标题
-////                String text = logL.getZcndesc();   //内容
-////                            String transmissionContent = "666";    //透传消息
-////                AppPushUtil.pushSingle(id_APPList.get(i), title, text, null);
-////                            ("发送推送...");
-//                System.out.println("推送!!!--------------");
-////            } else {
-////                //在线，走websocket
-////                // 发送日志
-//////                            WebSocketServer.sendInfo(logL);
-////            }
-//        }
-//    }
+
 
 }

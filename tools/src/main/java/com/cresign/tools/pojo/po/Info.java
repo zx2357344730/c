@@ -14,9 +14,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * ##description: 产品实体类
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Document(collection = "Prod")
+@Document(collection = "Info")
 @Data
-public class Prod {
+public class Info {
 
     private String id;
 
@@ -24,13 +24,11 @@ public class Prod {
 
     private JSONArray view;
 
-    private JSONObject part;
+    private JSONObject subInfo;
 
     private JSONObject spec;
 
     private JSONObject file00s;
-
-    private JSONObject pack;
 
     private JSONObject text00s;
 
@@ -40,32 +38,20 @@ public class Prod {
 
     private JSONObject summ00s;
 
+    private JSONObject summx;
+
+
     private JSONObject picroll00s;
-
-    private JSONObject color;
-
-    private JSONObject priceQty;
-
-    private JSONObject quali;
-
-    private JSONObject cost;
 
     private JSONObject link00s;   // 连接
 
-
-    private JSONObject qtySafex;    // 产品安全库存
-
     private JSONObject ch00s;
-
-    private JSONObject buyInit;
 
     private JSONObject qrShareCode;
 
-    private JSONObject summx;
-
     private JSONObject tempa;
 
-
+    private JSONObject tag;
 
     private Integer tvs = 1;
 

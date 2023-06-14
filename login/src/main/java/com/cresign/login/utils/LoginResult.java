@@ -96,13 +96,8 @@ public class LoginResult {
         infoData.put("refreshToken", newAssignRFToken);  // 存储 refreshToken
 
         //TODO ZEJIN
-        // move all these API here and call them
-        // add menuData
-        // add upCardList
-        // add flowControl
-        // add mybatchList
-        // add my Switch List (get_my_switch)
-        // add get cookiex @ flowCount
+        // add menuData  菜单list
+        // add my Switch List (get_my_switch) 换公司List
 
         // when I update, I send a message to all user with the same grpU, (getES)
         // a new JSON send to FE, FE get the "type" & "data", and update accordingly

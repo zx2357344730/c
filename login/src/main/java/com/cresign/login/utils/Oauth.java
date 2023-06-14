@@ -84,7 +84,7 @@ public class Oauth {
 
             token = jwtUtil.createJWT(uid, clientType);
 
-            qt.setRDSet(clientType + "Token", token, dataSet, 1800L);
+            qt.setRDSet(clientType + "Token", token, dataSet, 400L);
 
             return token;
     }

@@ -22,7 +22,7 @@ public interface RedirectService {
      * @date 创建时间: 2023/5/29
      * @ver 版本号: 1.0.0
      */
-    ApiResponse generateLogCode(String id_C, String id_U);
+    ApiResponse generateSaleChkinCode(String id_C, String id_U);
 
     /**
      * 扫码（扫描）发送日志二维码后请求的方法
@@ -34,7 +34,7 @@ public interface RedirectService {
      * @date 创建时间: 2023/5/29
      * @ver 版本号: 1.0.0
      */
-    ApiResponse scanLogCode(String token,String longitude,String latitude);
+    ApiResponse scanSaleChkinCode(String token,String longitude,String latitude);
 
     /**
      * 生成产品二维码

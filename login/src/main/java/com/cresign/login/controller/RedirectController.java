@@ -39,9 +39,9 @@ public class RedirectController {
      * @ver 版本号: 1.0.0
      */
     @SecurityParameter
-    @PostMapping("/v1/createLogCode")
-    public ApiResponse generateLogCode(@RequestBody JSONObject reqJson) {
-        return redirectService.generateLogCode(
+    @PostMapping("/v1/createSaleChkinCode")
+    public ApiResponse generateSaleChkinCode(@RequestBody JSONObject reqJson) {
+        return redirectService.generateSaleChkinCode(
                 reqJson.getString("id_C"),
                 getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
         );
@@ -56,10 +56,10 @@ public class RedirectController {
      * @ver 版本号: 1.0.0
      */
     @SecurityParameter
-    @PostMapping("/v1/scanLogCode")
-    public ApiResponse scanLogCode(@RequestBody JSONObject reqJson) {
+    @PostMapping("/v1/scanSaleChkinCode")
+    public ApiResponse scanSaleChkinCode(@RequestBody JSONObject reqJson) {
         System.out.println("进入扫码后的方法:");
-        return redirectService.scanLogCode(
+        return redirectService.scanSaleChkinCode(
                 reqJson.getString("token"),
                 reqJson.getString("longitude"), reqJson.getString("latitude")
         );

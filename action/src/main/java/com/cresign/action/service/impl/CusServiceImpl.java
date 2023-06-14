@@ -910,9 +910,10 @@ public class CusServiceImpl implements CusService {
      * @ver 版本号: 1.0.0
      */
     public void sendMsgOneNew(String sendUser,LogFlow logFlow){
-        JSONObject data = logFlow.getData();
-        data.put("id_UPointTo",sendUser);
-        logFlow.setData(data);
+//        JSONObject data = logFlow.getData();
+//        data.put("id_UPointTo",sendUser);
+        logFlow.setId_Us(qt.setArray(sendUser, logFlow.getId_U()));
+//        logFlow.setData(data);
         ws.sendWS(logFlow);
     }
 
