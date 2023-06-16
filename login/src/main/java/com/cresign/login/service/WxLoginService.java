@@ -107,4 +107,8 @@ public interface WxLoginService {
     ApiResponse wxmpRegister(String nickName, String avatarUrl, String unionId, Integer countryCode, String phoneNumber);
 
     ApiResponse setAUN(String id_U,String id_AUN);
+
+//    ApiResponse uploadWXHeadSculpture(String path);
+
+    ApiResponse getAUN(String id_AUN);
 }

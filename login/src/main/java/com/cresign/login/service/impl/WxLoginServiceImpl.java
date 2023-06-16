@@ -11,6 +11,7 @@ import com.cresign.login.utils.wxlogin.applets.WXAesCbcUtil;
 import com.cresign.login.utils.wxlogin.web.WxAuthUtil;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.CosUpload;
 import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
@@ -43,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -610,4 +612,25 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         qt.setMDContent(id_U,qt.setJson("info.id_AUN",id_AUN),User.class);
         return retResult.ok( CodeEnum.OK.getCode(), "成功!");
     }
+
+    @Override
+    public ApiResponse getAUN(String id_AUN) {
+        User info = qt.getMDContentByKv("info.id_AUN", id_AUN, "info", User.class);
+        if (null != info) {
+            return retResult.ok( CodeEnum.OK.getCode(), "1");
+        }
+        return retResult.ok( CodeEnum.OK.getCode(), "0");
+    }
+
+//    @Override
+//    public ApiResponse uploadWXHeadSculpture(String path) {
+//        File file = CosUpload.getFile(path);
+//        try {
+//            CosUpload.uploadCresignStat(file,"/testTang","test");
+//        } catch (IOException e) {
+//            System.out.println("上传文件出现异常:");
+//            throw new RuntimeException(e);
+//        }
+//        return retResult.ok( CodeEnum.OK.getCode(), "成功!");
+//    }
 }

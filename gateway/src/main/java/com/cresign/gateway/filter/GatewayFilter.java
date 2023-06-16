@@ -73,6 +73,7 @@ public class GatewayFilter implements GlobalFilter, Ordered {
                 || url.equals("/login/facebook/v1/faceBookRegister")
                 || url.equals("/file/cos/v1/get_objurl_token")
                 || url.equals("/file/cos/v1/get_multi_token")
+                || url.equals("/login/wx/v1/getAUN")
 //                || url.equals("/file/picture/v1/picUpload")
         ){
             return chain.filter(exchange);

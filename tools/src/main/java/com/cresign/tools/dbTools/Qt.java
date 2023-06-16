@@ -107,6 +107,35 @@ public class Qt {
         return result;
     }
 
+//    public <T> T  getMDContentByKv(String key,String val,  List<String>  fields, Class<T> classType) {
+//
+//        Query query = new Query(new Criteria(key).is(val));
+//        if (fields != null) {
+//            fields.forEach(query.fields()::include);
+//        }
+//        T result;
+//        try {
+//            result = mongoTemplate.findOne(query, classType);
+//        } catch (Exception e){
+//            throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
+//        }
+//        return result;
+//    }
+    public <T> T  getMDContentByKv(String key,String val, String field, Class<T> classType) {
+
+        Query query = new Query(new Criteria(key).is(val));
+        if (field != null && !field.equals("")) {
+            query.fields().include(field);
+        }
+        T result;
+        try {
+            result = mongoTemplate.findOne(query, classType);
+        } catch (Exception e){
+            throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
+        }
+        return result;
+    }
+
     public <T> T  getMDContent(String id,  String field, Class<T> classType) {
 
         Query query = new Query(new Criteria("_id").is(id));

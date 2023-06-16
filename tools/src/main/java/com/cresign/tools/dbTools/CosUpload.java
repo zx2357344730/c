@@ -16,9 +16,9 @@ import com.qcloud.cos.transfer.TransferManager;
 import com.qcloud.cos.transfer.TransferManagerConfiguration;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -651,5 +651,50 @@ public class CosUpload {
             listObjectsRequest.setMarker(nextMarker);
         } while (objectListing.isTruncated());
         return size;
+    }
+
+    /**
+     * 网络url转为文件
+     * @param url 文件路径
+     */
+    public static File getFile(String url){
+        //对本地文件命名
+        String fileName = url.substring(url.lastIndexOf("."));
+        System.out.println("fileName:"+fileName);
+        File file = null;
+
+        URL urlfile;
+        InputStream inStream = null;
+        OutputStream os = null;
+        try {
+            file = File.createTempFile("tang",fileName);
+            //下载
+            urlfile = new URL(url);
+            inStream = urlfile.openStream();
+            os = new FileOutputStream(file);
+//            os = Files.newOutputStream(file.toPath());
+
+            int bytesRead = 0;
+            byte[] buffer = new byte[8192];
+            while ((bytesRead = inStream.read(buffer, 0, 8192)) != -1) {
+                os.write(buffer, 0, bytesRead);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (null != os) {
+                    os.close();
+                }
+                if (null != inStream) {
+                    inStream.close();
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return file;
     }
 }

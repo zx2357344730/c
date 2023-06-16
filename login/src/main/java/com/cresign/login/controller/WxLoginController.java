@@ -188,4 +188,15 @@ public class WxLoginController {
         return wxLoginService.setAUN(tokData.getString("id_U"),reqJson.getString("id_AUN"));
     }
 
+//    @SecurityParameter
+//    @PostMapping("/v1/uploadWXHeadSculpture")
+//    public ApiResponse uploadWXHeadSculpture(@RequestBody JSONObject reqJson) {
+//        return wxLoginService.uploadWXHeadSculpture(reqJson.getString("path"));
+//    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getAUN")
+    public ApiResponse getAUN(@RequestBody JSONObject reqJson) {
+        return wxLoginService.getAUN(reqJson.getString("id_AUN"));
+    }
 }
