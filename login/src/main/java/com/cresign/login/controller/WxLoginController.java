@@ -5,7 +5,6 @@ import com.cresign.login.service.WxLoginService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.enumeration.manavalue.HeaderEnum;
-import com.cresign.tools.token.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,9 +23,6 @@ import java.io.IOException;
 @RestController
 @RequestMapping("wx")
 public class WxLoginController {
-
-    @Autowired
-    private GetUserIdByToken getUserToken;
 
     /**
      * app端的手机安装应用的id，用于push
