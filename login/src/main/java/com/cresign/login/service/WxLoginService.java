@@ -59,6 +59,7 @@ public interface WxLoginService {
     /**
      * 通过用户的微信id来进行登录
      * @author JackSon
+     * @param id_WX         用户的应用的唯一微信id
      * @param clientType    客户端类型
      * @ver 1.0
      * @updated 2020/8/10 16:15
@@ -106,5 +107,4 @@ public interface WxLoginService {
      */
     ApiResponse wxmpRegister(String nickName, String avatarUrl, String unionId, Integer countryCode, String phoneNumber);
 
-    ApiResponse setAUN(String id_U,String id_AUN);
 }

@@ -63,6 +63,8 @@ public class lNUser implements Serializable {
 
     private String id_WX;
 
+    private String id_AUN;
+
     private String cem;
 
     private String mbn;

@@ -274,7 +274,9 @@ public class RoleServiceImpl implements RoleService {
 //        }
         for (String authType : upTypeList.keySet())
         {
-            upTypeList.put(authType, upAuth);
+            if (grp.equals("1019") || !authType.equals("tempa")) {
+                upTypeList.put(authType, upAuth);
+            }
         }
 
 

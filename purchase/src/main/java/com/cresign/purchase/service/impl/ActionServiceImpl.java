@@ -24,12 +24,20 @@ import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.pojo.po.orderCard.OrderOItem;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -64,8 +72,8 @@ public class ActionServiceImpl implements ActionService {
         @Autowired
         private RetResult retResult;
 
-//        @Autowired
-//        private WSClient ws;
+        @Autowired
+        private RestHighLevelClient restHighLevelClient;
 
         @Autowired
         private Ws ws;
@@ -356,7 +364,6 @@ public class ActionServiceImpl implements ActionService {
                         isStateChg = true;
                         duraType = "allEnd";
 
-
                         break;
                     case 3:
                     case -8: // resume OItem
@@ -443,8 +450,6 @@ public class ActionServiceImpl implements ActionService {
                 // 设置产品状态
                 String compId;
 
-                //BUG
-
                 if (logType.endsWith("SL")) {
                     compId = actData.getJSONObject("info").getString("id_CB");
                 } else {
@@ -490,47 +495,53 @@ public class ActionServiceImpl implements ActionService {
                 {
                     this.removeFavRecent(orderAction.getId_Us(), id_O, index, id_FC, id_FS, orderAction.getArrUA());
                     orderAction.setId_Us(new JSONArray());
-                }
-
-
-                LogFlow logL = new LogFlow("duraflow", id_FC,
+                    LogFlow logDURA = new LogFlow("duraflow", id_FC,
                         id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
                         orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
 
-                if (duraType.equals("start") || duraType.equals("resume")) { //type start
-                    // Start making log with data
-                    logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, duraType);
-                    logL.setZcndesc("任务计时开始");
-                    ws.sendWS(logL);
-//casItemx, summ00s
-                } else if (duraType.equals("end") || duraType.equals("pause")) { //type end
-                    // End making log with data
-                    logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
-                    logL.setZcndesc("任务计时停止");
-                    ws.sendWS(logL);
+                    this.sumDura(id_O, index, logDURA);
 
-                } else if (duraType.equals("allEnd")) { // type allEnd
-                    for (int i = 0; i < orderAction.getId_Us().size(); i++) {
-                        logL.setId_U(orderAction.getId_Us().getString(i));
-                        logL.setGrpU("1000");
-                        logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
-                        logL.setZcndesc("任务结束");
-                        ws.sendWS(logL);
-                    }
 
                 }
-                try {
+
+
+//                LogFlow logL = new LogFlow("duraflow", id_FC,
+//                        id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+//                        orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+//
+//                if (duraType.equals("start") || duraType.equals("resume")) { //type start
+//                    // Start making log with data
+//                    logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, duraType);
+//                    logL.setZcndesc("任务计时开始");
+//                    ws.sendWS(logL);
+////casItemx, summ00s
+//                } else if (duraType.equals("end") || duraType.equals("pause")) { //type end
+//                    // End making log with data
+//                    logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
+//                    logL.setZcndesc("任务计时停止");
+//                    ws.sendWS(logL);
+//
+//                } else if (duraType.equals("allEnd")) { // type allEnd
+//                    for (int i = 0; i < orderAction.getId_Us().size(); i++) {
+//                        logL.setId_U(orderAction.getId_Us().getString(i));
+//                        logL.setGrpU("1000");
+//                        logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
+//                        logL.setZcndesc("任务结束");
+//                        ws.sendWS(logL);
+//                    }
+//                }
+//                try {
                     mapKey.put("action.objAction." + index, orderAction);
                     qt.setMDContent(id_O, mapKey, Order.class);
 
                     if (null != listCol.getInteger("lST")) {
                         qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
                     }
-                } catch (RuntimeException e) {
-                    System.out.println("shit X");
-
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
-                }
+//                } catch (RuntimeException e) {
+//                    System.out.println("shit X");
+//
+//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
+//                }
 
                 // if Quest, send log + update OItem of myself = task = DG = above
                 // get upPrnt data, and find the prob, set that status of Prob to status
@@ -556,7 +567,7 @@ public class ActionServiceImpl implements ActionService {
                     }
                 } else if ((status == 2 && orderAction.getBisactivate() != 4) || status == 7) {
                     // activate = 4 means Skip = already pushed Next
-                    if (orderAction.getUpPrnts().size() == 0 && orderAction.getId_P().equals(""))
+                    if (orderAction.getUpPrnts().size() == 0 && orderOItem.getId_P().equals(""))
                         this.updateNext(orderAction, tokData);
                     else
                         this.updateParent(orderAction, tokData);
@@ -892,6 +903,44 @@ public class ActionServiceImpl implements ActionService {
                 }
             }
         }
+    }
+
+
+
+    private void sumDura(String id_O, Integer index, LogFlow log) {
+
+        JSONObject filt1 = qt.setJson("key", "id_O", "method", "exact", "val", id_O);
+        JSONObject filt2 = qt.setJson("key", "index", "method", "eq", "val", index);
+
+        JSONArray filterArray = qt.setArray(filt1, filt2);
+
+        try {
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+            BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
+            qt.filterBuilder(filterArray, queryBuilder);
+            sourceBuilder.query(queryBuilder).size(0)
+                    .aggregation(AggregationBuilders.sum("taStart").field("data.taStart"))
+                    .aggregation(AggregationBuilders.sum("taFin").field("data.taFin"));
+            SearchRequest searchRequest = new SearchRequest("action").source(sourceBuilder);
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+            JSONObject jsonResponse = (JSONObject) JSON.parse(searchResponse.toString());
+            System.out.println(jsonResponse);
+            JSONObject jsonAgg = jsonResponse.getJSONObject("aggregations");
+            Long taStart = jsonAgg.getJSONObject("sum#taStart").getLong("value");
+            Long taFin = jsonAgg.getJSONObject("sum#taFin").getLong("value");
+            long ms = taFin - taStart;
+            System.out.println(ms);
+            String time = qt.formatMs(ms);
+            System.out.println(time);
+            log.setData(qt.setJson("tDur", time));
+            log.setZcndesc("任务总用时");
+            ws.sendWS(log);
+        } catch (Exception e)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_ES_GET_DATA_IS_NULL.getCode(), "没有关联订单");
+        }
+
+//        return retResult.ok(CodeEnum.OK.getCode(), time);
     }
 
 
@@ -1523,19 +1572,9 @@ public class ActionServiceImpl implements ActionService {
         // Send a log
         LogFlow logLP = new LogFlow(logType,id_FC,
                 id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
-                oItemData.getString("pic"),dep,"准备开始",3,oItemData.getJSONObject("wrdN"),wrdNU);
+                oItemData.getString("pic"),dep,"准备开始",3,qt.cloneObj(oItemData.getJSONObject("wrdN")),wrdNU);
        logLP.setLogData_action(unitAction,unitOItem);
         logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
-
-
-//        LogFlow logL = new LogFlow("duraflow",id_FC,
-//                id_FS,"userStat", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
-//                oItemData.getString("pic"),dep,"任务推送",3,oItemData.getJSONObject("wrdN"),wrdNU);
-//
-//        logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
-//        ws.sendWS(logL);
-
-
 
         // append an OItem + ActionItem, save OItem and action
         qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem), Order.class);
@@ -1657,12 +1696,12 @@ public class ActionServiceImpl implements ActionService {
 
         ws.sendWS(logProb);
 
-        LogFlow logL = new LogFlow("duraflow",id_FC,
-                id_FQ,"userStat", id_U,grpU,orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),id_O, id_Prob,indexProb, myCompId,myCompId,
-                probData.getString("pic"),dep,"任务推送",3,probData.getJSONObject("wrdN"),wrdNU);
-
-        logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
-        ws.sendWS(logL);
+//        LogFlow logL = new LogFlow("duraflow",id_FC,
+//                id_FQ,"userStat", id_U,grpU,orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),id_O, id_Prob,indexProb, myCompId,myCompId,
+//                probData.getString("pic"),dep,"任务推送",3,probData.getJSONObject("wrdN"),wrdNU);
+//
+//        logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
+//        ws.sendWS(logL);
 
         return retResult.ok(CodeEnum.OK.getCode(), "done");
 

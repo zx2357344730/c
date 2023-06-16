@@ -604,10 +604,4 @@ SMS_CODE_NOT_FOUND.getCode(), null);
 
         return retResult.ok( CodeEnum.OK.getCode(), loginResult.allResult(user,request.getHeader("clientType"), "wx"));
     }
-
-    @Override
-    public ApiResponse setAUN(String id_U,String id_AUN) {
-        qt.setMDContent(id_U,qt.setJson("info.id_AUN",id_AUN),User.class);
-        return retResult.ok( CodeEnum.OK.getCode(), "成功!");
-    }
 }

@@ -79,12 +79,18 @@ public class CosUpload {
         return url;
     }
 
-    public static JSONObject uploadCresignStat(File file, String path, String name) throws IOException {
+    public static JSONObject uploadCresignStat(File file, String path, String name) {
         COSClient cosClient = new COSClient(cred, clientConfig);
         String fileName = file.getName();
         String prefix = fileName.substring(fileName.lastIndexOf("."));
         if (name == null) {
-            String md5 = MD5Util.getFileMD5(file);
+            String md5 = "";
+            try {
+                md5 = MD5Util.getFileMD5(file);
+            } catch (Exception e)
+            {
+
+            }
             fileName = path + md5 + prefix;
         } else {
             fileName = path + name + prefix;
