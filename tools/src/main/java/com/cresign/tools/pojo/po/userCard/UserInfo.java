@@ -18,7 +18,7 @@ public class UserInfo {
 
     public UserInfo(String id_WX, String id_APP, JSONObject wrdN, JSONObject wrdNReal, JSONObject wrddesc,
                     String def_C, String defNG, String defCR, String pic, String cnty, String cem,
-                    String mbn, Integer phoneType) {
+                    String mbn, Integer phoneType,String id_AUN) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn", "");
@@ -36,6 +36,7 @@ public class UserInfo {
         this.cem = cem == null ? "": cem;
         this.mbn = mbn == null ? "": mbn;
         this.phoneType = phoneType == null ? 86: phoneType;
+        this.id_AUN = id_AUN == null ? "" : id_AUN;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }

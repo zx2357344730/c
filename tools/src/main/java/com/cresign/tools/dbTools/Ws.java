@@ -16,6 +16,7 @@ import com.cresign.tools.encrypt.RSAUtils;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
+import com.cresign.tools.pojo.po.User;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -126,6 +127,48 @@ public class Ws {
         this.sendESOnly(logContent);
 
     }
+    public void sendWSNew(LogFlow logContent,int type){
+        JSONArray cidArray;
+        JSONArray id_Us = logContent.getId_Us();
+        if (type == 0) {
+            cidArray = new JSONArray();
+            for (int i = 0; i < id_Us.size(); i++) {
+                String id_U = id_Us.getString(i);
+                User user = qt.getMDContent(id_U, "info", User.class);
+                if (null != user&&null!=user.getInfo()&&null!=user.getInfo().getId_APP()) {
+                    cidArray.add(user.getInfo().getId_APP());
+                } else {
+                    cidArray.add("");
+                }
+            }
+        } else {
+            cidArray = logContent.getId_APPs();
+        }
+
+        qt.errPrint("what is going", null, logContent, logContent.getId_Us(), cidArray);
+        System.out.println("sendWS:");
+        System.out.println(JSON.toJSONString(logContent));
+        this.sendWSOnly(logContent);
+
+        if (cidArray.size() > 0) {
+            String wrdNUC = "小银【系统】";
+            JSONObject wrdNU = logContent.getWrdNU();
+            if (null != wrdNU && null != wrdNU.getString("cn")) {
+                wrdNUC = wrdNU.getString("cn");
+            }
+            // 调用推送集合消息方法
+            this.sendPushBatch(cidArray, wrdNUC, logContent.getZcndesc());
+        }
+
+        // remove id_Us and id_APPs
+        logContent.setId_Us(null);
+        logContent.setId_APPs(null);
+
+        System.out.println("发送ES"+logContent);
+
+        this.sendESOnly(logContent);
+
+    }
     public void setUserListByGrpU(LogFlow log, String id_C, String grpU)
     {
         JSONArray userList = qt.getES("lBUser", qt.setESFilt("id_CB", id_C, "grpU", grpU));
@@ -185,7 +228,9 @@ public class Ws {
                             if (null != id_client && !"".equals(id_client)) {
                                 cidArray.add(id_client);
                                 logContent.getId_APPs().add(id_client);
-
+                            } else {
+                                cidArray.add("");
+                                logContent.getId_APPs().add("");
                             }
                         }
                     }

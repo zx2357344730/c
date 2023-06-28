@@ -54,6 +54,9 @@ public interface ActionService {
     ApiResponse createTask(String logType, String id_FC, String id_O, String myCompId, String id_U, String grpU,
                            String dep, JSONObject oItemData, JSONObject wrdNU);
 
+    ApiResponse createTaskNew(String logType, String id, String id_FS, String id_O, String myCompId, String id_U, String grpU,
+                           String dep, JSONObject oItemData, JSONObject wrdNU);
+
     ApiResponse createQuest(String myCompId, String id_O, Integer index, String id_Prob, String id_FC, String id_FQ,
                             String id_U, String grpU, String dep, JSONObject wrdNU, JSONObject probData);
 
@@ -70,4 +73,8 @@ public interface ActionService {
 
     ApiResponse rePush(String id_O, Integer index, JSONObject tokData);
 
+    ApiResponse foCount(String id_O, Integer index,String id_C,String id_U,JSONArray id_Us);
+
+    ApiResponse applyForScore(String id_O, Integer index,String id_C,String id_U,JSONArray id_Us);
+    ApiResponse haveScore(String id_O, Integer index,Integer score,String id_C,String id_U,JSONArray id_Us);
 }

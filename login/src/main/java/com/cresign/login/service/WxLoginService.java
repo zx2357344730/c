@@ -111,5 +111,7 @@ public interface WxLoginService {
 
 //    ApiResponse uploadWXHeadSculpture(String path);
 
-    ApiResponse getAUN(String id_AUN);
+    ApiResponse getAUN(String id_AUN,String id_C);
+
+    ApiResponse getPhone(String phone,String id_WX,String countryCode);
 }

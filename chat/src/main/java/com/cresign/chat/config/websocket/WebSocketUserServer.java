@@ -539,9 +539,9 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         if (logContent.getId_Us().size() > 0) {
             System.out.println("群消息:");
             JSONArray id_Us = logContent.getId_Us();
+            System.out.println("id_Us:"+JSON.toJSONString(id_Us));
             for (int i = 0; i < id_Us.size(); i++)
             {
-                System.out.println("idU"+id_Us.getString(i));
                 if (WebSocketUserServer.webSocketSet.containsKey(id_Us.getString(i))) {
                     WebSocketUserServer.webSocketSet.get(id_Us.getString(i)).values()
                             .forEach(w -> w.sendMessage(stringMap

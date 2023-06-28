@@ -22,7 +22,6 @@ import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.pojo.po.orderCard.OrderAction;
 import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.pojo.po.orderCard.OrderOItem;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -37,11 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.lang.reflect.Executable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ActionServiceImpl implements ActionService {
@@ -58,8 +53,6 @@ public class ActionServiceImpl implements ActionService {
      *dgTask need to fix action
      * make UI for pick dep / id_FC
      */
-
-
 
 
     /**
@@ -232,6 +225,135 @@ public class ActionServiceImpl implements ActionService {
                 qt.setES("lSBOrder", qt.setESFilt("id_O", id_O), listCol);
             }
             return retResult.ok(CodeEnum.OK.getCode(), res);
+    }
+
+    @Override
+    public ApiResponse applyForScore(String id_O, Integer index,String id_C,String id_U,JSONArray id_Us) {
+        JSONObject result = new JSONObject();
+        try {
+            result.put("desc","申请评分成功!");
+            result.put("type",1);
+            sendMsgNotice(id_C,"申请评分成功!",id_U,id_O,id_Us,index,"score");
+
+            LogFlow logFlow = getNullLogFlow("申请评分成功!",id_C,id_U,new JSONObject(),id_O,index
+                    ,"oQc","score");
+            logFlow.setId_Us(id_Us);
+            ws.sendWSNew(logFlow,0);
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        } catch (Exception e) {
+            result.put("desc","申请评分异常");
+            result.put("type",0);
+            id_Us = new JSONArray();
+            id_Us.add(id_U);
+            sendMsgNotice(id_C,"申请评分异常!",id_U,id_O,id_Us,index,"score");
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        }
+    }
+
+    @Override
+    public ApiResponse haveScore(String id_O, Integer index, Integer score,String id_C,String id_U,JSONArray id_Us) {
+        JSONObject result = new JSONObject();
+        try {
+            qt.setMDContent(id_O, qt.setJson("oQc.objQc."+index+".score",score), Order.class);
+            result.put("desc","评分成功!");
+            result.put("type",1);
+            sendMsgNotice(id_C,"评分成功!",id_U,id_O,id_Us,index,"score");
+
+            LogFlow logFlow = getNullLogFlow("评分成功!",id_C,id_U,new JSONObject(),id_O,index
+                    ,"oQc","score");
+            logFlow.setId_Us(id_Us);
+            ws.sendWSNew(logFlow,0);
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        } catch (Exception e) {
+            result.put("desc","评分异常");
+            result.put("type",0);
+            id_Us = new JSONArray();
+            id_Us.add(id_U);
+            sendMsgNotice(id_C,"评分异常!",id_U,id_O,id_Us,index,"score");
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        }
+    }
+
+    @Override
+    public ApiResponse foCount(String id_O, Integer index,String id_C,String id_U,JSONArray id_Us) {
+        Order order = qt.getMDContent(id_O, Collections.singletonList("oQc"), Order.class);
+        JSONObject result = new JSONObject();
+        if (null == order || null == order.getOQc() || null == order.getOQc().getJSONArray("objQc")) {
+            result.put("desc","订单异常");
+            result.put("type",0);
+            id_Us = new JSONArray();
+            id_Us.add(id_U);
+            sendMsgNotice(id_C,"订单异常",id_U,id_O,id_Us,index,"foCount");
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        }
+        JSONArray objQc = order.getOQc().getJSONArray("objQc");
+        int foUp = objQc.getJSONObject(index).getInteger("foCount");
+        foUp--;
+        if (foUp <= 0) {
+            result.put("desc","回访次数上限！");
+            result.put("type",2);
+            id_Us = new JSONArray();
+            id_Us.add(id_U);
+            sendMsgNotice(id_C,"回访次数上限！",id_U,id_O,id_Us,index,"foCount");
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        }
+        LogFlow logFlow = getNullLogFlow("回访成功!",id_C,id_U,new JSONObject(),id_O,index
+                ,"oQc","foCount");
+        logFlow.setId_Us(id_Us);
+        ws.sendWSNew(logFlow,0);
+
+        qt.setMDContent(id_O, qt.setJson("oQc.objQc."+index+".foCount",foUp), Order.class);
+        result.put("desc","回访成功!");
+        result.put("type",1);
+        sendMsgNotice(id_C,"回访成功!",id_U,id_O,id_Us,index,"foCount");
+        return retResult.ok(CodeEnum.OK.getCode(), result);
+    }
+
+    /**
+     * 发送通知日志方法
+     * @param id_CCus	公司编号
+     * @param desc	消息内容
+     * @param logUser	发送用户编号
+     * @param id_O	日志订单编号
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    public void sendMsgNotice(String id_CCus,String desc,String logUser
+            ,String id_O,JSONArray id_Us,Integer index,String type){
+        LogFlow logFlow = getNullLogFlow(desc,id_CCus,logUser,new JSONObject(),id_O,index
+                ,"action","notice");
+        logFlow.setId_Us(id_Us);
+        logFlow.getData().put("type",type);
+        ws.sendWSNew(logFlow,0);
+    }
+
+    /**
+     * 获取清空并重新赋值的日志信息
+     *
+     * @param desc 日志内容
+     * @param id_C 公司编号
+     * @param id_U 用户编号
+     * @param data 日志详细信息
+     * @param id_O 日志订单编号
+     * @return 返回结果: {@link LogFlow}
+     * @author tang
+     * @date 创建时间: 2023/5/29
+     * @ver 版本号: 1.0.0
+     */
+    private LogFlow getNullLogFlow(String desc, String id_C, String id_U
+            , JSONObject data, String id_O, Integer index,String logType,String subType){
+        LogFlow logFlow = LogFlow.getInstance();
+        logFlow.setLogType(logType);
+        logFlow.setSubType(subType);
+        logFlow.setZcndesc(desc);
+        logFlow.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        logFlow.setId_C(id_C);
+        logFlow.setId_U(id_U);
+        logFlow.setData(data);
+        logFlow.setId_O(id_O);
+        logFlow.setIndex(index);
+        return logFlow;
     }
 
     private void setFavRecent(String id_C, String id_U, String id_O, Integer index, String id_FC, String id_FS, JSONObject wrdN, String pic)
@@ -441,6 +563,45 @@ public class ActionServiceImpl implements ActionService {
                         message = "[已取消]" + msg;
                         isStateChg = true;
                         duraType = "allEnd";
+                        break;
+                    case 54:
+                        // 设置备注信息
+                        // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
+                        message = "[cusMsg-拒收]" + msg;
+
+                        //Adding myself to the id_Us of action to indicate
+                        id_Us.add(tokData.getString("id_U"));
+                        orderAction.setId_Us(id_Us);
+                        res.put("isJoin", 1);
+                        res.put("id_Us", orderAction.getId_Us());
+//                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
+//                            mapKey.put("info.lST", 8);
+//                            listCol.put("lST", 8);
+//                        }
+                        orderAction.setBcdStatus(status);
+//                        duraType = "start";
+                        break;
+                    case 55:
+                        message = "[cusMsg-删除]" + msg;
+
+                        //Adding myself to the id_Us of action to indicate
+                        id_Us.add(tokData.getString("id_U"));
+                        orderAction.setId_Us(id_Us);
+                        res.put("isJoin", 1);
+                        res.put("id_Us", orderAction.getId_Us());
+//                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
+//                            mapKey.put("info.lST", 8);
+//                            listCol.put("lST", 8);
+//                        }
+                        orderAction.setBcdStatus(status);
+                        break;
+                    case 53:
+                        message = "[已恢复执行]" + msg;
+                        orderAction.setBcdStatus(-8);
+                        res.put("isJoin", 1);
+                        res.put("id_Us", orderAction.getId_Us());
+                        isStateChg = true;
+                        duraType = "resume";
                         break;
                     default:
                         message = taskName + "[无法操作]";
@@ -1576,10 +1737,184 @@ public class ActionServiceImpl implements ActionService {
        logLP.setLogData_action(unitAction,unitOItem);
         logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
 
-        // append an OItem + ActionItem, save OItem and action
-        qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem), Order.class);
+//        Order order = qt.getMDContent(id_O, Collections.singletonList("oQc"), Order.class);
+//        JSONObject oQc = order.getOQc();
+//        int isNull = 0;
+//        if (null == oQc) {
+//            oQc = new JSONObject();
+//            isNull = 1;
+//        }
+//        JSONArray objQc = oQc.getJSONArray("objQc");
+        JSONObject objQcSon = new JSONObject();
+        objQcSon.put("score",0);
+        objQcSon.put("foCount",3);
+//        if (null == objQc) {
+//            isNull = 2;
+//            objQc = new JSONArray();
+//            for (int i = 0; i < index; i++) {
+//                objQc.add(objQcSon);
+//            }
+//            objQc.add(objQcSon);
+//            oQc.put("objQc",objQc);
+//        }
+
+//        if (isNull==0) {
+            // append an OItem + ActionItem, save OItem and action
+            qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,"oQc.objQc."+index,objQcSon), Order.class);
+//        } else if (isNull == 1) {
+//            // append an OItem + ActionItem, save OItem and action
+//            qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,"oQc",oQc), Order.class);
+//        } else {
+//            qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,"oQc.objQc",objQc), Order.class);
+//        }
 
         ws.sendWS(logLP);
+
+        return retResult.ok(CodeEnum.OK.getCode(), "done");
+    }
+
+    @Override
+    public ApiResponse createTaskNew(String logType, String id, String id_FS, String id_O, String myCompId, String id_U, String grpU, String dep, JSONObject oItemData, JSONObject wrdNU) {
+        Integer index = 0;
+        Integer prior = 1;
+        JSONObject actData = this.getActionData(id_O, index);
+//        String id_FS = "";
+
+        if (id_O.equals(""))
+        {                // 返回操作失败结果
+            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
+        }
+
+        JSONArray id_Us;
+        JSONArray id_APPs;
+        if (logType.endsWith("SL"))
+            logType = StringUtils.strip(logType, "SL");
+
+        System.out.println("logType:"+logType);
+        if (!id.equals(id_FS)) {
+            Asset asset = qt.getConfig(myCompId,"a-auth","flowControl");
+            if (null == asset || null == asset.getFlowControl()) {
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_GET_ORDER_NULL.getCode(), "asset异常");
+            }
+            JSONArray objData = asset.getFlowControl().getJSONArray("objData");
+            id_Us = new JSONArray();
+            id_APPs = new JSONArray();
+            if (null == id_FS || "".equals(id_FS)) {
+                for (int i = 0; i < objData.size(); i++) {
+                    JSONObject objDataSon = objData.getJSONObject(i);
+                    String id_ONew = objDataSon.getString("id_O");
+                    String type = objDataSon.getString("type");
+                    if (logType.equals(type)&&id_O.equals(id_ONew)) {
+                        JSONArray objUser = objDataSon.getJSONArray("objUser");
+                        for (int j = 0; j < objUser.size(); j++) {
+                            JSONObject objUserSon = objUser.getJSONObject(j);
+                            id_Us.add(objUserSon.getString("id_U"));
+                            if (null==objUserSon.getString("id_APP")||"".equals(objUserSon.getString("id_APP"))) {
+                                id_APPs.add("");
+                            } else {
+                                id_APPs.add(objUserSon.getString("id_APP"));
+                            }
+                        }
+                        break;
+                    }
+                }
+            } else {
+                for (int i = 0; i < objData.size(); i++) {
+                    JSONObject objDataSon = objData.getJSONObject(i);
+                    String idNew = objDataSon.getString("id");
+                    if (id_FS.equals(idNew)) {
+                        JSONArray objUser = objDataSon.getJSONArray("objUser");
+                        for (int j = 0; j < objUser.size(); j++) {
+                            JSONObject objUserSon = objUser.getJSONObject(j);
+                            id_Us.add(objUserSon.getString("id_U"));
+                            if (null==objUserSon.getString("id_APP")||"".equals(objUserSon.getString("id_APP"))) {
+                                id_APPs.add("");
+                            } else {
+                                id_APPs.add(objUserSon.getString("id_APP"));
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        } else {
+            id_Us = null;
+            id_APPs = null;
+        }
+        System.out.println("id_Us:");
+        System.out.println(JSON.toJSONString(id_Us));
+
+//        // Converting id_FS/id_FC
+//        if (logType.endsWith("SL"))
+//        {
+//            //logType = actionSL, FC = FS,
+//            logType = StringUtils.strip(logType, "SL");
+////            id_FS = id_FC;
+////            id_FC = "";
+//        }
+
+        // Make sure index = 0 works by init the oItem[]
+        if (actData != null)
+        {
+            // get the size of oItem, so I can append new "task" to it
+            // 获取oItem的大小，这样我就可以向它附加新的“任务”
+            index = actData.getInteger("size");
+            prior = actData.getJSONArray("oItemArray").getJSONObject(index - 1).getInteger("wn0prior");
+        }
+
+        // Adding oItem and Action
+        OrderOItem unitOItem = new OrderOItem ("","",oItemData.getString("id_CP"),myCompId,myCompId,
+                id_O,index,"","",
+                oItemData.getString("grp"),oItemData.getString("grpB"),prior,oItemData.getString("pic"),
+                oItemData.getInteger("lUT"),oItemData.getInteger("lCR"),oItemData.getDouble("wn2qtyneed"),
+                oItemData.getDouble("wn4price"),oItemData.getJSONObject("wrdNP"),oItemData.getJSONObject("wrdN"),
+                oItemData.getJSONObject("wrddesc"),oItemData.getJSONObject("wrdprep"));
+
+        JSONArray prtPrev = new JSONArray();
+
+        JSONArray allAction = actData.getJSONArray("actionArray"); // this is action.objAction []
+
+        if (index - 1 >= 0) {
+            prtPrev.add(qt.setJson("id_O", id_O, "index", index - 1));
+            allAction.getJSONObject(index - 1).getJSONArray("prtNext").add(qt.setJson("id_O", id_O, "index", index));
+        }
+
+        OrderAction unitAction = new OrderAction(0,1,5,1,
+                "","","",id_O, index, unitOItem.getRKey(),0, index == 0 ? 0 : 1,
+                new JSONArray(),new JSONArray(),new JSONArray(),prtPrev,
+                oItemData.getJSONObject("wrdNP"),oItemData.getJSONObject("wrdN"));
+
+        allAction.add(unitAction);
+
+        this.updateRefOP(myCompId, myCompId,
+                id, id_FS, id_O, "grpTask", oItemData.getJSONObject("wrdNP"), index, true );
+
+
+        // Send a log
+        LogFlow logLP = new LogFlow(logType,id,
+                id,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
+                oItemData.getString("pic"),dep,"准备开始",3,qt.cloneObj(oItemData.getJSONObject("wrdN")),wrdNU);
+        logLP.setLogData_action(unitAction,unitOItem);
+        logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+
+        JSONObject objQcSon = new JSONObject();
+        objQcSon.put("score",0);
+        objQcSon.put("foCount",3);
+
+        qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,"oQc.objQc."+index,objQcSon), Order.class);
+
+        ws.sendWS(logLP);
+
+        if (null!=id_Us && id_Us.size() > 0) {
+            LogFlow logLPNew = new LogFlow(logType,id_FS,
+                    id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
+                    oItemData.getString("pic"),dep,"准备开始",3,qt.cloneObj(oItemData.getJSONObject("wrdN")),wrdNU);
+            logLPNew.setLogData_action(unitAction,unitOItem);
+            logLPNew.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+            logLPNew.setId_Us(id_Us);
+            logLPNew.setId_APPs(id_APPs);
+            ws.sendWSNew(logLPNew,1);
+        }
 
         return retResult.ok(CodeEnum.OK.getCode(), "done");
     }

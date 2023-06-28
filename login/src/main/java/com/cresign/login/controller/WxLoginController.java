@@ -1,10 +1,12 @@
 package com.cresign.login.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.service.WxLoginService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.enumeration.manavalue.HeaderEnum;
+import com.cresign.tools.token.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,6 +46,9 @@ public class WxLoginController {
 
     @Autowired
     private HttpServletRequest request;
+
+    @Autowired
+    private GetUserIdByToken getUserToken;
 
     /**
      * 微信登录接口 (web端)
@@ -165,6 +170,8 @@ public class WxLoginController {
     @PostMapping("/v1/wxmp_register")
     public ApiResponse wxmpRegister(@RequestBody JSONObject reqJson) {
 
+        System.out.println("wxmpRegister:");
+        System.out.println(JSON.toJSONString(reqJson));
         return wxLoginService.wxmpRegister(
                 reqJson.getString("nickName"),
                 reqJson.getString("avatarUrl"),
@@ -193,6 +200,13 @@ public class WxLoginController {
     @SecurityParameter
     @PostMapping("/v1/getAUN")
     public ApiResponse getAUN(@RequestBody JSONObject reqJson) {
-        return wxLoginService.getAUN(reqJson.getString("id_AUN"));
+        return wxLoginService.getAUN(reqJson.getString("id_AUN"),reqJson.getString("id_C"));
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getPhone")
+    public ApiResponse getPhone(@RequestBody JSONObject reqJson) {
+        return wxLoginService.getPhone(reqJson.getString("phone")
+                ,reqJson.getString("id_WX"),reqJson.getString("countryCode"));
     }
 }

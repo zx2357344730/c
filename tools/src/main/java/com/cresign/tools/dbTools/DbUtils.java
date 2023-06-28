@@ -528,6 +528,9 @@ public JSONObject checkCard(Order order)
             if (order.getAction() != null) {
                 order.getOItem().getJSONArray("objCard").add("action");
             }
+            if (order.getOQc() != null) {
+                order.getOItem().getJSONArray("objCard").add("oQc");
+            }
         }
         if (order.getOItem().getJSONArray("arrP") == null)
         {
@@ -588,6 +591,17 @@ public JSONObject checkCard(Order order)
                     }
                     arrayData = order.getAction().getJSONArray("objAction");
                     break;
+                case "oQc":
+                    if (null == order.getOQc()) {
+                        order.setOQc(this.initOQc(order.getOItem().getJSONArray("objItem")));
+                        order.getView().add("oQc");
+                    }
+                    for (int i = 0; i < arrayOItem.size(); i++) {
+                        if (null == order.getOQc().getJSONArray("objQc").getJSONObject(i)) {
+                            this.initOQc(arrayOItem.getJSONObject(i),order.getOQc().getJSONArray("objQc"),i);
+                        }
+                    }
+                    break;
             }
             jsonCard.put(arrayCard.getString(n), arrayData);
     }
@@ -597,7 +611,7 @@ public JSONObject checkCard(Order order)
 
     public JSONObject summOrder(Order order, JSONObject listCol)
     {
-        return this.summOrder(order, listCol, qt.setArray("oStock", "action"));
+        return this.summOrder(order, listCol, qt.setArray("oStock", "action", "oQc"));
     }
     /**
      *
@@ -615,6 +629,7 @@ public JSONObject checkCard(Order order)
         JSONArray oItem = order.getOItem().getJSONArray("objItem");
         JSONArray oStock = null;
         JSONArray action = null;
+        JSONArray oQc = null;
 
         Double wn2fin = 0.0;
         Double wn2made = 0.0;
@@ -631,6 +646,10 @@ public JSONObject checkCard(Order order)
         if (order.getOItem().getJSONArray("objCard").contains("action") && order.getAction() != null)
         {
             action = order.getAction().getJSONArray("objAction");
+        }
+        if (order.getOItem().getJSONArray("objCard").contains("oQc") && null != order.getOQc())
+        {
+            oQc = order.getOQc().getJSONArray("objQc");
         }
 
         for (int i = 0; i < oItem.size(); i++)
@@ -695,6 +714,9 @@ public JSONObject checkCard(Order order)
                     }
                 }
             }
+            if (null != oQc && cardList.contains("oQc")){
+                System.out.println("oQc");
+            }
         }
         wn2fin = dub.divide(wn2made, oItem.size());
         qt.errPrint("div", null, count, oItem.size());
@@ -716,7 +738,9 @@ public JSONObject checkCard(Order order)
             result.put("action", order.getAction());
             order.getAction().put("wn2progress", wn2progress);
         }
-
+        if (null != oQc && cardList.contains("oQc")) {
+            result.put("oQc", order.getOQc());
+        }
         return result;
 
     }
@@ -766,6 +790,24 @@ public JSONObject checkCard(Order order)
         }
     }
 
+    public void initOQc(JSONObject orderOItem, JSONArray oQc, Integer index)
+    {
+        if (oQc.size() <= index || oQc.getJSONObject(index) == null) {
+            JSONObject oQcData = qt.setJson(
+                    "score", 0, "foCount", 5);
+
+            oQc.set(index, oQcData);
+        }
+//        if (oQc.getJSONObject(index).getJSONArray("score") == null)
+//        {
+//            oQc.getJSONObject(index).put("score", 0);
+//        }
+//        if (oQc.getJSONObject(index).getJSONArray("foCount") == null)
+//        {
+//            oQc.getJSONObject(index).put("foCount", 5);
+//        }
+    }
+
     /***
      * init entire oStock from nothing
      * @param oItem need to send the entire oItem.objItem for data to init
@@ -784,6 +826,18 @@ public JSONObject checkCard(Order order)
         action.put("grpGroup", new JSONObject());
         action.put("grpBGroup", new JSONObject());
         return action;
+    }
+
+    public JSONObject initOQc(JSONArray oItem)
+    {
+        JSONArray actionArray = new JSONArray();
+        for (int i = 0; i < oItem.size(); i++)
+        {
+            this.initOQc(oItem.getJSONObject(i), actionArray, i);
+        }
+        JSONObject oQc = new JSONObject();
+        oQc.put("objQc", actionArray);
+        return oQc;
     }
 
     public void initOStock(JSONObject orderOItem, JSONArray oStock, Integer index)

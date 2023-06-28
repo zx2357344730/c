@@ -156,11 +156,12 @@ SMS_CODE_NOT_FOUND.getCode(), null);
                         // Check id_APP == user's id_APP?
                         // because you could be using web to register/login, so it maybe different
                         // if not, update current DB
-                        if (result.getString("id_APP") == null || !result.getString("id_APP").equals(id_APP)) {
+                        if (null == result.getString("id_APP") || "".equals(result.getString("id_APP"))
+                                || !result.getString("id_APP").equals(id_APP)) {
                             result.put("id_APP", id_APP);
 //                            mongoTemplate.updateFirst(mbnQue, new Update().set("info.id_APP", id_APP), User.class);
                             qt.setMDContent(user.getId(), qt.setJson("info.id_APP", id_APP), User.class);
-
+                            qt.setES("lNUser", qt.setESFilt("id_U",user.getId()), qt.setJson("id_APP",id_APP));
 
                             JSONObject rolex = user.getRolex();
 

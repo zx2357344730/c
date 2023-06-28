@@ -249,6 +249,29 @@ public class ActionController {
     }
 
     @SecurityParameter
+    @PostMapping("/v1/createTaskNew")
+    public ApiResponse createTaskNew(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+
+        try {
+            return actionService.createTaskNew(
+                    reqJson.getString("logType"),
+                    reqJson.getString("id"),
+                    reqJson.getString("id_FS"),
+                    reqJson.getString("id_O"),
+                    tokData.getString("id_C"),
+                    tokData.getString("id_U"),
+                    tokData.getString("grpU"),
+                    tokData.getString("dep"),
+                    reqJson.getJSONObject("oItemData"),
+                    tokData.getJSONObject("wrdNU"));
+        } catch (Exception e)
+        {
+            return getUserToken.err(reqJson, "createTask", e);
+        }
+    }
+
+    @SecurityParameter
     @PostMapping("/v1/up_FC_action_grpB")
     public ApiResponse up_FC_action_grpB(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
@@ -353,6 +376,28 @@ public class ActionController {
         );
     }
 
+    @SecurityParameter
+    @PostMapping("/v1/applyForScore")
+    public ApiResponse applyForScore(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        return actionService.applyForScore(reqJson.getString("id_O"), reqJson.getInteger("index")
+                , tokData.getString("id_C"), tokData.getString("id_U"),reqJson.getJSONArray("id_Us"));
+    }
 
+    @SecurityParameter
+    @PostMapping("/v1/haveScore")
+    public ApiResponse haveScore(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        return actionService.haveScore(reqJson.getString("id_O"), reqJson.getInteger("index"), reqJson.getInteger("score")
+                , tokData.getString("id_C"), tokData.getString("id_U"),reqJson.getJSONArray("id_Us"));
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/foCount")
+    public ApiResponse foCount(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        return actionService.foCount(reqJson.getString("id_O"), reqJson.getInteger("index")
+                , tokData.getString("id_C"), tokData.getString("id_U"),reqJson.getJSONArray("id_Us"));
+    }
 
 }

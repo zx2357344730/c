@@ -65,7 +65,7 @@ public class RegisterUserUtils {
             qt.addMD(addUser);
 
             lNUser lnuser = new lNUser(addID,infoJson.getWrdN(),infoJson.getWrddesc(),
-                    infoJson.getWrdNReal(),null, infoJson.getPic(), "","", infoJson.getCem(), "",infoJson.getCnty(), infoJson.getDefNG(), infoJson.getDefCR());
+                    infoJson.getWrdNReal(),null, infoJson.getPic(), "","", infoJson.getCem(), infoJson.getMbn(),infoJson.getCnty(), infoJson.getDefNG(), infoJson.getDefCR());
 
             qt.addES("lnuser", lnuser);
             // 查询公司

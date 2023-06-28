@@ -56,6 +56,8 @@ public class Order {
 
     private JSONObject cusmsg;
 
+    private JSONObject oQc;
+
     @JsonProperty("oStock")
     private JSONObject oStock;
 

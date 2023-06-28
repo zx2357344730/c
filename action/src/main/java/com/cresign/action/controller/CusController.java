@@ -46,7 +46,10 @@ public class CusController {
     @SecurityParameter
     @PostMapping("/v1/sendUserCusCustomer")
     public ApiResponse sendUserCusCustomer(@RequestBody JSONObject reqJson){
-        return cusService.sendUserCusCustomer(JSONObject.parseObject(JSON.toJSONString(reqJson), LogFlow.class));
+        LogFlow logFlow = JSONObject.parseObject(JSON.toJSONString(reqJson), LogFlow.class);
+        logFlow.setId_U(getUserToken.getTokenOfUserId(request
+                .getHeader("authorization"), request.getHeader("clientType")));
+        return cusService.sendUserCusCustomer(logFlow);
     }
 
     /**
@@ -60,7 +63,10 @@ public class CusController {
     @SecurityParameter
     @PostMapping("/v1/sendUserCusService")
     public ApiResponse sendUserCusService(@RequestBody JSONObject reqJson){
-        return cusService.sendUserCusService(JSONObject.parseObject(JSON.toJSONString(reqJson), LogFlow.class));
+        LogFlow logFlow = JSONObject.parseObject(JSON.toJSONString(reqJson), LogFlow.class);
+        logFlow.setId_U(getUserToken.getTokenOfUserId(request
+                .getHeader("authorization"), request.getHeader("clientType")));
+        return cusService.sendUserCusService(logFlow);
     }
 
     /**
@@ -75,7 +81,8 @@ public class CusController {
     @PostMapping("/v1/cusOperate")
     public ApiResponse cusOperate(@RequestBody JSONObject reqJson){
         return cusService.cusOperate(reqJson.getString("id_C")
-                ,getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+                ,getUserToken.getTokenOfUserId(request
+                        .getHeader("authorization"), request.getHeader("clientType"))
                 ,reqJson.getString("id_O"),reqJson.getInteger("index")
                 ,reqJson.getInteger("bcdStatus"));
     }
@@ -126,5 +133,46 @@ public class CusController {
         System.out.println(JSON.toJSONString(reqJson));
         return cusService.getLogAuth(reqJson.getString("id_C")
                 , reqJson.getString("grpUW"), reqJson.getString("grpUN"),reqJson.getString("type"));
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/createCus")
+    public ApiResponse createCus(@RequestBody JSONObject reqJson){
+        return cusService.createCus(reqJson.getString("id_CCus")
+                , getUserToken.getTokenOfUserId(request
+                        .getHeader("authorization"), request.getHeader("clientType"))
+                , reqJson.getString("id_O"));
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getCusListByUser")
+    public ApiResponse getCusListByUser(@RequestBody JSONObject reqJson){
+        return cusService.getCusListByUser(
+                getUserToken.getTokenOfUserId(request
+                        .getHeader("authorization"), request.getHeader("clientType"))
+                ,reqJson.getJSONArray("types"));
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getCusListByCusUser")
+    public ApiResponse getCusListByCusUser(@RequestBody JSONObject reqJson){
+        return cusService.getCusListByCusUser(
+                getUserToken.getTokenOfUserId(request
+                        .getHeader("authorization"), request.getHeader("clientType"))
+                , reqJson.getString("id_O"),reqJson.getJSONArray("types"));
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/renewCusUser")
+    public ApiResponse renewCusUser(@RequestBody JSONObject reqJson){
+        return cusService.renewCusUser(reqJson.getString("id_C"),reqJson.getJSONArray("indexS")
+                ,reqJson.getJSONArray("ids"),reqJson.getInteger("type"));
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/restoreCusLog")
+    public ApiResponse restoreCusLog(@RequestBody JSONObject reqJson){
+        return cusService.restoreCusLog(reqJson.getString("id_O"),reqJson.getString("id_CCus")
+                ,reqJson.getInteger("index"));
     }
 }

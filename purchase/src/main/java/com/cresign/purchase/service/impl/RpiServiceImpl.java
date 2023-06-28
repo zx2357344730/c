@@ -40,20 +40,23 @@ public class RpiServiceImpl implements RpiService {
      * 树莓派gpio的redis存储前缀
      */
     public static final String PI_GPIO = "pi:gp_";
+    public static final String PI_GPIO_H = "gp_";
     /**
      * 树莓派的redis存储前缀
      */
     public static final String PI = "pi:p_";
+    public static final String PI_Q = "pi";
+    public static final String PI_H = "p_";
     /**
      * 二维码前缀
      */
     public static final String RPI_URL_PREFIX = "https://www.cresign.cn/qrCodeTest?qrType=rpi&t=";
 
-    /**
-     * 注入redis数据库下标1模板
-     */
-    @Resource
-    private StringRedisTemplate redisTemplate0;
+//    /**
+//     * 注入redis数据库下标1模板
+//     */
+//    @Resource
+//    private StringRedisTemplate redisTemplate0;
 
     @Resource
     private RetResult retResult;
@@ -111,7 +114,8 @@ public class RpiServiceImpl implements RpiService {
                 qt.setMDContent(assetId,qt.setJson("rpi",rpi), Asset.class);
 
                 // 获取redis对应的rname信息
-                String rnameRedisDataStr = redisTemplate0.opsForValue().get(PI + rname);
+//                String rnameRedisDataStr = redisTemplate0.opsForValue().get(PI + rname);
+                String rnameRedisDataStr = qt.getRDVal(PI_Q,PI_H+rname);
                 // 将字符串转换成json对象
                 JSONObject rnameRedisData = JSONObject.parseObject(rnameRedisDataStr);
                 // 获取piSon字段信息,piSon = 所有gpio信息记录
@@ -121,11 +125,13 @@ public class RpiServiceImpl implements RpiService {
                 // 遍历所有gpio信息记录的值信息
                 piSon.values().forEach(v -> keys.add(PI_GPIO + v.toString()));
                 // 根据值信息删除redis对应的gpio信息
-                redisTemplate0.delete(keys);
+//                redisTemplate0.delete(keys);
+                qt.delRDByCollection(keys);
                 // 情况rname的redis信息
                 rnameRedisData.put("id_C","");
                 rnameRedisData.put("piSon",new JSONObject());
-                redisTemplate0.opsForValue().set(PI + rname, JSON.toJSONString(rnameRedisData));
+//                redisTemplate0.opsForValue().set(PI + rname, JSON.toJSONString(rnameRedisData));
+                qt.setRDSet(PI_Q,PI_H+rname,JSON.toJSONString(rnameRedisData),300L);
                 return retResult.ok(CodeEnum.OK.getCode(), "删除公司绑定成功");
             } else {
                 // 否则输出异常信息
@@ -164,7 +170,8 @@ public class RpiServiceImpl implements RpiService {
     @Override
     public ApiResponse rpiCode(String rname,String id_C) {
         // 获取rname的redis信息
-        String rpiData = redisTemplate0.opsForValue().get(PI + rname);
+//        String rpiData = redisTemplate0.opsForValue().get(PI + rname);
+        String rpiData = qt.getRDVal(PI_Q,PI_H+rname);
 //        String id_C = can.getString("id_C");
         // 判断信息为空
         if (null == rpiData || "".equals(rpiData)) {
@@ -242,11 +249,13 @@ public class RpiServiceImpl implements RpiService {
                 resultArr.add(result);
                 rnameData.put(gp,token);
                 // 设置树莓派gpio信息
-                redisTemplate0.opsForValue().set(PI_GPIO + token,JSON.toJSONString(redisJ));
+//                redisTemplate0.opsForValue().set(PI_GPIO + token,JSON.toJSONString(redisJ));
+                qt.setRDSet(PI_Q,PI_GPIO_H+token,JSON.toJSONString(redisJ),300L);
             });
             piData.put("piSon",piDataSon);
             // 设置树莓派信息
-            redisTemplate0.opsForValue().set(PI + rname,JSON.toJSONString(piData));
+//            redisTemplate0.opsForValue().set(PI + rname,JSON.toJSONString(piData));
+            qt.setRDSet(PI_Q,PI_H + rname,JSON.toJSONString(piData),300L);
             rnames.put(rname,rnameData);
 //            rpi.put("rnames",rnames);
 //            // 定义存储flowControl字典
@@ -275,7 +284,8 @@ public class RpiServiceImpl implements RpiService {
     public ApiResponse requestRpiStatus(String token,String id_C,String id_U) {
 //        String token = can.getString("token");
         // 获取gpio对应的token的redis信息
-        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
+//        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
+        String gpioDataStr = qt.getRDVal(PI_Q,PI_GPIO_H+token);
         if (null == gpioDataStr) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
@@ -335,7 +345,8 @@ public class RpiServiceImpl implements RpiService {
             ,String pic,Integer wn2qtynow,String grpB,JSONObject fields,JSONObject wrdNP
             ,JSONObject wrdN,String dep) {
         // 获取gpio对应的token的redis信息
-        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
+//        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
+        String gpioDataStr = qt.getRDVal(PI_Q,PI_GPIO_H+token);
         if (null == gpioDataStr) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
@@ -386,7 +397,8 @@ public class RpiServiceImpl implements RpiService {
             System.out.println("发送消息:");
             System.out.println(JSON.toJSONString(logFlow));
             // 更新redis
-            redisTemplate0.opsForValue().set(PI_GPIO + token,JSON.toJSONString(gpioData));
+//            redisTemplate0.opsForValue().set(PI_GPIO + token,JSON.toJSONString(gpioData));
+            qt.setRDSet(PI_Q,PI_GPIO_H+token,JSON.toJSONString(gpioData),300L);
             return retResult.ok(CodeEnum.OK.getCode(), "绑定gpIo成功");
         } else {
             return errResultPi(status);
@@ -408,7 +420,8 @@ public class RpiServiceImpl implements RpiService {
 //        String token = can.getString("token");
 //        String id_C = can.getString("id_C");
         // 获取gpio对应的token的redis信息
-        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
+//        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
+        String gpioDataStr = qt.getRDVal(PI_Q,PI_GPIO_H+token);
         if (null == gpioDataStr) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
@@ -436,7 +449,8 @@ public class RpiServiceImpl implements RpiService {
             System.out.println("发送消息:");
             System.out.println(JSON.toJSONString(logFlow));
             // 更新redis
-            redisTemplate0.opsForValue().set(PI_GPIO + token,JSON.toJSONString(gpioData));
+//            redisTemplate0.opsForValue().set(PI_GPIO + token,JSON.toJSONString(gpioData));
+            qt.setRDSet(PI_Q,PI_GPIO_H+token,JSON.toJSONString(gpioData),300L);
             return retResult.ok(CodeEnum.OK.getCode(), "解除绑定gpIo成功");
         } else {
             return errResultPi(status);
@@ -454,7 +468,8 @@ public class RpiServiceImpl implements RpiService {
      */
     private int piNameSta(String rname,String id_C){
         // 获取树莓派机器信息
-        String rpiDataStr = redisTemplate0.opsForValue().get(PI + rname);
+//        String rpiDataStr = redisTemplate0.opsForValue().get(PI + rname);
+        String rpiDataStr = qt.getRDVal(PI_Q,PI_H+rname);
         // 判断树莓派机器信息为空
         if (null == rpiDataStr || "".equals(rpiDataStr)) {
             return 1;

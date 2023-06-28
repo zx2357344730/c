@@ -121,20 +121,20 @@ public class Qt {
 //        }
 //        return result;
 //    }
-    public <T> T  getMDContentByKv(String key,String val, String field, Class<T> classType) {
-
-        Query query = new Query(new Criteria(key).is(val));
-        if (field != null && !field.equals("")) {
-            query.fields().include(field);
-        }
-        T result;
-        try {
-            result = mongoTemplate.findOne(query, classType);
-        } catch (Exception e){
-            throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
-        }
-        return result;
-    }
+//    public <T> T  getMDContentByKv(String key,String val, String field, Class<T> classType) {
+//
+//        Query query = new Query(new Criteria(key).is(val));
+//        if (field != null && !field.equals("")) {
+//            query.fields().include(field);
+//        }
+//        T result;
+//        try {
+//            result = mongoTemplate.findOne(query, classType);
+//        } catch (Exception e){
+//            throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
+//        }
+//        return result;
+//    }
 
     public <T> T  getMDContent(String id,  String field, Class<T> classType) {
 
@@ -1378,6 +1378,11 @@ public class Qt {
         return (String) redisTemplate0.opsForHash().get(collection + ":" + hash, key);
     }
 
+    public String getRDVal(String collection, String hash)
+    {
+        return redisTemplate0.opsForValue().get(collection + ":" + hash);
+    }
+
     public JSONArray getRDHashMulti(String hash, List<Object> names)
     {
         JSONArray arrayService = new JSONArray();
@@ -1394,6 +1399,10 @@ public class Qt {
     public void delRD(String collection, String hash)
     {
         redisTemplate0.delete(collection + ":"+ hash);
+    }
+    public void delRDByCollection(Collection<String> keys)
+    {
+        redisTemplate0.delete(keys);
     }
 
     public void delRDHashItem(String collection, String hash, String key)

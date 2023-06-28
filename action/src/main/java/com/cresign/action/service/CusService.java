@@ -24,6 +24,10 @@ public interface CusService {
 //     * @ver 版本号: 1.0.0
 //     */
 //    ApiResponse getCreateCus(String id_CCus,String id_U,String id_O);
+    ApiResponse renewCusUser(String id_C, JSONArray indexS, JSONArray ids, Integer type);
+    ApiResponse createCus(String id_CCus,String id_U,String id_O);
+    ApiResponse getCusListByUser(String id_U,JSONArray types);
+    ApiResponse getCusListByCusUser(String id_U,String id_O,JSONArray types);
 
     /**
      * 顾客发送日志api
@@ -72,7 +76,7 @@ public interface CusService {
      */
     ApiResponse cusOperate(String id_CCus,String id_U,String id_O,int index,int bcdStatus);
 
-    ApiResponse restoreCusLog(String id_O,String id_CCus);
+    ApiResponse restoreCusLog(String id_O,String id_CCus,Integer index);
 
     /**
      * 根据id_C获取公司的聊天群信息

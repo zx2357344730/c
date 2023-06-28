@@ -35,14 +35,14 @@ public class OrderCusmsg {
     private Integer index;
 
     /**
-     * 负责人id
+     * 顾客id，提出人id
      */
     private String id_U;
 
     /**
-     * 提出人id
+     * 负责人id
      */
-    private String id_UPropose;
+    private String id_UCus;
 
     /**
      * 类型
@@ -59,4 +59,23 @@ public class OrderCusmsg {
      */
     private Integer score = 0;
 
+    /**
+     * 回访次数
+     */
+    private Integer cusFoUp;
+
+//    /**
+//     * 是否拒收：== 1 说明拒收了，== 0 说明正常
+//     */
+//    private Integer isRejection;
+
+    /**
+     * 负责人头像
+     */
+    private String id_UCusImg;
+
+    /**
+     * 顾客头像，提出人头像；
+     */
+    private String id_UImg;
 }

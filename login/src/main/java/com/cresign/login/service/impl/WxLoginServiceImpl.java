@@ -22,6 +22,7 @@ import com.cresign.tools.enumeration.manavalue.ClientEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.es.lBUser;
+import com.cresign.tools.pojo.es.lNUser;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.cresign.tools.request.HttpClientUtil;
@@ -264,7 +265,7 @@ WX_NOT_BIND.getCode(),unionid);
 
 
         //创建Map接口实例HashMap对象
-        Map<String, Object> userInfo = new HashMap(3);
+        Map<String, Object> userInfo = new HashMap<>(3);
         // 2、对encryptedData加密数据进行AES解密 ////////////////
         try {
 
@@ -581,12 +582,17 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         String id_U = qt.GetObjectId();
         user.setId(id_U);
         UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,null, null, "5f2a2502425e1b07946f52e9","cn","CNY",
-                avatarUrl,"China","",phoneNumber,countryCode);
+                avatarUrl,"China","",phoneNumber,countryCode,"");
         user.setInfo(userInfo);
         user.setView(viewArray);
         user.setRolex(rolexMap);
 
         mongoTemplate.insert(user);
+
+//        lNUser addLNUser = new lNUser(id_U,wrdNMap,null,null,null,avatarUrl,null
+//                ,unionId,null,"",phoneNumber,"China","cn","CNY"
+//                ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()),DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//        qt.addES("lNUser",addLNUser);
 
         // 3.插入ES lbuser索引中新增列表
         JSONObject wrdNCB = new JSONObject();
@@ -610,16 +616,42 @@ SMS_CODE_NOT_FOUND.getCode(), null);
     @Override
     public ApiResponse setAUN(String id_U,String id_AUN) {
         qt.setMDContent(id_U,qt.setJson("info.id_AUN",id_AUN),User.class);
+        qt.setES("lBUser", qt.setESFilt("id_U", id_U), qt.setJson("id_AUN", id_AUN));
         return retResult.ok( CodeEnum.OK.getCode(), "成功!");
     }
 
     @Override
-    public ApiResponse getAUN(String id_AUN) {
-        User info = qt.getMDContentByKv("info.id_AUN", id_AUN, "info", User.class);
+    public ApiResponse getAUN(String id_AUN,String id_C) {
+        JSONObject userInfo = qt.getES("lBUser", qt.setESFilt("id_CB", id_C,"id_AUN",id_AUN)).getJSONObject(0);
+        System.out.println("userList:");
+        System.out.println(JSON.toJSONString(userInfo));
+        User info = qt.getMDContent(userInfo.getString("id_U"), "info", User.class);
         if (null != info) {
             return retResult.ok( CodeEnum.OK.getCode(), "1");
         }
         return retResult.ok( CodeEnum.OK.getCode(), "0");
+    }
+
+    @Override
+    public ApiResponse getPhone(String phone, String id_WX,String countryCode) {
+//        qt.setES("lNUser", qt.setESFilt("id_U", "6256789ae1908c03460f906f")
+//                , qt.setJson("id_AUN", "oU5Yyt3VIicnFhKMsGNYYHDYRi3Y","id_WX","","mbn","+8619906364962"));
+//        JSONArray userInfo = qt.getES("lNUser", qt.setESFilt("id_U","6256789ae1908c03460f906f"));
+
+//        qt.setES("lNUser", qt.setESFilt("mbn",("+"+countryCode+phone)), qt.setJson("id_WX",""));
+        System.out.println("--getPhone--");
+
+//        return retResult.ok( CodeEnum.OK.getCode(), 0);
+
+        JSONObject userInfo = qt.getES("lNUser", qt.setESFilt("mbn",("+"+countryCode+phone))).getJSONObject(0);
+        if (null != userInfo) {
+            System.out.println("userInfo:");
+            System.out.println(JSON.toJSONString(userInfo));
+            qt.setES("lNUser", qt.setESFilt("mbn",("+"+countryCode+phone)), qt.setJson("id_WX",id_WX));
+            qt.setMDContent(userInfo.getString("id_U"),qt.setJson("info.id_WX",id_WX),User.class);
+            return retResult.ok( CodeEnum.OK.getCode(), 1);
+        }
+        return retResult.ok( CodeEnum.OK.getCode(), 0);
     }
 
 //    @Override

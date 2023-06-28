@@ -263,7 +263,8 @@ public class SetAuthServicelmpl implements SetAuthService {
          */
         Query userQuery = new Query(new Criteria("id").is(id_U));
         mongoTemplate.updateFirst(userQuery, new Update().set("info.id_AUN", id_AUN), User.class);
-
+//        qt.setES("lBUser", qt.setESFilt("id_U", id_U), qt.setJson("id_AUN", id_AUN));
+        qt.setES("lNUser", qt.setESFilt("id_U", id_U), qt.setJson("id_AUN", id_AUN));
         return retResult.ok(CodeEnum.OK.getCode(), null);
 
     }
