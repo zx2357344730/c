@@ -633,6 +633,7 @@ public class ActionServiceImpl implements ActionService {
                             orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), message, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
 
                     // Here set time info into action's log
+                    logL.setLogData_action(orderAction, orderOItem);
 
                     if (duraType.equals("start") || duraType.equals("resume")) {
                         logL.setActionTime(DateUtils.getTimeStamp(), 0L, duraType);
@@ -640,7 +641,6 @@ public class ActionServiceImpl implements ActionService {
                         logL.setActionTime(0L, DateUtils.getTimeStamp(), duraType);
                     }
 
-                    logL.setLogData_action(orderAction, orderOItem);
                     ws.sendWS(logL);
                 }
 
@@ -660,9 +660,8 @@ public class ActionServiceImpl implements ActionService {
                         id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
                         orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
 
+                    // I am just fixing this by putting the "finish" time into calculation and ignoring the last log
                     this.sumDura(id_O, index, logDURA);
-
-
                 }
 
 
@@ -698,14 +697,39 @@ public class ActionServiceImpl implements ActionService {
                     if (null != listCol.getInteger("lST")) {
                         qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
                     }
-//                } catch (RuntimeException e) {
-//                    System.out.println("shit X");
-//
-//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
-//                }
 
                 // if Quest, send log + update OItem of myself = task = DG = above
                 // get upPrnt data, and find the prob, set that status of Prob to status
+
+                //*** Here we set oStock qty to 1 whenever noP task is completed
+                if (status == 2 && orderOItem.getId_P().equals(""))
+                {
+                    Order oStockCheck = qt.getMDContent(id_O, Arrays.asList("oStock", "action", "oItem", "view"), Order.class);
+                    if (oStockCheck.getOStock() != null)
+                    {
+                        Double qty = oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).getDouble("wn2qtynow");
+                        Double qtyAdding = 1 - qty;
+
+                        oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).put("wn2qtynow", 1.0);
+                        JSONObject listCol2 = new JSONObject();
+                        dbu.summOrder(oStockCheck, listCol2, qt.setArray("oStock"));
+                        qt.saveMD(oStockCheck);
+                        qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
+
+                        LogFlow log = new LogFlow(tokData, oStockCheck.getOItem(), oStockCheck.getAction(), "", id_O, index,
+                                "assetflow", "qtyChg", orderAction.getRefOP() + "-" + orderOItem.getWrdN().getString("cn") +
+                                " 完成了 " + qtyAdding, 3);
+
+                        Double price = orderOItem.getWn4price() == null ? 0.0: orderOItem.getWn4price();
+                        log.setLogData_assetflow(qtyAdding, price, "","");
+
+                        ws.sendWS(log);
+
+                    }
+                    //getOStock (if not null)
+                    //was 0.3 then set to 1
+                    //send log that I finished 0.7
+                }
 
                 if (orderAction.getBisactivate() == 7)
                 {
@@ -728,16 +752,77 @@ public class ActionServiceImpl implements ActionService {
                     }
                 } else if ((status == 2 && orderAction.getBisactivate() != 4) || status == 7) {
                     // activate = 4 means Skip = already pushed Next
-                    if (orderAction.getUpPrnts().size() == 0 && orderOItem.getId_P().equals(""))
+                    if (orderAction.getUpPrnts().size() == 0 && orderOItem.getId_P().equals("")) {
+                        //Here for noP, DO NOT check parent, it will blow up
                         this.updateNext(orderAction, tokData);
-                    else
+                    }
+                    else {
+                        //for regular DG, we will go check our parent first
+                        //then push it together with myself because I am always the first Item
                         this.updateParent(orderAction, tokData);
+                    }
+                } else if (status == 1 && orderAction.getBmdpt() == 4)
+                {
+                    // here I must check all my subParts, and see if they are prtPrev.size == 0
+                    // if so, push
+                    this.updateSon(orderAction, tokData);
                 }
 
 
             // 抛出操作成功异常
             return retResult.ok(CodeEnum.OK.getCode(), res);
         }
+    private void updateSon(OrderAction orderAction, JSONObject tokData)
+    {
+
+        for (Integer i = 0; i < orderAction.getSubParts().size(); i++ )
+        {
+            // 获取子产品的id + index
+            String sonId = orderAction.getSubParts().getJSONObject(i).getString("id_O");
+            Integer sonIndex = orderAction.getSubParts().getJSONObject(i).getInteger("index");
+
+            JSONObject actData = this.getActionData(sonId, sonIndex);
+            qt.errPrint("oAction", null, actData);
+
+            if (null != actData) {
+
+                OrderOItem orderOItem1 = JSONObject.parseObject(JSON.toJSONString(actData.get("orderOItem")), OrderOItem.class);
+                OrderAction orderAction1 = JSONObject.parseObject(JSON.toJSONString(actData.get("orderAction")), OrderAction.class);
+
+                if (orderAction1.getBcdStatus() == 100 && orderAction1.getPrtPrev().size() == 0) {
+                    // 设置该产品的上一个数量减一
+                    orderAction1.setBcdStatus(0); //状态改为准备开始
+                    orderAction1.setBisPush(1);
+
+                    this.updateRefOP(tokData.getString("id_C"), orderOItem1.getId_C(),
+                            actData.getString("id_FC"),
+                            actData.getString("id_FS"), orderAction1.getId_OP(), orderAction1.getRefOP(),
+                            orderAction1.getWrdNP(), sonIndex, true);
+
+
+                    // Start making log with data
+                    LogFlow logL = new LogFlow("action", actData.getString("id_FC"),
+                            actData.getString("id_FS"), "stateChg",
+                            tokData.getString("id_U"), tokData.getString("grpU"), orderOItem1.getId_P(), orderOItem1.getGrpB(), orderOItem1.getGrp(),
+                            orderAction1.getId_OP(), sonId, sonIndex, tokData.getString("id_C"), orderOItem1.getId_C(),
+                            "", tokData.getString("dep"), orderOItem1.getWrdN().get("cn") + "准备工序组开始", 3, orderOItem1.getWrdN(), tokData.getJSONObject("wrdNU"));
+                    logL.setLogData_action(orderAction1, orderOItem1);
+                    logL.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+
+                    logL.getData().put("wn0prog", 2);
+
+                    // 调用发送日志方法
+                    ws.sendWS(logL);
+                    qt.errPrint("oAction", null, logL);
+
+
+                }
+                qt.setMDContent(sonId, qt.setJson("action.objAction." + sonIndex, orderAction1), Order.class);
+                qt.errPrint("oAction", null, sonId, sonIndex, orderAction1);
+
+            }
+        }
+    }
 
     private void updateNext(OrderAction orderAction, JSONObject tokData)
     {
@@ -749,55 +834,20 @@ public class ActionServiceImpl implements ActionService {
             Integer nextIndex = orderAction.getPrtNext().getJSONObject(i).getInteger("index");
 
                 JSONObject actData = this.getActionData(nextId, nextIndex);
-            qt.errPrint("oAction", null, actData);
+            qt.errPrint("inUPNEXT", null, actData);
 
             if (null != actData) {
-
                     OrderOItem orderOItem1 = JSONObject.parseObject(JSON.toJSONString(actData.get("orderOItem")),OrderOItem.class);
                     OrderAction orderAction1 = JSONObject.parseObject(JSON.toJSONString(actData.get("orderAction")),OrderAction.class);
 
                     if (orderAction1.getBcdStatus() == 100) {
                         // 设置该产品的上一个数量减一
                         orderAction1.setSumPrev(orderAction1.getSumPrev() - 1);
-                        qt.errPrint("oAction", null, orderAction1);
+                        qt.errPrint("ooooooo", null, orderOItem1.getWrdN(), orderAction1);
 
                         // 判断下一个产品子产品是否为0, // both sumXXX are 0, send log
-                        if (orderAction1.getSumPrev() <= 0) {
-
-
-                            if (orderAction1.getBmdpt() != 4 && orderAction1.getSumChild() == 0) {
-                                orderAction1.setBcdStatus(0); //状态改为准备开始
-                                orderAction1.setBisPush(1);
-
-                                this.updateRefOP(tokData.getString("id_C"), orderOItem1.getId_C(),
-                                        actData.getString("id_FC"),
-                                        actData.getString("id_FS"), orderAction1.getId_OP(), orderAction1.getRefOP(),
-                                        orderAction1.getWrdNP(), nextIndex, true );
-
-
-
-                                // Start making log with data
-                                LogFlow logL = new LogFlow("action", actData.getString("id_FC"),
-                                        actData.getString("id_FS"), "stateChg",
-                                        tokData.getString("id_U"), tokData.getString("grpU"), orderOItem1.getId_P(),orderOItem1.getGrpB(), orderOItem1.getGrp(),
-                                        orderAction1.getId_OP(), nextId, nextIndex, tokData.getString("id_C"), orderOItem1.getId_C(),
-                                        "", tokData.getString("dep"), orderOItem1.getWrdN().get("cn") + "准备开始", 3, orderOItem1.getWrdN(), tokData.getJSONObject("wrdNU"));
-                                logL.setLogData_action(orderAction1, orderOItem1);
-                                logL.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
-
-                                logL.getData().put("wn0prog", 2);
-
-                                // 调用发送日志方法
-                                ws.sendWS(logL);
-
-                            }
-                            else if (orderAction1.getBmdpt() == 4)
-//                            else if (orderAction1.getId_P() == null || orderAction1.getId_P() == "")
-                            {
-
-                                qt.errPrint("in id_P", null, orderAction1);
-
-                                // Start myself, because I am a Process group and I don't need sumChild == 0 to start
+                        if (orderAction1.getSumPrev() <= 0 && (orderAction1.getSubParts().size() == 0 || orderAction1.getBmdpt() == 4)) {
+//                            if (orderAction1.getBmdpt() != 4 && orderAction1.getSumChild() == 0) {
                                 orderAction1.setBcdStatus(0); //状态改为准备开始
                                 orderAction1.setBisPush(1);
 
@@ -819,55 +869,8 @@ public class ActionServiceImpl implements ActionService {
 
                                 // 调用发送日志方法
                                 ws.sendWS(logL);
-
-
-                                // bmdpt == 4 start subParts
-                                for (int k = 0; k < orderAction1.getSubParts().size(); k++) {
-
-                                    String subId = orderAction1.getSubParts().getJSONObject(k).getString("id_O");
-                                    Integer subIndex = orderAction1.getSubParts().getJSONObject(k).getInteger("index");
-
-
-                                    JSONObject subOrderData = this.getActionData(subId, subIndex);
-
-                                    OrderOItem subOItem = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderOItem")), OrderOItem.class);
-                                    OrderAction subAction = JSONObject.parseObject(JSON.toJSONString(subOrderData.get("orderAction")), OrderAction.class);
-
-                                    this.updateNext(subAction, tokData);
-//                                    if (subAction.getPrtPrev().size() == 0) //it's 0 means he is the first one
-//                                    {
-//                                        subAction.setBcdStatus(0);
-//                                        subAction.setBisPush(1);
-//
-//                                        qt.setMDContent(subId, qt.setJson("action.objAction." + subIndex, subAction), Order.class);
-//
-//                                        this.updateRefOP(tokData.getString("id_C"), subOItem.getId_C(),
-//                                                subOrderData.getString("id_FC"),
-//                                                subOrderData.getString("id_FS"), subOItem.getId_OP(), subAction.getRefOP(),
-//                                                subAction.getWrdNP(), subIndex, true );
-//
-//
-//                                        LogFlow logLP = new LogFlow("action", subOrderData.getString("id_FC"),
-//                                                subOrderData.getString("id_FS"), "stateChg",
-//                                                tokData.getString("id_U"), tokData.getString("grpU"), subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
-//                                                subOItem.getId_OP(),
-//                                                subId,
-//                                                subIndex,
-//                                                tokData.getString("id_C"), subOItem.getId_C(),
-//                                                "", tokData.getString("dep"), "准备开始", 3, subOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
-//                                        logLP.setLogData_action(subAction, subOItem);
-//                                        logLP.getData().put("wn0prog", 2);
-//                                        qt.errPrint("subO", null, subOrderData);
-//
-//
-//                                        ws.sendWS(logLP);
-//                                    }
-                                }
-                            }
                         }
-
                         qt.setMDContent(nextId, qt.setJson("action.objAction." + nextIndex, orderAction1), Order.class);
-
                     }
                 }
             }
@@ -901,7 +904,6 @@ public class ActionServiceImpl implements ActionService {
 
 
                     // 只要是第一个开了，父就推出来, @4 工序组时也可能再推，检查已推isPush
-
                     if (unitActionPrnt.getSumChild().equals(unitActionPrnt.getSubParts().size() - 1)
                     && unitActionPrnt.getBisPush() != 1) {
 
@@ -930,16 +932,9 @@ public class ActionServiceImpl implements ActionService {
                         ws.sendWS(logL);
                     }
 
-                        qt.setMDContent(idPrnt, qt.setJson("action.objAction."+indexPrnt,unitActionPrnt) , Order.class);
+                    qt.setMDContent(idPrnt, qt.setJson("action.objAction."+indexPrnt,unitActionPrnt) , Order.class);
 
-//                            return true;
-//                        } else {
-//
-//                            JSONObject mapKey = new JSONObject();
-//                            mapKey.put("action.objAction."+indexPrnt,unitActionPrnt);
-//                            coupaUtil.updateOrderByListKeyVal(idPrnt,mapKey);
-//                        }
-
+                    // sumChild = 0 时， 所有子零部件都已经推送了， 不用查Next
                     if (unitActionPrnt.getSumChild() != 0)
                     {
                         this.updateNext(orderAction, tokData);
@@ -948,6 +943,8 @@ public class ActionServiceImpl implements ActionService {
             }
         }
 
+
+        //keep a record on all the orders that flow room currently managing, put into flowControl card
     //refOP{"refOP":{refOP, wrdN, index[], id_OP}}
     private void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
                              String id_OP, String refOP, JSONObject wrdN, Integer index, Boolean isStart)
@@ -1070,8 +1067,8 @@ public class ActionServiceImpl implements ActionService {
 
     private void sumDura(String id_O, Integer index, LogFlow log) {
 
-        JSONObject filt1 = qt.setJson("key", "id_O", "method", "exact", "val", id_O);
-        JSONObject filt2 = qt.setJson("key", "index", "method", "eq", "val", index);
+        JSONObject filt1 = qt.setJson("filtKey", "id_O", "method", "eq", "filtVal", id_O);
+        JSONObject filt2 = qt.setJson("filtKey", "index", "method", "exact", "filtVal", index);
 
         JSONArray filterArray = qt.setArray(filt1, filt2);
 
@@ -1079,7 +1076,9 @@ public class ActionServiceImpl implements ActionService {
             SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
             BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
             qt.filterBuilder(filterArray, queryBuilder);
-            sourceBuilder.query(queryBuilder).size(0)
+            System.out.println(queryBuilder);
+
+            sourceBuilder.query(queryBuilder).size(100)
                     .aggregation(AggregationBuilders.sum("taStart").field("data.taStart"))
                     .aggregation(AggregationBuilders.sum("taFin").field("data.taFin"));
             SearchRequest searchRequest = new SearchRequest("action").source(sourceBuilder);
@@ -1090,11 +1089,20 @@ public class ActionServiceImpl implements ActionService {
             Long taStart = jsonAgg.getJSONObject("sum#taStart").getLong("value");
             Long taFin = jsonAgg.getJSONObject("sum#taFin").getLong("value");
             long ms = taFin - taStart;
+
+            // in case the last log has not loaded into ES, I force add it
+            if (ms < 0)
+            {
+                ms = ms + DateUtils.getTimeStamp();
+            } else if (ms > 100000000)
+            { // in case it is cancel without restart
+                ms = ms - DateUtils.getTimeStamp();
+            }
             System.out.println(ms);
             String time = qt.formatMs(ms);
             System.out.println(time);
-            log.setData(qt.setJson("tDur", time));
-            log.setZcndesc("任务总用时");
+            log.setData(qt.setJson("tDur", ms));
+            log.setZcndesc("任务总用时" + time);
             ws.sendWS(log);
         } catch (Exception e)
         {
@@ -1270,17 +1278,18 @@ public class ActionServiceImpl implements ActionService {
         // 判断信息为空
         if (null == actionArray || null == oItemArray
                 || actionArray.size() == 0 || oItemArray.size() == 0) {
-            System.out.println("result  action array null");
-            return null;
+            order.getOItem().getJSONArray("objCard").add("action");
+            dbu.initAction(oItemArray);
+            System.out.println("result  action array init");
         }
 
-        if (null == order.getAction()) {
-            order.setAction(new JSONObject());
-            order.getAction().put("objAction", new JSONArray());
-            order.getAction().put("grpBGroup", new JSONObject());
-            order.getAction().put("grpGroup", new JSONObject());
-            //if null actionData, should just fail the API
-        }
+//        if (null == order.getAction()) {
+//            order.setAction(new JSONObject());
+//            order.getAction().put("objAction", new JSONArray());
+//            order.getAction().put("grpBGroup", new JSONObject());
+//            order.getAction().put("grpGroup", new JSONObject());
+//            //if null actionData, should just fail the API
+//        }
 
         int counter = 0;
         for (int i = 0; i < actionArray.size(); i++)
@@ -1291,20 +1300,24 @@ public class ActionServiceImpl implements ActionService {
             }
         }
 
+        String id_FC = "";
+        String id_FS = "";
 
+        try {
+            result.put("orderAction",qt.cloneObj(actionArray.getJSONObject(index)));
+            result.put("orderOItem",qt.cloneObj(oItemArray.getJSONObject(index)));
 
-        JSONObject id_FC = grpBGroup.getJSONObject(oItemArray.getJSONObject(index).getString("grpB"));
-        JSONObject id_FS = grpGroup.getJSONObject(oItemArray.getJSONObject(index).getString("grp"));
-
-        result.put("orderAction",qt.cloneObj(actionArray.getJSONObject(index)));
-        result.put("orderOItem",qt.cloneObj(oItemArray.getJSONObject(index)));
+            id_FC = grpBGroup.getJSONObject(oItemArray.getJSONObject(index).getString("grpB")).getString("id_Flow");
+            id_FS = grpGroup.getJSONObject(oItemArray.getJSONObject(index).getString("grp")).getString("id_Flow");
+        } catch (Exception e)
+        {}
         result.put("oItemArray", oItemArray);
         result.put("actionArray", actionArray);
         result.put("progress", counter);
         result.put("grpBGroup",grpBGroup);
         result.put("grpGroup", grpGroup);
-        result.put("id_FC", id_FC==null?"":id_FC.getString("id_Flow"));
-        result.put("id_FS", id_FS==null?"":id_FS.getString("id_Flow"));
+        result.put("id_FC", id_FC);
+        result.put("id_FS", id_FS);
         result.put("info",qt.toJson(order.getInfo()));
         result.put("size", oItemArray.size());
 
@@ -1324,6 +1337,7 @@ public class ActionServiceImpl implements ActionService {
     @Override
     public ApiResponse dgActivate(String id_O, Integer index, String myCompId, String id_U, String grpU, String dep, JSONObject wrdNU) {
 
+
             JSONObject actData = this.getActionData(id_O, index);
 
             if (null != actData) {
@@ -1336,26 +1350,59 @@ public class ActionServiceImpl implements ActionService {
                 OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(actData.get("orderOItem")), OrderOItem.class);
                 OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(actData.get("orderAction")), OrderAction.class);
 
-//                if (unitAction.getBisPush() != 1)
-//                {
                 // 根据零件递归信息获取零件信息，并且制作日志
                 unitAction.setBcdStatus(0);
                 unitAction.setBisPush(1);
 
-//                    JSONObject mapKey = new JSONObject();
-//                    mapKey.put("action.objAction."+index,unitAction);
-//                    coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
                 qt.setMDContent(id_O, qt.setJson("action.objAction." + index, unitAction), Order.class);
+//
+//                // if unitOItem.id_P == ''
+//                // loop and check prev for bisPush ==1 or objSub > 0 or seq == 3 (Dg auto process)
+//                // then my new index will be n+ 1, use moveOItem to move me
+//                if (unitOItem.getId_P().equals("")) {
+//                    Integer newIndex = 0;
+//                    for (int i = index - 1; i >= 0; i--) {
+//                        Integer objSub = actData.getJSONArray("oItemArray").getJSONObject(i).getInteger("objSub") == null?
+//                                0 : actData.getJSONArray("oItemArray").getJSONObject(i).getInteger("objSub");
+//                        Integer push = actData.getJSONArray("actionArray").getJSONObject(i).getInteger("bisPush");
+//                        if (objSub > 0 || push == 1)
+//                        {
+//                            newIndex = i + 1;
+//                        }
+//                    }
+//                    oItemService.moveOItems(id_O, index, id_O, qt.setArray(newIndex));
+//                    // check next if wn0prior == my wn0prior
+//                    Integer myPrior = unitOItem.getWn0prior();
+//                    for (int i = index + 1; i < actData.getJSONArray("oItemArray").size(); i++) {
+//                        Integer thisPrior = actData.getJSONArray("oItemArray").getJSONObject(i).getInteger("wn0prior");
+//                        Integer push = actData.getJSONArray("actionArray").getJSONObject(i).getInteger("bisPush");
+//                        if (myPrior == thisPrior || push == 0)
+//                        {
+//                            //if the next item is "同时" activate that too
+//                           this.dgActivate(id_O, i, myCompId, id_U, grpU, dep, wrdNU);
+//                        }
+//                    }
+//
+//                    // after moving need to renew Order here and
+//                    index = newIndex;
+////                    actData = this.getActionData(id_O, index);
+//
+//                }
+
+
+
+//                if (unitAction.getBisPush() != 1)
+//                {
 
                 this.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
-                        actData.getString("id_FC"), actData.getString("id_FS"), unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getIndex(), true );
+                        actData.getString("id_FC"), actData.getString("id_FS"), unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), index, true );
 
-                String logType = actData.getJSONObject("grpBGroup").getJSONObject(unitOItem.getGrpB()).getString("logType");
+//                String logType = actData.getJSONObject("grpBGroup").getJSONObject(unitOItem.getGrpB()).getString("logType");
 
-                LogFlow logLP = new LogFlow(logType, actData.getString("id_FC"),
+                LogFlow logLP = new LogFlow("action", actData.getString("id_FC"),
                         actData.getString("id_FS"), "stateChg",
                         id_U, grpU, unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(),
-                        unitAction.getId_OP(), id_O, unitAction.getIndex(), myCompId, unitOItem.getId_C(),
+                        unitAction.getId_OP(), id_O, index, myCompId, unitOItem.getId_C(),
                         "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
                 logLP.setLogData_action(unitAction, unitOItem);
                 logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
@@ -1676,7 +1723,7 @@ public class ActionServiceImpl implements ActionService {
 
         Integer index = 0;
         Integer prior = 1;
-        JSONObject actData = this.getActionData(id_O, index);
+        JSONObject actData = this.getActionData(id_O, index - 1);
         String id_FS = "";
 
         if (id_O.equals(""))
@@ -1699,7 +1746,8 @@ public class ActionServiceImpl implements ActionService {
             // get the size of oItem, so I can append new "task" to it
             // 获取oItem的大小，这样我就可以向它附加新的“任务”
             index = actData.getInteger("size");
-            prior = actData.getJSONArray("oItemArray").getJSONObject(index - 1).getInteger("wn0prior");
+            prior = index > 0 ? actData.getJSONArray("oItemArray").getJSONObject(index - 1).getInteger("wn0prior") : 0;
+
         }
 
         // Adding oItem and Action
@@ -2133,14 +2181,14 @@ public class ActionServiceImpl implements ActionService {
 
 
 
-    public ApiResponse taskToProd(String id_O, Integer index, String id_P)
+    public ApiResponse taskToProd(JSONObject tokData, String id_O, Integer index, String id_P)
 
     {
         // send WS
 
         // get id_P data,
         JSONObject prodInfo = qt.getES("lBProd", qt.setESFilt("id_P", id_P)).getJSONObject(0);
-        Order order = qt.getMDContent(id_O, "oItem" + index, Order.class);
+        Order order = qt.getMDContent(id_O, Arrays.asList("oItem", "info", "action", "oStock","view"), Order.class);
         // update oItem
         JSONObject oItem = order.getOItem().getJSONArray("objItem").getJSONObject(index);
         qt.upJson(oItem, "id_P", id_P, "wrdN", prodInfo.getJSONObject("wrdN"), "wrddesc", prodInfo.getJSONObject("wrddesc"),
@@ -2156,8 +2204,9 @@ public class ActionServiceImpl implements ActionService {
         qt.setMDContent(id_O, qt.setJson("oItem", oItem), Order.class);
         qt.setES("lSBOrder", qt.setESFilt("id_O", id_O), listCol);
 
-        //TODO KEV sendWS??
-//        ws.sendWS();
+        JSONObject action = order.getAction().getJSONArray("objAction").getJSONObject(index);
+        LogFlow log = new LogFlow(tokData, oItem, action, order.getInfo().getId_CB(), id_O, index, "action", "protocol", "改为任务流程: "+ prodInfo.getJSONObject("wrdN").getString("cn"), 3);
+        ws.sendWS(log);
 
         return retResult.ok(CodeEnum.OK.getCode(), "");
 

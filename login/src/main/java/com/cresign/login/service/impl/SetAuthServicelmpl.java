@@ -261,9 +261,10 @@ public class SetAuthServicelmpl implements SetAuthService {
          /*
             设置 用户下次登录的公司 def_C
          */
-        Query userQuery = new Query(new Criteria("id").is(id_U));
-        mongoTemplate.updateFirst(userQuery, new Update().set("info.id_AUN", id_AUN), User.class);
+//        Query userQuery = new Query(new Criteria("id").is(id_U));
+//        mongoTemplate.updateFirst(userQuery, new Update().set("info.id_AUN", id_AUN), User.class);
 //        qt.setES("lBUser", qt.setESFilt("id_U", id_U), qt.setJson("id_AUN", id_AUN));
+        qt.setMDContent(id_U, qt.setJson("info.id_AUN", id_AUN), User.class);
         qt.setES("lNUser", qt.setESFilt("id_U", id_U), qt.setJson("id_AUN", id_AUN));
         return retResult.ok(CodeEnum.OK.getCode(), null);
 

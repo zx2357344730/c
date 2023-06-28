@@ -51,7 +51,6 @@ import java.util.UUID;
         messageModel = MessageModel.BROADCASTING,
         consumerGroup = "topicF-chat"
 )
-@Slf4j
 public class WebSocketUserServer implements RocketMQListener<String> {
     @Override
     public boolean equals(Object obj){
@@ -86,7 +85,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     /**
      * 注入日志接口
      */
-    private static LogService logService;
+//    private static LogService logService;
     /**
      * 注入redis工具类
      */
@@ -131,7 +130,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     @Autowired
     public void setWebSocketUserServer(Qt qt, Ws ws, LogService logService
             , StringRedisTemplate redisTemplate0, RocketMQTemplate rocketMQTemplate,LoginClient loginClient) {
-        WebSocketUserServer.logService = logService;
+//        WebSocketUserServer.logService = logService;
         WebSocketUserServer.qt = qt;
         WebSocketUserServer.ws = ws;
 
@@ -150,7 +149,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     @OnOpen
     public void onOpen(Session session, @PathParam("uId") String uId,@PathParam("publicKey") String publicKey
             ,@PathParam("token") String token,@PathParam("client")String client) {
-        log.info(WebSocketUserServer.bz+"-ws打开:"+uId);
         System.out.println(WebSocketUserServer.bz+"-ws打开:"+uId);
         this.userId = uId;
         // 获取当前用户session
@@ -280,8 +278,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     @OnError
     public void onError(Throwable error) {
         // 输出错误信息
-//        String msg = WebSocketUserServer.bz+"-Error: "+error.getMessage();
-        ws.sendUsageFlow(qt.setJson("cn", "Websocket Error"+error.getMessage()), error.getMessage(), "wsError", "ALL");
+        String msg = WebSocketUserServer.bz+"-Error: "+error;
+        ws.sendUsageFlow(qt.setJson("cn", "Websocket Error"+error.getMessage()), msg, "wsError", "WS");
     }
 
     /**
@@ -539,9 +537,9 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         if (logContent.getId_Us().size() > 0) {
             System.out.println("群消息:");
             JSONArray id_Us = logContent.getId_Us();
-            System.out.println("id_Us:"+JSON.toJSONString(id_Us));
             for (int i = 0; i < id_Us.size(); i++)
             {
+                System.out.println("idU"+id_Us.getString(i));
                 if (WebSocketUserServer.webSocketSet.containsKey(id_Us.getString(i))) {
                     WebSocketUserServer.webSocketSet.get(id_Us.getString(i)).values()
                             .forEach(w -> w.sendMessage(stringMap

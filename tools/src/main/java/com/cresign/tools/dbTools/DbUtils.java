@@ -503,7 +503,8 @@ public class DbUtils {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-// init oItem, action, oStock if needed
+//Order init oItem, action, oStock if needed
+
 public JSONObject checkCard(Order order)
 {
     JSONObject jsonCard = new JSONObject();
@@ -657,6 +658,17 @@ public JSONObject checkCard(Order order)
             wn2qty = dub.add(oItem.getJSONObject(i).getDouble("wn2qtyneed"), wn2qty);
             wn4price = dub.add(wn4price, dub.multiply(oItem.getJSONObject(i).getDouble("wn2qtyneed"),oItem.getJSONObject(i).getDouble("wn4price")));
             arrP.add(oItem.getJSONObject(i).getString("id_P"));
+
+            // setup wn0prior by using seq***
+            // if seq == 0, wn0prior = 0, seq == 1, wn0prior = prevPrior, seq == 2, wn0prior = prevPrior + 1, seq == 3, no set
+            if (i == 0 || oItem.getJSONObject(i).getString("seq").equals("0"))
+            {
+                oItem.getJSONObject(i).put("wn0prior", 0);
+            } else if (oItem.getJSONObject(i).getString("seq").equals("1")) {
+                oItem.getJSONObject(i).put("wn0prior", oItem.getJSONObject(i - 1).getInteger("wn0prior"));
+            } else if (oItem.getJSONObject(i).getString("seq").equals("2")) {
+                oItem.getJSONObject(i).put("wn0prior", oItem.getJSONObject(i - 1).getInteger("wn0prior") + 1);
+            }
             oItem.getJSONObject(i).put("index", i);
 
             if (oStock != null && cardList.contains("oStock"))
@@ -664,6 +676,7 @@ public JSONObject checkCard(Order order)
                 Double madePercent = dub.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"),oItem.getJSONObject(i).getDouble("wn2qtyneed"));
                 wn2made = dub.add(wn2made, madePercent);
                 oStock.getJSONObject(i).put("index", i);
+//                "rKey" 《=Oitem
 
                 if (action != null)
                 {
@@ -673,7 +686,8 @@ public JSONObject checkCard(Order order)
                         {
                             // init it if it is not init yet, if bmdpt == 1 it is process, process only need 1 objShip[0]
                             if (j == 0 || !action.getJSONObject(i).getInteger("bmdpt").equals(1)) {
-                                JSONObject newObjShip = qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
+                                JSONObject newObjShip = qt.setJson(
+                                        "wn2qtynow", 0.0, "wn2qtymade", 0.0,
                                         "wn2qtyneed", oItem.getJSONObject(i).getDouble("wn2qtyneed"));
                                 oStock.getJSONObject(i).getJSONArray("objShip").add(newObjShip);
                             }
@@ -772,6 +786,13 @@ public JSONObject checkCard(Order order)
 
             action.set(index, actionData);
         }
+
+        //These data must renew
+        action.getJSONObject(index).put("id_O", orderOItem.getString("id_O"));
+        action.getJSONObject(index).put("index", orderOItem.getString("index"));
+        action.getJSONObject(index).put("rKey", orderOItem.getString("rKey"));
+
+
         if (action.getJSONObject(index).getJSONArray("upPrnts") == null)
         {
             action.getJSONObject(index).put("upPrnts", new JSONArray());

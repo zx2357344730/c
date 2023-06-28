@@ -34,8 +34,7 @@ public class InitServiceImpl implements InitService {
     public ApiResponse getInitById(String lang, Integer ver,String qdKey,String uuId) {
 
         Init init = qt.getInitData(lang);
-
-                JSONObject re = new JSONObject();
+        JSONObject re = new JSONObject();
         re.put("qdKey",qdKey);
         Map<String, String> stringMap = RsaUtilF.genKeyPairX();
         assert stringMap != null;

@@ -115,7 +115,7 @@ public class RpiServiceImpl implements RpiService {
 
                 // 获取redis对应的rname信息
 //                String rnameRedisDataStr = redisTemplate0.opsForValue().get(PI + rname);
-                String rnameRedisDataStr = qt.getRDVal(PI_Q,PI_H+rname);
+                String rnameRedisDataStr = qt.getRDSetStr(PI_Q,PI_H+rname);
                 // 将字符串转换成json对象
                 JSONObject rnameRedisData = JSONObject.parseObject(rnameRedisDataStr);
                 // 获取piSon字段信息,piSon = 所有gpio信息记录
@@ -171,7 +171,7 @@ public class RpiServiceImpl implements RpiService {
     public ApiResponse rpiCode(String rname,String id_C) {
         // 获取rname的redis信息
 //        String rpiData = redisTemplate0.opsForValue().get(PI + rname);
-        String rpiData = qt.getRDVal(PI_Q,PI_H+rname);
+        String rpiData = qt.getRDSetStr(PI_Q,PI_H+rname);
 //        String id_C = can.getString("id_C");
         // 判断信息为空
         if (null == rpiData || "".equals(rpiData)) {
@@ -285,7 +285,7 @@ public class RpiServiceImpl implements RpiService {
 //        String token = can.getString("token");
         // 获取gpio对应的token的redis信息
 //        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
-        String gpioDataStr = qt.getRDVal(PI_Q,PI_GPIO_H+token);
+        String gpioDataStr = qt.getRDSetStr(PI_Q,PI_GPIO_H+token);
         if (null == gpioDataStr) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
@@ -346,7 +346,7 @@ public class RpiServiceImpl implements RpiService {
             ,JSONObject wrdN,String dep) {
         // 获取gpio对应的token的redis信息
 //        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
-        String gpioDataStr = qt.getRDVal(PI_Q,PI_GPIO_H+token);
+        String gpioDataStr = qt.getRDSetStr(PI_Q,PI_GPIO_H+token);
         if (null == gpioDataStr) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
@@ -421,7 +421,7 @@ public class RpiServiceImpl implements RpiService {
 //        String id_C = can.getString("id_C");
         // 获取gpio对应的token的redis信息
 //        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
-        String gpioDataStr = qt.getRDVal(PI_Q,PI_GPIO_H+token);
+        String gpioDataStr = qt.getRDSetStr(PI_Q,PI_GPIO_H+token);
         if (null == gpioDataStr) {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
@@ -469,7 +469,7 @@ public class RpiServiceImpl implements RpiService {
     private int piNameSta(String rname,String id_C){
         // 获取树莓派机器信息
 //        String rpiDataStr = redisTemplate0.opsForValue().get(PI + rname);
-        String rpiDataStr = qt.getRDVal(PI_Q,PI_H+rname);
+        String rpiDataStr = qt.getRDSetStr(PI_Q,PI_H+rname);
         // 判断树莓派机器信息为空
         if (null == rpiDataStr || "".equals(rpiDataStr)) {
             return 1;

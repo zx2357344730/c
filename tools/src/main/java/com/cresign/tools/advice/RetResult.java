@@ -177,10 +177,6 @@ public class RetResult {
     public ApiResponse error(String code, Object message){
 
         if (ObjectUtils.isNotEmpty(message)) {
-//            System.out.println("code:"+code);
-//            System.out.println("message:"+message);
-////            JSONObject re = JSONObject.parseObject(redisTemplate0.opsForValue().get(RED_KEY+"e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb"));
-////            System.out.println(JSON.toJSONString(re));
             return new ApiResponse("500", JSONObject.toJSONString(encodeAesRsa(message
             )), localMessage.getLocaleMessage(code, "", null));
         } else {
@@ -192,31 +188,13 @@ public class RetResult {
     public ApiResponse ok(String code, Object message){
 
         if (ObjectUtils.isNotEmpty(message)) {
-//            System.out.println("code:"+code);
-//            System.out.println("message:"+message);
-////            JSONObject re = JSONObject.parseObject(redisTemplate0.opsForValue().get(RED_KEY+"e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb"));
-////            System.out.println(JSON.toJSONString(re));
+
             return new ApiResponse(code, JSONObject.toJSONString(encodeAesRsa(message
             )), localMessage.getLocaleMessage(code, "", null));
         } else {
             return new ApiResponse(code, "", localMessage.getLocaleMessage(code, "", null));
         }
     }
-
-//    public ApiResponse ok(String code, Object message,String uuId){
-//
-//        if (ObjectUtils.isNotEmpty(message)) {
-//            System.out.println("code:"+code);
-//            System.out.println("message:"+message);
-////            JSONObject re = JSONObject.parseObject(redisTemplate0.opsForValue().get(RED_KEY+"e82697e7-cc5f-9c5e-ae32-76d9b7c4cfbb"));
-////            System.out.println(JSON.toJSONString(re));
-//            return new ApiResponse(code, JSONObject.toJSONString(encodeAesRsa(message,uuId
-////                    ,re.getString("qdKey")
-//            )), localMessage.getLocaleMessage(code, "", null));
-//        } else {
-//            return new ApiResponse(code, "", localMessage.getLocaleMessage(code, "", null));
-//        }
-//    }
 
     public ApiResponse okNoEncode(String code, Object message){
 

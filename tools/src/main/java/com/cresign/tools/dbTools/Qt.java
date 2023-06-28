@@ -1148,6 +1148,27 @@ public class Qt {
 
                 JSONObject conditionMap =  filterArray.getJSONObject(i);
                 String method = conditionMap.getString("method");
+
+                // 每一条都要对 wrdxxx 处理 增加 语言.cn处理
+                boolean isArray = conditionMap.get("filtKey").getClass().isArray();
+                if (isArray) {
+                    for (int fk = 0; fk < conditionMap.getJSONArray("filtKey").size(); fk++)
+                    {
+                        String filtKey = conditionMap.getJSONArray("filtKey").getString(fk);
+                        if (filtKey.startsWith("wrd") && !filtKey.equals(".cn"))
+                        {
+                            conditionMap.getJSONArray("filtKey").set(fk, filtKey + ".cn");
+                        }
+                    }
+                } else {
+                    String filtKey = conditionMap.getString("filtKey");
+
+                    if (filtKey.startsWith("wrd") && !filtKey.equals(".cn"))
+                    {
+                        conditionMap.put("filtKey", filtKey + ".cn");
+                    }
+                }
+
                 switch (method) {
                     case "":
                         //下一个
@@ -1178,7 +1199,6 @@ public class Qt {
                         break;
                     case "gte":
                         //大于等于
-//                    if (pattern.matcher((CharSequence) conditionMap.get("filtVal")).matches())
                         queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey")).gte(conditionMap.get("filtVal")));
                         break;
                     case "gt":
@@ -1370,17 +1390,12 @@ public class Qt {
 
     public String getRDSetStr(String collection, String key)
     {
-        return (String) redisTemplate0.opsForValue().get(collection + ":" + key);
+        return redisTemplate0.opsForValue().get(collection + ":" + key);
     }
 
     public String getRDHashStr(String collection, String hash, String key)
     {
         return (String) redisTemplate0.opsForHash().get(collection + ":" + hash, key);
-    }
-
-    public String getRDVal(String collection, String hash)
-    {
-        return redisTemplate0.opsForValue().get(collection + ":" + hash);
     }
 
     public JSONArray getRDHashMulti(String hash, List<Object> names)

@@ -1600,10 +1600,8 @@ public class FlowServiceImpl implements FlowService {
             }
             // 获取零件名称
             String itemWrdN = objOItem.getWrdN().getString("cn");
-//            boolean isNextPart = null != objAction.getPrtNext() && objAction.getPrtNext().size() != 0;
             boolean isNextPart = null != objAction.getPrtNext() && objAction.getPrtNext().size() == 0 && dgType == 2;
 
-            // 调用生成任务信息
             // 调用生成任务信息
             Task task = TaskObj.getTask(orderODate.getTeStart(), orderODate.getTeFin(), orderODate.getId_O()
                     , orderODate.getIndex(), 0L

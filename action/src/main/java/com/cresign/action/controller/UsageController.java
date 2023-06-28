@@ -43,20 +43,6 @@ public class UsageController {
 
 
 //    @SecurityParameter
-//    @PostMapping("/v1/setFav")
-//    public ApiResponse setFav(@RequestBody JSONObject json) {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-//        return usageService.setFav(
-//                tokData.getString("id_U"),
-//                tokData.getString("id_C"),
-//                json.getString("id_O"),
-//                json.getInteger("index"),
-//                json.getString("id"),
-//                json.getString("id_FS")
-//        );
-//    }
-
-//    @SecurityParameter
 //    @PostMapping("/v1/setRecentTask")
 //    public ApiResponse setRecentTask(@RequestBody JSONObject json) {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
@@ -202,6 +188,20 @@ public class UsageController {
                 tokData.getString("id_U"),
                 tokData.getString("id_C"),
                 json.getString("type")
+        );
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/notify")
+    public ApiResponse notify(@RequestBody JSONObject json) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        return usageService.notify(
+                tokData.getString("id_U"),
+                tokData.getString("id_C"),
+                tokData.getJSONObject("wrdNU"),
+                json.getString("id"),
+                json.getJSONObject("wrdN"),
+                json.getJSONObject("wrddesc")
         );
     }
 

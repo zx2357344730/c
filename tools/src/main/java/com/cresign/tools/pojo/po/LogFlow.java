@@ -152,8 +152,13 @@ public class LogFlow {
 
     public void setActionTime (Long taStart, Long taFin, String type) {
         JSONObject data = this.getData();
-        data.put("taStart", taStart);
-        data.put("taFin",taFin);
+        if (type.equals("push"))
+        {
+            data.put("taPush", taStart);
+        } else {
+            data.put("taStart", taStart);
+            data.put("taFin", taFin);
+        }
         data.put("type", type);
     }
 

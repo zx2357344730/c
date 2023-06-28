@@ -616,13 +616,13 @@ SMS_CODE_NOT_FOUND.getCode(), null);
     @Override
     public ApiResponse setAUN(String id_U,String id_AUN) {
         qt.setMDContent(id_U,qt.setJson("info.id_AUN",id_AUN),User.class);
-        qt.setES("lBUser", qt.setESFilt("id_U", id_U), qt.setJson("id_AUN", id_AUN));
+        qt.setES("lNUser", qt.setESFilt("id_U", id_U), qt.setJson("id_AUN", id_AUN));
         return retResult.ok( CodeEnum.OK.getCode(), "成功!");
     }
 
     @Override
     public ApiResponse getAUN(String id_AUN,String id_C) {
-        JSONObject userInfo = qt.getES("lBUser", qt.setESFilt("id_CB", id_C,"id_AUN",id_AUN)).getJSONObject(0);
+        JSONObject userInfo = qt.getES("lNUser", qt.setESFilt("id_CB", id_C,"id_AUN",id_AUN)).getJSONObject(0);
         System.out.println("userList:");
         System.out.println(JSON.toJSONString(userInfo));
         User info = qt.getMDContent(userInfo.getString("id_U"), "info", User.class);

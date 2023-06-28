@@ -1391,7 +1391,9 @@ public class ModuleServicelmpl implements ModuleService {
 
         String new_id_C = qt.GetObjectId();
 
-        InitJava init = qt.getMDContent("cn_java", "newComp", InitJava.class);
+//        InitJava init = qt.getMDContent("cn_java", "newComp", InitJava.class);
+
+        InitJava init = qt.getInitData();
         JSONObject newComp = init.getNewComp();
         Comp comp = qt.jsonTo(newComp.getJSONObject("comp"), Comp.class);
         String uid = tokData.getString("id_U");
@@ -1421,6 +1423,7 @@ public class ModuleServicelmpl implements ModuleService {
         rolex.put("id_C",new_id_C);
         rolex.put("grpU","1001");
         rolex.put("dep","1000");
+
         //setting modAuth@rolex
         JSONObject val = new JSONObject();
         val.put("tfin",-1);

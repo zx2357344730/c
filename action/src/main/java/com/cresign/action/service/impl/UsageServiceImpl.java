@@ -5,9 +5,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.service.UsageService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
+import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.Asset;
+import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.Order;
 import com.cresign.tools.pojo.po.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +40,9 @@ public class UsageServiceImpl implements UsageService {
     @Autowired
     private Qt qt;
 
-//    @Autowired
-//    private DbUtils dbUtils;
+    @Autowired
+    private Ws ws;
+
 
     @Autowired
     private RetResult retResult;
@@ -112,7 +117,7 @@ public class UsageServiceImpl implements UsageService {
 
         Order order = qt.getMDContent(id_O, "action.objAction." + index + ".arrUA", Order.class);
         JSONArray arrUA = order.getAction().getJSONArray("objAction").getJSONObject(index).getJSONArray("arrUA");
-
+        JSONObject oItem = order.getOItem().getJSONArray("objItem").getJSONObject(index);
         if (arrUA == null)
         {
             arrUA = new JSONArray();
@@ -122,9 +127,15 @@ public class UsageServiceImpl implements UsageService {
             qt.pushMDContent(id_U, "fav.objFav", content, User.class);
             if (!arrUA.contains(id_U)) {
                 arrUA.add(id_U);
+                LogFlow appointLog = new LogFlow("action", "","","appoint",id_U,"", oItem.getString("id_P"), oItem.getString("grpB"),
+                        oItem.getString("grp"), "", id_O, index, id_C, "", "", "", "请处理该任务", 5, qt.setJson("cn", "请处理该任务"), null);
+                appointLog.setData(qt.setJson("id_UM", id_UManager));
+                ws.sendWS(appointLog);
             }
         }
         qt.setMDContent(id_O, qt.setJson("action.objAction." + index + ".arrUA", arrUA), Order.class);
+
+
 
         return retResult.ok(CodeEnum.OK.getCode(), null);
     }
@@ -219,6 +230,41 @@ public class UsageServiceImpl implements UsageService {
                 "DEFAULT_GROUP@@cresign-testCode", "DEFAULT_GROUP@@cresign-listener");
 
         return retResult.ok(CodeEnum.OK.getCode(), qt.getRDHashMulti("nacosListener", serviceNames));
+    }
+
+    @Override
+    public ApiResponse notify(String id_U, String id_C, JSONObject wrdNU, String id, JSONObject wrdN, JSONObject wrddesc) {
+        Asset asset = qt.getConfig(id_C, "a-auth", "flowControl");
+        JSONArray arrayFlow = asset.getFlowControl().getJSONArray("objData");
+        JSONObject jsonNotify = qt.setJson("id_U", id_U,
+                "wrdNU", wrdNU,
+                "wrdN", wrdN,
+                "wrddesc", wrddesc,
+                "tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        for (int i = 0; i < arrayFlow.size(); i++) {
+            JSONObject jsonFlow = arrayFlow.getJSONObject(i);
+            if (jsonFlow.getString("id").equals(id)) {
+                JSONArray arrayNotify = jsonFlow.getJSONArray("notify");
+                if (arrayNotify != null) {
+                    if (arrayNotify.size() == 5) {
+                        for (int j = 0; j < arrayNotify.size() - 1; j++) {
+                            arrayNotify.set(j, arrayNotify.getJSONObject(j + 1));
+                        }
+                        arrayNotify.set(arrayNotify.size() - 1, jsonNotify);
+                    } else {
+                        arrayNotify.add(jsonNotify);
+                    }
+                } else {
+                    arrayNotify = new JSONArray();
+                    arrayNotify.add(jsonNotify);
+                    jsonFlow.put("notify", arrayNotify);
+                }
+                JSONObject jsonUpdate = qt.setJson("flowControl.objData." + i, jsonFlow);
+                qt.setMDContent(asset.getId(), jsonUpdate, Asset.class);
+                break;
+            }
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), null);
     }
 
 //    @Override

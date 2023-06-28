@@ -40,7 +40,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 
     //降低 Autowired 检测的级别，将 Severity 的级别由之前的 error 改成 warning 或其它可以忽略的级别。
     @Autowired
-    private WSFilterClient wsFilterClient;
+    private WSFilterClient wsLoginClient;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -338,7 +338,7 @@ LOGIN_CODE_OVERDUE.getCode(),null);
                 reqJson.put("id",entries.get("id"));
                 reqJson.put("infoData",JSON.toJSONString(result));
                 //发送消息体
-                wsFilterClient.sendLoginDesc(reqJson);
+                wsLoginClient.sendLoginDesc(reqJson);
 
         }
 

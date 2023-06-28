@@ -29,7 +29,7 @@ public interface ActionService {
 
     ApiResponse changeDepAndFlowSL(String id_O,String grpB, JSONObject grpBOld,JSONObject grpBNew,String id_C,String id_U, String grpU, JSONObject wrdNU);
 
-    ApiResponse taskToProd(String id_O, Integer index, String id_P);
+    ApiResponse taskToProd(JSONObject tokData, String id_O, Integer index, String id_P);
 
     ApiResponse getRefOPList(String id_Flow, Boolean isSL, String id_C) throws IOException;
 

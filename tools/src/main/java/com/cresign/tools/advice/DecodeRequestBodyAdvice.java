@@ -29,7 +29,6 @@ import java.util.Objects;
  * @author jackson
  * @desc 请求数据解密
  */
-@Slf4j
 @ControllerAdvice
 public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
 
@@ -81,7 +80,7 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                 return inputMessage;
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("对方法method :【" + methodParameter.getMethod().getName() + "】返回数据进行解密出现异常："+e.getMessage());
+//            log.error("对方法method :【" + methodParameter.getMethod().getName() + "】返回数据进行解密出现异常："+e.getMessage());
             return inputMessage;
         }
 
@@ -104,7 +103,7 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
         }
 
         @Override
-        public InputStream getBody() throws IOException {
+        public InputStream getBody() {
             return body;
         }
 

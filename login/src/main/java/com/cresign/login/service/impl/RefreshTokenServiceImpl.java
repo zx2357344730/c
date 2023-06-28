@@ -12,7 +12,7 @@ import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.jwt.JwtUtil;
 import com.cresign.tools.pojo.po.User;
-import lombok.extern.log4j.Log4j2;
+//import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
  * @ver 1.0
  */
 @Service
-@Log4j2
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
 
@@ -172,7 +171,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                             user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
                             clientType);
 
-                    qt.setRDSet(clientType + "RefreshToken", token, id_U, 1800L);
+//                    qt.setRDSet(clientType + "Token", token, id_U, 1800L);
 
                     return token;
 

@@ -82,11 +82,12 @@ public class ActionController {
     @SecurityParameter
     @PostMapping("/v1/taskToProd")
     public ApiResponse taskToProd(@RequestBody JSONObject reqJson) {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
 
         try {
 
             return actionService.taskToProd(
+                    tokData,
                     reqJson.getString("id_O"),
                     reqJson.getInteger("index"),
                     reqJson.getString("id_P"));
