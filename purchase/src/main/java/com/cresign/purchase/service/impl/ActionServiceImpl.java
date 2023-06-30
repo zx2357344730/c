@@ -228,84 +228,275 @@ public class ActionServiceImpl implements ActionService {
     }
 
     @Override
-    public ApiResponse applyForScore(String id_O, Integer index,String id_C,String id_U,JSONArray id_Us) {
+    public ApiResponse applyForScore(String id_O, Integer index
+            ,String id,String id_Fs, JSONObject tokData) {
         JSONObject result = new JSONObject();
+        String id_U = tokData.getString("id_U");
+        String id_C = tokData.getString("id_C");
         try {
+            JSONObject actData = this.getActionData(id_O, index);
+            OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+            OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
             result.put("desc","申请评分成功!");
             result.put("type",1);
-            sendMsgNotice(id_C,"申请评分成功!",id_U,id_O,id_Us,index,"score");
+            LogFlow logFlow;
+            logFlow = new LogFlow("action", id,
+                    id_Fs, "notice", id_U, tokData.getString("grpU")
+                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                    , tokData.getString("dep"), "申请评分成功!", 3, orderOItem.getWrdN()
+                    , tokData.getJSONObject("wrdNU"));
+            logFlow.getData().put("type","scoreAf");
+            ws.sendWS(logFlow);
+//            sendMsgNotice(id_C,"申请评分成功!",id_U,id_O,qt.setArray(id_U),index,"scoreAf",id,id_Fs);
+//            sendMsgNotice(id_C,"申请评分成功!",id_U,id_O,qt.setArray(id_U),index,"scoreAf",id_Fs,id);
 
-            LogFlow logFlow = getNullLogFlow("申请评分成功!",id_C,id_U,new JSONObject(),id_O,index
-                    ,"oQc","score");
-            logFlow.setId_Us(id_Us);
-            ws.sendWSNew(logFlow,0);
+            logFlow = new LogFlow("oQc", id,
+                    id, "scoreAf", id_U, tokData.getString("grpU")
+                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                    , tokData.getString("dep"), "申请评分成功!", 3, orderOItem.getWrdN()
+                    , tokData.getJSONObject("wrdNU"));
+//            LogFlow logFlow = getNullLogFlow("申请评分成功!",id_C,id_U,new JSONObject(),id_O,index
+//                    ,"oQc","scoreAf",id,id_Fs);
+//            logFlow.setId_Us(qt.setArray(id_U));
+            ws.sendWS(logFlow);
+//            ws.sendWSNew(logFlow,0);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } catch (Exception e) {
             result.put("desc","申请评分异常");
             result.put("type",0);
-            id_Us = new JSONArray();
-            id_Us.add(id_U);
-            sendMsgNotice(id_C,"申请评分异常!",id_U,id_O,id_Us,index,"score");
+            sendMsgNotice(id_C,"申请评分异常!",id_U,id_O,qt.setArray(id_U),index,"scoreAf",id,id);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         }
     }
 
     @Override
-    public ApiResponse haveScore(String id_O, Integer index, Integer score,String id_C,String id_U,JSONArray id_Us) {
+    public ApiResponse haveScore(String id_O, Integer index, Integer score
+            ,String id,String id_Fs, JSONObject tokData) {
         JSONObject result = new JSONObject();
+        String id_U = tokData.getString("id_U");
+        String id_C = tokData.getString("id_C");
         try {
+            JSONObject actData = this.getActionData(id_O, index);
+            OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+            OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
             qt.setMDContent(id_O, qt.setJson("oQc.objQc."+index+".score",score), Order.class);
             result.put("desc","评分成功!");
             result.put("type",1);
-            sendMsgNotice(id_C,"评分成功!",id_U,id_O,id_Us,index,"score");
+            LogFlow logFlow;
+            logFlow = new LogFlow("action", id,
+                    id_Fs, "notice", id_U, tokData.getString("grpU")
+                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                    , tokData.getString("dep"), "评分成功!", 3, orderOItem.getWrdN()
+                    , tokData.getJSONObject("wrdNU"));
+            logFlow.getData().put("type","score");
+            ws.sendWS(logFlow);
 
-            LogFlow logFlow = getNullLogFlow("评分成功!",id_C,id_U,new JSONObject(),id_O,index
-                    ,"oQc","score");
-            logFlow.setId_Us(id_Us);
-            ws.sendWSNew(logFlow,0);
+            logFlow = new LogFlow("action", id_Fs,
+                    id, "notice", id_U, tokData.getString("grpU")
+                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                    , tokData.getString("dep"), "评分成功!", 3, orderOItem.getWrdN()
+                    , tokData.getJSONObject("wrdNU"));
+            logFlow.getData().put("type","score");
+            ws.sendWS(logFlow);
+//            sendMsgNotice(id_C,"评分成功!",id_U,id_O,qt.setArray(id_U),index,"score",id,id_Fs);
+//            sendMsgNotice(id_C,"评分成功!",id_U,id_O,qt.setArray(id_U),index,"score",id_Fs,id);
+
+            logFlow = new LogFlow("oQc", id,
+                    id, "score", id_U, tokData.getString("grpU")
+                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                    , tokData.getString("dep"), "评分成功!", 3, orderOItem.getWrdN()
+                    , tokData.getJSONObject("wrdNU"));
+//            LogFlow logFlow = getNullLogFlow("评分成功!",id_C,id_U,new JSONObject(),id_O,index
+//                    ,"oQc","score",id,id_Fs);
+//            logFlow.setId_Us(qt.setArray(id_U));
+            ws.sendWS(logFlow);
+//            ws.sendWSNew(logFlow,0);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } catch (Exception e) {
             result.put("desc","评分异常");
             result.put("type",0);
-            id_Us = new JSONArray();
-            id_Us.add(id_U);
-            sendMsgNotice(id_C,"评分异常!",id_U,id_O,id_Us,index,"score");
+            sendMsgNotice(id_C,"评分异常!",id_U,id_O,qt.setArray(id_U),index,"score",id,id);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         }
     }
 
     @Override
-    public ApiResponse foCount(String id_O, Integer index,String id_C,String id_U,JSONArray id_Us) {
+    public ApiResponse updateDefReply(String id_C, String logId, JSONArray defReply) {
+        Asset asset = qt.getConfig(id_C,"a-auth","flowControl");
+        if (null != asset && null != asset.getFlowControl()) {
+            JSONArray objData = asset.getFlowControl().getJSONArray("objData");
+            for (int i = 0; i < objData.size(); i++) {
+                if (logId.equals(objData.getJSONObject(i).getString("id"))) {
+                    qt.setMDContent(asset.getId(), qt.setJson("flowControl.objData."+i+".defReply", defReply), Asset.class);
+                    return retResult.ok(CodeEnum.OK.getCode(), "1");
+                }
+            }
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), "0");
+    }
+
+    @Override
+    public ApiResponse sendMsgByOnly(String logType, String msg,
+                                     Integer index, String id_O,
+                                     String id_FC, String id_FS, JSONObject tokData,String receiveUserId) {
+        JSONObject actData = this.getActionData(id_O, index);
+
+        // 设置产品状态
+        String compId;
+
+        if (logType.endsWith("SL")) {
+            compId = actData.getJSONObject("info").getString("id_CB");
+        } else {
+            compId = tokData.getString("id_C");
+        }
+        OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+        OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
+//        sendMsgOneNew(logFlow.getData().getString("receiveUserId"),logFlow);
+        LogFlow logL = new LogFlow("msg", id_FC,
+                id_FS, "taskMsg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), msg, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+        sendMsgOneNew(null,logL);
+        LogFlow logLNew = new LogFlow("msg", id_FS,
+                id_FC, "taskMsg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), msg, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+        sendMsgOneNew(null,logLNew);
+        return retResult.ok(CodeEnum.OK.getCode(), "发送成功");
+    }
+
+    /**
+     * 发送日志信息到指定的id_U方法
+     * @param sendUser	指定的id_U（用户编号）
+     * @param logFlow	日志信息
+     * @author tang
+     * @date 创建时间: 2023/5/30
+     * @ver 版本号: 1.0.0
+     */
+    public void sendMsgOneNew(String sendUser,LogFlow logFlow){
+//        JSONObject data = logFlow.getData();
+//        data.put("id_UPointTo",sendUser);
+        if (null != sendUser) {
+            logFlow.setId_Us(qt.setArray(sendUser, logFlow.getId_U()));
+        } else {
+            logFlow.setId_Us(qt.setArray(logFlow.getId_U()));
+        }
+        JSONObject data = logFlow.getData();
+        data.put("id_UPointTo",logFlow.getId_Us());
+        logFlow.setData(data);
+//        logFlow.setData(data);
+        ws.sendWSNew(logFlow,0);
+    }
+
+    @Override
+    public ApiResponse foCount(String id_O, Integer index,String id,String id_Fs
+            , JSONObject tokData,int type,String dataInfo) {
         Order order = qt.getMDContent(id_O, Collections.singletonList("oQc"), Order.class);
+        String id_C = tokData.getString("id_C");
+        String id_U = tokData.getString("id_U");
         JSONObject result = new JSONObject();
         if (null == order || null == order.getOQc() || null == order.getOQc().getJSONArray("objQc")) {
             result.put("desc","订单异常");
             result.put("type",0);
-            id_Us = new JSONArray();
-            id_Us.add(id_U);
-            sendMsgNotice(id_C,"订单异常",id_U,id_O,id_Us,index,"foCount");
+            sendMsgNotice(id_C,"订单异常",id_U,id_O,qt.setArray(id_U),index,"foCount",id,id);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         }
         JSONArray objQc = order.getOQc().getJSONArray("objQc");
         int foUp = objQc.getJSONObject(index).getInteger("foCount");
         foUp--;
-        if (foUp <= 0) {
+        if (foUp < 0) {
             result.put("desc","回访次数上限！");
             result.put("type",2);
-            id_Us = new JSONArray();
-            id_Us.add(id_U);
-            sendMsgNotice(id_C,"回访次数上限！",id_U,id_O,id_Us,index,"foCount");
+            sendMsgNotice(id_C,"回访次数上限！",id_U,id_O,qt.setArray(id_U),index,"foCount",id,id);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         }
-        LogFlow logFlow = getNullLogFlow("回访成功!",id_C,id_U,new JSONObject(),id_O,index
-                ,"oQc","foCount");
-        logFlow.setId_Us(id_Us);
-        ws.sendWSNew(logFlow,0);
+        JSONObject actData = this.getActionData(id_O, index);
+        OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+        OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
+//        LogFlow logFlow = getNullLogFlow("回访成功!",id_C,id_U,new JSONObject(),id_O,index
+//                ,"oQc","foCount",id,id_Fs);
+        LogFlow logFlow = new LogFlow("oQc", id,
+                id, "foCount", id_U, tokData.getString("grpU")
+                , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                , tokData.getString("dep"), "回访成功!", 3, orderOItem.getWrdN()
+                , tokData.getJSONObject("wrdNU"));
+        logFlow.getData().put("type",type);
+        logFlow.getData().put("dataInfo",dataInfo);
+        ws.sendWS(logFlow);
+//        logFlow.setId_Us(qt.setArray(id_U));
+//        logFlow.getData().put("type",type);
+//        logFlow.getData().put("dataInfo",dataInfo);
+//        ws.sendWS(logFlow);
+//        ws.sendWSNew(logFlow,0);
 
         qt.setMDContent(id_O, qt.setJson("oQc.objQc."+index+".foCount",foUp), Order.class);
         result.put("desc","回访成功!");
         result.put("type",1);
-        sendMsgNotice(id_C,"回访成功!",id_U,id_O,id_Us,index,"foCount");
+//        sendMsgNotice(id_C,"回访成功!",id_U,id_O,qt.setArray(id_U),index,"foCount",id,id_Fs);
+//        sendMsgNotice(id_C,"回访成功!",id_U,id_O,qt.setArray(id_UReceive),index,"foCount",id_Fs,id);
+        if (type == 1) {
+            LogFlow logLNew = new LogFlow("msg", id,
+                    id_Fs, "pic", id_U, tokData.getString("grpU")
+                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                    , tokData.getString("dep"), "", 3, orderOItem.getWrdN()
+                    , tokData.getJSONObject("wrdNU"));
+            logLNew.getData().put("type","defReply");
+            logLNew.getData().put("pic",dataInfo);
+            ws.sendWS(logLNew);
+//            logLNew = new LogFlow("msg", id,
+//                    id_Fs, "pic", id_U, tokData.getString("grpU")
+//                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+//                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+//                    , tokData.getString("dep"), "", 3, orderOItem.getWrdN()
+//                    , tokData.getJSONObject("wrdNU"));
+//            logLNew.setId_Us(qt.setArray(id_UReceive));
+//            logLNew.getData().put("type","defReply");
+//            logLNew.getData().put("pic",dataInfo);
+//            ws.sendWSNew(logLNew,0);
+        } else if (type == 2) {
+            LogFlow logLNew = new LogFlow("msg", id,
+                    id_Fs, "prod", id_U, tokData.getString("grpU")
+                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                    , tokData.getString("dep"), dataInfo, 3, orderOItem.getWrdN()
+                    , tokData.getJSONObject("wrdNU"));
+            logLNew.getData().put("type","defReply");
+            logLNew.getData().put("id_P",dataInfo);
+            ws.sendWS(logLNew);
+//            logLNew = new LogFlow("msg", id,
+//                    id_Fs, "prod", id_U, tokData.getString("grpU")
+//                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+//                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+//                    , tokData.getString("dep"), dataInfo, 3, orderOItem.getWrdN()
+//                    , tokData.getJSONObject("wrdNU"));
+//            logLNew.setId_Us(qt.setArray(id_UReceive));
+//            logLNew.getData().put("type","defReply");
+//            logLNew.getData().put("id_P",dataInfo);
+//            ws.sendWSNew(logLNew,0);
+        } else {
+            LogFlow logLNew = new LogFlow("msg", id,
+                    id_Fs, "msg", id_U, tokData.getString("grpU")
+                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                    , tokData.getString("dep"), dataInfo, 3, orderOItem.getWrdN()
+                    , tokData.getJSONObject("wrdNU"));
+            logLNew.getData().put("type","defReply");
+            ws.sendWS(logLNew);
+//            logLNew = new LogFlow("msg", id,
+//                    id_Fs, "msg", id_U, tokData.getString("grpU")
+//                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+//                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+//                    , tokData.getString("dep"), dataInfo, 3, orderOItem.getWrdN()
+//                    , tokData.getJSONObject("wrdNU"));
+//            logLNew.setId_Us(qt.setArray(id_UReceive));
+//            logLNew.getData().put("type","defReply");
+//            ws.sendWSNew(logLNew,0);
+        }
         return retResult.ok(CodeEnum.OK.getCode(), result);
     }
 
@@ -320,12 +511,13 @@ public class ActionServiceImpl implements ActionService {
      * @ver 版本号: 1.0.0
      */
     public void sendMsgNotice(String id_CCus,String desc,String logUser
-            ,String id_O,JSONArray id_Us,Integer index,String type){
+            ,String id_O,JSONArray id_Us,Integer index,String type,String id,String id_Fs){
         LogFlow logFlow = getNullLogFlow(desc,id_CCus,logUser,new JSONObject(),id_O,index
-                ,"action","notice");
+                ,"action","notice",id,id_Fs);
         logFlow.setId_Us(id_Us);
         logFlow.getData().put("type",type);
-        ws.sendWSNew(logFlow,0);
+        ws.sendWS(logFlow);
+//        ws.sendWSNew(logFlow,0);
     }
 
     /**
@@ -342,8 +534,11 @@ public class ActionServiceImpl implements ActionService {
      * @ver 版本号: 1.0.0
      */
     private LogFlow getNullLogFlow(String desc, String id_C, String id_U
-            , JSONObject data, String id_O, Integer index,String logType,String subType){
+            , JSONObject data, String id_O, Integer index,String logType,String subType
+            ,String id,String id_Fs){
         LogFlow logFlow = LogFlow.getInstance();
+        logFlow.setId(id);
+        logFlow.setId_FS(id_Fs);
         logFlow.setLogType(logType);
         logFlow.setSubType(subType);
         logFlow.setZcndesc(desc);
@@ -772,6 +967,416 @@ public class ActionServiceImpl implements ActionService {
             // 抛出操作成功异常
             return retResult.ok(CodeEnum.OK.getCode(), res);
         }
+
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
+    public ApiResponse changeActionStatusNew(String logType, Integer status, String msg,
+                                          Integer index, String id_O, Boolean isLink,
+                                          String id_FC, String id_FS, JSONObject tokData,String receiveUserId) {
+
+        JSONObject actData = this.getActionData(id_O, index);
+
+        OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+        OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
+
+        String taskName = orderOItem.getWrdN().getString("cn");
+
+        // 根据下标获取递归信息
+
+        // 判断新的状态和旧状态不一样
+//                if (orderAction.getBcdStatus().equals(status)) {
+//                    // 抛出操作成功异常
+////                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
+//                    return retResult.error(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
+//
+//                }
+
+        // 备注
+        String message;
+        JSONObject res = new JSONObject();
+        JSONObject mapKey = new JSONObject();
+        JSONObject listCol = new JSONObject();
+        boolean isStateChg = false;
+        String duraType = "none";
+
+        /***
+         * logStatus(wn0prog) = 2@推送 3@开始 1@停 -1@再开 -6@取消 5@完成
+         * bcdStatus = 0, 1 start, 2 end, -8 resume, 8 stop, 9 cancel
+         * 0 about, 1 process, 9 stop, -8(3) resume/process, 3 finished, 10 cancel, 8 process(with next started)
+         * rePush = > -2,
+         *
+         * 1. send logDura, 2. favRecent+, 3.
+         */
+        // if state => 1 ^id_Us+ / ^state => 1 / ^logState 1 / ^ logdura+start / ^recent+ / ^lST = 8
+        // if state => 5 ^(add me) id_Us+ / ^state no chg / ^logState no / ^logdura+start / ^recent+
+        // if state => 6 ^(rem me) id+Us- / ^state no chg / ^logState no / ^logdura+end / ^recent keep
+
+        // 8 pause (^if id_Us [1]) id_Us- / ^stateChg / ^logState / ^logdura+end / ^recent keep
+        // 3/-8 resume (^id_Us+) / id_Us = []? ^stateChg / ^logState / ^logdura+start /
+
+        // if state => 2 ^statechg/^logState /^id_Us = [] / ^logdura all user end /  ^FavRecent remove all / ^lST = 13
+
+        // 7 start next => ^isactivated = 4 / push next / ^nothing else changed
+        // 9 cancel => ^state = 9 / ^id_Us = [] ^ all user end / ^favRecent remove all
+
+        // ???repush state = 0 log sent as 0, waiting for user to start?
+
+        // activate = 4 means Skip = already pushed Next
+
+
+        JSONArray id_Us = orderAction.getId_Us() == null ? new JSONArray() : orderAction.getId_Us();
+
+        // 判断属于什么操作
+        switch (status) {
+            case 1:
+                // Start an OItem, DG just start, Task just start, Quest start + update Prob
+                if (orderAction.getBcdStatus() != 0) {
+                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经开始过了");
+                }
+                // 设置备注信息
+                // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
+                message = "[开始运行]" + msg;
+
+                //Adding myself to the id_Us of action to indicate
+                id_Us.add(tokData.getString("id_U"));
+                orderAction.setId_Us(id_Us);
+                res.put("isJoin", 1);
+                res.put("id_Us", orderAction.getId_Us());
+                if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
+                    mapKey.put("info.lST", 8);
+                    listCol.put("lST", 8);
+                }
+                orderAction.setBcdStatus(status);
+                isStateChg = true;
+                duraType = "start";
+
+                break;
+            case 2:                    // 2 = finish, set qtyfin setNextDesc
+//                        if (orderAction.getBcdStatus() != 2 && orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3 && orderAction.getBcdStatus() != -8 && orderAction.getBcdStatus() != 7) {
+//                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
+//                        }
+                if (orderAction.getSumChild() > 0 && orderAction.getBmdpt() == 2 && isLink) {
+                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
+                }
+
+                Double progress = Double.valueOf((actData.getInteger("progress") + 1) / actData.getJSONArray("actionArray").size() * 100);
+                //update actions' total progress
+                if (progress == 100.0) {
+                    mapKey.put("info.lST", 13);
+                    listCol.put("lST", 13);
+                }
+                mapKey.put("action.wn2progress", progress);
+                orderAction.setBcdStatus(status);
+
+                message = "[已完成]" + msg;
+                isStateChg = true;
+                duraType = "allEnd";
+
+                break;
+            case 3:
+            case -8: // resume OItem
+                if (orderAction.getBcdStatus() != 8) {
+                    return retResult.ok(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
+
+//                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
+                }
+
+                message = "[已恢复执行]" + msg;
+                orderAction.setBcdStatus(-8);
+                res.put("isJoin", 1);
+                res.put("id_Us", orderAction.getId_Us());
+                isStateChg = true;
+                duraType = "resume";
+
+                break;
+            case 5: // 加入
+                id_Us.add(tokData.getString("id_U"));
+                orderAction.setId_Us(id_Us);
+                message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功]" + msg;
+                // set back status to original status
+                status = orderAction.getBcdStatus();
+
+                res.put("isJoin", 1);
+                res.put("id_Us", orderAction.getId_Us());
+                duraType = "start";
+                break;
+            case 6:
+                id_Us.remove(tokData.getString("id_U"));
+                orderAction.setId_Us(id_Us);
+
+                message = tokData.getJSONObject("wrdNU").getString("cn") + "[退出成功]" + msg;
+                status = orderAction.getBcdStatus();
+
+                res.put("isJoin", 0);
+                res.put("id_Us", orderAction.getId_Us());
+                duraType = "end";
+                break;
+            case 7:
+                if ((orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != -8)
+                        || orderAction.getBisactivate() == 4) {
+                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能操作");
+                }
+                orderAction.setBisactivate(4);
+                message = "[继续下一个]" + msg;
+
+                break;
+            case 8: // pause
+                if (orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3
+                        && orderAction.getBcdStatus() != -8) {
+                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能");
+                }                    // 设置备注信息
+                message = "[已暂停]" + msg;
+                orderAction.setBcdStatus(status);
+                isStateChg = true;
+                duraType = "pause";
+
+//                    logStatus = 1;
+                break;
+            case 9: // cancel
+
+                // pause but it's nothing special
+                if (orderAction.getBcdStatus() == 8) {
+                    // need to unpause then cancel
+                    LogFlow logL = new LogFlow("action", id_FC,
+                            id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                            orderAction.getId_OP(), id_O, index, tokData.getString("id_C"), orderOItem.getId_C(), "", tokData.getString("dep"), "[准备取消]", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+                    logL.setLogData_action(orderAction, orderOItem);
+                    logL.getData().put("bcdStatus", -8);
+                    ws.sendWS(logL);
+                }
+                // 设置备注信息
+                orderAction.setBcdStatus(status);
+                message = "[已取消]" + msg;
+                isStateChg = true;
+                duraType = "allEnd";
+                break;
+            case 54:
+                // 设置备注信息
+                // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
+                message = "[cusMsg-拒收]" + msg;
+
+                //Adding myself to the id_Us of action to indicate
+                id_Us.add(tokData.getString("id_U"));
+                orderAction.setId_Us(id_Us);
+                res.put("isJoin", 1);
+                res.put("id_Us", orderAction.getId_Us());
+//                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
+//                            mapKey.put("info.lST", 8);
+//                            listCol.put("lST", 8);
+//                        }
+                orderAction.setBcdStatus(status);
+//                        duraType = "start";
+                break;
+            case 55:
+                message = "[cusMsg-删除]" + msg;
+
+                //Adding myself to the id_Us of action to indicate
+                id_Us.add(tokData.getString("id_U"));
+                orderAction.setId_Us(id_Us);
+                res.put("isJoin", 1);
+                res.put("id_Us", orderAction.getId_Us());
+//                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
+//                            mapKey.put("info.lST", 8);
+//                            listCol.put("lST", 8);
+//                        }
+                orderAction.setBcdStatus(status);
+                break;
+            case 53:
+                message = "[已恢复执行]" + msg;
+                orderAction.setBcdStatus(-8);
+                res.put("isJoin", 1);
+                res.put("id_Us", orderAction.getId_Us());
+                isStateChg = true;
+                duraType = "resume";
+                break;
+            default:
+                message = taskName + "[无法操作]";
+                break;
+        }
+
+        // 设置产品状态
+        String compId;
+
+        if (logType.endsWith("SL")) {
+            compId = actData.getJSONObject("info").getString("id_CB");
+        } else {
+            compId = tokData.getString("id_C");
+        }
+
+        if (isStateChg) {
+
+            if (status.equals(2) || status.equals(9))
+            {
+                //removing it from flowControl RefOP
+                this.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
+                        id_FC, id_FS, orderAction.getId_OP(), orderAction.getRefOP(), orderAction.getWrdNP(), orderAction.getIndex(), false );
+            }
+
+            qt.errPrint("stateChg to send log here?", null, isStateChg);
+            // Start making log with data
+            LogFlow logL = new LogFlow("action", id_FC,
+                    id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU")
+                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), ""
+                    , tokData.getString("dep"), message, 3, orderOItem.getWrdN()
+                    , tokData.getJSONObject("wrdNU"));
+
+            // Here set time info into action's log
+            logL.setLogData_action(orderAction, orderOItem);
+
+            if (duraType.equals("start") || duraType.equals("resume")) {
+                logL.setActionTime(DateUtils.getTimeStamp(), 0L, duraType);
+            } else if (duraType.equals("end") || duraType.equals("pause") || duraType.equals("allEnd")) {
+                logL.setActionTime(0L, DateUtils.getTimeStamp(), duraType);
+            }
+
+            ws.sendWS(logL);
+            LogFlow logLNew = new LogFlow("action", id_FS,
+                    id_FC, "stateChg", tokData.getString("id_U"), tokData.getString("grpU")
+                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), ""
+                    , tokData.getString("dep"), message, 3, orderOItem.getWrdN()
+                    , tokData.getJSONObject("wrdNU"));
+            JSONArray id_UsLog = new JSONArray();
+            id_UsLog.add(receiveUserId);
+            logLNew.setId_Us(id_UsLog);
+            ws.sendWSNew(logLNew,0);
+        }
+
+        // setup User's Fav card
+        if (duraType.equals("start"))
+            this.setFavRecent(tokData.getString("id_C"), tokData.getString("id_U"), id_O, index, id_FC, id_FS,
+                    orderOItem.getWrdN(), orderOItem.getPic());
+        else if (duraType.equals("end")) {
+            this.removeFavRecent(qt.setArray(tokData.getString("id_U")), id_O, index, id_FC, id_FS, orderAction.getArrUA());
+            orderAction.getId_Us().remove(tokData.getString("id_U"));
+        }
+        else if (duraType.equals("allEnd"))
+        {
+            this.removeFavRecent(orderAction.getId_Us(), id_O, index, id_FC, id_FS, orderAction.getArrUA());
+            orderAction.setId_Us(new JSONArray());
+            LogFlow logDURA = new LogFlow("duraflow", id_FC,
+                    id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+
+            // I am just fixing this by putting the "finish" time into calculation and ignoring the last log
+            this.sumDura(id_O, index, logDURA);
+        }
+
+
+//                LogFlow logL = new LogFlow("duraflow", id_FC,
+//                        id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+//                        orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+//
+//                if (duraType.equals("start") || duraType.equals("resume")) { //type start
+//                    // Start making log with data
+//                    logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, duraType);
+//                    logL.setZcndesc("任务计时开始");
+//                    ws.sendWS(logL);
+////casItemx, summ00s
+//                } else if (duraType.equals("end") || duraType.equals("pause")) { //type end
+//                    // End making log with data
+//                    logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
+//                    logL.setZcndesc("任务计时停止");
+//                    ws.sendWS(logL);
+//
+//                } else if (duraType.equals("allEnd")) { // type allEnd
+//                    for (int i = 0; i < orderAction.getId_Us().size(); i++) {
+//                        logL.setId_U(orderAction.getId_Us().getString(i));
+//                        logL.setGrpU("1000");
+//                        logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
+//                        logL.setZcndesc("任务结束");
+//                        ws.sendWS(logL);
+//                    }
+//                }
+//                try {
+        mapKey.put("action.objAction." + index, orderAction);
+        qt.setMDContent(id_O, mapKey, Order.class);
+
+        if (null != listCol.getInteger("lST")) {
+            qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
+        }
+
+        // if Quest, send log + update OItem of myself = task = DG = above
+        // get upPrnt data, and find the prob, set that status of Prob to status
+
+        //*** Here we set oStock qty to 1 whenever noP task is completed
+        if (status == 2 && orderOItem.getId_P().equals(""))
+        {
+            Order oStockCheck = qt.getMDContent(id_O, Arrays.asList("oStock", "action", "oItem", "view"), Order.class);
+            if (oStockCheck.getOStock() != null)
+            {
+                Double qty = oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).getDouble("wn2qtynow");
+                Double qtyAdding = 1 - qty;
+
+                oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).put("wn2qtynow", 1.0);
+                JSONObject listCol2 = new JSONObject();
+                dbu.summOrder(oStockCheck, listCol2, qt.setArray("oStock"));
+                qt.saveMD(oStockCheck);
+                qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
+
+                LogFlow log = new LogFlow(tokData, oStockCheck.getOItem(), oStockCheck.getAction(), "", id_O, index,
+                        "assetflow", "qtyChg", orderAction.getRefOP() + "-" + orderOItem.getWrdN().getString("cn") +
+                        " 完成了 " + qtyAdding, 3);
+
+                Double price = orderOItem.getWn4price() == null ? 0.0: orderOItem.getWn4price();
+                log.setLogData_assetflow(qtyAdding, price, "","");
+
+                ws.sendWS(log);
+//                LogFlow logNew = new LogFlow(tokData, oStockCheck.getOItem(), oStockCheck.getAction(), "", id_O, index,
+//                        "assetflow", "qtyChg", orderAction.getRefOP() + "-" + orderOItem.getWrdN().getString("cn") +
+//                        " 完成了 " + qtyAdding, 3);
+//                JSONArray id_UsLog = new JSONArray();
+//                id_UsLog.add(receiveUserId);
+//                logNew.setId_Us(id_UsLog);
+//                ws.sendWSNew(logNew,0);
+            }
+            //getOStock (if not null)
+            //was 0.3 then set to 1
+            //send log that I finished 0.7
+        }
+
+        if (orderAction.getBisactivate() == 7)
+        {
+            JSONObject upPrnt = orderAction.getUpPrnts().getJSONObject(0);
+
+            try {
+                // if any null exception, catch
+                JSONObject taskOwner = this.getActionData(upPrnt.getString("id_O"), upPrnt.getInteger("index"));
+                OrderAction objAction = JSONObject.parseObject(JSON.toJSONString(taskOwner.get("orderAction")), OrderAction.class);
+
+                JSONObject probData = objAction.getProb().getJSONObject(upPrnt.getInteger("probIndex"));
+                probData.put("bcdStatus", status);
+
+                qt.setMDContent(upPrnt.getString("id_O"),
+                        qt.setJson("action.objAction." + upPrnt.getInteger("index"), objAction),
+                        Order.class);
+            } catch (RuntimeException e) {
+                System.out.println("shit A");
+                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
+            }
+        } else if ((status == 2 && orderAction.getBisactivate() != 4) || status == 7) {
+            // activate = 4 means Skip = already pushed Next
+            if (orderAction.getUpPrnts().size() == 0 && orderOItem.getId_P().equals("")) {
+                //Here for noP, DO NOT check parent, it will blow up
+                this.updateNext(orderAction, tokData);
+            }
+            else {
+                //for regular DG, we will go check our parent first
+                //then push it together with myself because I am always the first Item
+                this.updateParent(orderAction, tokData);
+            }
+        } else if (status == 1 && orderAction.getBmdpt() == 4)
+        {
+            // here I must check all my subParts, and see if they are prtPrev.size == 0
+            // if so, push
+            this.updateSon(orderAction, tokData);
+        }
+
+
+        // 抛出操作成功异常
+        return retResult.ok(CodeEnum.OK.getCode(), res);
+    }
     private void updateSon(OrderAction orderAction, JSONObject tokData)
     {
 
@@ -1835,6 +2440,7 @@ public class ActionServiceImpl implements ActionService {
 
         JSONArray id_Us;
         JSONArray id_APPs;
+        JSONArray defReply = null;
         if (logType.endsWith("SL"))
             logType = StringUtils.strip(logType, "SL");
 
@@ -1863,6 +2469,9 @@ public class ActionServiceImpl implements ActionService {
                                 id_APPs.add(objUserSon.getString("id_APP"));
                             }
                         }
+                        if (null != objDataSon.getJSONArray("defReply")) {
+                            defReply = objDataSon.getJSONArray("defReply");
+                        }
                         break;
                     }
                 }
@@ -1880,6 +2489,9 @@ public class ActionServiceImpl implements ActionService {
                             } else {
                                 id_APPs.add(objUserSon.getString("id_APP"));
                             }
+                        }
+                        if (null != objDataSon.getJSONArray("defReply")) {
+                            defReply = objDataSon.getJSONArray("defReply");
                         }
                         break;
                     }
@@ -1937,13 +2549,15 @@ public class ActionServiceImpl implements ActionService {
         this.updateRefOP(myCompId, myCompId,
                 id, id_FS, id_O, "grpTask", oItemData.getJSONObject("wrdNP"), index, true );
 
+        boolean isId_Us = null != id_Us && id_Us.size() > 0;
 
         // Send a log
         LogFlow logLP = new LogFlow(logType,id,
-                id,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
+                id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
                 oItemData.getString("pic"),dep,"准备开始",3,qt.cloneObj(oItemData.getJSONObject("wrdN")),wrdNU);
         logLP.setLogData_action(unitAction,unitOItem);
         logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+        ws.sendWS(logLP);
 
         JSONObject objQcSon = new JSONObject();
         objQcSon.put("score",0);
@@ -1951,17 +2565,97 @@ public class ActionServiceImpl implements ActionService {
 
         qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,"oQc.objQc."+index,objQcSon), Order.class);
 
-        ws.sendWS(logLP);
-
-        if (null!=id_Us && id_Us.size() > 0) {
+        if (isId_Us) {
             LogFlow logLPNew = new LogFlow(logType,id_FS,
-                    id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
+                    id,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
                     oItemData.getString("pic"),dep,"准备开始",3,qt.cloneObj(oItemData.getJSONObject("wrdN")),wrdNU);
             logLPNew.setLogData_action(unitAction,unitOItem);
             logLPNew.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
             logLPNew.setId_Us(id_Us);
             logLPNew.setId_APPs(id_APPs);
             ws.sendWSNew(logLPNew,1);
+        }
+
+        if (null != defReply) {
+            JSONObject wr = new JSONObject();
+            wr.put("cn","小银【系统】: 自动回复");
+            for (int i = 0; i < defReply.size(); i++) {
+                JSONObject defReplySon = defReply.getJSONObject(i);
+                if (defReplySon.getInteger("state") == 0) {
+                    LogFlow logLPDef;
+                    if (defReplySon.getInteger("type")==1) {
+                        JSONArray img = defReplySon.getJSONArray("img");
+                        for (int j = 0; j < img.size(); j++) {
+                            logLPDef = new LogFlow("msg",id,
+                                    id_FS,"pic", "","","","", ""
+                                    ,id_O,id_O,index, myCompId,myCompId,
+                                    "","","",3
+                                    ,wr,wr);
+                            logLPDef.getData().put("type","defReply");
+                            logLPDef.getData().put("pic",img.getString(j));
+                            logLPDef.setId_Us(qt.setArray(id_U));
+                            ws.sendWSNew(logLPDef,0);
+                            if (isId_Us) {
+                                logLPDef = new LogFlow("msg",id_FS,
+                                        id,"pic", "",grpU,"",unitOItem.getGrpB(), ""
+                                        ,id_O,id_O,index, myCompId,myCompId,
+                                        oItemData.getString("pic"),dep,img.getString(j),3
+                                        ,wr,wr);
+                                logLPDef.getData().put("type","defReply");
+                                logLPDef.setId_Us(id_Us);
+                                logLPDef.setId_APPs(id_APPs);
+                                ws.sendWSNew(logLPDef,1);
+                            }
+                        }
+                    } else if (defReplySon.getInteger("type") == 2) {
+                        JSONArray id_P = defReplySon.getJSONArray("id_P");
+                        for (int j = 0; j < id_P.size(); j++) {
+                            logLPDef = new LogFlow("msg",id,
+                                    id_FS,"prod", "",grpU,"",unitOItem.getGrpB(), ""
+                                    ,id_O,id_O,index, myCompId,myCompId,
+                                    oItemData.getString("pic"),dep, id_P.getString(j),3
+                                    ,wr,wr);
+                            logLPDef.getData().put("type","defReply");
+                            logLPDef.getData().put("id_P",id_P.getString(j));
+                            logLPDef.setId_Us(qt.setArray(id_U));
+                            ws.sendWSNew(logLPDef,0);
+                            if (isId_Us) {
+                                logLPDef = new LogFlow("msg",id_FS,
+                                        id,"prod", "",grpU,"",unitOItem.getGrpB(), ""
+                                        ,id_O,id_O,index, myCompId,myCompId,
+                                        oItemData.getString("pic"),dep,id_P.getString(j),3
+                                        ,wr,wr);
+                                logLPDef.getData().put("type","defReply");
+                                logLPDef.setId_Us(id_Us);
+                                logLPDef.setId_APPs(id_APPs);
+                                ws.sendWSNew(logLPDef,1);
+                            }
+                        }
+                    } else {
+                        logLPDef = new LogFlow("msg",id,
+                                id_FS,"msg", "",grpU,"",unitOItem.getGrpB(), ""
+                                ,id_O,id_O,index, myCompId,myCompId,
+                                oItemData.getString("pic"),dep,defReplySon.getString("msg"),3
+                                ,wr,wr);
+                        logLPDef.getData().put("type","defReply");
+//                        logLPDef.setLogData_action(unitAction,unitOItem);
+//                        logLPDef.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+                        logLPDef.setId_Us(qt.setArray(id_U));
+                        ws.sendWSNew(logLPDef,0);
+                        if (isId_Us) {
+                            logLPDef = new LogFlow("msg",id_FS,
+                                    id,"msg", "",grpU,"",unitOItem.getGrpB(), ""
+                                    ,id_O,id_O,index, myCompId,myCompId,
+                                    oItemData.getString("pic"),dep,defReplySon.getString("msg"),3
+                                    ,wr,wr);
+                            logLPDef.getData().put("type","defReply");
+                            logLPDef.setId_Us(id_Us);
+                            logLPDef.setId_APPs(id_APPs);
+                            ws.sendWSNew(logLPDef,1);
+                        }
+                    }
+                }
+            }
         }
 
         return retResult.ok(CodeEnum.OK.getCode(), "done");

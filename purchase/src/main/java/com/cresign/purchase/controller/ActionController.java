@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.purchase.service.ActionService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.token.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -190,6 +191,28 @@ public class ActionController {
                 reqJson.getString("id_FC"),
                 reqJson.getString("id_FS"),
                 tokData);
+        } catch (Exception e)
+        {
+            return getUserToken.err(reqJson, "statusChg", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v2/statusChangeNew")
+    public ApiResponse statusChangeNew(@RequestBody JSONObject reqJson) throws IOException {
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        try {
+            return actionService.changeActionStatusNew(
+                    reqJson.getString("logType"),
+                    reqJson.getInteger("status"),
+                    reqJson.getString("msg"),
+                    reqJson.getInteger("index"),
+                    reqJson.getString("id_O"),
+                    reqJson.getBoolean("isLink"),
+                    reqJson.getString("id_FC"),
+                    reqJson.getString("id_FS"),
+                    tokData,
+                    reqJson.getString("receiveUserId"));
         } catch (Exception e)
         {
             return getUserToken.err(reqJson, "statusChg", e);
@@ -382,7 +405,8 @@ public class ActionController {
     public ApiResponse applyForScore(@RequestBody JSONObject reqJson){
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return actionService.applyForScore(reqJson.getString("id_O"), reqJson.getInteger("index")
-                , tokData.getString("id_C"), tokData.getString("id_U"),reqJson.getJSONArray("id_Us"));
+                ,reqJson.getString("id"),reqJson.getString("id_FS")
+                ,tokData);
     }
 
     @SecurityParameter
@@ -390,7 +414,7 @@ public class ActionController {
     public ApiResponse haveScore(@RequestBody JSONObject reqJson){
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return actionService.haveScore(reqJson.getString("id_O"), reqJson.getInteger("index"), reqJson.getInteger("score")
-                , tokData.getString("id_C"), tokData.getString("id_U"),reqJson.getJSONArray("id_Us"));
+                ,reqJson.getString("id"),reqJson.getString("id_FS"),tokData);
     }
 
     @SecurityParameter
@@ -398,7 +422,29 @@ public class ActionController {
     public ApiResponse foCount(@RequestBody JSONObject reqJson){
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return actionService.foCount(reqJson.getString("id_O"), reqJson.getInteger("index")
-                , tokData.getString("id_C"), tokData.getString("id_U"),reqJson.getJSONArray("id_Us"));
+                , reqJson.getString("id"), reqJson.getString("id_FS"),tokData
+                ,reqJson.getInteger("type"),reqJson.getString("dataInfo"));
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/updateDefReply")
+    public ApiResponse updateDefReply(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        return actionService.updateDefReply(tokData.getString("id_C")
+                , reqJson.getString("logId"),reqJson.getJSONArray("defReply"));
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/sendMsgByOnly")
+    public ApiResponse sendMsgByOnly(@RequestBody JSONObject reqJson){
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        return actionService.sendMsgByOnly(reqJson.getString("logType"),
+                reqJson.getString("msg"),
+                reqJson.getInteger("index"),
+                reqJson.getString("id_O"),
+                reqJson.getString("id_FC"),
+                reqJson.getString("id_FS"),
+                tokData,reqJson.getString("receiveUserId"));
     }
 
 }

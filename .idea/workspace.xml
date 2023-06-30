@@ -5,30 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="128c9a26-d44c-4e41-b0e6-dabc284dd13b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/orderCard/OrderOQc.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/controller/CusController.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/controller/CusController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/CusService.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/CusService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/CusServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/CusServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/resources/bootstrap.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/src/main/java/com/cresign/gateway/filter/GatewayFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/src/main/java/com/cresign/gateway/filter/GatewayFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/WxLoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/WxLoginController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/WxLoginService.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/WxLoginService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SetAuthServicelmpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SetAuthServicelmpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SmsLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SmsLoginServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/WxLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/WxLoginServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/utils/RegisterUserUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/utils/RegisterUserUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/RedirectServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/RedirectServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ActionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ActionController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/ActionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/ActionService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ActionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ActionServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/RpiServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/RpiServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/DbUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/DbUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Qt.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Qt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Ws.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Ws.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/Order.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/orderCard/OrderCusmsg.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/orderCard/OrderCusmsg.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/userCard/UserInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/userCard/UserInfo.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

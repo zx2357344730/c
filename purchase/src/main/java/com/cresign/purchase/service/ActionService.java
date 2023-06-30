@@ -3,6 +3,7 @@ package com.cresign.purchase.service;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.pojo.po.LogFlow;
 
 import java.io.IOException;
 
@@ -17,6 +18,9 @@ public interface ActionService {
      */
     ApiResponse changeActionStatus(String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,
             String id_FC, String id_FS, JSONObject tokData) throws IOException;
+
+    ApiResponse changeActionStatusNew(String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,
+                                   String id_FC, String id_FS, JSONObject tokData,String receiveUserId) throws IOException;
 
     /**
      * 根据oId修改grpBGroup字段
@@ -73,8 +77,15 @@ public interface ActionService {
 
     ApiResponse rePush(String id_O, Integer index, JSONObject tokData);
 
-    ApiResponse foCount(String id_O, Integer index,String id_C,String id_U,JSONArray id_Us);
+    ApiResponse foCount(String id_O, Integer index,String id,String id_Fs
+            , JSONObject tokData,int type,String dataInfo);
 
-    ApiResponse applyForScore(String id_O, Integer index,String id_C,String id_U,JSONArray id_Us);
-    ApiResponse haveScore(String id_O, Integer index,Integer score,String id_C,String id_U,JSONArray id_Us);
+    ApiResponse applyForScore(String id_O, Integer index,String id,String id_Fs, JSONObject tokData);
+    ApiResponse haveScore(String id_O, Integer index,Integer score,String id,String id_Fs, JSONObject tokData);
+
+    ApiResponse updateDefReply(String id_C,String logId,JSONArray defReply);
+
+    ApiResponse sendMsgByOnly(String logType, String msg,
+                              Integer index, String id_O,
+                              String id_FC, String id_FS, JSONObject tokData,String receiveUserId);
 }

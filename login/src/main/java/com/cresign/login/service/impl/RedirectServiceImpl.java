@@ -459,6 +459,9 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 //            redisTemplate0.expire(SCANCODE_JOINCOMP + token, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
             qt.putRDHashMany(SCANCODE_JOINCOMP,token, jsonObject, data.getLong("endTimeSec"));
 
+        } else if ("joinVisitor".equals(mode)) {
+            jsonObject.put("mode", mode);
+            qt.putRDHashMany(SCANCODE_JOINCOMP,token, jsonObject, 6000L);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -512,7 +515,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
             if (used_count +1 == count) {
                 System.out.println("进来 used_count +1 == count");
                 //try {
-                apiResponse = joinAddData(join_user, entries);
+                apiResponse = joinAddData(join_user, entries,0);
 //                redisTemplate0.delete(SCANCODE_JOINCOMP, token);
                 //} catch (RuntimeException e) {
 //                redisTemplate0.opsForHash().putAll(keyName, entries);
@@ -534,7 +537,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
                 System.out.println("进来 used_count < count");
                 // 累加
                 //try {
-                apiResponse = joinAddData(join_user, entries);
+                apiResponse = joinAddData(join_user, entries,0);
 //                redisTemplate0.opsForHash().increment(keyName, "used_count", 1);
                 Integer inc = Integer.parseInt(entries.get("used_count").toString()) + 1;
                 qt.putRDHash(SCANCODE_JOINCOMP,token, "used_count", inc);
@@ -545,7 +548,9 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
                 return apiResponse;
             }
         } else if ("time".equals(entries.get("mode"))) {
-            return joinAddData(join_user, entries);
+            return joinAddData(join_user, entries,0);
+        } else if ("joinVisitor".equals(entries.get("mode"))) {
+            return joinAddData(join_user, entries,1);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -584,6 +589,8 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         } else if ("time".equals(mode)) {
             redisTemplate0.opsForHash().putAll(keyName, dataJson);
             redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+        } else if ("joinVisitor".equals(mode)) {
+            redisTemplate0.opsForHash().putAll(keyName, dataJson);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
@@ -604,7 +611,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         return retResult.ok(CodeEnum.OK.getCode(), url);
     }
 
-    private ApiResponse joinAddData(String join_user, Map <Object, Object> entries) throws IOException {
+    private ApiResponse joinAddData(String join_user, Map <Object, Object> entries,int type) throws IOException {
         /*
           1. 先检查公司是否存在
           2. 将用户加入公司
@@ -651,7 +658,11 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
         rolex.put("modAuth", modAuth);
         rolex.put("id_C", entries.get("id_C"));
-        rolex.put("grpU", "1009");
+        if (type==0) {
+            rolex.put("grpU", "1009");
+        } else {
+            rolex.put("grpU", "1099");
+        }
         rolex.put("dep", "1000");
 //        Update update = new Update();
 //        update.set("rolex.objComp."+entries.get("id_C"), rolex).set("info.def_C", entries.get("id_C"));
