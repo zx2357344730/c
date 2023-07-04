@@ -127,14 +127,31 @@ public class Ws {
         this.sendESOnly(logContent);
 
     }
+
+    /**
+     * 发送MQ信息，根据指定的id_Us发送，所以id_Us不能为空！
+     * @param logContent	日志信息
+     * @param type	是否获取id_App
+     * @author tang
+     * @date 创建时间: 2023/7/3
+     * @ver 版本号: 1.0.0
+     */
     public void sendWSNew(LogFlow logContent,int type){
+        // 定义存储id_Apps
         JSONArray cidArray;
+        // 获取发送用户列表
         JSONArray id_Us = logContent.getId_Us();
+        // 判断类型
         if (type == 0) {
+            // 创建对象
             cidArray = new JSONArray();
+            // 遍历用户列表
             for (int i = 0; i < id_Us.size(); i++) {
+                // 获取用户ID
                 String id_U = id_Us.getString(i);
+                // 查询数据库用户的id_App
                 User user = qt.getMDContent(id_U, "info", User.class);
+                // 判断不为空
                 if (null != user&&null!=user.getInfo()&&null!=user.getInfo().getId_APP()) {
                     cidArray.add(user.getInfo().getId_APP());
                 } else {
@@ -142,6 +159,7 @@ public class Ws {
                 }
             }
         } else {
+            // 直接获取日志的id_App
             cidArray = logContent.getId_APPs();
         }
 

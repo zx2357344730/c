@@ -227,41 +227,49 @@ public class ActionServiceImpl implements ActionService {
             return retResult.ok(CodeEnum.OK.getCode(), res);
     }
 
+    /**
+     * 客服向顾客申请评分api
+     * @param id_O	订单编号
+     * @param index	订单任务对应下标
+     * @param id	内部群编号
+     * @param id_Fs	对外群编号
+     * @param tokData	当前登录信息
+     * @param id_Us	指定发送用户列表
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/1
+     * @ver 版本号: 1.0.0
+     */
     @Override
     public ApiResponse applyForScore(String id_O, Integer index
-            ,String id,String id_Fs, JSONObject tokData) {
+            ,String id,String id_Fs, JSONObject tokData,JSONArray id_Us) {
+        // 定义存储返回结果
         JSONObject result = new JSONObject();
+        // 获取用户ID
         String id_U = tokData.getString("id_U");
+        // 获取公司ID
         String id_C = tokData.getString("id_C");
         try {
+            // 获取进度信息
             JSONObject actData = this.getActionData(id_O, index);
+            // 获取当前oItem信息
             OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+            // 获取当前action信息
             OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
+            // 添加返回结果
             result.put("desc","申请评分成功!");
             result.put("type",1);
-            LogFlow logFlow;
-            logFlow = new LogFlow("action", id,
-                    id_Fs, "notice", id_U, tokData.getString("grpU")
+            // 创建日志信息
+            LogFlow logFlow = new LogFlow("oQc", id,
+                    id_Fs, "scoreAf", id_U, tokData.getString("grpU")
                     , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
                     orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
                     , tokData.getString("dep"), "申请评分成功!", 3, orderOItem.getWrdN()
                     , tokData.getJSONObject("wrdNU"));
-            logFlow.getData().put("type","scoreAf");
-            ws.sendWS(logFlow);
-//            sendMsgNotice(id_C,"申请评分成功!",id_U,id_O,qt.setArray(id_U),index,"scoreAf",id,id_Fs);
-//            sendMsgNotice(id_C,"申请评分成功!",id_U,id_O,qt.setArray(id_U),index,"scoreAf",id_Fs,id);
-
-            logFlow = new LogFlow("oQc", id,
-                    id, "scoreAf", id_U, tokData.getString("grpU")
-                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
-                    , tokData.getString("dep"), "申请评分成功!", 3, orderOItem.getWrdN()
-                    , tokData.getJSONObject("wrdNU"));
-//            LogFlow logFlow = getNullLogFlow("申请评分成功!",id_C,id_U,new JSONObject(),id_O,index
-//                    ,"oQc","scoreAf",id,id_Fs);
-//            logFlow.setId_Us(qt.setArray(id_U));
-            ws.sendWS(logFlow);
-//            ws.sendWSNew(logFlow,0);
+            // 设置发送对象
+            logFlow.setId_Us(id_Us);
+            // 发送websocket
+            ws.sendWSNew(logFlow,0);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } catch (Exception e) {
             result.put("desc","申请评分异常");
@@ -271,51 +279,54 @@ public class ActionServiceImpl implements ActionService {
         }
     }
 
+    /**
+     * 顾客评分api
+     * @param id_O	订单编号
+     * @param index	订单任务对应下标
+     * @param score	评分分数
+     * @param id	内部群编号
+     * @param id_Fs	对外群编号
+     * @param tokData	当前登录信息
+     * @param id_Us	指定发送用户列表
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/1
+     * @ver 版本号: 1.0.0
+     */
     @Override
     public ApiResponse haveScore(String id_O, Integer index, Integer score
-            ,String id,String id_Fs, JSONObject tokData) {
+            ,String id,String id_Fs, JSONObject tokData,JSONArray id_Us) {
+        // 定义存储返回结果
         JSONObject result = new JSONObject();
+        // 获取用户ID
         String id_U = tokData.getString("id_U");
+        // 获取公司ID
         String id_C = tokData.getString("id_C");
+
         try {
+            // 获取进度信息
             JSONObject actData = this.getActionData(id_O, index);
+            // 获取当前oItem信息
             OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+            // 获取当前action信息
             OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
+            // 更新oQc卡片分数
             qt.setMDContent(id_O, qt.setJson("oQc.objQc."+index+".score",score), Order.class);
+            // 添加返回结果
             result.put("desc","评分成功!");
             result.put("type",1);
-            LogFlow logFlow;
-            logFlow = new LogFlow("action", id,
-                    id_Fs, "notice", id_U, tokData.getString("grpU")
+            // 创建日志信息
+            LogFlow logFlow = new LogFlow("oQc", id,
+                    id_Fs, "score", id_U, tokData.getString("grpU")
                     , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
                     orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
                     , tokData.getString("dep"), "评分成功!", 3, orderOItem.getWrdN()
                     , tokData.getJSONObject("wrdNU"));
-            logFlow.getData().put("type","score");
-            ws.sendWS(logFlow);
-
-            logFlow = new LogFlow("action", id_Fs,
-                    id, "notice", id_U, tokData.getString("grpU")
-                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
-                    , tokData.getString("dep"), "评分成功!", 3, orderOItem.getWrdN()
-                    , tokData.getJSONObject("wrdNU"));
-            logFlow.getData().put("type","score");
-            ws.sendWS(logFlow);
-//            sendMsgNotice(id_C,"评分成功!",id_U,id_O,qt.setArray(id_U),index,"score",id,id_Fs);
-//            sendMsgNotice(id_C,"评分成功!",id_U,id_O,qt.setArray(id_U),index,"score",id_Fs,id);
-
-            logFlow = new LogFlow("oQc", id,
-                    id, "score", id_U, tokData.getString("grpU")
-                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
-                    , tokData.getString("dep"), "评分成功!", 3, orderOItem.getWrdN()
-                    , tokData.getJSONObject("wrdNU"));
-//            LogFlow logFlow = getNullLogFlow("评分成功!",id_C,id_U,new JSONObject(),id_O,index
-//                    ,"oQc","score",id,id_Fs);
-//            logFlow.setId_Us(qt.setArray(id_U));
-            ws.sendWS(logFlow);
-//            ws.sendWSNew(logFlow,0);
+            logFlow.getData().put("score",score);
+            // 设置发送对象
+            logFlow.setId_Us(id_Us);
+            // 调用新方法发送websocket
+            ws.sendWSNew(logFlow,0);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } catch (Exception e) {
             result.put("desc","评分异常");
@@ -325,6 +336,16 @@ public class ActionServiceImpl implements ActionService {
         }
     }
 
+    /**
+     * 操作群的默认回复api
+     * @param id_C	公司编号
+     * @param logId	群编号
+     * @param defReply	默认回复信息
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/1
+     * @ver 版本号: 1.0.0
+     */
     @Override
     public ApiResponse updateDefReply(String id_C, String logId, JSONArray defReply) {
         Asset asset = qt.getConfig(id_C,"a-auth","flowControl");
@@ -340,31 +361,74 @@ public class ActionServiceImpl implements ActionService {
         return retResult.ok(CodeEnum.OK.getCode(), "0");
     }
 
+    /**
+     * 发送日志api
+     * @param logType	日志类型
+     * @param dataInfo	消息类型对应的数据体
+     * @param index	订单任务对应下标
+     * @param id_O	订单编号
+     * @param id	内部群编号
+     * @param id_FS	对外群编号
+     * @param tokData	当前登录信息
+     * @param type	消息类型
+     * @param id_Us	指定发送用户列表
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/1
+     * @ver 版本号: 1.0.0
+     */
     @Override
-    public ApiResponse sendMsgByOnly(String logType, String msg,
+    public ApiResponse sendMsgByOnly(String logType, String dataInfo,
                                      Integer index, String id_O,
-                                     String id_FC, String id_FS, JSONObject tokData,String receiveUserId) {
+                                     String id, String id_FS, JSONObject tokData,int type,JSONArray id_Us) {
+        // 获取进度信息
         JSONObject actData = this.getActionData(id_O, index);
 
-        // 设置产品状态
-        String compId;
-
-        if (logType.endsWith("SL")) {
-            compId = actData.getJSONObject("info").getString("id_CB");
-        } else {
-            compId = tokData.getString("id_C");
-        }
+//        // 设置产品状态
+//        String compId;
+//        if (logType.endsWith("SL")) {
+//            compId = actData.getJSONObject("info").getString("id_CB");
+//        } else {
+//            compId = tokData.getString("id_C");
+//        }
+        // 获取当前oItem信息
         OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+        // 获取当前action信息
         OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
-//        sendMsgOneNew(logFlow.getData().getString("receiveUserId"),logFlow);
-        LogFlow logL = new LogFlow("msg", id_FC,
-                id_FS, "taskMsg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), msg, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
-        sendMsgOneNew(null,logL);
-        LogFlow logLNew = new LogFlow("msg", id_FS,
-                id_FC, "taskMsg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), msg, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
-        sendMsgOneNew(null,logLNew);
+        // 定义存储描述
+        String desc = "";
+        // 定义存储日志data
+        JSONObject data = new JSONObject();
+        // 定义存储子日志类型
+        String subType;
+        // 添加数据
+        data.put("type","sendMsg");
+        if (type == 1) {
+            // 判断为图片消息
+            subType = "pic";
+            data.put("pic",dataInfo);
+            data.put("video","");
+        } else if (type == 2) {
+            // 判断为产品消息
+            subType = "prod";
+            data.put("id_P",dataInfo);
+        } else {
+            // 判断为普通消息
+            subType = "msg";
+            desc = dataInfo;
+        }
+        // 根据存储值创建日志
+        LogFlow logL = new LogFlow("msg", id,
+                id_FS, subType, tokData.getString("id_U"), tokData.getString("grpU")
+                , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                orderAction.getId_OP(), id_O, index, tokData.getString("id_C"), orderOItem.getId_C(), ""
+                , tokData.getString("dep"), desc, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+        // 设置日志信息
+        logL.setData(data);
+        logL.setId_Us(id_Us);
+//        ws.sendWS(logL);
+        // 发送日志信息
+        ws.sendWSNew(logL,0);
         return retResult.ok(CodeEnum.OK.getCode(), "发送成功");
     }
 
@@ -391,112 +455,121 @@ public class ActionServiceImpl implements ActionService {
         ws.sendWSNew(logFlow,0);
     }
 
+    /**
+     * 客服回访顾客api
+     * @param id_O	订单编号
+     * @param index 订单任务对应下标
+     * @param id    内部群编号
+     * @param id_Fs 对外群编号
+     * @param tokData   当前登录信息
+     * @param type  回访类型
+     * @param dataInfo  回访类型对应的数据体
+     * @param id_Us 指定发送用户列表
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/1
+     * @ver 版本号: 1.0.0
+     */
     @Override
     public ApiResponse foCount(String id_O, Integer index,String id,String id_Fs
-            , JSONObject tokData,int type,String dataInfo) {
+            , JSONObject tokData,int type,String dataInfo,JSONArray id_Us) {
+        // 获取订单的oQc卡片信息
         Order order = qt.getMDContent(id_O, Collections.singletonList("oQc"), Order.class);
+        // 获取公司编号
         String id_C = tokData.getString("id_C");
+        // 获取用户编号
         String id_U = tokData.getString("id_U");
+        // 定义存储返回结果
         JSONObject result = new JSONObject();
+        // 判断订单和oQc卡片不为空
         if (null == order || null == order.getOQc() || null == order.getOQc().getJSONArray("objQc")) {
+            // 添加返回结果
             result.put("desc","订单异常");
             result.put("type",0);
+            // 发送通知日志
             sendMsgNotice(id_C,"订单异常",id_U,id_O,qt.setArray(id_U),index,"foCount",id,id);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         }
+        // 获取oQc卡片信息
         JSONArray objQc = order.getOQc().getJSONArray("objQc");
+        // 获取回访次数
         int foUp = objQc.getJSONObject(index).getInteger("foCount");
+        // 回访次数减一
         foUp--;
+        // 判断回访次数不足
         if (foUp < 0) {
+            // 添加返回结果
             result.put("desc","回访次数上限！");
             result.put("type",2);
             sendMsgNotice(id_C,"回访次数上限！",id_U,id_O,qt.setArray(id_U),index,"foCount",id,id);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         }
+        // 获取进度信息
         JSONObject actData = this.getActionData(id_O, index);
+        // 获取当前oItem信息
         OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+        // 获取当前action信息
         OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
-//        LogFlow logFlow = getNullLogFlow("回访成功!",id_C,id_U,new JSONObject(),id_O,index
-//                ,"oQc","foCount",id,id_Fs);
+        // 获取当前时间
+        String dateNow = DateUtils.getDateNow(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        // 创建日志信息
         LogFlow logFlow = new LogFlow("oQc", id,
-                id, "foCount", id_U, tokData.getString("grpU")
+                id_Fs, "foCount", id_U, tokData.getString("grpU")
                 , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
                 orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
                 , tokData.getString("dep"), "回访成功!", 3, orderOItem.getWrdN()
                 , tokData.getJSONObject("wrdNU"));
+        // 设置日志data信息
         logFlow.getData().put("type",type);
         logFlow.getData().put("dataInfo",dataInfo);
-        ws.sendWS(logFlow);
-//        logFlow.setId_Us(qt.setArray(id_U));
-//        logFlow.getData().put("type",type);
-//        logFlow.getData().put("dataInfo",dataInfo);
 //        ws.sendWS(logFlow);
-//        ws.sendWSNew(logFlow,0);
-
+        // 设置日志接收用户列表
+        logFlow.setId_Us(id_Us);
+        logFlow.setTmd(dateNow);
+        // 发送日志
+        ws.sendWSNew(logFlow,0);
+        // 更新日志回访次数
         qt.setMDContent(id_O, qt.setJson("oQc.objQc."+index+".foCount",foUp), Order.class);
+        // 添加返回结果
         result.put("desc","回访成功!");
         result.put("type",1);
-//        sendMsgNotice(id_C,"回访成功!",id_U,id_O,qt.setArray(id_U),index,"foCount",id,id_Fs);
-//        sendMsgNotice(id_C,"回访成功!",id_U,id_O,qt.setArray(id_UReceive),index,"foCount",id_Fs,id);
+        // 定义存储子日志类型
+        String subType;
+        // 定义存储日志data信息
+        JSONObject data = new JSONObject();
+        // 定义存储日志描述
+        String desc = "";
+        // 添加日志data信息
+        data.put("type","defReply");
         if (type == 1) {
-            LogFlow logLNew = new LogFlow("msg", id,
-                    id_Fs, "pic", id_U, tokData.getString("grpU")
-                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
-                    , tokData.getString("dep"), "", 3, orderOItem.getWrdN()
-                    , tokData.getJSONObject("wrdNU"));
-            logLNew.getData().put("type","defReply");
-            logLNew.getData().put("pic",dataInfo);
-            ws.sendWS(logLNew);
-//            logLNew = new LogFlow("msg", id,
-//                    id_Fs, "pic", id_U, tokData.getString("grpU")
-//                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-//                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
-//                    , tokData.getString("dep"), "", 3, orderOItem.getWrdN()
-//                    , tokData.getJSONObject("wrdNU"));
-//            logLNew.setId_Us(qt.setArray(id_UReceive));
-//            logLNew.getData().put("type","defReply");
-//            logLNew.getData().put("pic",dataInfo);
-//            ws.sendWSNew(logLNew,0);
+            // 判断为图片
+            subType = "pic";
+            data.put("pic",dataInfo);
         } else if (type == 2) {
-            LogFlow logLNew = new LogFlow("msg", id,
-                    id_Fs, "prod", id_U, tokData.getString("grpU")
-                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
-                    , tokData.getString("dep"), dataInfo, 3, orderOItem.getWrdN()
-                    , tokData.getJSONObject("wrdNU"));
-            logLNew.getData().put("type","defReply");
-            logLNew.getData().put("id_P",dataInfo);
-            ws.sendWS(logLNew);
-//            logLNew = new LogFlow("msg", id,
-//                    id_Fs, "prod", id_U, tokData.getString("grpU")
-//                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-//                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
-//                    , tokData.getString("dep"), dataInfo, 3, orderOItem.getWrdN()
-//                    , tokData.getJSONObject("wrdNU"));
-//            logLNew.setId_Us(qt.setArray(id_UReceive));
-//            logLNew.getData().put("type","defReply");
-//            logLNew.getData().put("id_P",dataInfo);
-//            ws.sendWSNew(logLNew,0);
+            // 判断为产品
+            subType = "prod";
+            data.put("id_P",dataInfo);
         } else {
-            LogFlow logLNew = new LogFlow("msg", id,
-                    id_Fs, "msg", id_U, tokData.getString("grpU")
-                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
-                    , tokData.getString("dep"), dataInfo, 3, orderOItem.getWrdN()
-                    , tokData.getJSONObject("wrdNU"));
-            logLNew.getData().put("type","defReply");
-            ws.sendWS(logLNew);
-//            logLNew = new LogFlow("msg", id,
-//                    id_Fs, "msg", id_U, tokData.getString("grpU")
-//                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-//                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
-//                    , tokData.getString("dep"), dataInfo, 3, orderOItem.getWrdN()
-//                    , tokData.getJSONObject("wrdNU"));
-//            logLNew.setId_Us(qt.setArray(id_UReceive));
-//            logLNew.getData().put("type","defReply");
-//            ws.sendWSNew(logLNew,0);
+            // 判断为普通日志
+            subType = "msg";
+            desc = dataInfo;
         }
+        // 创建日志信息
+        LogFlow logLNewMsg = new LogFlow("msg", id,
+                id_Fs, subType, id_U, tokData.getString("grpU")
+                , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                , tokData.getString("dep"), desc, 3, orderOItem.getWrdN()
+                , tokData.getJSONObject("wrdNU"));
+        // 设置日志data
+        logLNewMsg.setData(data);
+//        ws.sendWS(logLNewMsg);
+        // 设置接收用户
+        logLNewMsg.setId_Us(id_Us);
+        // 设置时间并且把时间加一秒
+        logLNewMsg.setTmd(DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1));
+        // 发送websocket
+        ws.sendWSNew(logLNewMsg,0);
         return retResult.ok(CodeEnum.OK.getCode(), result);
     }
 
@@ -708,6 +781,7 @@ public class ActionServiceImpl implements ActionService {
                         res.put("isJoin", 1);
                         res.put("id_Us", orderAction.getId_Us());
                         duraType = "start";
+                        isStateChg = true;
                         break;
                     case 6:
                         id_Us.remove(tokData.getString("id_U"));
@@ -719,6 +793,7 @@ public class ActionServiceImpl implements ActionService {
                         res.put("isJoin", 0);
                         res.put("id_Us", orderAction.getId_Us());
                         duraType = "end";
+                        isStateChg = true;
                         break;
                     case 7:
                         if ((orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != -8)
@@ -765,30 +840,38 @@ public class ActionServiceImpl implements ActionService {
                         message = "[cusMsg-拒收]" + msg;
 
                         //Adding myself to the id_Us of action to indicate
-                        id_Us.add(tokData.getString("id_U"));
-                        orderAction.setId_Us(id_Us);
-                        res.put("isJoin", 1);
-                        res.put("id_Us", orderAction.getId_Us());
+//                        id_Us.add(tokData.getString("id_U"));
+//                        orderAction.setId_Us(id_Us);
+//                        res.put("isJoin", 1);
+//                        res.put("id_Us", orderAction.getId_Us());
 //                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
 //                            mapKey.put("info.lST", 8);
 //                            listCol.put("lST", 8);
 //                        }
                         orderAction.setBcdStatus(status);
 //                        duraType = "start";
+                        res.put("isJoin", 1);
+                        res.put("id_Us", orderAction.getId_Us());
+                        isStateChg = true;
+                        duraType = "resume";
                         break;
                     case 55:
                         message = "[cusMsg-删除]" + msg;
 
                         //Adding myself to the id_Us of action to indicate
-                        id_Us.add(tokData.getString("id_U"));
-                        orderAction.setId_Us(id_Us);
-                        res.put("isJoin", 1);
-                        res.put("id_Us", orderAction.getId_Us());
+//                        id_Us.add(tokData.getString("id_U"));
+//                        orderAction.setId_Us(id_Us);
+//                        res.put("isJoin", 1);
+//                        res.put("id_Us", orderAction.getId_Us());
 //                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
 //                            mapKey.put("info.lST", 8);
 //                            listCol.put("lST", 8);
 //                        }
                         orderAction.setBcdStatus(status);
+                        res.put("isJoin", 1);
+                        res.put("id_Us", orderAction.getId_Us());
+                        isStateChg = true;
+                        duraType = "resume";
                         break;
                     case 53:
                         message = "[已恢复执行]" + msg;
@@ -829,6 +912,7 @@ public class ActionServiceImpl implements ActionService {
 
                     // Here set time info into action's log
                     logL.setLogData_action(orderAction, orderOItem);
+                    logL.getData().put("id_Us",actData.getJSONArray("id_Us"));
 
                     if (duraType.equals("start") || duraType.equals("resume")) {
                         logL.setActionTime(DateUtils.getTimeStamp(), 0L, duraType);
@@ -972,7 +1056,7 @@ public class ActionServiceImpl implements ActionService {
     @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
     public ApiResponse changeActionStatusNew(String logType, Integer status, String msg,
                                           Integer index, String id_O, Boolean isLink,
-                                          String id_FC, String id_FS, JSONObject tokData,String receiveUserId) {
+                                          String id_FC, String id_FS, JSONObject tokData,JSONArray id_UsLog) {
 
         JSONObject actData = this.getActionData(id_O, index);
 
@@ -1156,30 +1240,38 @@ public class ActionServiceImpl implements ActionService {
                 message = "[cusMsg-拒收]" + msg;
 
                 //Adding myself to the id_Us of action to indicate
-                id_Us.add(tokData.getString("id_U"));
-                orderAction.setId_Us(id_Us);
-                res.put("isJoin", 1);
-                res.put("id_Us", orderAction.getId_Us());
+//                        id_Us.add(tokData.getString("id_U"));
+//                        orderAction.setId_Us(id_Us);
+//                        res.put("isJoin", 1);
+//                        res.put("id_Us", orderAction.getId_Us());
 //                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
 //                            mapKey.put("info.lST", 8);
 //                            listCol.put("lST", 8);
 //                        }
                 orderAction.setBcdStatus(status);
 //                        duraType = "start";
+                res.put("isJoin", 1);
+                res.put("id_Us", orderAction.getId_Us());
+                isStateChg = true;
+//                        duraType = "resume";
                 break;
             case 55:
                 message = "[cusMsg-删除]" + msg;
 
                 //Adding myself to the id_Us of action to indicate
-                id_Us.add(tokData.getString("id_U"));
-                orderAction.setId_Us(id_Us);
-                res.put("isJoin", 1);
-                res.put("id_Us", orderAction.getId_Us());
+//                        id_Us.add(tokData.getString("id_U"));
+//                        orderAction.setId_Us(id_Us);
+//                        res.put("isJoin", 1);
+//                        res.put("id_Us", orderAction.getId_Us());
 //                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
 //                            mapKey.put("info.lST", 8);
 //                            listCol.put("lST", 8);
 //                        }
                 orderAction.setBcdStatus(status);
+                res.put("isJoin", 1);
+                res.put("id_Us", orderAction.getId_Us());
+                isStateChg = true;
+//                        duraType = "resume";
                 break;
             case 53:
                 message = "[已恢复执行]" + msg;
@@ -1215,14 +1307,12 @@ public class ActionServiceImpl implements ActionService {
             qt.errPrint("stateChg to send log here?", null, isStateChg);
             // Start making log with data
             LogFlow logL = new LogFlow("action", id_FC,
-                    id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU")
-                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), ""
-                    , tokData.getString("dep"), message, 3, orderOItem.getWrdN()
-                    , tokData.getJSONObject("wrdNU"));
+                    id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), message, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
 
             // Here set time info into action's log
             logL.setLogData_action(orderAction, orderOItem);
+            logL.getData().put("id_Us",actData.getJSONArray("id_Us"));
 
             if (duraType.equals("start") || duraType.equals("resume")) {
                 logL.setActionTime(DateUtils.getTimeStamp(), 0L, duraType);
@@ -1230,17 +1320,9 @@ public class ActionServiceImpl implements ActionService {
                 logL.setActionTime(0L, DateUtils.getTimeStamp(), duraType);
             }
 
-            ws.sendWS(logL);
-            LogFlow logLNew = new LogFlow("action", id_FS,
-                    id_FC, "stateChg", tokData.getString("id_U"), tokData.getString("grpU")
-                    , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), ""
-                    , tokData.getString("dep"), message, 3, orderOItem.getWrdN()
-                    , tokData.getJSONObject("wrdNU"));
-            JSONArray id_UsLog = new JSONArray();
-            id_UsLog.add(receiveUserId);
-            logLNew.setId_Us(id_UsLog);
-            ws.sendWSNew(logLNew,0);
+//            ws.sendWS(logL);
+            logL.setId_Us(id_UsLog);
+            ws.sendWSNew(logL,0);
         }
 
         // setup User's Fav card
@@ -1322,14 +1404,9 @@ public class ActionServiceImpl implements ActionService {
                 Double price = orderOItem.getWn4price() == null ? 0.0: orderOItem.getWn4price();
                 log.setLogData_assetflow(qtyAdding, price, "","");
 
-                ws.sendWS(log);
-//                LogFlow logNew = new LogFlow(tokData, oStockCheck.getOItem(), oStockCheck.getAction(), "", id_O, index,
-//                        "assetflow", "qtyChg", orderAction.getRefOP() + "-" + orderOItem.getWrdN().getString("cn") +
-//                        " 完成了 " + qtyAdding, 3);
-//                JSONArray id_UsLog = new JSONArray();
-//                id_UsLog.add(receiveUserId);
-//                logNew.setId_Us(id_UsLog);
-//                ws.sendWSNew(logNew,0);
+//                ws.sendWS(log);
+                log.setId_Us(id_UsLog);
+                ws.sendWSNew(log,0);
             }
             //getOStock (if not null)
             //was 0.3 then set to 1
@@ -1377,6 +1454,7 @@ public class ActionServiceImpl implements ActionService {
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), res);
     }
+
     private void updateSon(OrderAction orderAction, JSONObject tokData)
     {
 
@@ -1870,7 +1948,7 @@ public class ActionServiceImpl implements ActionService {
         qt.errPrint("order@getActionData", null, order);
         // 判断订单为空
         if (null == order || order.getOItem() == null || order.getAction() == null) {
-           
+
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
         // 创建放回结果存储字典
@@ -2439,7 +2517,6 @@ public class ActionServiceImpl implements ActionService {
         }
 
         JSONArray id_Us;
-        JSONArray id_APPs;
         JSONArray defReply = null;
         if (logType.endsWith("SL"))
             logType = StringUtils.strip(logType, "SL");
@@ -2452,7 +2529,6 @@ public class ActionServiceImpl implements ActionService {
             }
             JSONArray objData = asset.getFlowControl().getJSONArray("objData");
             id_Us = new JSONArray();
-            id_APPs = new JSONArray();
             if (null == id_FS || "".equals(id_FS)) {
                 for (int i = 0; i < objData.size(); i++) {
                     JSONObject objDataSon = objData.getJSONObject(i);
@@ -2463,11 +2539,6 @@ public class ActionServiceImpl implements ActionService {
                         for (int j = 0; j < objUser.size(); j++) {
                             JSONObject objUserSon = objUser.getJSONObject(j);
                             id_Us.add(objUserSon.getString("id_U"));
-                            if (null==objUserSon.getString("id_APP")||"".equals(objUserSon.getString("id_APP"))) {
-                                id_APPs.add("");
-                            } else {
-                                id_APPs.add(objUserSon.getString("id_APP"));
-                            }
                         }
                         if (null != objDataSon.getJSONArray("defReply")) {
                             defReply = objDataSon.getJSONArray("defReply");
@@ -2484,11 +2555,6 @@ public class ActionServiceImpl implements ActionService {
                         for (int j = 0; j < objUser.size(); j++) {
                             JSONObject objUserSon = objUser.getJSONObject(j);
                             id_Us.add(objUserSon.getString("id_U"));
-                            if (null==objUserSon.getString("id_APP")||"".equals(objUserSon.getString("id_APP"))) {
-                                id_APPs.add("");
-                            } else {
-                                id_APPs.add(objUserSon.getString("id_APP"));
-                            }
                         }
                         if (null != objDataSon.getJSONArray("defReply")) {
                             defReply = objDataSon.getJSONArray("defReply");
@@ -2499,7 +2565,6 @@ public class ActionServiceImpl implements ActionService {
             }
         } else {
             id_Us = null;
-            id_APPs = null;
         }
         System.out.println("id_Us:");
         System.out.println(JSON.toJSONString(id_Us));
@@ -2543,7 +2608,7 @@ public class ActionServiceImpl implements ActionService {
                 "","","",id_O, index, unitOItem.getRKey(),0, index == 0 ? 0 : 1,
                 new JSONArray(),new JSONArray(),new JSONArray(),prtPrev,
                 oItemData.getJSONObject("wrdNP"),oItemData.getJSONObject("wrdN"));
-
+        unitAction.setId_Us(qt.setArray(id_U));
         allAction.add(unitAction);
 
         this.updateRefOP(myCompId, myCompId,
@@ -2551,34 +2616,31 @@ public class ActionServiceImpl implements ActionService {
 
         boolean isId_Us = null != id_Us && id_Us.size() > 0;
 
-        // Send a log
-        LogFlow logLP = new LogFlow(logType,id,
-                id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
-                oItemData.getString("pic"),dep,"准备开始",3,qt.cloneObj(oItemData.getJSONObject("wrdN")),wrdNU);
-        logLP.setLogData_action(unitAction,unitOItem);
-        logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
-        ws.sendWS(logLP);
-
         JSONObject objQcSon = new JSONObject();
         objQcSon.put("score",0);
         objQcSon.put("foCount",3);
 
         qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,"oQc.objQc."+index,objQcSon), Order.class);
 
+        String dateNow = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         if (isId_Us) {
             LogFlow logLPNew = new LogFlow(logType,id_FS,
                     id,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
                     oItemData.getString("pic"),dep,"准备开始",3,qt.cloneObj(oItemData.getJSONObject("wrdN")),wrdNU);
             logLPNew.setLogData_action(unitAction,unitOItem);
             logLPNew.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+            id_Us.add(id_U);
             logLPNew.setId_Us(id_Us);
-            logLPNew.setId_APPs(id_APPs);
-            ws.sendWSNew(logLPNew,1);
+            logLPNew.setTmd(dateNow);
+            ws.sendWSNew(logLPNew,0);
         }
 
         if (null != defReply) {
             JSONObject wr = new JSONObject();
             wr.put("cn","小银【系统】: 自动回复");
+            JSONObject wrNew = new JSONObject();
+            wrNew.put("cn","小银【系统】: 自动回复");
+            String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_thumb/c439c86ed37f3cf9c183c1c6b84fa0a1.jpg";
             for (int i = 0; i < defReply.size(); i++) {
                 JSONObject defReplySon = defReply.getJSONObject(i);
                 if (defReplySon.getInteger("state") == 0) {
@@ -2586,73 +2648,45 @@ public class ActionServiceImpl implements ActionService {
                     if (defReplySon.getInteger("type")==1) {
                         JSONArray img = defReplySon.getJSONArray("img");
                         for (int j = 0; j < img.size(); j++) {
-                            logLPDef = new LogFlow("msg",id,
-                                    id_FS,"pic", "","","","", ""
+                            logLPDef = new LogFlow("msg",id_FS,
+                                    id,"pic", "",grpU,"",unitOItem.getGrpB(), ""
                                     ,id_O,id_O,index, myCompId,myCompId,
-                                    "","","",3
-                                    ,wr,wr);
+                                    pic,dep,"",3
+                                    ,wr,wrNew);
                             logLPDef.getData().put("type","defReply");
                             logLPDef.getData().put("pic",img.getString(j));
+                            logLPDef.getData().put("video","");
                             logLPDef.setId_Us(qt.setArray(id_U));
+                            dateNow = DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1);
+                            logLPDef.setTmd(dateNow);
                             ws.sendWSNew(logLPDef,0);
-                            if (isId_Us) {
-                                logLPDef = new LogFlow("msg",id_FS,
-                                        id,"pic", "",grpU,"",unitOItem.getGrpB(), ""
-                                        ,id_O,id_O,index, myCompId,myCompId,
-                                        oItemData.getString("pic"),dep,img.getString(j),3
-                                        ,wr,wr);
-                                logLPDef.getData().put("type","defReply");
-                                logLPDef.setId_Us(id_Us);
-                                logLPDef.setId_APPs(id_APPs);
-                                ws.sendWSNew(logLPDef,1);
-                            }
                         }
                     } else if (defReplySon.getInteger("type") == 2) {
                         JSONArray id_P = defReplySon.getJSONArray("id_P");
                         for (int j = 0; j < id_P.size(); j++) {
-                            logLPDef = new LogFlow("msg",id,
-                                    id_FS,"prod", "",grpU,"",unitOItem.getGrpB(), ""
+                            logLPDef = new LogFlow("msg",id_FS,
+                                    id,"prod", "",grpU,"",unitOItem.getGrpB(), ""
                                     ,id_O,id_O,index, myCompId,myCompId,
-                                    oItemData.getString("pic"),dep, id_P.getString(j),3
-                                    ,wr,wr);
+                                    pic,dep,"",3
+                                    ,wr,wrNew);
                             logLPDef.getData().put("type","defReply");
                             logLPDef.getData().put("id_P",id_P.getString(j));
                             logLPDef.setId_Us(qt.setArray(id_U));
+                            dateNow = DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1);
+                            logLPDef.setTmd(dateNow);
                             ws.sendWSNew(logLPDef,0);
-                            if (isId_Us) {
-                                logLPDef = new LogFlow("msg",id_FS,
-                                        id,"prod", "",grpU,"",unitOItem.getGrpB(), ""
-                                        ,id_O,id_O,index, myCompId,myCompId,
-                                        oItemData.getString("pic"),dep,id_P.getString(j),3
-                                        ,wr,wr);
-                                logLPDef.getData().put("type","defReply");
-                                logLPDef.setId_Us(id_Us);
-                                logLPDef.setId_APPs(id_APPs);
-                                ws.sendWSNew(logLPDef,1);
-                            }
                         }
                     } else {
-                        logLPDef = new LogFlow("msg",id,
-                                id_FS,"msg", "",grpU,"",unitOItem.getGrpB(), ""
+                        logLPDef = new LogFlow("msg",id_FS,
+                                id,"msg", "",grpU,"",unitOItem.getGrpB(), ""
                                 ,id_O,id_O,index, myCompId,myCompId,
-                                oItemData.getString("pic"),dep,defReplySon.getString("msg"),3
-                                ,wr,wr);
+                                pic,dep,defReplySon.getString("msg"),3
+                                ,wr,wrNew);
                         logLPDef.getData().put("type","defReply");
-//                        logLPDef.setLogData_action(unitAction,unitOItem);
-//                        logLPDef.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
                         logLPDef.setId_Us(qt.setArray(id_U));
+                        dateNow = DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1);
+                        logLPDef.setTmd(dateNow);
                         ws.sendWSNew(logLPDef,0);
-                        if (isId_Us) {
-                            logLPDef = new LogFlow("msg",id_FS,
-                                    id,"msg", "",grpU,"",unitOItem.getGrpB(), ""
-                                    ,id_O,id_O,index, myCompId,myCompId,
-                                    oItemData.getString("pic"),dep,defReplySon.getString("msg"),3
-                                    ,wr,wr);
-                            logLPDef.getData().put("type","defReply");
-                            logLPDef.setId_Us(id_Us);
-                            logLPDef.setId_APPs(id_APPs);
-                            ws.sendWSNew(logLPDef,1);
-                        }
                     }
                 }
             }

@@ -33,6 +33,20 @@ public class DateUtils {
         return LocalDateTime.now().format(formatter);
     }
 
+    public static String getDateNowAddSecond(String type,String dateStr,int second){
+        SimpleDateFormat df = new SimpleDateFormat(type);
+        Date date;
+        try {
+            date = df.parse(dateStr);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+//        System.out.println(df.format(date));
+        date.setTime(date.getTime() + (second * 1000L));
+//        System.out.println(df.format(date));
+        return df.format(date);
+    }
+
     public static long getTimeStamp() {
 
         try {

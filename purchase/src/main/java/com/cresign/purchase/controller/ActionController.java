@@ -198,8 +198,8 @@ public class ActionController {
     }
 
     @SecurityParameter
-    @PostMapping("/v2/statusChangeNew")
-    public ApiResponse statusChangeNew(@RequestBody JSONObject reqJson) throws IOException {
+    @PostMapping("/v1/changeActionStatusNew")
+    public ApiResponse changeActionStatusNew(@RequestBody JSONObject reqJson) throws IOException {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         try {
             return actionService.changeActionStatusNew(
@@ -211,8 +211,7 @@ public class ActionController {
                     reqJson.getBoolean("isLink"),
                     reqJson.getString("id_FC"),
                     reqJson.getString("id_FS"),
-                    tokData,
-                    reqJson.getString("receiveUserId"));
+                    tokData,reqJson.getJSONArray("id_Us"));
         } catch (Exception e)
         {
             return getUserToken.err(reqJson, "statusChg", e);
@@ -400,32 +399,64 @@ public class ActionController {
         );
     }
 
+    /**
+     * 客服向顾客申请评分api
+     * @param reqJson 请求参数
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/1
+     * @ver 版本号: 1.0.0
+     */
     @SecurityParameter
     @PostMapping("/v1/applyForScore")
     public ApiResponse applyForScore(@RequestBody JSONObject reqJson){
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return actionService.applyForScore(reqJson.getString("id_O"), reqJson.getInteger("index")
                 ,reqJson.getString("id"),reqJson.getString("id_FS")
-                ,tokData);
+                ,tokData,reqJson.getJSONArray("id_Us"));
     }
 
+    /**
+     * 顾客评分api
+     * @param reqJson 请求参数
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/1
+     * @ver 版本号: 1.0.0
+     */
     @SecurityParameter
     @PostMapping("/v1/haveScore")
     public ApiResponse haveScore(@RequestBody JSONObject reqJson){
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return actionService.haveScore(reqJson.getString("id_O"), reqJson.getInteger("index"), reqJson.getInteger("score")
-                ,reqJson.getString("id"),reqJson.getString("id_FS"),tokData);
+                ,reqJson.getString("id"),reqJson.getString("id_FS"),tokData,reqJson.getJSONArray("id_Us"));
     }
 
+    /**
+     * 客服回访顾客api
+     * @param reqJson 请求参数
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/1
+     * @ver 版本号: 1.0.0
+     */
     @SecurityParameter
     @PostMapping("/v1/foCount")
     public ApiResponse foCount(@RequestBody JSONObject reqJson){
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return actionService.foCount(reqJson.getString("id_O"), reqJson.getInteger("index")
                 , reqJson.getString("id"), reqJson.getString("id_FS"),tokData
-                ,reqJson.getInteger("type"),reqJson.getString("dataInfo"));
+                ,reqJson.getInteger("type"),reqJson.getString("dataInfo"),reqJson.getJSONArray("id_Us"));
     }
 
+    /**
+     * 操作群的默认回复api
+     * @param reqJson 请求参数
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/1
+     * @ver 版本号: 1.0.0
+     */
     @SecurityParameter
     @PostMapping("/v1/updateDefReply")
     public ApiResponse updateDefReply(@RequestBody JSONObject reqJson){
@@ -434,17 +465,26 @@ public class ActionController {
                 , reqJson.getString("logId"),reqJson.getJSONArray("defReply"));
     }
 
+    /**
+     * 发送日志api
+     * @param reqJson 请求参数
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/1
+     * @ver 版本号: 1.0.0
+     */
     @SecurityParameter
     @PostMapping("/v1/sendMsgByOnly")
     public ApiResponse sendMsgByOnly(@RequestBody JSONObject reqJson){
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         return actionService.sendMsgByOnly(reqJson.getString("logType"),
-                reqJson.getString("msg"),
+                reqJson.getString("dataInfo"),
                 reqJson.getInteger("index"),
                 reqJson.getString("id_O"),
-                reqJson.getString("id_FC"),
+                reqJson.getString("id"),
                 reqJson.getString("id_FS"),
-                tokData,reqJson.getString("receiveUserId"));
+                tokData,
+                reqJson.getInteger("type"),reqJson.getJSONArray("id_Us"));
     }
 
 }
