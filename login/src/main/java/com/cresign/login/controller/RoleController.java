@@ -69,17 +69,21 @@ public class RoleController {
     @SecurityParameter
     @PostMapping("/v1/updateRole")
     public ApiResponse updateRole(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
-        return roleService.updateRole(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"),
-                reqJson.getString("listType"),
-                reqJson.getString("grp"),
-                reqJson.getString("dataName"),
-                reqJson.getString("authType"),
-                reqJson.getInteger("auth"),
-                reqJson.getString("grpU"));
+            return roleService.updateRole(
+                    tokData.getString("id_U"),
+                    tokData.getString("id_C"),
+                    reqJson.getString("listType"),
+                    reqJson.getString("grp"),
+                    reqJson.getString("dataName"),
+                    reqJson.getString("authType"),
+                    reqJson.getInteger("auth"),
+                    reqJson.getString("grpU"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "RoleController.updateRole", e);
+        }
     }
 
 //    @SecurityParameter
@@ -95,76 +99,88 @@ public class RoleController {
     @SecurityParameter
     @PostMapping("/v1/getRoleDataByGrp")
     public ApiResponse getRoleDataByGrpUAndGrp(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
-        return roleService.getRoleDataByGrpUAndGrp(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"),
-                reqJson.getString("listType"),
-                reqJson.getString("grp"),
-                reqJson.getString("grpU"));
+            return roleService.getRoleDataByGrpUAndGrp(
+                    tokData.getString("id_U"),
+                    tokData.getString("id_C"),
+                    reqJson.getString("listType"),
+                    reqJson.getString("grp"),
+                    reqJson.getString("grpU"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "RoleController.getRoleDataByGrpUAndGrp", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/updateNewestRole")
     public ApiResponse updateNewestRole(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-try {
-    return roleService.updateNewestRole(
-            tokData.getString("id_C"),
-            reqJson.getString("listType"),
-            reqJson.getString("grp"),
-            reqJson.getString("grpU"));
-} catch (Exception e)
-{
-    e.printStackTrace();
-    return null;
-}
+        try {
+            return roleService.updateNewestRole(
+                    tokData.getString("id_C"),
+                    reqJson.getString("listType"),
+                    reqJson.getString("grp"),
+                    reqJson.getString("grpU"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "RoleController.updateNewestRole", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/up_grp_all_auth")
     public ApiResponse upRoleAllAuth(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
-        return roleService.upRoleAllAuth(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"),
-                reqJson.getString("listType"),
-                reqJson.getString("grp"),
-                reqJson.getInteger("upAuth"),
-                reqJson.getString("upType"),
-                reqJson.getString("grpU"));
+            return roleService.upRoleAllAuth(
+                    tokData.getString("id_U"),
+                    tokData.getString("id_C"),
+                    reqJson.getString("listType"),
+                    reqJson.getString("grp"),
+                    reqJson.getInteger("upAuth"),
+                    reqJson.getString("upType"),
+                    reqJson.getString("grpU"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "RoleController.upRoleAllAuth", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/copy_grp_to_othergrp")
     public ApiResponse copyGrpRoleToOtherGrp(@RequestBody JSONObject reqJson) {
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            authCheck.getUserUpdateAuth(tokData.getString("id_U"),tokData.getString("id_C"),"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        authCheck.getUserUpdateAuth(tokData.getString("id_U"),tokData.getString("id_C"),"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
-
-        return roleService.copyGrpRoleToOtherGrp(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"),
-                reqJson.getString("listType"),
-                reqJson.getString("copy_grp"),
-                reqJson.getJSONArray("to_grp"),
-                reqJson.getString("grpU"));
+            return roleService.copyGrpRoleToOtherGrp(
+                    tokData.getString("id_U"),
+                    tokData.getString("id_C"),
+                    reqJson.getString("listType"),
+                    reqJson.getString("copy_grp"),
+                    reqJson.getJSONArray("to_grp"),
+                    reqJson.getString("grpU"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "RoleController.copyGrpRoleToOtherGrp", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/copyGrpU")
     public ApiResponse copyGrpU(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        authCheck.getUserUpdateAuth(tokData.getString("id_U"),tokData.getString("id_C"),"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            authCheck.getUserUpdateAuth(tokData.getString("id_U"),tokData.getString("id_C"),"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
-        return roleService.copyGrpU(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"),
-                reqJson.getString("to_grpU"),
-                reqJson.getString("grpU"));
-
+            return roleService.copyGrpU(
+                    tokData.getString("id_U"),
+                    tokData.getString("id_C"),
+                    reqJson.getString("to_grpU"),
+                    reqJson.getString("grpU"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "RoleController.copyGrpU", e);
+        }
     }
 
     }

@@ -43,22 +43,34 @@ public class TaskController {
 //    @SecurityParameter
     @PostMapping("/v1/getEstimateStartTime")
     public ApiResponse getEstimateStartTime(@RequestBody JSONObject reqJson){
-        return timeZjService.getEstimateStartTime(reqJson.getString("id_O"),reqJson.getString("id_C")
-                , reqJson.getLong("teStart"));
+        try {
+            return timeZjService.getEstimateStartTime(reqJson.getString("id_O"),reqJson.getString("id_C")
+                    , reqJson.getLong("teStart"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.getEstimateStartTime", e);
+        }
     }
 
 //    @SecurityParameter
     @PostMapping("/v1/getAtFirst")
     public ApiResponse getAtFirst(@RequestBody JSONObject reqJson){
-        return timeZjService.getAtFirst(reqJson.getString("id_O"), reqJson.getLong("teStart"),
-                reqJson.getString("id_C"), reqJson.getInteger("wn0TPrior"));
+        try {
+            return timeZjService.getAtFirst(reqJson.getString("id_O"), reqJson.getLong("teStart"),
+                    reqJson.getString("id_C"), reqJson.getInteger("wn0TPrior"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.getAtFirst", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/removeTime")
     public ApiResponse removeTime(@RequestBody JSONObject reqJson){
-        return timeZjService.removeTime(reqJson.getString("id_O"),
-                reqJson.getString("id_C"));
+        try {
+            return timeZjService.removeTime(reqJson.getString("id_O"),
+                    reqJson.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.removeTime", e);
+        }
     }
 
     /**
@@ -72,11 +84,13 @@ public class TaskController {
 //    @SecurityParameter
     @PostMapping("/v1/timeSortFromNew")
     public ApiResponse timeSortFromNew(@RequestBody JSONObject reqJson){
-        System.out.println("请求信息:");
-        System.out.println(JSON.toJSONString(reqJson));
-        return timeZjService.timeSortFromNew(reqJson.getString("dep"),reqJson.getString("grpB")
-                ,reqJson.getLong("currentTime"),reqJson.getInteger("index")
-                ,reqJson.getString("id_C"),reqJson.getLong("taPFinish"));
+        try {
+            return timeZjService.timeSortFromNew(reqJson.getString("dep"),reqJson.getString("grpB")
+                    ,reqJson.getLong("currentTime"),reqJson.getInteger("index")
+                    ,reqJson.getString("id_C"),reqJson.getLong("taPFinish"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.timeSortFromNew", e);
+        }
     }
 
     /**
@@ -90,8 +104,12 @@ public class TaskController {
     @SecurityParameter
     @PostMapping("/v1/timeCalculation")
     public ApiResponse timeCalculation(@RequestBody JSONObject reqJson){
-        return timeZjService.timeCalculation(reqJson.getString("id_O"),reqJson.getInteger("index")
-                ,reqJson.getInteger("number"));
+        try {
+            return timeZjService.timeCalculation(reqJson.getString("id_O"),reqJson.getInteger("index")
+                    ,reqJson.getInteger("number"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.timeCalculation", e);
+        }
     }
 
     /**
@@ -105,7 +123,11 @@ public class TaskController {
     @SecurityParameter
     @PostMapping("/v1/delOrAddAArrange")
     public ApiResponse delOrAddAArrange(@RequestBody JSONObject reqJson){
-        return timeZjService.delOrAddAArrange(reqJson.getString("id_C"),reqJson.getJSONObject("object"));
+        try {
+            return timeZjService.delOrAddAArrange(reqJson.getString("id_C"),reqJson.getJSONObject("object"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.delOrAddAArrange", e);
+        }
     }
 
 }

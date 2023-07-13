@@ -5,6 +5,7 @@ import com.cresign.login.service.FaceBookLoginService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.enumeration.manavalue.HeaderEnum;
+import com.cresign.tools.token.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,43 +41,51 @@ public class FaceBookLoginController {
     @Autowired
     private HttpServletRequest request;
 
+    @Autowired
+    private GetUserIdByToken getUserToken;
+
     @SecurityParameter
     @PostMapping("/v1/faceBookLogin")
     public ApiResponse faceBookLogin(@RequestBody JSONObject reqJson) {
-
-        return faceBookLoginService.faceBookLogin(
-                reqJson.getString("id_fb"),
-                request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName())
-        );
-
+        try {
+            return faceBookLoginService.faceBookLogin(
+                    reqJson.getString("id_fb"),
+                    request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName())
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "FaceBookLoginController.faceBookLogin", e);
+        }
     }
 
 
     @SecurityParameter
     @PostMapping("/v1/faceBookRegister")
     public ApiResponse faceBookRegister(@RequestBody JSONObject reqJson) throws IOException {
-        String clientID = "";
-        if (reqJson.containsKey(CLIENT_ID)) {
-            clientID = reqJson.getString(CLIENT_ID);
+        try {
+            String clientID = "";
+            if (reqJson.containsKey(CLIENT_ID)) {
+                clientID = reqJson.getString(CLIENT_ID);
+            }
+
+            String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg";
+            if (reqJson.containsKey(USER_PIC)) {
+                pic = reqJson.getString(USER_PIC);
+            }
+
+            return faceBookLoginService.faceBookRegister(
+                    reqJson.getString("id_fb"),
+                    reqJson.getString("wcnN"),
+                    reqJson.getString("email"),
+                    pic,
+                    reqJson.getString("phone"),
+                    reqJson.getString("phoneType"),
+                    reqJson.getString("smsNum"),
+                    clientID,
+                    request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName())
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "FaceBookLoginController.faceBookRegister", e);
         }
-
-        String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg";
-        if (reqJson.containsKey(USER_PIC)) {
-            pic = reqJson.getString(USER_PIC);
-        }
-
-        return faceBookLoginService.faceBookRegister(
-                reqJson.getString("id_fb"),
-                reqJson.getString("wcnN"),
-                reqJson.getString("email"),
-                pic,
-                reqJson.getString("phone"),
-                reqJson.getString("phoneType"),
-                reqJson.getString("smsNum"),
-                clientID,
-                request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName())
-                );
-
     }
 
 }

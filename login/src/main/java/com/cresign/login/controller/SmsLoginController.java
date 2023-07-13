@@ -5,6 +5,7 @@ import com.cresign.login.service.SmsLoginService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.enumeration.manavalue.HeaderEnum;
+import com.cresign.tools.token.GetUserIdByToken;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,62 +38,78 @@ public class SmsLoginController {
     @Autowired
     private SmsLoginService smsLoginService;
 
+    @Autowired
+    private GetUserIdByToken getUserToken;
+
     @PostMapping("/v1/getSmsLoginNum")
     @SecurityParameter
     public ApiResponse getSmsLoginNum(@RequestBody JSONObject reqJson) throws TencentCloudSDKException {
-        return smsLoginService.getSmsLoginNum(
-                reqJson.getString("phone")
-        );
+        try {
+            return smsLoginService.getSmsLoginNum(
+                    reqJson.getString("phone")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "SmsLoginController.getSmsLoginNum", e);
+        }
     }
 
     @PostMapping("/v1/smsLogin")
     @SecurityParameter
     public ApiResponse smsLogin(@RequestBody JSONObject reqJson) {
-
-        return smsLoginService.smsLogin(
-                reqJson.getString("phone"),
-                reqJson.getString("smsCode"),
-                request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName())
-        );
+        try {
+            return smsLoginService.smsLogin(
+                    reqJson.getString("phone"),
+                    reqJson.getString("smsCode"),
+                    request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName())
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "SmsLoginController.smsLogin", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/getSmsRegisterNum")
     public ApiResponse getSmsRegisterNum(@RequestBody JSONObject reqJson)  {
-
-        return smsLoginService.getSmsRegisterNum(
-                reqJson.getString("phone")
-        );
+        try {
+            return smsLoginService.getSmsRegisterNum(
+                    reqJson.getString("phone")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "SmsLoginController.getSmsRegisterNum", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/smsRegister")
     public ApiResponse smsRegister(@RequestBody JSONObject reqJson) throws IOException {
+        try {
+            String id_APP = "";
+            if (reqJson.containsKey("id_APP")) {
+                id_APP = reqJson.getString("id_APP");
+            }
 
-        String id_APP = "";
-        if (reqJson.containsKey("id_APP")) {
-            id_APP = reqJson.getString("id_APP");
-        }
-
-        String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg";
-        if (reqJson.containsKey("pic")) {
-            pic = reqJson.getString("pic");
-        }
+            String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg";
+            if (reqJson.containsKey("pic")) {
+                pic = reqJson.getString("pic");
+            }
 
 //        JSONObject wrdN = new JSONObject();
 //        wrdN.put("cn","新用户");
 //        if (reqJson.containsKey("wrdN")){
 //            wrdN = reqJson.getJSONObject("wrdN");
 //        }
-        return smsLoginService.smsRegister(
-                reqJson.getString("phone"),
-                reqJson.getInteger("phoneType"),
-                reqJson.getString("smsNum"),
-                request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName()),
-                id_APP,
-                pic,
-                new JSONObject().fluentPut("cn","新用户")
-        );
+            return smsLoginService.smsRegister(
+                    reqJson.getString("phone"),
+                    reqJson.getInteger("phoneType"),
+                    reqJson.getString("smsNum"),
+                    request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName()),
+                    id_APP,
+                    pic,
+                    new JSONObject().fluentPut("cn","新用户")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "SmsLoginController.smsRegister", e);
+        }
     }
 
 

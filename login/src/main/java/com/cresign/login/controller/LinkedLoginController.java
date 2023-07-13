@@ -5,6 +5,7 @@ import com.cresign.login.service.LinkedinLoginService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.enumeration.manavalue.HeaderEnum;
+import com.cresign.tools.token.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,28 +36,35 @@ public class LinkedLoginController {
     @Autowired
     private HttpServletRequest request;
 
+    @Autowired
+    private GetUserIdByToken getUserToken;
+
     @PostMapping("/v1/LinkedWebLogin")
     @SecurityParameter
     public ApiResponse LinkedWebLogin(@RequestBody JSONObject jsonObject) {
-
-        return linkedinLoginService.linkedinWebLogin(
-                jsonObject.getString(CODE),
-                request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName())
-                );
-
+        try {
+            return linkedinLoginService.linkedinWebLogin(
+                    jsonObject.getString(CODE),
+                    request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName())
+            );
+        } catch (Exception e) {
+            return getUserToken.err(jsonObject, "LinkedLoginController.LinkedWebLogin", e);
+        }
     }
 
     @PostMapping("/v1/linkedRegister")
     @SecurityParameter
     public ApiResponse linkedRegister(@RequestBody JSONObject jsonObject) throws IOException {
-
-        return linkedinLoginService.registerLinked(
-                jsonObject.getString(CODE),
-                jsonObject.getString("phone"),
-                jsonObject.getString("phoneType"),
-                jsonObject.getString("smsNum")
-        );
-
+        try {
+            return linkedinLoginService.registerLinked(
+                    jsonObject.getString(CODE),
+                    jsonObject.getString("phone"),
+                    jsonObject.getString("phoneType"),
+                    jsonObject.getString("smsNum")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(jsonObject, "LinkedLoginController.linkedRegister", e);
+        }
     }
 
 

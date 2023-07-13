@@ -50,6 +50,6 @@ public interface RefreshTokenService {
      *@author           JackSon
      *@updated             2020/5/15 19:00
      */
-    String refreshToken2(String refreshToken, String id_C, String clientType, String id_U);
+    String refreshToken2(String refreshToken, String id_C, String clientType, String id_U,String token);
 
 }

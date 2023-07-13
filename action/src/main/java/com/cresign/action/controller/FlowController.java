@@ -39,25 +39,35 @@ public class FlowController {
         @SecurityParameter
         @PostMapping("/v1/timeHandle")
         public ApiResponse timeHandle(@RequestBody JSONObject reqJson){
-            return flowService.timeHandle(
-                    reqJson.getString("id_O"),
-                    getUserToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                    reqJson.getString("id_C"),
-                    reqJson.getLong("teStart"),
-                    reqJson.getInteger("wn0TPrior"));
+            try {
+                JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+                return flowService.timeHandle(
+                        reqJson.getString("id_O"),
+                        tokData.getString("id_U"),
+                        tokData.getString("id_C"),
+                        reqJson.getLong("teStart"),
+                        reqJson.getInteger("wn0TPrior"));
+            } catch (Exception e) {
+                return getUserToken.err(reqJson, "FlowController.timeHandle", e);
+            }
         }
 
         @SecurityParameter
         @PostMapping("/v1/removeTime")
         public ApiResponse removeTime(@RequestBody JSONObject reqJson){
-            return flowService.removeTime(reqJson.getString("id_O"),
-                    reqJson.getString("id_C"));
+            try {
+                JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+                return flowService.removeTime(reqJson.getString("id_O"),
+                        tokData.getString("id_C"));
+            } catch (Exception e) {
+                return getUserToken.err(reqJson, "FlowController.removeTime", e);
+            }
         }
 
 
         /**
          * 根据请求参数，获取更新后的订单oitem
-         * @param map	请求参数
+         * @param reqJson	请求参数
          * @return java.lang.String  返回结果: 日志结果
          * @author tang
          * @ver 1.0.0
@@ -65,35 +75,47 @@ public class FlowController {
          */
         @SecurityParameter
         @PostMapping("/v1/setDgAllBmdpt")
-        public ApiResponse dgUpdatePartInfo(@RequestBody JSONObject map){
-            String id_P = map.getString("id_P");
-            String id_C = map.getString(Constants.GET_ID_C);
+        public ApiResponse dgUpdatePartInfo(@RequestBody JSONObject reqJson){
+            try {
+                JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+                String id_P = reqJson.getString("id_P");
+                String id_C = tokData.getString(Constants.GET_ID_C);
                 return flowService.dgUpdatePartInfo(id_P, id_C);
-
+            } catch (Exception e) {
+                return getUserToken.err(reqJson, "FlowController.dgUpdatePartInfo", e);
+            }
         }
 
         @SecurityParameter
         @PostMapping("/v1/prodPart")
         public ApiResponse prodPart(@RequestBody JSONObject json) {
-
+            try {
                 return flowService.prodPart(json.getString("id_P"));
-
+            } catch (Exception e) {
+                return getUserToken.err(json, "FlowController.prodPart", e);
+            }
         }
 
         @SecurityParameter
         @PostMapping("/v1/infoPart")
         public ApiResponse infoPart(@RequestBody JSONObject json) {
-
-            return flowService.infoPart(json.getString("id_I"));
-
+            try {
+                return flowService.infoPart(json.getString("id_I"));
+            } catch (Exception e) {
+                return getUserToken.err(json, "FlowController.infoPart", e);
+            }
         }
 
         @SecurityParameter
         @PostMapping("/v1/dgTaskOrder")
         public ApiResponse dgTaskOrder(@RequestBody JSONObject reqJson){
-            return flowService.dgTaskOrder(
-                    reqJson.getString("id_O")
-                    );
+            try {
+                return flowService.dgTaskOrder(
+                        reqJson.getString("id_O")
+                );
+            } catch (Exception e) {
+                return getUserToken.err(reqJson, "FlowController.dgTaskOrder", e);
+            }
         }
 
         /**
@@ -117,7 +139,7 @@ public class FlowController {
                         tokData.getString("id_C"),
                         reqJson.getLong("teStart"));
             } catch (Exception e) {
-                return getUserToken.err(reqJson, "flowService.getDG", e);
+                return getUserToken.err(reqJson, "flowService.getDgResult", e);
             }
         }
 
@@ -151,22 +173,30 @@ public class FlowController {
         @SecurityParameter
         @PostMapping("/v1/dgCheck")
         public ApiResponse dgCheck(@RequestBody JSONObject map) {
-            // 获取产品id
-            String id_P = map.getString("id_P");
-            String id_C = map.getString("id_C");
-            return flowService.dgCheck(id_P, id_C);
+            try {
+                JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+                // 获取产品id
+                String id_P = map.getString("id_P");
+                String id_C = tokData.getString("id_C");
+                return flowService.dgCheck(id_P, id_C);
+            } catch (Exception e) {
+                return getUserToken.err(map, "FlowController.dgCheck", e);
+            }
         }
 
 
     @SecurityParameter
     @PostMapping("/v1/dgRemove")
     public ApiResponse dgRemove(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-
-        return flowService.dgRemove(
-                reqJson.getString("id_O"),
-                tokData.getString("id_C"),
-                tokData.getString("id_U"));
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            return flowService.dgRemove(
+                    reqJson.getString("id_O"),
+                    tokData.getString("id_C"),
+                    tokData.getString("id_U"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "FlowController.dgRemove", e);
+        }
     }
 
     /**
@@ -179,8 +209,12 @@ public class FlowController {
         @SecurityParameter
         @PostMapping("/v1/getPartIsNull")
         public ApiResponse getPartIsNull(@RequestBody JSONObject reqJson) {
-            return flowService.getPartIsNull(
-                    reqJson.getString("id_P"));
+            try {
+                return flowService.getPartIsNull(
+                        reqJson.getString("id_P"));
+            } catch (Exception e) {
+                return getUserToken.err(reqJson, "FlowController.getPartIsNull", e);
+            }
         }
 
 

@@ -32,27 +32,33 @@ public class SetAuthController {
     @SecurityParameter
     @PostMapping("/v1/get_my_batch_list")
     public ApiResponse getMyBatchList(@RequestBody JSONObject reqJson) {
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-
-        return setAuthService.getMyBatchList(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"),
-                reqJson.getString("listType"),
-                reqJson.getJSONArray("grp"));
+            return setAuthService.getMyBatchList(
+                    tokData.getString("id_U"),
+                    tokData.getString("id_C"),
+                    reqJson.getString("listType"),
+                    reqJson.getJSONArray("grp"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "SetAuthController.getMyBatchList", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/get_up_card_list")
     public ApiResponse getMyUpdateCardList(@RequestBody JSONObject reqJson) throws IOException {
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-
-        return setAuthService.getMyUpdateCardList(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"),
-                reqJson.getString("listType"),
-                reqJson.getString("grp"));
+            return setAuthService.getMyUpdateCardList(
+                    tokData.getString("id_U"),
+                    tokData.getString("id_C"),
+                    reqJson.getString("listType"),
+                    reqJson.getString("grp"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "SetAuthController.getMyUpdateCardList", e);
+        }
     }
 
     @SecurityParameter
@@ -60,15 +66,13 @@ public class SetAuthController {
     public ApiResponse switchComp(@RequestBody Map<String, Object> reqMap) {
 
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-
         try {
             return setAuthService.switchComp(
                     tokData.getString("id_U"),
                     reqMap.get("id_C").toString(),
                     request.getHeader("clientType"));
-        } catch(Exception e)
-        {
-            return null;
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "SetAuthController.switchComp", e);
         }
     }
 
@@ -76,12 +80,15 @@ public class SetAuthController {
     @PostMapping("/v1/setAUN")
     public ApiResponse setAUN(
             @RequestBody Map<String, Object> reqMap) {
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-
-        return setAuthService.setAUN(
-                tokData.getString("id_U"),
-                reqMap.get("id_AUN").toString());
+            return setAuthService.setAUN(
+                    tokData.getString("id_U"),
+                    reqMap.get("id_AUN").toString());
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "SetAuthController.setAUN", e);
+        }
     }
 
     @SecurityParameter
@@ -89,9 +96,14 @@ public class SetAuthController {
     public ApiResponse getMySwitchComp() {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
-        return setAuthService.getMySwitchComp(
-                tokData.getString("id_U"),
-                request.getHeader("lang"));
+
+        try {
+            return setAuthService.getMySwitchComp(
+                    tokData.getString("id_U"),
+                    request.getHeader("lang"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "SetAuthController.getMySwitchComp", e);
+        }
     }
 //    @SecurityParameter
 //    @PostMapping("/v1/get_my_switch1")

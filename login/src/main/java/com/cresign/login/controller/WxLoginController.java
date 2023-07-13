@@ -60,9 +60,11 @@ public class WxLoginController {
     @SecurityParameter
     @PostMapping("/v1/wxWebLogin")
     public ApiResponse wxWebLogin(@RequestBody JSONObject reqJson) throws IOException {
-
-        return wxLoginService.wxWebLogin(reqJson.getString("code"));
-
+        try {
+            return wxLoginService.wxWebLogin(reqJson.getString("code"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "WxLoginController.wxWebLogin", e);
+        }
     }
 
     /**
@@ -76,7 +78,11 @@ public class WxLoginController {
     @SecurityParameter
     @PostMapping("/v1/decodeUserInfo")
     public ApiResponse decodeUserInfo(@RequestBody JSONObject reqJson) {
-        return wxLoginService.decodeUserInfo(reqJson);
+        try {
+            return wxLoginService.decodeUserInfo(reqJson);
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "WxLoginController.decodeUserInfo", e);
+        }
     }
 
 
@@ -90,13 +96,16 @@ public class WxLoginController {
     @SecurityParameter
     @PostMapping("/v1/wxAsLogin")
     public ApiResponse wXLoginByIdWx(@RequestBody JSONObject reqJson) {
-        String uuId = request.getHeader("uuId");
-        System.out.println("uuId:");
-        System.out.println(uuId);
-        return wxLoginService.wXLoginByIdWx(
-                reqJson.getString("id_WX"),
-                request.getHeader("clientType"));
-
+        try {
+            String uuId = request.getHeader("uuId");
+            System.out.println("uuId:");
+            System.out.println(uuId);
+            return wxLoginService.wXLoginByIdWx(
+                    reqJson.getString("id_WX"),
+                    request.getHeader("clientType"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "WxLoginController.wXLoginByIdWx", e);
+        }
     }
 
     /**
@@ -109,19 +118,23 @@ public class WxLoginController {
     @SecurityParameter
     @PostMapping("/v1/wxAppLogin")
     public ApiResponse appLoginByIdWx(@RequestBody JSONObject reqJson) {
-
-        return wxLoginService.appLoginByIdWx(
-                reqJson.getString("id_AUN"),
-                request.getHeader("clientType"));
-
+        try {
+            return wxLoginService.appLoginByIdWx(
+                    reqJson.getString("id_AUN"),
+                    request.getHeader("clientType"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "WxLoginController.appLoginByIdWx", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/wxRegisterUser")
     public ApiResponse wxRegisterUser(@RequestBody JSONObject reqJson) throws IOException {
-
-        return wxLoginService.wxRegisterUser(reqJson);
-
+        try {
+            return wxLoginService.wxRegisterUser(reqJson);
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "WxLoginController.wxRegisterUser", e);
+        }
     }
 
     /**
@@ -143,52 +156,49 @@ public class WxLoginController {
     @SecurityParameter
     @PostMapping("/v1/wechatRegister")
     public ApiResponse wechatRegister(@RequestBody JSONObject reqJson) throws IOException {
-        String clientID = "";
-        if (reqJson.containsKey(CLIENT_ID)) {
-            clientID = reqJson.getString(CLIENT_ID);
-        }
+        try {
+            String clientID = "";
+            if (reqJson.containsKey(CLIENT_ID)) {
+                clientID = reqJson.getString(CLIENT_ID);
+            }
 
-        String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg";
-        if (reqJson.containsKey(USER_PIC)) {
-            pic = reqJson.getString(USER_PIC);
-        }
+            String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg";
+            if (reqJson.containsKey(USER_PIC)) {
+                pic = reqJson.getString(USER_PIC);
+            }
 
-        return wxLoginService.wechatRegister(
-                reqJson.getString("phone"),
-                reqJson.getInteger("phoneType"),
-                reqJson.getString("smsNum"),
-                reqJson.getString("wcnN"),
-                request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName()),
-                clientID,
-                pic,
-                reqJson.getString("id_WX")
-        );
+            return wxLoginService.wechatRegister(
+                    reqJson.getString("phone"),
+                    reqJson.getInteger("phoneType"),
+                    reqJson.getString("smsNum"),
+                    reqJson.getString("wcnN"),
+                    request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName()),
+                    clientID,
+                    pic,
+                    reqJson.getString("id_WX")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "WxLoginController.wechatRegister", e);
+        }
     }
 
 
     @SecurityParameter
     @PostMapping("/v1/wxmp_register")
     public ApiResponse wxmpRegister(@RequestBody JSONObject reqJson) {
-
-        System.out.println("wxmpRegister:");
-        System.out.println(JSON.toJSONString(reqJson));
-        return wxLoginService.wxmpRegister(
-                reqJson.getString("nickName"),
-                reqJson.getString("avatarUrl"),
-                reqJson.getString("unionId"),
-                reqJson.getInteger("countryCode"),
-                reqJson.getString("phoneNumber")
-        );
-
-    }
-
-
-    @SecurityParameter
-    @PostMapping("/v1/setAUN")
-    public ApiResponse setAUN(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization")
-                , request.getHeader("clientType"),"core",1);
-        return wxLoginService.setAUN(tokData.getString("id_U"),reqJson.getString("id_AUN"));
+        try {
+            System.out.println("wxmpRegister:");
+            System.out.println(JSON.toJSONString(reqJson));
+            return wxLoginService.wxmpRegister(
+                    reqJson.getString("nickName"),
+                    reqJson.getString("avatarUrl"),
+                    reqJson.getString("unionId"),
+                    reqJson.getInteger("countryCode"),
+                    reqJson.getString("phoneNumber")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "WxLoginController.wxmpRegister", e);
+        }
     }
 
 //    @SecurityParameter
@@ -200,13 +210,21 @@ public class WxLoginController {
     @SecurityParameter
     @PostMapping("/v1/getAUN")
     public ApiResponse getAUN(@RequestBody JSONObject reqJson) {
-        return wxLoginService.getAUN(reqJson.getString("id_AUN"),reqJson.getString("id_C"));
+        try {
+            return wxLoginService.getAUN(reqJson.getString("id_AUN"),reqJson.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "WxLoginController.getAUN", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/getPhone")
     public ApiResponse getPhone(@RequestBody JSONObject reqJson) {
-        return wxLoginService.getPhone(reqJson.getString("phone")
-                ,reqJson.getString("id_WX"),reqJson.getString("countryCode"));
+        try {
+            return wxLoginService.getPhone(reqJson.getString("phone")
+                    ,reqJson.getString("id_WX"),reqJson.getString("countryCode"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "WxLoginController.getPhone", e);
+        }
     }
 }

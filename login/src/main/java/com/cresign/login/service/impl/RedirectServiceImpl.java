@@ -461,6 +461,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
         } else if ("joinVisitor".equals(mode)) {
             jsonObject.put("mode", mode);
+            jsonObject.put("grpU",data.getString("grpU"));
             qt.putRDHashMany(SCANCODE_JOINCOMP,token, jsonObject, 6000L);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
@@ -661,7 +662,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         if (type==0) {
             rolex.put("grpU", "1009");
         } else {
-            rolex.put("grpU", "1099");
+            rolex.put("grpU", entries.get("grpU"));
         }
         rolex.put("dep", "1000");
 //        Update update = new Update();

@@ -48,114 +48,144 @@ public class MenuController {
     @SecurityParameter
     @PostMapping("/v1/get_menus")
     public ApiResponse getMenusAndSubMenus(@RequestBody JSONObject reqJson) {
-
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        JSONArray canUpdate = authCheck.getUserSelectAuth(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"),
-                tokData.getString("grpU"),
-                "lSAsset", "1003", "card");
-        if (!canUpdate.contains("menu"))
-        {
-            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            JSONArray canUpdate = authCheck.getUserSelectAuth(
+                    tokData.getString("id_U"),
+                    tokData.getString("id_C"),
+                    tokData.getString("grpU"),
+                    "lSAsset", "1003", "card");
+            if (!canUpdate.contains("menu"))
+            {
+                throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
+            }
+            return menuService.getMenusAndSubMenus(tokData.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "MenuController.getMenusAndSubMenus", e);
         }
-        return menuService.getMenusAndSubMenus(tokData.getString("id_C"));
     }
 
 
     @SecurityParameter
     @PostMapping("/v1/get_grpU_menuData")
     public ApiResponse getGrpUForMenusInRole(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        JSONArray canUpdate = authCheck.getUserSelectAuth(
-                tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
-                "lSAsset", "1003", "card");
-        if (!canUpdate.contains("menu"))
-        {
-            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
-        }
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            JSONArray canUpdate = authCheck.getUserSelectAuth(
+                    tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
+                    "lSAsset", "1003", "card");
+            if (!canUpdate.contains("menu"))
+            {
+                throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
+            }
 
             return menuService.getGrpUForMenusInRole(
-                reqJson.getString("id_C"),
-                reqJson.getString("grpU")
-        );
+                    reqJson.getString("id_C"),
+                    reqJson.getString("grpU")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "MenuController.getGrpUForMenusInRole", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/getMenuGrp")
     public ApiResponse getMenuGrp(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        JSONArray canUpdate = authCheck.getUserSelectAuth(
-                tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
-                "lSAsset", "1003", "card");
-        if (!canUpdate.contains("menu"))
-        {
-            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            JSONArray canUpdate = authCheck.getUserSelectAuth(
+                    tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
+                    "lSAsset", "1003", "card");
+            if (!canUpdate.contains("menu"))
+            {
+                throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
+            }
+            return menuService.getMenuGrp(
+                    tokData.getString("id_C"),
+                    reqJson.getString("ref"),
+                    reqJson.getString("grpType")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "MenuController.getMenuGrp", e);
         }
-        return menuService.getMenuGrp(
-                tokData.getString("id_C"),
-                reqJson.getString("ref"),
-                reqJson.getString("grpType")
-        );
     }
 
 
     @SecurityParameter
     @PostMapping("/v1/get_menuData")
     public ApiResponse getMenuListByGrpU(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        return menuService.getMenuListByGrpU(
-                tokData.getString("id_C"),
-                tokData.getString("grpU")
-        );
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            return menuService.getMenuListByGrpU(
+                    tokData.getString("id_C"),
+                    tokData.getString("grpU")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "MenuController.getMenuListByGrpU", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/ud_grpU_mainMenu")
     public ApiResponse updateMenuData(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
-        return menuService.updateMenuData(
-                tokData.getString("id_U"),
-                tokData.getString("id_C"),
-                reqJson.getString("grpU"),
-                reqJson.getJSONArray("data").toJavaList(MainMenuBO.class)
-        );
+            return menuService.updateMenuData(
+                    tokData.getString("id_U"),
+                    tokData.getString("id_C"),
+                    reqJson.getString("grpU"),
+                    reqJson.getJSONArray("data").toJavaList(MainMenuBO.class)
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "MenuController.updateMenuData", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/get_subMenu")
     public ApiResponse getSubMenusData(@RequestBody JSONObject reqJson) {
-
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        JSONArray canUpdate = authCheck.getUserSelectAuth(
-                tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
-                "lSAsset", "1003", "card");
-        if (!canUpdate.contains("menu"))
-        {
-            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            JSONArray canUpdate = authCheck.getUserSelectAuth(
+                    tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
+                    "lSAsset", "1003", "card");
+            if (!canUpdate.contains("menu"))
+            {
+                throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
+            }
+            return menuService.getSubMenusData(
+                    tokData.getString("id_C")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "MenuController.getSubMenusData", e);
         }
-        return menuService.getSubMenusData(
-                tokData.getString("id_C")
-        );
     }
 
     @SecurityParameter
     @PostMapping("/v1/ud_subMenu")
     public ApiResponse updateSubMenuData(@RequestBody JSONObject reqJson) {
-        return menuService.updateSubMenuData(
-                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("id_C"),
-                reqJson.getJSONArray("data").toJavaList(SubMenuBO.class)
-        );
+        try {
+            return menuService.updateSubMenuData(
+                    getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    reqJson.getString("id_C"),
+                    reqJson.getJSONArray("data").toJavaList(SubMenuBO.class)
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "MenuController.updateSubMenuData", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/get_def")
     public ApiResponse getDefListType(@RequestBody JSONObject reqJson) {
-        return menuService.getDefListType(
-                reqJson.getString("id_C")
-        );
+        try {
+            return menuService.getDefListType(
+                    reqJson.getString("id_C")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "MenuController.getDefListType", e);
+        }
     }
 
 //

@@ -1,8 +1,10 @@
 package com.cresign.login.controller;
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.service.InitService;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.token.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +30,9 @@ public class InitController {
     @Autowired
     private HttpServletRequest request;
 
+    @Autowired
+    private GetUserIdByToken getUserToken;
+
     /**
      * 根据id(语言)获取init的数据
      * @author JackSon
@@ -42,23 +47,32 @@ public class InitController {
             @RequestParam("lang") String lang,
             @RequestParam(value = "ver", required = false) Integer ver
             ,@RequestParam("qdKey") String qdKey){
-        // 字符串转换
-        String s = qdKey.replaceAll(",", "/");
-        s = s.replaceAll("%0A","\n");
-        s = s.replaceAll("%2C","/");
-        s = s.replaceAll("%2B","+");
-        s = s.replaceAll("%3D","=");
+
+        try {
+// 字符串转换
+            String s = qdKey.replaceAll(",", "/");
+            s = s.replaceAll("%0A","\n");
+            s = s.replaceAll("%2C","/");
+            s = s.replaceAll("%2B","+");
+            s = s.replaceAll("%3D","=");
 //        System.out.println("进入这里:"+lang+" - "+ver);
 //        System.out.println(s);
 //        System.out.println(uuId);
 //        System.out.println(request.getHeader("uuId"));
 //        RetResult.setClient_Public_Key(s);
-        return initService.getInitById(lang, ver,s,request.getHeader("uuId"));
+            return initService.getInitById(lang, ver,s,request.getHeader("uuId"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "InitController.getInit", e);
+        }
     }
 
     @GetMapping("/v1/getPhoneType")
     public ApiResponse getPhoneType(@RequestParam("lang") String lang){
-        return initService.getPhoneType(lang);
+        try {
+            return initService.getPhoneType(lang);
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "InitController.getPhoneType", e);
+        }
     }
 
 

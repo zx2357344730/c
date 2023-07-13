@@ -33,20 +33,28 @@ public class ModuleController {
     @PostMapping("/v1/modifyLogAuthAll")
     @SecurityParameter
     public ApiResponse modifyLogAuthAll(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.modifyLogAuthAll(reqJson.getString("id_C"),reqJson.getString("grpU")
-                ,reqJson.getString("listType"),reqJson.getString("grp"),reqJson.getInteger("auth"));
+        try {
+            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            reqJson.put("id_U",tokData.getString("id_U"));
+            return moduleService.modifyLogAuthAll(reqJson.getString("id_C"),reqJson.getString("grpU")
+                    ,reqJson.getString("listType"),reqJson.getString("grp"),reqJson.getInteger("auth"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.modifyLogAuthAll", e);
+        }
     }
 
     @PostMapping("/v1/modifyLogAuth")
     @SecurityParameter
     public ApiResponse modifyLogAuth(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.modifyLogAuth(reqJson.getString("id_C"),reqJson.getString("grpU")
-                ,reqJson.getString("listType"),reqJson.getString("grp"),reqJson.getInteger("auth")
-                ,reqJson.getString("modRef"));
+        try {
+            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            reqJson.put("id_U",tokData.getString("id_U"));
+            return moduleService.modifyLogAuth(reqJson.getString("id_C"),reqJson.getString("grpU")
+                    ,reqJson.getString("listType"),reqJson.getString("grp"),reqJson.getInteger("auth")
+                    ,reqJson.getString("modRef"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.modifyLogAuth", e);
+        }
     }
 
 //    @PostMapping("/v1/addOrUpdateInitMod")
@@ -60,11 +68,15 @@ public class ModuleController {
     @PostMapping("/v1/updateLogAuth")
     @SecurityParameter
     public ApiResponse updateLogAuth(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.updateLogAuth(reqJson.getString("id_C")
-                ,reqJson.getString("grpU"),reqJson.getString("listType")
-                ,reqJson.getString("grp"));
+        try {
+            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            reqJson.put("id_U",tokData.getString("id_U"));
+            return moduleService.updateLogAuth(reqJson.getString("id_C")
+                    ,reqJson.getString("grpU"),reqJson.getString("listType")
+                    ,reqJson.getString("grp"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.updateLogAuth", e);
+        }
     }
 
 //    /**
@@ -92,9 +104,13 @@ public class ModuleController {
     @PostMapping("/v1/manyTranslate")
     @SecurityParameter
     public ApiResponse manyTranslate(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.manyTranslate(reqJson.getJSONObject("data"));
+        try {
+            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            reqJson.put("id_U",tokData.getString("id_U"));
+            return moduleService.manyTranslate(reqJson.getJSONObject("data"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.manyTranslate", e);
+        }
     }
 
     /**
@@ -108,12 +124,17 @@ public class ModuleController {
     @SecurityParameter
     public ApiResponse lSProdTurnLBProd(@RequestBody JSONObject reqJson){
 //        JSONObject tokData = getTokenOfUserId.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"t",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.lSProdTurnLBProd(
-                reqJson.getString("id_P")
-                ,reqJson.getString("id_C")
-                ,reqJson.getBoolean("isMove"));
+
+        try {
+            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"t",1);
+            reqJson.put("id_U",tokData.getString("id_U"));
+            return moduleService.lSProdTurnLBProd(
+                    reqJson.getString("id_P")
+                    ,reqJson.getString("id_C")
+                    ,reqJson.getBoolean("isMove"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.lSProdTurnLBProd", e);
+        }
     }
 
     /**
@@ -126,11 +147,15 @@ public class ModuleController {
     @PostMapping("/v1/modSetUser")
     @SecurityParameter
     public ApiResponse modSetUser(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        try {
+            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 //        reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.modSetUser(
-                tokData.getString("id_C")
-                ,reqJson.getJSONObject("objUser"));
+            return moduleService.modSetUser(
+                    tokData.getString("id_C")
+                    ,reqJson.getJSONObject("objUser"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.modSetUser", e);
+        }
     }
 
     /**
@@ -143,12 +168,16 @@ public class ModuleController {
     @PostMapping("/v1/modSetControl")
     @SecurityParameter
     public ApiResponse modSetControl(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.modSetControl(
-                tokData.getString("id_C"),
-                reqJson.getString("id_C"),
-                reqJson.getJSONObject("objMod"));
+        try {
+            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            reqJson.put("id_U",tokData.getString("id_U"));
+            return moduleService.modSetControl(
+                    tokData.getString("id_C"),
+                    reqJson.getString("id_C"),
+                    reqJson.getJSONObject("objMod"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.modSetControl", e);
+        }
     }
 
     /**
@@ -161,9 +190,13 @@ public class ModuleController {
     @PostMapping("/v1/modGetControl")
     @SecurityParameter
     public ApiResponse modGetControl(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return moduleService.modGetControl(reqJson.getString("id_C"));
+        try {
+            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            reqJson.put("id_U",tokData.getString("id_U"));
+            return moduleService.modGetControl(reqJson.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.modGetControl", e);
+        }
     }
 
     /**
@@ -176,51 +209,61 @@ public class ModuleController {
     @PostMapping("/v1/modAddLSBComp")
     @SecurityParameter
     public ApiResponse modAddLSBComp(@RequestBody JSONObject can){
-        JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        can.put("id_U",tokData.getString("id_U"));
-        return moduleService.modAddLSBComp(
-                can.getString("id_C")
-                , can.getString("id_CP")
-                , can.getString("id_CB")
-                , can.getString("id_CBP")
-                , can.getJSONObject("wrdNC")
-                , can.getJSONObject("wrddesc")
-                , can.getJSONObject("wrdNCB")
-                , can.getJSONObject("wrddescB")
-                , can.getString("grp")
-                , can.getString("grpB")
-                , can.getString("refC")
-                , can.getString("refCB")
-                , can.getString("picC")
-                , can.getString("picCB")
-        );
+        try {
+            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            can.put("id_U",tokData.getString("id_U"));
+            return moduleService.modAddLSBComp(
+                    can.getString("id_C")
+                    , can.getString("id_CP")
+                    , can.getString("id_CB")
+                    , can.getString("id_CBP")
+                    , can.getJSONObject("wrdNC")
+                    , can.getJSONObject("wrddesc")
+                    , can.getJSONObject("wrdNCB")
+                    , can.getJSONObject("wrddescB")
+                    , can.getString("grp")
+                    , can.getString("grpB")
+                    , can.getString("refC")
+                    , can.getString("refCB")
+                    , can.getString("picC")
+                    , can.getString("picCB")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ModuleController.modAddLSBComp", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/addModule")
     public ApiResponse addModule(@RequestBody JSONObject reqJson) throws IOException {
-
-        return moduleService.addModule(
-                //"5f28bf314f65cc7dc2e60346",
-                getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("oid"),
-                reqJson.getString("id_C"),
-                reqJson.getString("ref"),
-                reqJson.getInteger("bcdLevel"));
+        try {
+            return moduleService.addModule(
+                    //"5f28bf314f65cc7dc2e60346",
+                    getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    reqJson.getString("oid"),
+                    reqJson.getString("id_C"),
+                    reqJson.getString("ref"),
+                    reqJson.getInteger("bcdLevel"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.addModule", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/addBlankComp")
     public ApiResponse addBlankComp(@RequestBody JSONObject reqJson) throws IOException {
+        try {
+            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
 
-        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-
-        return moduleService.addBlankComp(
-                tokData,
-                reqJson.getJSONObject("wrdN"),
-                reqJson.getJSONObject("wrddesc"),
-                reqJson.getString("pic"),
-                reqJson.getString("ref")
-        );
+            return moduleService.addBlankComp(
+                    tokData,
+                    reqJson.getJSONObject("wrdN"),
+                    reqJson.getJSONObject("wrddesc"),
+                    reqJson.getString("pic"),
+                    reqJson.getString("ref")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.addBlankComp", e);
+        }
     }
 }

@@ -35,10 +35,12 @@ public class AccountLoginController {
     @SecurityParameter
     @PostMapping("/v1/login")
     public ApiResponse unregLogin(@RequestBody JSONObject reqJson) {
-
-        return accountLoginService.unregLogin(
-                request.getHeader("clientType"));
-
+        try {
+            return accountLoginService.unregLogin(
+                    request.getHeader("clientType"));
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "AccountLoginController.unregLogin", e);
+        }
     }
 
 //    /**
@@ -80,21 +82,27 @@ public class AccountLoginController {
     @SecurityParameter
     @PostMapping("/v1/generateLoginCode")
     public ApiResponse generateLoginCode(@RequestBody JSONObject reqJson) {
-
-        return accountLoginService.generateLoginCode(
-                reqJson.getString("id")
-               );
+        try {
+            return accountLoginService.generateLoginCode(
+                    reqJson.getString("id")
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "AccountLoginController.generateLoginCode", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/scanLoginCode")
     public ApiResponse scanLoginCode(@RequestBody JSONObject reqJson) {
-
-        return accountLoginService.scanLoginCode(
-                reqJson.getString("token"),
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+        try {
+            return accountLoginService.scanLoginCode(
+                    reqJson.getString("token"),
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
 //                reqJson.getString("clientType")
-        );
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "AccountLoginController.scanLoginCode", e);
+        }
     }
 
 

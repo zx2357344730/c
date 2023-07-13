@@ -22,6 +22,7 @@ public interface LoginClient {
 
     @GetMapping("/refreshToken/v1/refreshToken2")
     String refreshToken2(@RequestParam("id_U") String id_U, @RequestParam("id_C") String id_C
-            ,@RequestParam("token") String ton,@RequestParam("web") String web);
+            ,@RequestParam("refreshToken") String refreshToken,@RequestParam("web") String web
+            ,@RequestParam("token") String token);
 
 }

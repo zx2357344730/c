@@ -41,10 +41,14 @@ public class RedirectController {
     @SecurityParameter
     @PostMapping("/v1/createSaleChkinCode")
     public ApiResponse generateSaleChkinCode(@RequestBody JSONObject reqJson) {
-        return redirectService.generateSaleChkinCode(
-                reqJson.getString("id_C"),
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
-        );
+        try {
+            return redirectService.generateSaleChkinCode(
+                    reqJson.getString("id_C"),
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.generateSaleChkinCode", e);
+        }
     }
 
     /**
@@ -58,24 +62,31 @@ public class RedirectController {
     @SecurityParameter
     @PostMapping("/v1/scanSaleChkinCode")
     public ApiResponse scanSaleChkinCode(@RequestBody JSONObject reqJson) {
-        System.out.println("进入扫码后的方法:");
-        return redirectService.scanSaleChkinCode(
-                reqJson.getString("token"),
-                reqJson.getString("longitude"), reqJson.getString("latitude")
-        );
+        try {
+            System.out.println("进入扫码后的方法:");
+            return redirectService.scanSaleChkinCode(
+                    reqJson.getString("token"),
+                    reqJson.getString("longitude"), reqJson.getString("latitude")
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.scanSaleChkinCode", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/generateProdCode")
     public ApiResponse generateProdCode(@RequestBody JSONObject reqJson) {
-        return redirectService.generateProdCode(
-                reqJson.getString("id_C"),
-                reqJson.getString("id_P"),
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("mode"),
-                reqJson.getJSONObject("data")
-        );
-
+        try {
+            return redirectService.generateProdCode(
+                    reqJson.getString("id_C"),
+                    reqJson.getString("id_P"),
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    reqJson.getString("mode"),
+                    reqJson.getJSONObject("data")
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.generateProdCode", e);
+        }
 //                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1)
     }
 
@@ -84,121 +95,165 @@ public class RedirectController {
     @SecurityParameter
     @PostMapping("/v1/resetProdCode")
     public ApiResponse resetProdCode(@RequestBody JSONObject reqJson) {
-        return redirectService.resetProdCode(
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("id_P"),
-                reqJson.getString("id_C")
-                );
+        try {
+            return redirectService.resetProdCode(
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    reqJson.getString("id_P"),
+                    reqJson.getString("id_C")
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.resetProdCode", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/generateUserCode")
     public ApiResponse generateUserCode(@RequestBody JSONObject reqJson) {
-        return redirectService.generateUserCode(
-                reqJson.getString("id_C"),
-                //reqJson.getString("id_P"),
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("mode"),
-                reqJson.getJSONObject("data")
-        );
+        try {
+            return redirectService.generateUserCode(
+                    reqJson.getString("id_C"),
+                    //reqJson.getString("id_P"),
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    reqJson.getString("mode"),
+                    reqJson.getJSONObject("data")
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.generateUserCode", e);
+        }
     }
     @SecurityParameter
     @PostMapping("/v1/generateCompCode")
     public ApiResponse generateCompCode(@RequestBody JSONObject reqJson) {
-        return redirectService.generateCompCode(
-                reqJson.getString("id_C"),
-                //reqJson.getString("id_P"),
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("mode"),
-                reqJson.getJSONObject("data")
-        );
+        try {
+            return redirectService.generateCompCode(
+                    reqJson.getString("id_C"),
+                    //reqJson.getString("id_P"),
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    reqJson.getString("mode"),
+                    reqJson.getJSONObject("data")
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.generateCompCode", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/generateOrderCode")
     public ApiResponse generateOrderCode(@RequestBody JSONObject reqJson) {
-        return redirectService.generateOrderCode(
-                reqJson.getString("id_C"),
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+        try {
+            return redirectService.generateOrderCode(
+                    reqJson.getString("id_C"),
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
 
-                reqJson.getString("id_O"),
-                reqJson.getString("listType"),
-                reqJson.getString("mode"),
-                reqJson.getJSONObject("data")
-        );
+                    reqJson.getString("id_O"),
+                    reqJson.getString("listType"),
+                    reqJson.getString("mode"),
+                    reqJson.getJSONObject("data")
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.generateOrderCode", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/scanCode")
     public ApiResponse scanCode(@RequestBody JSONObject reqJson) {
-        return redirectService.scanCode(
-                reqJson.getString("token"),
-                reqJson.getString("listType"),
-                //"5f28bf314f65cc7dc2e60262"
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
-        );
+        try {
+            return redirectService.scanCode(
+                    reqJson.getString("token"),
+                    reqJson.getString("listType"),
+                    //"5f28bf314f65cc7dc2e60262"
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.scanCode", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/resetUserCode")
     public ApiResponse resetUserCode(@RequestBody JSONObject reqJson) {
-        return redirectService.resetUserCode(
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                //reqJson.getString("id_P"),
-                reqJson.getString("id_C")
-        );
+        try {
+            return redirectService.resetUserCode(
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    //reqJson.getString("id_P"),
+                    reqJson.getString("id_C")
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.resetUserCode", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/resetCompCode")
     public ApiResponse resetCompCode(@RequestBody JSONObject reqJson) {
-        return redirectService.resetCompCode(
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                //reqJson.getString("id_P"),
-                reqJson.getString("id_C")
-        );
+        try {
+            return redirectService.resetCompCode(
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    //reqJson.getString("id_P"),
+                    reqJson.getString("id_C")
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.resetCompCode", e);
+        }
     }
     @SecurityParameter
     @PostMapping("/v1/resetOrderCode")
     public ApiResponse resetOrderCode(@RequestBody JSONObject reqJson) {
-        return redirectService.resetOrderCode(
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("id_O"),
-                reqJson.getString("id_C")
-        );
+        try {
+            return redirectService.resetOrderCode(
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    reqJson.getString("id_O"),
+                    reqJson.getString("id_C")
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.resetOrderCode", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/create_joincomp")
     public ApiResponse generateJoinCompCode(@RequestBody JSONObject reqJson) {
-        return redirectService.generateJoinCompCode(
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                reqJson.getString("id_C"),
-                reqJson.getString("mode"),
-                reqJson.getJSONObject("data"));
+        try {
+            return redirectService.generateJoinCompCode(
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+                    reqJson.getString("id_C"),
+                    reqJson.getString("mode"),
+                    reqJson.getJSONObject("data"));
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.generateJoinCompCode", e);
+        }
 //                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1)
     }
 
     @SecurityParameter
     @PostMapping("/v1/scan_joincomp")
     public ApiResponse scanJoinCompCode(@RequestBody JSONObject reqJson) throws IOException {
-        return redirectService.scanJoinCompCode(
-                reqJson.getString("token"),
-                //"t3RCVlkDOMTuyNeNhIx",
-                //"60dd20a5d8555e3fdbba4ccc"
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
-        );
+        try {
+            return redirectService.scanJoinCompCode(
+                    reqJson.getString("token"),
+                    //"t3RCVlkDOMTuyNeNhIx",
+                    //"60dd20a5d8555e3fdbba4ccc"
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.scanJoinCompCode", e);
+        }
     }
 
     @SecurityParameter
     @PostMapping("/v1/reset_joincomp_code")
     public ApiResponse resetJoinCompCode(@RequestBody JSONObject reqJson) throws IOException {
-        return redirectService.resetJoinCompCode(
-                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+        try {
+            return redirectService.resetJoinCompCode(
+                    getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
 //                "5f28bf314f65cc7dc2e60386",
-                reqJson.getString("id_C")
+                    reqJson.getString("id_C")
 //                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1)
-        );
+            );
+        } catch (Exception e) {
+            return getUserIdByToken.err(reqJson, "RedirectController.resetJoinCompCode", e);
+        }
     }
 
 

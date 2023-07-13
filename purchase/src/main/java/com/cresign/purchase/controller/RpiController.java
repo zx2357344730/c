@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 
 /**
+ * @author tang
  * @ClassName RpiController
  * @Description 作者很懒什么也没写
- * @authortang
  * @Date 2022/8/18
  * @ver 1.0.0
  */
@@ -35,70 +35,90 @@ public class RpiController {
 
     @PostMapping("/v1/delPi")
     @SecurityParameter
-    public ApiResponse delPi(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return rpiService.delPi(
-                reqJson.getString("rname")
-                ,reqJson.getString("id_C"));
+    public ApiResponse delPi(@RequestBody JSONObject reqJson) {
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
+            reqJson.put("id_U", tokData.getString("id_U"));
+            return rpiService.delPi(
+                    reqJson.getString("rname")
+                    , reqJson.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "RpiController.delPi", e);
+        }
     }
 
     @PostMapping("/v1/rpiCode")
     @SecurityParameter
-    public ApiResponse rpiCode(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return rpiService.rpiCode(
-                reqJson.getString("rname"),
-                reqJson.getString("id_C"));
+    public ApiResponse rpiCode(@RequestBody JSONObject reqJson) {
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
+            reqJson.put("id_U", tokData.getString("id_U"));
+            return rpiService.rpiCode(
+                    reqJson.getString("rname"),
+                    reqJson.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "RpiController.rpiCode", e);
+        }
     }
 
     @PostMapping("/v1/requestRpiStatus")
     @SecurityParameter
-    public ApiResponse requestRpiStatus(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return rpiService.requestRpiStatus(
-                reqJson.getString("token"),
-                reqJson.getString("id_C"),
-                reqJson.getString("id_U"));
+    public ApiResponse requestRpiStatus(@RequestBody JSONObject reqJson) {
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
+            reqJson.put("id_U", tokData.getString("id_U"));
+            return rpiService.requestRpiStatus(
+                    reqJson.getString("token"),
+                    reqJson.getString("id_C"),
+                    reqJson.getString("id_U"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "RpiController.requestRpiStatus", e);
+        }
     }
 
     @PostMapping("/v1/bindingRpi")
     @SecurityParameter
-    public ApiResponse bindingRpi(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return rpiService.bindingRpi(
-                reqJson.getString("token"),
-                reqJson.getString("id_C"),
-                reqJson.getString("id_U"),
-                reqJson.getString("grpU"),
-                reqJson.getInteger("oIndex"),
-                reqJson.getJSONObject("wrdNU"),
-                reqJson.getInteger("imp"),
-                reqJson.getString("id_O"),
-                reqJson.getInteger("tzone"),
-                reqJson.getString("lang"),
-                reqJson.getString("id_P"),
-                reqJson.getString("pic"),
-                reqJson.getInteger("wn2qtynow"),
-                reqJson.getString("grpB"),
-                reqJson.getJSONObject("fields"),
-                reqJson.getJSONObject("wrdNP"),
-                reqJson.getJSONObject("wrdN"),
-                reqJson.getString("dep"));
+    public ApiResponse bindingRpi(@RequestBody JSONObject reqJson) {
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
+            reqJson.put("id_U", tokData.getString("id_U"));
+            return rpiService.bindingRpi(
+                    reqJson.getString("token"),
+                    reqJson.getString("id_C"),
+                    reqJson.getString("id_U"),
+                    reqJson.getString("grpU"),
+                    reqJson.getInteger("oIndex"),
+                    reqJson.getJSONObject("wrdNU"),
+                    reqJson.getInteger("imp"),
+                    reqJson.getString("id_O"),
+                    reqJson.getInteger("tzone"),
+                    reqJson.getString("lang"),
+                    reqJson.getString("id_P"),
+                    reqJson.getString("pic"),
+                    reqJson.getInteger("wn2qtynow"),
+                    reqJson.getString("grpB"),
+                    reqJson.getJSONObject("fields"),
+                    reqJson.getJSONObject("wrdNP"),
+                    reqJson.getJSONObject("wrdN"),
+                    reqJson.getString("dep"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "RpiController.bindingRpi", e);
+        }
     }
 
     @PostMapping("/v1/relieveRpi")
     @SecurityParameter
-    public ApiResponse relieveRpi(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        reqJson.put("id_U",tokData.getString("id_U"));
-        return rpiService.relieveRpi(
-                reqJson.getString("token"),
-                reqJson.getString("id_C"),
-                reqJson.getString("id_U"));
+    public ApiResponse relieveRpi(@RequestBody JSONObject reqJson) {
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
+            reqJson.put("id_U", tokData.getString("id_U"));
+            return rpiService.relieveRpi(
+                    reqJson.getString("token"),
+                    reqJson.getString("id_C"),
+                    reqJson.getString("id_U"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "RpiController.relieveRpi", e);
+        }
     }
 
 }

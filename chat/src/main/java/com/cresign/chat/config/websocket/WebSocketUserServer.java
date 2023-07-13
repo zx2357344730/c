@@ -493,9 +493,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                     if ("token".equals(logData.getSubType()) && "usageflow".equals(logData.getLogType())) {
                         JSONObject data = logData.getData();
                         System.out.println("请求 RT2 api:");
-                        String newToken = loginClient.refreshToken2(logData.getId_U()
-                                , logData.getId_C(),data.getString("refreshTokenJiu"),data.getString("clientType"));
-                        data.put("refreshToken",newToken);
+                        loginClient.refreshToken2(logData.getId_U()
+                                , logData.getId_C(),data.getString("refreshTokenJiu")
+                                ,data.getString("clientType"),data.getString("token"));
+//                        data.put("refreshToken",newToken);
                         logData.setData(data);
                         logData.getData().remove("refreshTokenJiu");
                         logData.setId_Us(qt.setArray(logData.getId_U()));

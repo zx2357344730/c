@@ -87,17 +87,19 @@ public class LogController {
     @SecurityParameter
     @PostMapping("/v1/setGpio")
     public ApiResponse setGpio(@RequestBody JSONObject reqJson){
-
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-
-        // 获取用户id
-//        String uid = reqJson.getString(ChatConstants.L_C_REQUEST_UID);
-//        String cid = reqJson.getString(ChatConstants.L_C_REQUEST_CID);
-//        String gpIo = reqJson.getString("gpIo");
-//        String rname = reqJson.getString("rname");
-        reqJson.put("id_U",tokData.getString("id_U"));
-        System.out.println("进入绑定");
-        return logService.setGpio(reqJson);
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            // 获取用户id
+//            String uid = reqJson.getString(ChatConstants.L_C_REQUEST_UID);
+//            String cid = reqJson.getString(ChatConstants.L_C_REQUEST_CID);
+//            String gpIo = reqJson.getString("gpIo");
+//            String rname = reqJson.getString("rname");
+            reqJson.put("id_U",tokData.getString("id_U"));
+            System.out.println("进入绑定");
+            return logService.setGpio(reqJson);
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "LogController.setGpio", e);
+        }
     }
 
     /**
@@ -111,16 +113,20 @@ public class LogController {
     @SecurityParameter
     @PostMapping("/v1/unsetGpio")
     public ApiResponse unsetGpio(@RequestBody JSONObject reqJson){
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
 
-        // 获取用户id
-//        String uid = reqJson.getString(ChatConstants.L_C_REQUEST_UID);
-//        String cid = reqJson.getString(ChatConstants.L_C_REQUEST_CID);
-//        String gpIo = reqJson.getString("gpIo");
-//        String rname = reqJson.getString("rname");
-        reqJson.put("id_U",tokData.getString("id_U"));
-        System.out.println("进入解除绑定");
-        return logService.unsetGpio(reqJson);
+            // 获取用户id
+//            String uid = reqJson.getString(ChatConstants.L_C_REQUEST_UID);
+//            String cid = reqJson.getString(ChatConstants.L_C_REQUEST_CID);
+//            String gpIo = reqJson.getString("gpIo");
+//            String rname = reqJson.getString("rname");
+            reqJson.put("id_U",tokData.getString("id_U"));
+            System.out.println("进入解除绑定");
+            return logService.unsetGpio(reqJson);
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "LogController.unsetGpio", e);
+        }
     }
 
 //    /**
