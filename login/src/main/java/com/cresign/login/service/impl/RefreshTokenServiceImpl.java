@@ -188,8 +188,12 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 //
 //        throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
 
-        JSONObject rdSet = qt.getRDSet(clientType + "Token", "");
-        qt.setRDSet(clientType + "Token", token, rdSet, 500L);
+        try {
+            JSONObject rdSet = qt.getRDSet(clientType + "Token", token);
+            qt.setRDSet(clientType + "Token", token, rdSet, 500L);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
         return token;
     }
 

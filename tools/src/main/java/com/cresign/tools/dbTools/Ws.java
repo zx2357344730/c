@@ -72,7 +72,8 @@ public class Ws {
      *  logContrent.getJSONArray("id_Us") / id_APPs[]
      */
     public void sendWS(LogFlow logContent){
-
+        System.out.println("进入发送websocket信息的组合:");
+        System.out.println(JSON.toJSONString(logContent));
         // the log's id_Us may have users
         // if so, getES and get id_APP to push
         // else set id_Us + cidArray as usual
@@ -204,7 +205,8 @@ public class Ws {
 
     private void setUserListByFlowId(String id_C, LogFlow logContent, JSONArray id_Us, JSONArray cidArray)
     { // id_Us[] and id_APPs use flowcontrol (prepareUserList)
-        
+        System.out.println("进入获取群信息:");
+        System.out.println(JSON.toJSONString(logContent));
             Asset asset = qt.getConfig(id_C,"a-auth","flowControl");
             if (asset.getId().equals("none"))
                 return;
