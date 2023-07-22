@@ -83,4 +83,15 @@ public interface SetAuthService {
      * @return
      */
     ApiResponse setAUN(String id_U, String id_AUN);
+
+    /**
+     * 更新User的Info卡片的pic字段
+     * @param id_U	用户编号
+     * @param pic	用户头像
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/21
+     * @ver 版本号: 1.0.0
+     */
+    ApiResponse setUserPic(String id_U,String pic);
 }

@@ -270,6 +270,25 @@ public class SetAuthServicelmpl implements SetAuthService {
 
     }
 
+    /**
+     * 更新User的Info卡片的pic字段
+     * @param id_U	用户编号
+     * @param pic	用户头像
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/21
+     * @ver 版本号: 1.0.0
+     */
+    @Override
+    public ApiResponse setUserPic(String id_U, String pic) {
+        try {
+            qt.setMDContent(id_U, qt.setJson("info.pic", pic), User.class);
+            return retResult.ok(CodeEnum.OK.getCode(), "修改成功");
+        } catch (Exception e) {
+            return retResult.ok(CodeEnum.OK.getCode(), "修改失败");
+        }
+    }
+
     @Override
     public ApiResponse getMySwitchComp(String id_U, String lang) {
 //        Query userQ = new Query(
