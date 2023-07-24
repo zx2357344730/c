@@ -983,7 +983,7 @@ public class ActionServiceImpl implements ActionService {
                 //*** Here we set oStock qty to 1 whenever noP task is completed
                 if (status == 2 && orderOItem.getId_P().equals(""))
                 {
-                    Order oStockCheck = qt.getMDContent(id_O, Arrays.asList("oStock", "action", "oItem", "view"), Order.class);
+                    Order oStockCheck = qt.getMDContent(id_O, Arrays.asList("info","oStock", "action", "oItem", "view"), Order.class);
                     if (oStockCheck.getOStock() != null)
                     {
                         Double qty = oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).getDouble("wn2qtynow");
@@ -1385,7 +1385,7 @@ public class ActionServiceImpl implements ActionService {
         //*** Here we set oStock qty to 1 whenever noP task is completed
         if (status == 2 && orderOItem.getId_P().equals(""))
         {
-            Order oStockCheck = qt.getMDContent(id_O, Arrays.asList("oStock", "action", "oItem", "view"), Order.class);
+            Order oStockCheck = qt.getMDContent(id_O, Arrays.asList("info","oStock", "action", "oItem", "view"), Order.class);
             if (oStockCheck.getOStock() != null)
             {
                 Double qty = oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).getDouble("wn2qtynow");
@@ -2313,7 +2313,6 @@ public class ActionServiceImpl implements ActionService {
                                 qt.setMDContent(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey, Order.class);
                                 System.out.println("unit " + subOItem.getGrpB() + subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
                                 String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
-
                                 this.updateRefOP(myCompId, subOItem.getId_C(),
                                         subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), id_O, unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getSubParts().getJSONObject(k).getInteger("index"), true );
 

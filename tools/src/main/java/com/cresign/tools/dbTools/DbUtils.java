@@ -15,6 +15,7 @@ import com.cresign.tools.pojo.po.assetCard.AssetInfo;
 import com.cresign.tools.reflectTools.ApplicationContextTools;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
+import io.netty.handler.codec.http.HttpServerKeepAliveHandler;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -29,6 +30,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.redisson.misc.Hash;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -40,6 +42,7 @@ import org.springframework.stereotype.Service;
 
 import javax.script.*;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -61,8 +64,6 @@ public class DbUtils {
     @Autowired
     private Ws ws;
 
-    @Autowired
-    private DoubleUtils dub;
 
     /*
         ES
@@ -505,110 +506,110 @@ public class DbUtils {
 
 //Order init oItem, action, oStock if needed
 
-public JSONObject checkCard(Order order)
-{
-    JSONObject jsonCard = new JSONObject();
-    JSONArray arrayCard = null;
-    JSONArray arrayOItem = null;
-    JSONArray arrayArrP = null;
-    JSONArray arrayData = null;
-    System.out.println("checking Card");
-
-        arrayOItem = order.getOItem().getJSONArray("objItem");
-        if (order.getOItem().getString("bmdHeight") == null)
-        {    order.getOItem().put("bmdHeight", "unset"); }
-        if ( order.getOItem().getJSONArray("objCard") == null)
-        {
-            order.getOItem().put("objCard", new JSONArray());
-            order.getOItem().getJSONArray("objCard").add("oItem");
-
-            if (order.getOStock() != null)
-            {
-                order.getOItem().getJSONArray("objCard").add("oStock");
-            }
-            if (order.getAction() != null) {
-                order.getOItem().getJSONArray("objCard").add("action");
-            }
-            if (order.getOQc() != null) {
-                order.getOItem().getJSONArray("objCard").add("oQc");
-            }
-        }
-        if (order.getOItem().getJSONArray("arrP") == null)
-        {
-            order.getOItem().put("arrP", new JSONArray());
-            for (int i = 0; i < arrayOItem.size(); i++)
-            {
-                order.getOItem().getJSONArray("arrP").add(arrayOItem.getJSONObject(i).getString("id_P"));
-            }
-        }
-
-        if (order.getOItem().getJSONArray("objItemCol") == null)
-         {
-             order.getOItem().put("objItemCol", qt.getInitData("cn").getList().getJSONArray("objItemCol"));
-//             System.out.println(qt.getInitData("cn").getList());
-         }
-
-        arrayCard = order.getOItem().getJSONArray("objCard");
-        arrayArrP = order.getOItem().getJSONArray("arrP");
-
-    if (arrayCard == null || arrayOItem == null || arrayArrP == null || arrayOItem.size() != arrayArrP.size()) {
-        System.out.println(2);
-        throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
-    }
-
-    // for each "card" in objCard: check if "json data" actually has data
-    for (int n = 0; n < arrayCard.size(); n++)
+    public JSONObject checkCard(Order order)
     {
-            switch (arrayCard.getString(n)) {
-                case "oStock":
-                    if (order.getOStock() == null)
-                    {
-                        //whole card Init
-                        order.setOStock(this.initOStock(order.getOItem().getJSONArray("objItem")));
-                        order.getView().add("oStock");
-                    }
-                    // Check if all oItem has a oStock, if not, init it
-                    for (int i = 0; i < arrayOItem.size(); i++)
-                    {
-                        if (order.getOStock().getJSONArray("objData").getJSONObject(i) == null)
-                        {
-                            // just init 1 oitem
-                            this.initOStock(arrayOItem.getJSONObject(i), order.getOStock().getJSONArray("objData"),i);
-                        }
-                    }
-                    arrayData = order.getOStock().getJSONArray("objData");
+        JSONObject jsonCard = new JSONObject();
+        JSONArray arrayCard = null;
+        JSONArray arrayOItem = null;
+        JSONArray arrayArrP = null;
+        JSONArray arrayData = null;
+        System.out.println("checking Card");
 
-                    break;
-                case "action":
-                    if (order.getAction() == null)
-                    {
-                        order.setAction(this.initAction(order.getOItem().getJSONArray("objItem")));
-                        order.getView().add("action");
-                    }
-                    // Check if all oItem has a action, if not, init it
-                    for (int i = 0; i < arrayOItem.size(); i++)
-                    {
-                        this.initAction(arrayOItem.getJSONObject(i), order.getAction().getJSONArray("objAction"),i);
-                    }
-                    arrayData = order.getAction().getJSONArray("objAction");
-                    break;
-                case "oQc":
-                    if (null == order.getOQc()) {
-                        order.setOQc(this.initOQc(order.getOItem().getJSONArray("objItem")));
-                        order.getView().add("oQc");
-                    }
-                    for (int i = 0; i < arrayOItem.size(); i++) {
-                        if (null == order.getOQc().getJSONArray("objQc").getJSONObject(i)) {
-                            this.initOQc(arrayOItem.getJSONObject(i),order.getOQc().getJSONArray("objQc"),i);
-                        }
-                    }
-                    break;
+            arrayOItem = order.getOItem().getJSONArray("objItem");
+            if (order.getOItem().getString("bmdHeight") == null)
+            {    order.getOItem().put("bmdHeight", "unset"); }
+            if ( order.getOItem().getJSONArray("objCard") == null)
+            {
+                order.getOItem().put("objCard", new JSONArray());
+                order.getOItem().getJSONArray("objCard").add("oItem");
+
+                if (order.getOStock() != null)
+                {
+                    order.getOItem().getJSONArray("objCard").add("oStock");
+                }
+                if (order.getAction() != null) {
+                    order.getOItem().getJSONArray("objCard").add("action");
+                }
+                if (order.getOQc() != null) {
+                    order.getOItem().getJSONArray("objCard").add("oQc");
+                }
             }
-            jsonCard.put(arrayCard.getString(n), arrayData);
+            if (order.getOItem().getJSONArray("arrP") == null)
+            {
+                order.getOItem().put("arrP", new JSONArray());
+                for (int i = 0; i < arrayOItem.size(); i++)
+                {
+                    order.getOItem().getJSONArray("arrP").add(arrayOItem.getJSONObject(i).getString("id_P"));
+                }
+            }
+
+            if (order.getOItem().getJSONArray("objItemCol") == null)
+             {
+                 order.getOItem().put("objItemCol", qt.getInitData("cn").getList().getJSONArray("objItemCol"));
+    //             System.out.println(qt.getInitData("cn").getList());
+             }
+
+            arrayCard = order.getOItem().getJSONArray("objCard");
+            arrayArrP = order.getOItem().getJSONArray("arrP");
+
+        if (arrayCard == null || arrayOItem == null || arrayArrP == null || arrayOItem.size() != arrayArrP.size()) {
+            System.out.println(2);
+            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
+        }
+
+        // for each "card" in objCard: check if "json data" actually has data
+        for (int n = 0; n < arrayCard.size(); n++)
+        {
+                switch (arrayCard.getString(n)) {
+                    case "oStock":
+                        if (order.getOStock() == null)
+                        {
+                            //whole card Init
+                            order.setOStock(this.initOStock(order.getOItem().getJSONArray("objItem")));
+                            order.getView().add("oStock");
+                        }
+                        // Check if all oItem has a oStock, if not, init it
+                        for (int i = 0; i < arrayOItem.size(); i++)
+                        {
+                            if (order.getOStock().getJSONArray("objData").getJSONObject(i) == null)
+                            {
+                                // just init 1 oitem
+                                this.initOStock(arrayOItem.getJSONObject(i), order.getOStock().getJSONArray("objData"),i);
+                            }
+                        }
+                        arrayData = order.getOStock().getJSONArray("objData");
+
+                        break;
+                    case "action":
+                        if (order.getAction() == null)
+                        {
+                            order.setAction(this.initAction(order.getOItem().getJSONArray("objItem")));
+                            order.getView().add("action");
+                        }
+                        // Check if all oItem has a action, if not, init it
+                        for (int i = 0; i < arrayOItem.size(); i++)
+                        {
+                            this.initAction(arrayOItem.getJSONObject(i), order.getAction().getJSONArray("objAction"),i);
+                        }
+                        arrayData = order.getAction().getJSONArray("objAction");
+                        break;
+                    case "oQc":
+                        if (null == order.getOQc()) {
+                            order.setOQc(this.initOQc(order.getOItem().getJSONArray("objItem")));
+                            order.getView().add("oQc");
+                        }
+                        for (int i = 0; i < arrayOItem.size(); i++) {
+                            if (null == order.getOQc().getJSONArray("objQc").getJSONObject(i)) {
+                                this.initOQc(arrayOItem.getJSONObject(i),order.getOQc().getJSONArray("objQc"),i);
+                            }
+                        }
+                        break;
+                }
+                jsonCard.put(arrayCard.getString(n), arrayData);
+        }
+        // this will return an JSONObject with "oStock":{...}, "action":{...}
+        return jsonCard;
     }
-    // this will return an JSONObject with "oStock":{...}, "action":{...}
-    return jsonCard;
-}
 
     public JSONObject summOrder(Order order, JSONObject listCol)
     {
@@ -655,8 +656,8 @@ public JSONObject checkCard(Order order)
 
         for (int i = 0; i < oItem.size(); i++)
         {
-            wn2qty = dub.add(oItem.getJSONObject(i).getDouble("wn2qtyneed"), wn2qty);
-            wn4price = dub.add(wn4price, dub.multiply(oItem.getJSONObject(i).getDouble("wn2qtyneed"),oItem.getJSONObject(i).getDouble("wn4price")));
+            wn2qty = DoubleUtils.add(oItem.getJSONObject(i).getDouble("wn2qtyneed"), wn2qty);
+            wn4price = DoubleUtils.add(wn4price, DoubleUtils.multiply(oItem.getJSONObject(i).getDouble("wn2qtyneed"),oItem.getJSONObject(i).getDouble("wn4price")));
             arrP.add(oItem.getJSONObject(i).getString("id_P"));
 
             // setup wn0prior by using seq***
@@ -673,8 +674,8 @@ public JSONObject checkCard(Order order)
 
             if (oStock != null && cardList.contains("oStock"))
             {
-                Double madePercent = dub.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"),oItem.getJSONObject(i).getDouble("wn2qtyneed"));
-                wn2made = dub.add(wn2made, madePercent);
+                Double madePercent = DoubleUtils.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"),oItem.getJSONObject(i).getDouble("wn2qtyneed"));
+                wn2made = DoubleUtils.add(wn2made, madePercent);
                 oStock.getJSONObject(i).put("index", i);
 //                "rKey" 《=Oitem
 
@@ -732,9 +733,9 @@ public JSONObject checkCard(Order order)
                 System.out.println("oQc");
             }
         }
-        wn2fin = dub.divide(wn2made, oItem.size());
+        wn2fin = DoubleUtils.divide(wn2made, oItem.size());
         qt.errPrint("div", null, count, oItem.size());
-        wn2progress = dub.divide(count, oItem.size());
+        wn2progress = DoubleUtils.divide(count, oItem.size());
         qt.upJson(listCol, "wn2fin", wn2fin, "wn2progress", wn2progress, "wn2qty", wn2qty, "wn4price", wn4price, "arrP", arrP);
 
         order.getOItem().put("wn2qty", wn2qty);
@@ -758,636 +759,335 @@ public JSONObject checkCard(Order order)
         return result;
 
     }
-
-    public void initAction(JSONObject orderOItem, JSONArray action, Integer index)
-    {
-
-        if (action.size() <= index || action.getJSONObject(index) == null) {
-            JSONObject actionData = qt.setJson(
-                    "bcdStatus", 100, "bisPush", 0,
-                    "bisactivate", 0,
-                    "id_O", orderOItem.getString("id_O"),
-                    "id_Us", new JSONArray(),
-                    "id_OP", orderOItem.getString("id_OP"),
-                    "id_P", orderOItem.getString("id_P"),
-                    "index", orderOItem.getString("index"),
-                    "refOP", "",
-                    "prob", new JSONArray(),
-                    "sumChild", 0, "sumPrev", 0,
-                    "prtNext", new JSONArray(),
-                    "prtPrev", new JSONArray(),
-                    "subParts", new JSONArray(),
-                    "upPrnts", new JSONArray(),
-                    "sumChild", 0,
-                    "rKey", orderOItem.getString("rKey"),
-                    "wrdNP", orderOItem.getJSONObject("wrdNP"),
-                    "wrdN", orderOItem.getJSONObject("wrdN"),
-                    "bmdpt", 1, "priority", 2);
-
-            action.set(index, actionData);
-        }
-
-        //These data must renew
-        action.getJSONObject(index).put("id_O", orderOItem.getString("id_O"));
-        action.getJSONObject(index).put("index", orderOItem.getString("index"));
-        action.getJSONObject(index).put("rKey", orderOItem.getString("rKey"));
-
-
-        if (action.getJSONObject(index).getJSONArray("upPrnts") == null)
-        {
-            action.getJSONObject(index).put("upPrnts", new JSONArray());
-        }
-        if (action.getJSONObject(index).getJSONArray("subParts") == null)
-        {
-            action.getJSONObject(index).put("subParts", new JSONArray());
-        }
-        if (action.getJSONObject(index).getJSONArray("prtPrev") == null)
-        {
-            action.getJSONObject(index).put("prtPrev", new JSONArray());
-        }
-        if (action.getJSONObject(index).getJSONArray("prtNext") == null)
-        {
-            action.getJSONObject(index).put("prtNext", new JSONArray());
-        }
-    }
-
-    public void initOQc(JSONObject orderOItem, JSONArray oQc, Integer index)
-    {
-        if (oQc.size() <= index || oQc.getJSONObject(index) == null) {
-            JSONObject oQcData = qt.setJson(
-                    "score", 0, "foCount", 5);
-
-            oQc.set(index, oQcData);
-        }
-//        if (oQc.getJSONObject(index).getJSONArray("score") == null)
-//        {
-//            oQc.getJSONObject(index).put("score", 0);
-//        }
-//        if (oQc.getJSONObject(index).getJSONArray("foCount") == null)
-//        {
-//            oQc.getJSONObject(index).put("foCount", 5);
-//        }
-    }
-
-    /***
-     * init entire oStock from nothing
-     * @param oItem need to send the entire oItem.objItem for data to init
-     * @return
-     */
-    public JSONObject initAction(JSONArray oItem)
-    {
-        JSONArray actionArray = new JSONArray();
-        for (int i = 0; i < oItem.size(); i++)
-        {
-            this.initAction(oItem.getJSONObject(i), actionArray, i);
-        }
-        JSONObject action = new JSONObject();
-        action.put("objAction", actionArray);
-        action.put("wn2progress", 0.0);
-        action.put("grpGroup", new JSONObject());
-        action.put("grpBGroup", new JSONObject());
-        return action;
-    }
-
-    public JSONObject initOQc(JSONArray oItem)
-    {
-        JSONArray actionArray = new JSONArray();
-        for (int i = 0; i < oItem.size(); i++)
-        {
-            this.initOQc(oItem.getJSONObject(i), actionArray, i);
-        }
-        JSONObject oQc = new JSONObject();
-        oQc.put("objQc", actionArray);
-        return oQc;
-    }
-
-    public void initOStock(JSONObject orderOItem, JSONArray oStock, Integer index)
-    {
-
-            JSONObject oStockData = qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
-                    "id_P", orderOItem.getString("id_P"),
-                    "resvQty", new JSONObject(),
-                    "rKey", orderOItem.getString("rKey"));
-
-            oStockData.put("objShip", qt.setArray(
-                    qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
-                            "wn2qtyneed", orderOItem.getDouble("wn2qtyneed"))));
-
-            oStock.set(index, oStockData);
-    }
-
-    /***
-     * init entire oStock from nothing
-     * @param oItem need to send the entire oItem.objItem for data to init
-     * @return
-     */
-    public JSONObject initOStock(JSONArray oItem)
-    {
-        JSONArray stockArray = new JSONArray();
-        for (int i = 0; i < oItem.size(); i++)
-        {
-            this.initOStock(oItem.getJSONObject(i), stockArray, i);
-        }
-        JSONObject oStock = new JSONObject();
-        oStock.put("objData", stockArray);
-        oStock.put("wn2fin", 0.0);
-        return oStock;
-    }
-
-
-    public JSONObject setStock(JSONObject tokData, String id_CB, String id_P, Double wn2qty, Integer index,
-                               String locAddr, JSONArray locSpace, JSONArray spaceQty, Integer lAT, String zcndesc, Integer imp) {
-        JSONObject jsonLog = qt.setJson(
-                "zcndesc", zcndesc,
-                "imp", imp);
-        JSONObject json = qt.setJson("tokData", tokData,
-                "id_CB", id_CB,
-                "id_P", id_P,
-                "wn2qty", wn2qty,
-                "index", index,
-                "locAddr", locAddr,
-                "locSpace", locSpace,
-                "spaceQty", spaceQty,
-                "lAT", lAT,
-                "log", jsonLog);
-        return json;
-    }
-
-    public JSONObject setMoney(JSONObject tokData, String id_CB, String id_P, Double wn2qty, Integer lAT, JSONObject action,
-                               JSONObject oMoney, Integer index, String zcndesc, Integer imp) {
-        String id_OP = "";
-        if (index != null) {
-            id_OP = action.getJSONArray("objAction").getJSONObject(index).getString("id_OP");
-        }
-//        String id = action.getJSONObject("grpBGroup").getJSONObject(oMoney.getString("grpB")).getString("id_Money");
-//        String id_FS = action.getJSONObject("grpGroup").getJSONObject(oMoney.getString("grp")).getString("id_Money");
-        String id = "1000"; String id_FS = "1000";
-
-        JSONObject jsonLog = qt.setJson("id", id,
-                "id_FS", id_FS,
-                "grpB", oMoney.getString("grpB"),
-                "grp", oMoney.getString("grp"),
-                "id_OP", id_OP,
-                "index", index,
-                "id_CS", tokData.getString("id_C"),
-                "zcndesc", zcndesc,
-                "imp", imp);
-        JSONObject json = qt.setJson("tokData", tokData,
-                "id_CB", id_CB,
-                "id_P", id_P,
-                "wn2qty", wn2qty,
-                "lAT", lAT,
-                "log", jsonLog);
-        return json;
-    }
-
-
-    public void updateAsset(Order order, JSONArray arrayLsasset, JSONArray arrayLbasset) {
-        HashSet setId_P = new HashSet();
-        JSONArray filtVal = new JSONArray();
-        JSONArray filtValB = new JSONArray();
-        for (int i = 0; i < arrayLsasset.size(); i++) {
-            JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
-            String id_C = jsonLsasset.getJSONObject("tokData").getString("id_C");
-            String id_CB = jsonLsasset.getString("id_CB");
-            String id_P = jsonLsasset.getString("id_P");
-            setId_P.add(id_P);
-            String locAddr = jsonLsasset.getString("locAddr");
-
-            JSONObject jsonVal = qt.setJson("id_C", id_C,
-                    "id_CB", id_CB,
-                    "id_P", id_P);
-            if (locAddr != null) {
-                jsonVal.put("locAddr", locAddr);
-            }
-            filtVal.add(jsonVal);
-        }
-        //TODO RACH make a new should(must[]) @ filterBuilder
-        for (int i = 0; i < arrayLbasset.size(); i++) {
-            JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
-            String id_C = jsonLbasset.getJSONObject("tokData").getString("id_C");
-            String id_CB = jsonLbasset.getString("id_CB");
-            String id_P = jsonLbasset.getString("id_P");
-            setId_P.add(id_P);
-
-            //id_C=id_CB，内部负债，连接一个lbasset
-            JSONObject jsonValB = qt.setJson("id_C", id_C,
-                    "id_CB", id_CB,
-                    "id_P", id_P);
-            //id_C!=id_CB，外部负债，两个公司共用，连接买方lsasset和卖房lbasset
-            if (!id_C.equals(id_CB)) {
-                JSONObject jsonVal = qt.setJson("id_C", id_CB,
-                        "id_CB", id_C,
-                        "id_P", id_P);
-                filtVal.add(jsonVal);
-            }
-            filtValB.add(jsonValB);
-        }
-        JSONArray filterArray = qt.setESFilt(null, "shouldeq", filtVal);
-        JSONArray filterArrayB = qt.setESFilt(null, "shouldeq", filtValB);
-        JSONArray arrayLsa = qt.getES("lSAsset", filterArray);
-        JSONArray arrayLba = qt.getES("lBAsset", filterArrayB);
-
-        HashSet setId_A = new HashSet();
-        JSONObject jsonLsas = this.getAssetListByQuery(arrayLsa, setId_A);
-        JSONObject jsonLbas = this.getAssetListByQuery(arrayLba, setId_A);
-
-        List<?> assets = qt.getMDContentMany(setId_A, Arrays.asList("info", "aStock"), Asset.class);
-        JSONObject allAssetObj = qt.list2Obj(assets, "id");
-
-        List<?> prods = qt.getMDContentMany(setId_P, "info", Prod.class);
-        JSONObject allProdObj = qt.list2Obj(prods, "id");
-
-        for (int i = 0; i < arrayLsasset.size(); i++) {
-            JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
-            String id_C = jsonLsasset.getJSONObject("tokData").getString("id_C");
-            String id_CB = jsonLsasset.getString("id_CB");
-            String id_P = jsonLsasset.getString("id_P");
-            String locAddr = jsonLsasset.getString("locAddr");
-
-            JSONObject jsonLsa = null;
-            if (locAddr != null) {
-                jsonLsa = jsonLsas.getJSONObject(id_C + "-" + id_CB + "-" + id_P + "-" + locAddr);
-            } else {
-                jsonLsa = jsonLsas.getJSONObject(id_C + "-" + id_CB + "-" + id_P);
-            }
-            if (jsonLsa != null) {
-                JSONObject jsonAsset = allAssetObj.getJSONObject(jsonLsa.getString("id_A"));
-                jsonLsasset.put("jsonAsset", jsonAsset);
-                jsonLsasset.put("jsonLsa", jsonLsa);
-            }
-            JSONObject jsonProd = allProdObj.getJSONObject(id_P);
-            jsonLsasset.put("jsonProd", jsonProd);
-        }
-        for (int i = 0; i < arrayLbasset.size(); i++) {
-            JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
-            String id_C = jsonLbasset.getJSONObject("tokData").getString("id_C");
-            String id_CB = jsonLbasset.getString("id_CB");
-            String id_P = jsonLbasset.getString("id_P");
-
-            JSONObject jsonLba = jsonLbas.getJSONObject(id_C + "-" + id_CB + "-" + id_P);
-            if (jsonLba != null) {
-                JSONObject jsonAsset = allAssetObj.getJSONObject(jsonLba.getString("id_A"));
-                jsonLbasset.put("jsonAsset", jsonAsset);
-                jsonLbasset.put("jsonLsa", jsonLba);
-                if (!id_C.equals(id_CB)) {
-                    JSONObject jsonLsa = jsonLsas.getJSONObject(id_CB + "-" + id_C + "-" + id_P);
-                    jsonLbasset.put("jsonLba", jsonLsa);
-                }
-            }
-            JSONObject jsonProd = allProdObj.getJSONObject(id_P);
-            jsonLbasset.put("jsonProd", jsonProd);
-        }
-
-        System.out.println("arraylsasset=" + arrayLsasset);
-        System.out.println("arrayLbasset=" + arrayLbasset);
-
-        List<JSONObject> listBulkAsset = new ArrayList<>();
-        List<JSONObject> listBulkLsasset = new ArrayList<>();
-        List<JSONObject> listBulkLbasset = new ArrayList<>();
-        //处理arrayLsasset
-        this.assetValueChange(order, arrayLsasset, listBulkAsset, listBulkLsasset, null, false, true);
-        //处理arrayLbasset
-        this.assetValueChange(order, arrayLbasset, listBulkAsset, listBulkLbasset, listBulkLsasset, false, false);
-        qt.errPrint("new", null, arrayLsasset, arrayLbasset, listBulkAsset, listBulkLsasset, listBulkLbasset);
-
-
-        qt.setMDContentMany(listBulkAsset, Asset.class);
-        qt.setESMany("lSAsset", listBulkLsasset);
-        qt.setESMany("lBAsset", listBulkLbasset);
-    }
-
-    public JSONObject getAssetListByQuery(JSONArray arrayEs, HashSet setId_A) {
-        JSONObject jsonResult = new JSONObject();
-        for (int i = 0; i < arrayEs.size(); i++) {
-            JSONObject jsonEs = arrayEs.getJSONObject(i);
-            String locAddr = jsonEs.getString("locAddr");
-            //if (locAddr == null || locAddr.equals("")) {
-            if (jsonEs.getString("lAT").equals("2") || jsonEs.getString("lAT").equals("3") &&
-                    (locAddr != null || !locAddr.equals(""))) {
-
-                jsonResult.put(jsonEs.getString("id_C") + "-" +
-                                jsonEs.getString("id_CB") + "-" +
-                                jsonEs.getString("id_P") + "-" + locAddr
-                        , jsonEs);
-            } else {
-                jsonResult.put(jsonEs.getString("id_C") + "-" +
-                                jsonEs.getString("id_CB") + "-" +
-                                jsonEs.getString("id_P"),
-                        jsonEs);
-            }
-            setId_A.add(jsonEs.getString("id_A"));
-        }
-        System.out.println("jsonResult=" + jsonResult);
-        return jsonResult;
-    }
-
-    public void assetValueChange(Order order, JSONArray arrayAssetChg, List<JSONObject> listBulkAsset, List<JSONObject> listBulkLsasset,
-                          List<JSONObject> listBulkLbasset, Boolean isResv, Boolean isLsa) {
-        String id_O = order.getId();
-        JSONArray arrayOItem = order.getOItem().getJSONArray("objItem");
-        for (int i = 0; i < arrayAssetChg.size(); i++) {
-            JSONObject assetChgObj = arrayAssetChg.getJSONObject(i);
-            JSONObject tokData = assetChgObj.getJSONObject("tokData");
-            String id_C = tokData.getString("id_C");
-            String id_U = tokData.getString("id_U");
-            String grpU = tokData.getString("grpU");
-            String id_CB = assetChgObj.getString("id_CB");
-            JSONObject jsonLog = assetChgObj.getJSONObject("log");
-            Integer index = assetChgObj.getInteger("index");
-            String id_P = assetChgObj.getString("id_P");
-            Double wn2qty = assetChgObj.getDouble("wn2qty");
-            JSONObject jsonBulkAsset = null;
-            JSONObject jsonBulkLsasset = null;
-            String id_A = null;
-            String grpA = "";
-            //index不为空是产品，反之是金钱
-            // basically depends on what arrayAssetChg is, it will update asset accordingly, so this array is very important instruction
-            // type 1 = deduct/add qty by stocks
-            // type 2 = init stocks + qty add into it
-            // ??? what if deduct but
-            // type 3 = deduct/add money
-
-
-
-            //K - should use lAT to check if this is Stock
-            if (assetChgObj.getString("locAddr") != null) {
-                JSONObject jsonOItem = arrayOItem.getJSONObject(index);
-                Double wn4price = jsonOItem.getDouble("wn4price");
-                Double wn4value = dub.multiply(wn2qty, wn4price);
-                String locAddr = assetChgObj.getString("locAddr");
-                JSONArray arrayUpdateLocSpace = assetChgObj.getJSONArray("locSpace");
-                JSONArray arrayUpdateSpaceQty = assetChgObj.getJSONArray("spaceQty");
-                //Type 1: 存在资产
-                if (assetChgObj.getJSONObject("jsonLsa") != null)
-                {
-                    JSONObject jsonLsa = assetChgObj.getJSONObject("jsonLsa");
-                    id_A = jsonLsa.getString("id_A");
-                    grpA = jsonLsa.getString("grp");
-                    JSONObject jsonAsset = assetChgObj.getJSONObject("jsonAsset");
-                    JSONObject aStock = jsonAsset.getJSONObject("aStock");
-                    JSONArray arrayLocSpace = aStock.getJSONArray("locSpace");
-                    JSONArray arraySpaceQty = aStock.getJSONArray("spaceQty");
-
-
-                    //货架的格子
-                    for (int j = 0; j < arrayLocSpace.size(); j++) {
-                        //要移动的格子
-                        for (int k = 0; k < arrayUpdateLocSpace.size(); k++) {
-                            //格子相等
-                            if (arrayLocSpace.getInteger(j) == arrayUpdateLocSpace.getInteger(k)) {
-                                Double spaceQty = arraySpaceQty.getDouble(j);
-                                //移动数量，移入正数，移出负数
-                                Double updateSpaceQty = arrayUpdateSpaceQty.getDouble(k);
-                                Double qty = dub.add(spaceQty, updateSpaceQty);
-                                System.out.println("spaceQty=" + spaceQty);
-                                System.out.println("updateSpaceQty=" + updateSpaceQty);
-                                System.out.println("qty=" + qty);
-                                //货架格子小于移动格子
-                                if (dub.compareTo(qty, 0) == -1) {
-                                    throw new ErrorResponseException(HttpStatus.OK, ToolEnum.PROD_NOT_ENOUGH.getCode(), null);
-                                }
-                                //大于，减去数量
-                                if (dub.compareTo(qty, 0) == 1) {
-                                    arraySpaceQty.set(j, qty);
-                                }
-                                //等于，删除格子数组和数量数组对应的数组元素
-                                else {
-                                    arrayLocSpace.remove(j);
-                                    arraySpaceQty.remove(j);
-                                }
-                            }
-                        }
-                    }
-
-                    
-                    // what is else
-                    if (isResv && aStock.getJSONObject("resvQty") != null &&
-                            aStock.getJSONObject("resvQty").getDouble(id_O + "-" + index) != null) {
-                        ///////************SET - aStock resvAsset qty **************//////////
-                        Double remain = dub.add(aStock.getDouble("wn2qtyResv"), wn2qty);
-
-                        if (aStock.getDouble("wn2qty") == 0 && remain == 0) {
-                            jsonBulkAsset = qt.setJson("type", "delete",
-                                    "id", id_A);
-                            jsonBulkLsasset = qt.setJson("type", "delete",
-                                    "id", jsonLsa.getString("id_ES"));
-                        } else {
-                            //check if fromSum == resvQty.wn2qty, if so remove that object, else deduct
-                            JSONObject jsonResvQty = aStock.getJSONObject("resvQty");
-                            if (dub.doubleEquals(jsonResvQty.getDouble(id_O + "-" + index), wn2qty)) {
-                                jsonResvQty.remove(id_O + "-" + index);
-                            } else {
-                                jsonResvQty.put(id_O + "-" + index, dub.add(jsonResvQty.getDouble(id_O + "-" + index), wn2qty));
-                            }
-
-                            AssetAStock assetAStock = new AssetAStock(
-                                    wn4price, locAddr, arrayLocSpace, arraySpaceQty, remain, jsonResvQty);
-                            JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
-                            jsonBulkAsset = qt.setJson("type", "update",
-                                    "id", id_A,
-                                    "update", jsonUpdate);
-
-                            qt.upJson(jsonLsa, "wn2qty", dub.add(aStock.getDouble("wn2qty"), wn2qty),
-                                    "wn4value", dub.add(aStock.getDouble("wn4value"), wn4value),
-                                    "locSpace", arrayLocSpace,
-                                    "spaceQty", arraySpaceQty,
-                                    "wn2qtyResv", remain);
-                            jsonBulkLsasset = qt.setJson("type", "update",
-                                    "id", jsonLsa.getString("id_ES"),
-                                    "update", jsonLsa);
-                        }
-                    }
-                    else {
-                        if (dub.doubleEquals(aStock.getDouble("wn2qty"), wn2qty)) {
-                            jsonBulkAsset = qt.setJson("type", "delete",
-                                    "id", id_A);
-                            jsonBulkLsasset = qt.setJson("type", "delete",
-                                    "id", jsonLsa.getString("id_ES"));
-                        } else {
-                            AssetAStock assetAStock = new AssetAStock(
-                                    wn4price,
-                                    locAddr, arrayLocSpace, arraySpaceQty);
-                            JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
-                            jsonBulkAsset = qt.setJson("type", "update",
-                                    "id", id_A,
-                                    "update", jsonUpdate);
-
-                            qt.upJson(jsonLsa, "wn2qty", dub.add(aStock.getDouble("wn2qty"), wn2qty),
-                                    "wn4value", dub.add(aStock.getDouble("wn4value"), wn4value),
-                                    "locSpace", arrayLocSpace,
-                                    "spaceQty", arraySpaceQty);
-                            jsonBulkLsasset = qt.setJson("type", "update",
-                                    "id", jsonLsa.getString("id_ES"),
-                                    "update", jsonLsa);
-                        }
-                    }
-                }
-                //不存在资产，新增资产
-                else { //Type 2: add new
-                    Asset asset = new Asset();
-                    id_A = qt.GetObjectId();
-                    asset.setId(id_A);
-                    AssetInfo assetInfo = new AssetInfo(id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
-                            jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-                            jsonOItem.getString("pic"), assetChgObj.getInteger("lAT"));
-                    asset.setInfo(assetInfo);
-
-                    AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayUpdateLocSpace, arrayUpdateSpaceQty);
-                    asset.setAStock(qt.toJson(assetAStock));
-                    asset.setView(qt.setArray("info", "aStock"));
-                    jsonBulkAsset = qt.setJson("type", "insert",
-                            "insert", asset);
-
-                    lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
-                            jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-                            jsonOItem.getString("pic"), assetChgObj.getInteger("lAT"), wn2qty, wn4price);
-                    lsasset.setLocAddr(locAddr);
-                    lsasset.setLocSpace(arrayUpdateLocSpace);
-                    lsasset.setSpaceQty(arrayUpdateSpaceQty);
-
-                    jsonBulkLsasset = qt.setJson("type", "insert",
-                            "insert", lsasset);
-
-//                    if (isLsa) {
-//                        lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
-//                                jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-//                                jsonOItem.getString("pic"), assetChgObj.getInteger("lAT"), wn2qty, wn4price);
-//                        lsasset.setLocAddr(locAddr);
-//                        lsasset.setLocSpace(arrayUpdateLocSpace);
-//                        lsasset.setSpaceQty(arrayUpdateSpaceQty);
+//    public JSONObject summOrder2(Order order, JSONObject listCol, JSONArray cardList, JSONArray arrayIndex) throws ScriptException, IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 //
-//                        jsonBulkLsasset = qt.setJson("type", "insert",
-//                                "insert", lsasset);
-//                    } else {
-//                        lBAsset lbasset = new lBAsset(id_A, id_C, id_C, id_CB, id_P, jsonOItem.getJSONObject("wrdN"),
-//                                jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-//                                jsonOItem.getString("pic"), assetChgObj.getInteger("lAT"), wn2qty, wn4price);
-//                        lbasset.setLocAddr(locAddr);
-//                        lbasset.setLocSpace(arrayUpdateLocSpace);
-//                        lbasset.setSpaceQty(arrayUpdateSpaceQty);
+//        if (order.getOItem() == null)
+//            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
 //
-//                        jsonBulkLsasset = qt.setJson("type", "insert",
-//                                "insert", lbasset);
+//
+//        JSONArray oItem = order.getOItem().getJSONArray("objItem");
+//        JSONArray oStock = null;
+//        JSONArray action = null;
+//        JSONArray oQc = null;
+//
+//        Double wn2fin = 0.0;
+//        Double wn2made = 0.0;
+//        Double wn2progress = 0.0;
+//        Integer count = 0;
+//        Double wn2qty = 0.0;
+//        Double wn4price = 0.0;
+//        JSONArray arrP = new JSONArray();
+//
+//        if (order.getOItem().getJSONArray("objCard").contains("oStock") && order.getOStock() != null)
+//        {
+//            oStock = order.getOStock().getJSONArray("objData");
+//        }
+//        if (order.getOItem().getJSONArray("objCard").contains("action") && order.getAction() != null)
+//        {
+//            action = order.getAction().getJSONArray("objAction");
+//        }
+//        if (order.getOItem().getJSONArray("objCard").contains("oQc") && null != order.getOQc())
+//        {
+//            oQc = order.getOQc().getJSONArray("objQc");
+//        }
+//
+//        for (int i = 0; i < oItem.size(); i++)
+//        {
+//            wn2qty = DoubleUtils.add(oItem.getJSONObject(i).getDouble("wn2qtyneed"), wn2qty);
+//            wn4price = DoubleUtils.add(wn4price, DoubleUtils.multiply(oItem.getJSONObject(i).getDouble("wn2qtyneed"),oItem.getJSONObject(i).getDouble("wn4price")));
+//            arrP.add(oItem.getJSONObject(i).getString("id_P"));
+//
+//            // setup wn0prior by using seq***
+//            // if seq == 0, wn0prior = 0, seq == 1, wn0prior = prevPrior, seq == 2, wn0prior = prevPrior + 1, seq == 3, no set
+//            if (i == 0 || oItem.getJSONObject(i).getString("seq").equals("0"))
+//            {
+//                oItem.getJSONObject(i).put("wn0prior", 0);
+//            } else if (oItem.getJSONObject(i).getString("seq").equals("1")) {
+//                oItem.getJSONObject(i).put("wn0prior", oItem.getJSONObject(i - 1).getInteger("wn0prior"));
+//            } else if (oItem.getJSONObject(i).getString("seq").equals("2")) {
+//                oItem.getJSONObject(i).put("wn0prior", oItem.getJSONObject(i - 1).getInteger("wn0prior") + 1);
+//            }
+//            oItem.getJSONObject(i).put("index", i);
+//
+//            if (oStock != null && cardList.contains("oStock"))
+//            {
+//                Double madePercent = DoubleUtils.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"),oItem.getJSONObject(i).getDouble("wn2qtyneed"));
+//                wn2made = DoubleUtils.add(wn2made, madePercent);
+//                oStock.getJSONObject(i).put("index", i);
+////                "rKey" 《=Oitem
+//
+//                if (action != null)
+//                {
+//                    for (int j = 0; j < action.getJSONObject(i).getJSONArray("upPrnts").size(); j++)
+//                    {
+//                        if (oStock.getJSONObject(i).getJSONArray("objShip").size() - 1 < j)
+//                        {
+//                            // init it if it is not init yet, if bmdpt == 1 it is process, process only need 1 objShip[0]
+//                            if (j == 0 || !action.getJSONObject(i).getInteger("bmdpt").equals(1)) {
+//                                JSONObject newObjShip = qt.setJson(
+//                                        "wn2qtynow", 0.0, "wn2qtymade", 0.0,
+//                                        "wn2qtyneed", oItem.getJSONObject(i).getDouble("wn2qtyneed"));
+//                                oStock.getJSONObject(i).getJSONArray("objShip").add(newObjShip);
+//                            }
+//                        }
 //                    }
-                }
-                listBulkAsset.add(jsonBulkAsset); // insert asset(MD)
-                listBulkLsasset.add(jsonBulkLsasset); //insert lSAsset(ES)
-
-                LogFlow log = new LogFlow(tokData, jsonOItem, order.getAction(),
-                        order.getInfo().getId_CB(), id_O, index, "assetflow", "stoChg",
-                        jsonOItem.getJSONObject("wrdN").getString("cn") + jsonLog.getString("zcndesc"),
-                        jsonLog.getInteger("imp"));
-                log.setLogData_assetflow(wn2qty, wn4price, id_A, grpA);
-                System.out.println("assetflow=" + JSON.toJSON(log));
-               ws.sendWS(log);
-            }
-            else {
-                JSONObject prodInfo = assetChgObj.getJSONObject("jsonProd").getJSONObject("info");
-                //存在金钱
-                if (assetChgObj.getJSONObject("jsonLsa") != null) {
-                    JSONObject jsonLsa = assetChgObj.getJSONObject("jsonLsa");
-                    id_A = jsonLsa.getString("id_A");
-                    JSONObject jsonAsset = assetChgObj.getJSONObject("jsonAsset");
-                    JSONObject aStock = jsonAsset.getJSONObject("aStock");
-                    AssetAStock assetAStock = new AssetAStock(dub.add(aStock.getDouble("wn4price"), wn2qty));
-                    JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
-                    jsonBulkAsset = qt.setJson("type", "update",
-                            "id", id_A,
-                            "update", jsonUpdate);
-
-                    if (!isLsa && !id_C.equals(id_CB)) {
-                        JSONObject jsonLba = assetChgObj.getJSONObject("jsonLba");
-                        qt.upJson(jsonLba, "wn4price", dub.add(aStock.getDouble("wn4price"), wn2qty),
-                                "wn4value", dub.add(aStock.getDouble("wn4value"), wn2qty));
-                        JSONObject jsonBulkLbasset = qt.setJson("type", "update",
-                                "id", jsonLba.getString("id_ES"),
-                                "update", jsonLba);
-                        listBulkLbasset.add(jsonBulkLbasset);
-                    }
-
-                    qt.upJson(jsonLsa, "wn4price", dub.add(aStock.getDouble("wn4price"), wn2qty),
-                            "wn4value", dub.add(aStock.getDouble("wn4value"), wn2qty));
-                    jsonBulkLsasset = qt.setJson("type", "update",
-                            "id", jsonLsa.getString("id_ES"),
-                            "update", jsonLsa);
-                }
-                //不存在金钱，新增
-                else {
-                    Asset asset = new Asset();
-                    id_A = qt.GetObjectId();
-                    asset.setId(id_A);
-//                    JSONObject prodInfo = allProdObj.getJSONObject(id_P).getJSONObject("info");
-                    AssetInfo assetInfo = new AssetInfo(id_C, id_C, id_P, prodInfo.getJSONObject("wrdN"),
-                            prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
-                            prodInfo.getString("pic"), assetChgObj.getInteger("lAT"));
-                    asset.setInfo(assetInfo);
-                    AssetAStock assetAStock = new AssetAStock(wn2qty);
-                    asset.setAStock((JSONObject) JSON.toJSON(assetAStock));
-                    JSONArray view = qt.setArray("info", "aStock");
-                    asset.setView(view);
-                    jsonBulkAsset = qt.setJson("type", "insert",
-                            "insert", asset);
-
-                    if (isLsa) {
-                        lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_CB, id_P, prodInfo.getJSONObject("wrdN"),
-                                prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
-                                prodInfo.getString("pic"), assetChgObj.getInteger("lAT"), 1.0, wn2qty);
-
-                        jsonBulkLsasset = qt.setJson("type", "insert",
-                                "insert", lsasset);
-                    } else {
-                        if (!id_C.equals(id_CB)) {
-                            lSAsset lsasset = new lSAsset(id_A, id_CB, id_CB, id_C, id_P, prodInfo.getJSONObject("wrdN"),
-                                    prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
-                                    prodInfo.getString("pic"), assetChgObj.getInteger("lAT"), 1.0, wn2qty);
-
-                            JSONObject jsonBulkLbasset = qt.setJson("type", "insert",
-                                    "insert", lsasset);
-                            listBulkLbasset.add(jsonBulkLbasset);
-                        }
-                        lBAsset lbasset = new lBAsset(id_A, id_C, id_C, id_CB, id_P, prodInfo.getJSONObject("wrdN"),
-                                prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
-                                prodInfo.getString("pic"), assetChgObj.getInteger("lAT"), 1.0, wn2qty);
-
-                        jsonBulkLsasset = qt.setJson("type", "insert",
-                                "insert", lbasset);
-                    }
-                }
-
-                listBulkAsset.add(jsonBulkAsset);
-                listBulkLsasset.add(jsonBulkLsasset);
-
-                LogFlow log = new LogFlow("moneyflow", jsonLog.getString("id"), jsonLog.getString("id_FS"),
-                        "stoChg", id_U, grpU, id_P, jsonLog.getString("grpB"), jsonLog.getString("grp"),
-                        jsonLog.getString("id_OP"), id_O, jsonLog.getInteger("index"), id_C,
-                        jsonLog.getString("id_CS"), prodInfo.getString("pic"), tokData.getString("dep"),
-                        prodInfo.getJSONObject("wrdN").getString("cn") + jsonLog.getString("zcndesc"),
-                        jsonLog.getInteger("imp"), prodInfo.getJSONObject("wrdN"), tokData.getJSONObject("wrdNU"));
-                log.setLogData_money(id_A, "", wn2qty);
-                System.out.println("moneyflow=" + JSON.toJSON(log));
-
-
-//                // send 1 log for Asset out ( should be in setStock)
-//                LogFlow log = new LogFlow(tokData, jsonOItem, order.getAction(),
-//                        order.getInfo().getId_CB(), id_O, index, "assetflow", "stoChg",
-//                        jsonOItem.getJSONObject("wrdN").getString("cn")+"出仓了" + abs(wn2qtySum), 3);
+//                }
+//            }
+//            if (action != null && cardList.contains("action"))
+//            {
+//                count = action.getJSONObject(i).getInteger("bcdStatus") == 2 ? 1: 0 + count;
+//                action.getJSONObject(i).put("index", i);
 //
-//                Double logPrice = order.getOItem().getJSONArray("objItem").getJSONObject(index).getDouble("wn4price");
-////        Integer logStatus = order.getAction().getJSONArray("objAction").getJSONObject(index).getInteger("bcdStatus");
-//                log.setLogData_assetflow(abs(wn2qtySum), logPrice, jsonFromHit.getString("id_A"), jsonFromHit.getString("grp"));
+//                String grp = oItem.getJSONObject(i).getString("grp");
+//                String grpB = oItem.getJSONObject(i).getString("grpB");
 //
-                ws.sendWS(log);
-            }
-        }
-    }
-
-
-
-
+//                // if grp not exists, need to init grpGroup
+//                if (grp != null && !grp.equals("") && order.getAction().getJSONObject("grpGroup").getJSONObject(grp) == null)
+//                {
+//                    Asset asset = qt.getConfig(oItem.getJSONObject(i).getString("id_C"),"a-auth","def.objlSP."+grp);
+//                    //sales side getlSProd, and set default values
+//                    System.out.println("getGrp"+asset.getId());
+//
+//                    if (!asset.getId().equals("none")) {
+//                        JSONObject grpData = asset.getDef().getJSONObject("objlSP").getJSONObject(grp) == null? new JSONObject() : asset.getDef().getJSONObject("objlSP").getJSONObject(grp);
+//                        order.getAction().getJSONObject("grpGroup").put(grp, grpData);
+//                    }
+//                }
+//                if (grpB != null && !grpB.equals("") && order.getAction().getJSONObject("grpBGroup").getJSONObject(grpB) == null)
+//                {
+//
+//                    Asset asset = qt.getConfig(order.getInfo().getId_CB(),"a-auth","def.objlBP."+grpB);
+//                    System.out.println("getGrpB"+asset.getId());
+//
+//                    //sales side getlSProd, and set default values
+//                    if (!asset.getId().equals("none")) {
+//                        JSONObject grpData = asset.getDef().getJSONObject("objlBP").getJSONObject(grpB) == null ? new JSONObject() : asset.getDef().getJSONObject("objlBP").getJSONObject(grpB);
+//                        order.getAction().getJSONObject("grpBGroup").put(grpB, grpData);
+//                    }
+//                }
+//            }
+//            if (null != oQc && cardList.contains("oQc")){
+//                System.out.println("oQc");
+//            }
+//        }
+//        wn2fin = DoubleUtils.divide(wn2made, oItem.size());
+//        qt.errPrint("div", null, count, oItem.size());
+//        wn2progress = DoubleUtils.divide(count, oItem.size());
+//        qt.upJson(listCol, "wn2fin", wn2fin, "wn2progress", wn2progress, "wn2qty", wn2qty, "wn4price", wn4price, "arrP", arrP);
+//
+//        order.getOItem().put("wn2qty", wn2qty);
+//        order.getOItem().put("wn4price", wn4price);
+//        order.getOItem().put("arrP", arrP);
+//
+//        JSONObject result = new JSONObject();
+//        result.put("oItem", order.getOItem());
+//        result.put("view", order.getView());
+//        if (oStock != null && cardList.contains("oStock")) {
+//            order.getOStock().put("wn2fin", wn2fin);
+//            result.put("oStock", order.getOStock());
+//        }
+//        if (action != null && cardList.contains("action")) {
+//            result.put("action", order.getAction());
+//            order.getAction().put("wn2progress", wn2progress);
+//        }
+//        if (null != oQc && cardList.contains("oQc")) {
+//            result.put("oQc", order.getOQc());
+//        }
+//
+//        if (order.getOTrigger() != null && order.getOTrigger().getJSONArray("objData") != null) {
+//            JSONArray arrayTrigger = order.getOTrigger().getJSONArray("objData");
+//            for (int i = 0; i < arrayTrigger.size(); i++) {
+//                JSONObject jsonTrigger = arrayTrigger.getJSONObject(i);
+//                JSONArray arrayIf = jsonTrigger.getJSONArray("objIf");
+//                JSONObject jsonExecs = jsonTrigger.getJSONObject("objExec");
+//                JSONObject jsonVars = jsonTrigger.getJSONObject("objVar");
+//                String[] refSplit = jsonTrigger.getString("ref").split("##");
+//                //es字段
+//                if ("es".equals(refSplit[0])) {
+//                    jsonVars.put(refSplit[1], listCol.get(refSplit[1]));
+//                }
+//                else if (cardList.contains(refSplit[0])) {
+//                    JSONArray array = null;
+//                    if ("oItem".equals(refSplit[0])) {
+//                        array = order.getOItem().getJSONArray("objItem");
+//                    } else if ("action".equals(refSplit[0])) {
+//                        array = order.getAction().getJSONArray("objAction");
+//                    } else if ("oStock".equals(refSplit[0])) {
+//                        array = order.getOStock().getJSONArray("objData");
+//                    }
+//                    //有标注修改的oItem
+//                    if (arrayIndex != null) {
+//                        for (int j = 0; j < arrayIndex.size(); j++) {
+//                            Integer index = arrayIndex.getInteger(j);
+//                            jsonVars.put(refSplit[1], array.getJSONObject(index).get(refSplit[1]));
+//                            for (int k = 0; k < arrayIf.size(); k++) {
+//                                JSONObject jsonIf = arrayIf.getJSONObject(k);
+//                                //修改的oItem需要trigger
+//                                if (jsonIf.getJSONArray("index").contains(index)) {
+//                                    scriptEngineIf(jsonIf, jsonVars, jsonExecs);
+//                                }
+//                            }
+//                        }
+//                    }
+//                    else {
+//                        for (int j = 0; j < array.size(); j++) {
+//                            jsonVars.put(refSplit[1], array.getJSONObject(j).get(refSplit[1]));
+//                            for (int k = 0; k < arrayIf.size(); k++) {
+//                                JSONObject jsonIf = arrayIf.getJSONObject(k);
+//                                //修改的oItem需要trigger
+//                                if (jsonIf.getJSONArray("index").contains(j)) {
+//                                    scriptEngineIf(jsonIf, jsonVars, jsonExecs);
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return result;
+//
+//    }
 
 
     // SE if / info / exec (oTrig, cTrig, Summ00s, tempa
+    public void scriptEngineIf(JSONObject jsonObjIf, JSONObject jsonObjVar, JSONObject jsonObjExec) throws ScriptException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+        String script = jsonObjIf.getString("script");
+        if (script.startsWith("##")) {
+//            ##op14##function fun(op14) {
+//                if(op14.wn2qtynow > 12000) {
+//                    return "exec1";
+//                }
+//            }
+//            fun(op14)
+            String[] scriptSplit = script.split("##");
+            System.out.println("\n\n\nscriptSplit=");
+            for (int i = 0; i < scriptSplit.length; i++) {
+                System.out.println(i + ":" + scriptSplit[i]);
+            }
+            String valueFor = scriptSplit[1];
+            String scriptSubString = scriptSplit[2];
+            System.out.println("valueFor" + valueFor + ",scriptSubString=" + scriptSubString);
+            if (!scriptSubString.contains("for")) {
+                JSONArray arrayValue = (JSONArray) JSON.toJSON(jsonObjVar.get(valueFor));
+                for (int i = 0; i < arrayValue.size(); i++) {
+                    JSONObject value = arrayValue.getJSONObject(i);
+                    System.out.println(value);
+                    ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("javascript");
+                    Compilable compilable = (Compilable) scriptEngine;
+                    Bindings bindings = scriptEngine.createBindings();
+                    CompiledScript compiledScript = compilable.compile(scriptSubString);
+                    //从script获取参数列表
+                    String[] scriptValue = script.split("\\(");
+                    if (scriptValue[scriptValue.length - 1].split("\\)").length > 0) {
+                        String scriptVar = scriptValue[scriptValue.length - 1].split("\\)")[0];
+                        System.out.println("scriptVar=" + scriptVar);
+                        String[] arrayKey = scriptVar.split(",");
+                        //传参
+                        for (int k = 0; k < arrayKey.length; k++) {
+                            String key = arrayKey[k];
+                            System.out.println("key=" + key);
+                            if (valueFor.equals(key)) {
+                                bindings.put(key, value);
+                            } else {
+                                bindings.put(key, jsonObjVar.get(key));
+                            }
+                        }
+                    }
+                    String scriptResult = String.valueOf(compiledScript.eval(bindings));
+                    System.out.println("Result=" + scriptResult);
+                    JSONArray arrayObjExec = jsonObjExec.getJSONArray(scriptResult);
+                    //KEV WHY? in If you call Exec directly?
+                    //Need to redefine how "Array of lBUser works"
+                    if (arrayObjExec != null) {
+                        JSONObject jsonObjVarClone = qt.cloneObj(jsonObjVar);
+                        jsonObjVarClone.put(valueFor, value);
+                        System.out.println("===");
+                        System.out.println(value);
+                        System.out.println("===");
+                        this.scriptEngineExec(arrayObjExec, jsonObjVarClone);
+                    }
+                }
+            }
+        } else {
+            // Stop any for or other script illegal text, I can use a cn_java to do a map
+            if (!script.contains("for")) {
+                ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("javascript");
+                Compilable compilable = (Compilable) scriptEngine;
+                Bindings bindings = scriptEngine.createBindings();
+                CompiledScript compiledScript = compilable.compile(script);
+                //从script获取参数列表
+                String[] scriptSplit = script.split("\\(");
+                if (scriptSplit[scriptSplit.length - 1].split("\\)").length > 0) {
+                    String scriptVar = scriptSplit[scriptSplit.length - 1].split("\\)")[0];
+                    System.out.println("scriptVar=" + scriptVar);
+                    String[] arrayKey = scriptVar.split(",");
+                    //传参
+                    for (int k = 0; k < arrayKey.length; k++) {
+                        String key = arrayKey[k];
+                        System.out.println("key=" + key);
+                        bindings.put(key, jsonObjVar.get(key));
+                    }
+                }
+                //This if statement will always return a String, and never bool...
+                String scriptResult = String.valueOf(compiledScript.eval(bindings));
+                System.out.println("Result=" + scriptResult);
+                JSONArray arrayObjExec = jsonObjExec.getJSONArray(scriptResult);
+                if (arrayObjExec != null) {
+                    this.scriptEngineExec(arrayObjExec, jsonObjVar);
+                }
+            }
+        }
+    }
+
+    public Object scriptEngineExec(JSONArray arrayObjExec, JSONObject jsonObjVar) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+        for (int i = 0; i < arrayObjExec.size(); i++) {
+            JSONObject jsonObjExec = arrayObjExec.getJSONObject(i);
+            String method = jsonObjExec.getString("method");
+            System.out.println("method=" + method);
+
+            //just break down params
+            JSONObject jsonParams = (JSONObject) jsonObjExec.getJSONObject("params").clone();
+            for (Map.Entry <String, Object> entry : jsonParams.entrySet()) {
+                System.out.println("key=" + entry.getKey());
+                System.out.println("value=" + entry.getValue());
+                String dataType = jsonParams.get(entry.getKey()).getClass().getSimpleName();
+                if (dataType.equals("String")) {
+                    String param = jsonParams.getString(entry.getKey());
+                    if (param.startsWith("##OP")) {
+                        String[] paramSplit = param.split("\\.");
+                        System.out.println("paramSplit.length=" + paramSplit.length);
+                        if (paramSplit.length == 2) {
+                            jsonParams.put(entry.getKey(), jsonObjVar.get(paramSplit[1]));
+                        } else if (paramSplit.length > 2) {
+
+                            jsonParams.put(entry.getKey(), jsonObjVar.getJSONObject(paramSplit[1]).get(paramSplit[2]));
+                        }
+                    }
+                }
+            }
+
+            if (method.startsWith("com.cresign")) {
+                //调用方法
+                String[] methodSplit = method.split("##");
+                Class<?> clazz = Class.forName(methodSplit[0]);
+                Object bean = ApplicationContextTools.getBean(clazz);
+                Method method1 = clazz.getMethod(methodSplit[1], new Class[]{JSONObject.class});
+
+                //Key!! invoke here with bean + params
+                Object invoke = method1.invoke(bean, jsonParams);
+                System.out.println("invoke=" + invoke);
+            } else {
+                //发日志
+                //Else, send log in "method" logFlow
+                jsonParams.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                this.addES(jsonParams, method);
+//                logUtil.sendLogByFilebeat(method, jsonParams);
+//                LogFlow log = JSONObject.parseObject(JSON.toJSONString(jsonParams),LogFlow.class);
+//                wsClient.sendLogWS(log);
+            }
+        }
+        return null;
+    }
 
     public Object scriptEngineVar(String var, JSONObject jsonObjGlobal) {
         try {
@@ -1714,6 +1414,648 @@ public JSONObject checkCard(Order order)
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
         }
     }
+
+    public void initAction(JSONObject orderOItem, JSONArray action, Integer index)
+    {
+
+        if (action.size() <= index || action.getJSONObject(index) == null) {
+            JSONObject actionData = qt.setJson(
+                    "bcdStatus", 100, "bisPush", 0,
+                    "bisactivate", 0,
+                    "id_O", orderOItem.getString("id_O"),
+                    "id_Us", new JSONArray(),
+                    "id_OP", orderOItem.getString("id_OP"),
+                    "id_P", orderOItem.getString("id_P"),
+                    "index", orderOItem.getString("index"),
+                    "refOP", "",
+                    "prob", new JSONArray(),
+                    "sumChild", 0, "sumPrev", 0,
+                    "prtNext", new JSONArray(),
+                    "prtPrev", new JSONArray(),
+                    "subParts", new JSONArray(),
+                    "upPrnts", new JSONArray(),
+                    "sumChild", 0,
+                    "rKey", orderOItem.getString("rKey"),
+                    "wrdNP", orderOItem.getJSONObject("wrdNP"),
+                    "wrdN", orderOItem.getJSONObject("wrdN"),
+                    "bmdpt", 1, "priority", 2);
+
+            action.set(index, actionData);
+        }
+
+        //These data must renew
+        action.getJSONObject(index).put("id_O", orderOItem.getString("id_O"));
+        action.getJSONObject(index).put("index", orderOItem.getString("index"));
+        action.getJSONObject(index).put("rKey", orderOItem.getString("rKey"));
+
+
+        if (action.getJSONObject(index).getJSONArray("upPrnts") == null)
+        {
+            action.getJSONObject(index).put("upPrnts", new JSONArray());
+        }
+        if (action.getJSONObject(index).getJSONArray("subParts") == null)
+        {
+            action.getJSONObject(index).put("subParts", new JSONArray());
+        }
+        if (action.getJSONObject(index).getJSONArray("prtPrev") == null)
+        {
+            action.getJSONObject(index).put("prtPrev", new JSONArray());
+        }
+        if (action.getJSONObject(index).getJSONArray("prtNext") == null)
+        {
+            action.getJSONObject(index).put("prtNext", new JSONArray());
+        }
+    }
+
+    public void initOQc(JSONObject orderOItem, JSONArray oQc, Integer index)
+    {
+        if (oQc.size() <= index || oQc.getJSONObject(index) == null) {
+            JSONObject oQcData = qt.setJson(
+                    "score", 0, "foCount", 5);
+
+            oQc.set(index, oQcData);
+        }
+//        if (oQc.getJSONObject(index).getJSONArray("score") == null)
+//        {
+//            oQc.getJSONObject(index).put("score", 0);
+//        }
+//        if (oQc.getJSONObject(index).getJSONArray("foCount") == null)
+//        {
+//            oQc.getJSONObject(index).put("foCount", 5);
+//        }
+    }
+
+    /***
+     * init entire oStock from nothing
+     * @param oItem need to send the entire oItem.objItem for data to init
+     * @return
+     */
+    public JSONObject initAction(JSONArray oItem)
+    {
+        JSONArray actionArray = new JSONArray();
+        for (int i = 0; i < oItem.size(); i++)
+        {
+            this.initAction(oItem.getJSONObject(i), actionArray, i);
+        }
+        JSONObject action = new JSONObject();
+        action.put("objAction", actionArray);
+        action.put("wn2progress", 0.0);
+        action.put("grpGroup", new JSONObject());
+        action.put("grpBGroup", new JSONObject());
+        return action;
+    }
+
+    public JSONObject initOQc(JSONArray oItem)
+    {
+        JSONArray actionArray = new JSONArray();
+        for (int i = 0; i < oItem.size(); i++)
+        {
+            this.initOQc(oItem.getJSONObject(i), actionArray, i);
+        }
+        JSONObject oQc = new JSONObject();
+        oQc.put("objQc", actionArray);
+        return oQc;
+    }
+
+    public void initOStock(JSONObject orderOItem, JSONArray oStock, Integer index)
+    {
+
+            JSONObject oStockData = qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
+                    "id_P", orderOItem.getString("id_P"),
+                    "resvQty", new JSONObject(),
+                    "rKey", orderOItem.getString("rKey"));
+
+            oStockData.put("objShip", qt.setArray(
+                    qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
+                            "wn2qtyneed", orderOItem.getDouble("wn2qtyneed"))));
+
+            oStock.set(index, oStockData);
+    }
+
+    /***
+     * init entire oStock from nothing
+     * @param oItem need to send the entire oItem.objItem for data to init
+     * @return
+     */
+    public JSONObject initOStock(JSONArray oItem)
+    {
+        JSONArray stockArray = new JSONArray();
+        for (int i = 0; i < oItem.size(); i++)
+        {
+            this.initOStock(oItem.getJSONObject(i), stockArray, i);
+        }
+        JSONObject oStock = new JSONObject();
+        oStock.put("objData", stockArray);
+        oStock.put("wn2fin", 0.0);
+        return oStock;
+    }
+
+    public void setStock(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer index,
+                               String locAddr, JSONArray locSpace, JSONArray spaceQty, JSONArray arrPP, Integer lAT, String zcndesc, Integer imp) {
+        if (id_A == null) {
+            JSONArray filterArray = qt.setESFilt("id_C", tokData.getString("id_C"), "id_CB", id_CB, "id_P", id_P, "locAddr", locAddr);
+            JSONArray arrayEs = qt.getES("lSAsset", filterArray);
+            if (arrayEs.size() == 0) {
+                id_A = "";
+            } else {
+                id_A = arrayEs.getJSONObject(0).getString("id_A");
+            }
+        }
+        JSONObject jsonLog = qt.setJson(
+                "zcndesc", zcndesc,
+                "imp", imp);
+        JSONObject json = qt.setJson("tokData", tokData,
+                "id_CB", id_CB,
+                "id_P", id_P,
+                "id_A", id_A,
+                "wn2qty", wn2qty,
+                "index", index,
+                "locAddr", locAddr,
+                "locSpace", locSpace,
+                "spaceQty", spaceQty,
+                "lAT", lAT,
+                "log", jsonLog);
+        if (arrPP != null) {
+            json.put("arrPP", arrPP);
+        }
+        arrayLsbasset.add(json);
+    }
+
+    public void setMoney(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer lAT, JSONObject action,
+                               JSONObject oMoney, Integer index, String zcndesc, Integer imp, String listType) {
+        String id_C = tokData.getString("id_C");
+        Asset auth = qt.getConfig(id_C, "a-auth", "def");
+        if (auth.getDef().getJSONObject("objlType").getJSONObject("bisList").getBoolean("lBAsset")) {
+            if (id_A == null) {
+                JSONArray filterArray = qt.setESFilt("id_C", id_C, "id_CB", id_CB, "id_P", id_P);
+                JSONArray arrayEs = qt.getES(listType, filterArray);
+                if (arrayEs.size() == 0) {
+                    id_A = "";
+                } else {
+                    id_A = arrayEs.getJSONObject(0).getString("id_A");
+                }
+            }
+            String id_OP = "";
+            if (index != null) {
+                id_OP = action.getJSONArray("objAction").getJSONObject(index).getString("id_OP");
+            }
+//        String id = action.getJSONObject("grpBGroup").getJSONObject(oMoney.getString("grpB")).getString("id_Money");
+//        String id_FS = action.getJSONObject("grpGroup").getJSONObject(oMoney.getString("grp")).getString("id_Money");
+            String id = "1000";
+            String id_FS = "1000";
+            JSONObject jsonLog = qt.setJson("id", id,
+                    "id_FS", id_FS,
+                    "grpB", oMoney.getString("grpB"),
+                    "grp", oMoney.getString("grp"),
+                    "id_OP", id_OP,
+                    "index", index,
+                    "id_CS", id_C,
+                    "zcndesc", zcndesc,
+                    "imp", imp);
+            JSONObject json = qt.setJson("tokData", tokData,
+                    "id_CB", id_CB,
+                    "id_P", id_P,
+                    "id_A", id_A,
+                    "wn2qty", wn2qty,
+                    "lAT", lAT,
+                    "log", jsonLog);
+            arrayLsbasset.add(json);
+        }
+    }
+
+    //type：resv:预约 proc:工序 空字符串:普通
+    public void updateAsset(Order order, JSONArray arrayLsasset, JSONArray arrayLbasset, String type) {
+        HashSet setId_A = new HashSet();
+        HashSet setId_P = new HashSet();
+        JSONArray arrayId_A = new JSONArray();
+        JSONArray arrayId_AB = new JSONArray();
+        for (int i = 0; i < arrayLsasset.size(); i++) {
+            JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
+            arrayId_A.add(jsonLsasset.getString("id_A"));
+            setId_A.add(jsonLsasset.getString("id_A"));
+            setId_P.add(jsonLsasset.getString("id_P"));
+
+        }
+        //TODO RACH make a new should(must[]) @ filterBuilder
+        for (int i = 0; i < arrayLbasset.size(); i++) {
+            JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
+            arrayId_AB.add(jsonLbasset.getString("id_A"));
+            if (jsonLbasset.getJSONObject("tokData").getString("id_C").equals(jsonLbasset.getString("id_C"))) {
+                arrayId_A.add(jsonLbasset.getString("id_A"));
+            }
+            setId_A.add(jsonLbasset.getString("id_A"));
+            setId_P.add(jsonLbasset.getString("id_P"));
+        }
+        JSONArray filterArray = qt.setESFilt("id_A", "contain", arrayId_A);
+        JSONArray filterArrayB = qt.setESFilt("id_A", "contain", arrayId_AB);
+        JSONArray arrayLsa = qt.getES("lSAsset", filterArray);
+        JSONArray arrayLba = qt.getES("lBAsset", filterArrayB);
+        JSONObject jsonLsas = qt.arr2Obj(arrayLsa, "id_A");
+        JSONObject jsonLbas = qt.arr2Obj(arrayLba, "id_A");
+
+        List<?> assets = qt.getMDContentMany(setId_A, Arrays.asList("info", "aStock"), Asset.class);
+        JSONObject allAssetObj = qt.list2Obj(assets, "id");
+
+        List<?> prods = qt.getMDContentMany(setId_P, "info", Prod.class);
+        JSONObject allProdObj = qt.list2Obj(prods, "id");
+
+        for (int i = 0; i < arrayLsasset.size(); i++) {
+            JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
+            String id_A = jsonLsasset.getString("id_A");
+            String id_P = jsonLsasset.getString("id_P");
+
+            if (jsonLsas.getJSONObject(id_A) != null) {
+                jsonLsasset.put("jsonLsa", jsonLsas.getJSONObject(id_A));
+                jsonLsasset.put("jsonAsset", allAssetObj.getJSONObject(id_A));
+            }
+            jsonLsasset.put("jsonProd", allProdObj.getJSONObject(id_P));
+        }
+        for (int i = 0; i < arrayLbasset.size(); i++) {
+            JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
+            String id_A = jsonLbasset.getString("id_A");
+            String id_P = jsonLbasset.getString("id_P");
+
+            if (jsonLbas.getJSONObject(id_A) != null) {
+                jsonLbasset.put("jsonLsa", jsonLbas.getJSONObject(id_A));
+                jsonLbasset.put("jsonAsset", allAssetObj.getJSONObject(id_A));
+                if (jsonLbasset.getJSONObject("tokData").getString("id_C").equals(jsonLbasset.getString("id_C"))) {
+                    jsonLbasset.put("jsonLba", jsonLsas.getJSONObject(id_A));
+                }
+            }
+            jsonLbasset.put("jsonProd", allProdObj.getJSONObject(id_P));
+        }
+
+        System.out.println("arraylsasset=" + arrayLsasset);
+        System.out.println("arrayLbasset=" + arrayLbasset);
+
+        List<JSONObject> listBulkAsset = new ArrayList<>();
+        List<JSONObject> listBulkLsasset = new ArrayList<>();
+        List<JSONObject> listBulkLbasset = new ArrayList<>();
+        //处理arrayLsasset
+        this.assetValueChange(order, arrayLsasset, listBulkAsset, listBulkLsasset, null, type, true);
+        //处理arrayLbasset
+        this.assetValueChange(order, arrayLbasset, listBulkAsset, listBulkLbasset, listBulkLsasset, type, false);
+        qt.errPrint("new", null, arrayLsasset, arrayLbasset, listBulkAsset, listBulkLsasset, listBulkLbasset);
+
+        qt.setMDContentMany(listBulkAsset, Asset.class);
+        qt.setESMany("lSAsset", listBulkLsasset);
+        qt.setESMany("lBAsset", listBulkLbasset);
+    }
+
+    public JSONObject getAssetListByQuery(JSONArray arrayEs, HashSet setId_A) {
+        JSONObject jsonResult = new JSONObject();
+        for (int i = 0; i < arrayEs.size(); i++) {
+            JSONObject jsonEs = arrayEs.getJSONObject(i);
+            String locAddr = jsonEs.getString("locAddr");
+            //if (locAddr == null || locAddr.equals("")) {
+            if (jsonEs.getString("lAT").equals("2") || jsonEs.getString("lAT").equals("3") &&
+                    (locAddr != null || !locAddr.equals(""))) {
+
+                jsonResult.put(jsonEs.getString("id_C") + "-" +
+                                jsonEs.getString("id_CB") + "-" +
+                                jsonEs.getString("id_P") + "-" + locAddr
+                        , jsonEs);
+            } else {
+                jsonResult.put(jsonEs.getString("id_C") + "-" +
+                                jsonEs.getString("id_CB") + "-" +
+                                jsonEs.getString("id_P"),
+                        jsonEs);
+            }
+            setId_A.add(jsonEs.getString("id_A"));
+        }
+        System.out.println("jsonResult=" + jsonResult);
+        return jsonResult;
+    }
+
+    public void assetValueChange(Order order, JSONArray arrayAssetChg, List<JSONObject> listBulkAsset, List<JSONObject> listBulkLsasset,
+                          List<JSONObject> listBulkLbasset, String type, Boolean isLsa) {
+        String id_O = order.getId();
+        JSONArray arrayOItem = order.getOItem().getJSONArray("objItem");
+        for (int i = 0; i < arrayAssetChg.size(); i++) {
+            JSONObject assetChgObj = arrayAssetChg.getJSONObject(i);
+            JSONObject tokData = assetChgObj.getJSONObject("tokData");
+            String id_C = tokData.getString("id_C");
+            String id_U = tokData.getString("id_U");
+            String grpU = tokData.getString("grpU");
+            String id_CB = assetChgObj.getString("id_CB");
+            JSONObject jsonLog = assetChgObj.getJSONObject("log");
+            Integer index = assetChgObj.getInteger("index");
+            String id_P = assetChgObj.getString("id_P");
+            Double wn2qty = assetChgObj.getDouble("wn2qty");
+            JSONObject jsonBulkAsset = null;
+            JSONObject jsonBulkLsasset = null;
+            String id_A = null;
+            String grpA = "";
+            //index不为空是产品，反之是金钱
+            // basically depends on what arrayAssetChg is, it will update asset accordingly, so this array is very important instruction
+            // type 1 = deduct/add qty by stocks
+            // type 2 = init stocks + qty add into it
+            // ??? what if deduct but
+            // type 3 = deduct/add money
+
+
+
+            //K - should use lAT to check if this is Stock
+            if (assetChgObj.getString("locAddr") != null) {
+                JSONObject jsonOItem = arrayOItem.getJSONObject(index);
+                Double wn4price = jsonOItem.getDouble("wn4price");
+                Double wn4value = DoubleUtils.multiply(wn2qty, wn4price);
+                String locAddr = assetChgObj.getString("locAddr");
+                JSONArray arrayUpdateLocSpace = assetChgObj.getJSONArray("locSpace");
+                JSONArray arrayUpdateSpaceQty = assetChgObj.getJSONArray("spaceQty");
+                //Type 1: 存在资产
+                if (assetChgObj.getJSONObject("jsonLsa") != null)
+                {
+                    JSONObject jsonLsa = assetChgObj.getJSONObject("jsonLsa");
+                    id_A = jsonLsa.getString("id_A");
+                    grpA = jsonLsa.getString("grp");
+                    JSONObject jsonAsset = assetChgObj.getJSONObject("jsonAsset");
+                    JSONObject aStock = jsonAsset.getJSONObject("aStock");
+                    JSONArray arrayLocSpace = aStock.getJSONArray("locSpace");
+                    JSONArray arraySpaceQty = aStock.getJSONArray("spaceQty");
+
+
+                    //货架的格子
+                    for (int j = 0; j < arrayLocSpace.size(); j++) {
+                        //要移动的格子
+                        for (int k = 0; k < arrayUpdateLocSpace.size(); k++) {
+                            //格子相等
+                            if (arrayLocSpace.getInteger(j) == arrayUpdateLocSpace.getInteger(k)) {
+                                Double spaceQty = arraySpaceQty.getDouble(j);
+                                //移动数量，移入正数，移出负数
+                                Double updateSpaceQty = arrayUpdateSpaceQty.getDouble(k);
+                                Double qty = DoubleUtils.add(spaceQty, updateSpaceQty);
+                                System.out.println("spaceQty=" + spaceQty);
+                                System.out.println("updateSpaceQty=" + updateSpaceQty);
+                                System.out.println("qty=" + qty);
+                                //货架格子小于移动格子
+                                if (DoubleUtils.compareTo(qty, 0) == -1) {
+                                    throw new ErrorResponseException(HttpStatus.OK, ToolEnum.PROD_NOT_ENOUGH.getCode(), null);
+                                }
+                                //大于，减去数量
+                                if (DoubleUtils.compareTo(qty, 0) == 1) {
+                                    arraySpaceQty.set(j, qty);
+                                }
+                                //等于，删除格子数组和数量数组对应的数组元素
+                                else {
+                                    arrayLocSpace.remove(j);
+                                    arraySpaceQty.remove(j);
+                                }
+                            }
+                        }
+                    }
+
+                    
+                    // what is else
+                    if ("resv".equals(type) && aStock.getJSONObject("resvQty") != null &&
+                            aStock.getJSONObject("resvQty").getDouble(id_O + "-" + index) != null) {
+                        ///////************SET - aStock resvAsset qty **************//////////
+                        Double remain = DoubleUtils.add(aStock.getDouble("wn2qtyResv"), wn2qty);
+
+                        if (aStock.getDouble("wn2qty") == 0 && remain == 0) {
+                            jsonBulkAsset = qt.setJson("type", "delete",
+                                    "id", id_A);
+                            jsonBulkLsasset = qt.setJson("type", "delete",
+                                    "id", jsonLsa.getString("id_ES"));
+                        } 
+                        else {
+                            //check if fromSum == resvQty.wn2qty, if so remove that object, else deduct
+                            JSONObject jsonResvQty = aStock.getJSONObject("resvQty");
+                            if (DoubleUtils.doubleEquals(jsonResvQty.getDouble(id_O + "-" + index), wn2qty)) {
+                                jsonResvQty.remove(id_O + "-" + index);
+                            } else {
+                                jsonResvQty.put(id_O + "-" + index, DoubleUtils.add(jsonResvQty.getDouble(id_O + "-" + index), wn2qty));
+                            }
+
+                            AssetAStock assetAStock = new AssetAStock(
+                                    wn4price, locAddr, arrayLocSpace, arraySpaceQty, remain, jsonResvQty);
+                            JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
+                            jsonBulkAsset = qt.setJson("type", "update",
+                                    "id", id_A,
+                                    "update", jsonUpdate);
+
+                            qt.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
+                                    "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
+                                    "locSpace", arrayLocSpace,
+                                    "spaceQty", arraySpaceQty,
+                                    "wn2qtyResv", remain);
+                            jsonBulkLsasset = qt.setJson("type", "update",
+                                    "id", jsonLsa.getString("id_ES"),
+                                    "update", jsonLsa);
+                        }
+                    }
+                    else if ("proc".equals(type)) {
+                        if (DoubleUtils.doubleEquals(aStock.getDouble("wn2qty"), -wn2qty)) {
+                            jsonBulkAsset = qt.setJson("type", "delete",
+                                    "id", id_A);
+                            jsonBulkLsasset = qt.setJson("type", "delete",
+                                    "id", jsonLsa.getString("id_ES"));
+                        } else {
+                            AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayLocSpace, arraySpaceQty, assetChgObj.getJSONArray("arrPP"));
+                            JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
+                            jsonBulkAsset = qt.setJson("type", "update",
+                                    "id", id_A,
+                                    "update", jsonUpdate);
+
+                            qt.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
+                                    "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
+                                    "locSpace", arrayLocSpace,
+                                    "spaceQty", arraySpaceQty);
+                            jsonBulkLsasset = qt.setJson("type", "update",
+                                    "id", jsonLsa.getString("id_ES"),
+                                    "update", jsonLsa);
+                        }
+                    }
+                    else {
+                        if (DoubleUtils.doubleEquals(aStock.getDouble("wn2qty"), wn2qty)) {
+                            jsonBulkAsset = qt.setJson("type", "delete",
+                                    "id", id_A);
+                            jsonBulkLsasset = qt.setJson("type", "delete",
+                                    "id", jsonLsa.getString("id_ES"));
+                        } else {
+                            AssetAStock assetAStock = new AssetAStock(
+                                    wn4price,
+                                    locAddr, arrayLocSpace, arraySpaceQty);
+                            JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
+                            jsonBulkAsset = qt.setJson("type", "update",
+                                    "id", id_A,
+                                    "update", jsonUpdate);
+
+                            qt.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
+                                    "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
+                                    "locSpace", arrayLocSpace,
+                                    "spaceQty", arraySpaceQty);
+                            jsonBulkLsasset = qt.setJson("type", "update",
+                                    "id", jsonLsa.getString("id_ES"),
+                                    "update", jsonLsa);
+                        }
+                    }
+                }
+                //不存在资产，新增资产
+                else { //Type 2: add new
+                    Asset asset = new Asset();
+                    id_A = qt.GetObjectId();
+                    asset.setId(id_A);
+                    AssetInfo assetInfo = new AssetInfo(id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
+                            jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
+                            jsonOItem.getString("pic"), assetChgObj.getInteger("lAT"));
+                    asset.setInfo(assetInfo);
+                    if ("proc".equals(type)) {
+                        AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayUpdateLocSpace, arrayUpdateSpaceQty, assetChgObj.getJSONArray("arrPP"));
+                        asset.setAStock(qt.toJson(assetAStock));
+                        asset.setView(qt.setArray("info", "aStock"));
+                        jsonBulkAsset = qt.setJson("type", "insert",
+                                "insert", asset);
+                    } else {
+                        AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayUpdateLocSpace, arrayUpdateSpaceQty);
+                        asset.setAStock(qt.toJson(assetAStock));
+                        asset.setView(qt.setArray("info", "aStock"));
+                        jsonBulkAsset = qt.setJson("type", "insert",
+                                "insert", asset);
+                    }
+                    lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
+                            jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
+                            jsonOItem.getString("pic"), assetChgObj.getInteger("lAT"), wn2qty, wn4price);
+                    lsasset.setLocAddr(locAddr);
+                    lsasset.setLocSpace(arrayUpdateLocSpace);
+                    lsasset.setSpaceQty(arrayUpdateSpaceQty);
+
+                    jsonBulkLsasset = qt.setJson("type", "insert",
+                            "insert", lsasset);
+
+//                    if (isLsa) {
+//                        lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
+//                                jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
+//                                jsonOItem.getString("pic"), assetChgObj.getInteger("lAT"), wn2qty, wn4price);
+//                        lsasset.setLocAddr(locAddr);
+//                        lsasset.setLocSpace(arrayUpdateLocSpace);
+//                        lsasset.setSpaceQty(arrayUpdateSpaceQty);
+//
+//                        jsonBulkLsasset = qt.setJson("type", "insert",
+//                                "insert", lsasset);
+//                    } else {
+//                        lBAsset lbasset = new lBAsset(id_A, id_C, id_C, id_CB, id_P, jsonOItem.getJSONObject("wrdN"),
+//                                jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
+//                                jsonOItem.getString("pic"), assetChgObj.getInteger("lAT"), wn2qty, wn4price);
+//                        lbasset.setLocAddr(locAddr);
+//                        lbasset.setLocSpace(arrayUpdateLocSpace);
+//                        lbasset.setSpaceQty(arrayUpdateSpaceQty);
+//
+//                        jsonBulkLsasset = qt.setJson("type", "insert",
+//                                "insert", lbasset);
+//                    }
+                }
+                listBulkAsset.add(jsonBulkAsset); // insert asset(MD)
+                listBulkLsasset.add(jsonBulkLsasset); //insert lSAsset(ES)
+
+                LogFlow log = new LogFlow(tokData, jsonOItem, order.getAction(),
+                        order.getInfo().getId_CB(), id_O, index, "assetflow", "stoChg",
+                        jsonOItem.getJSONObject("wrdN").getString("cn") + jsonLog.getString("zcndesc"),
+                        jsonLog.getInteger("imp"));
+                log.setLogData_assetflow(wn2qty, wn4price, id_A, grpA);
+                System.out.println("assetflow=" + JSON.toJSON(log));
+               ws.sendWS(log);
+            }
+            else {
+                JSONObject prodInfo = assetChgObj.getJSONObject("jsonProd").getJSONObject("info");
+                //存在金钱
+                if (assetChgObj.getJSONObject("jsonLsa") != null) {
+                    JSONObject jsonLsa = assetChgObj.getJSONObject("jsonLsa");
+                    id_A = jsonLsa.getString("id_A");
+                    JSONObject jsonAsset = assetChgObj.getJSONObject("jsonAsset");
+                    JSONObject aStock = jsonAsset.getJSONObject("aStock");
+                    AssetAStock assetAStock = new AssetAStock(DoubleUtils.add(aStock.getDouble("wn4price"), wn2qty));
+                    JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
+                    jsonBulkAsset = qt.setJson("type", "update",
+                            "id", id_A,
+                            "update", jsonUpdate);
+
+                    if (!isLsa && !id_C.equals(id_CB)) {
+                        JSONObject jsonLba = assetChgObj.getJSONObject("jsonLba");
+                        qt.upJson(jsonLba, "wn4price", DoubleUtils.add(aStock.getDouble("wn4price"), wn2qty),
+                                "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn2qty));
+                        JSONObject jsonBulkLbasset = qt.setJson("type", "update",
+                                "id", jsonLba.getString("id_ES"),
+                                "update", jsonLba);
+                        listBulkLbasset.add(jsonBulkLbasset);
+                    }
+
+                    qt.upJson(jsonLsa, "wn4price", DoubleUtils.add(aStock.getDouble("wn4price"), wn2qty),
+                            "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn2qty));
+                    jsonBulkLsasset = qt.setJson("type", "update",
+                            "id", jsonLsa.getString("id_ES"),
+                            "update", jsonLsa);
+                }
+                //不存在金钱，新增
+                else {
+                    Asset asset = new Asset();
+                    id_A = qt.GetObjectId();
+                    asset.setId(id_A);
+//                    JSONObject prodInfo = allProdObj.getJSONObject(id_P).getJSONObject("info");
+                    AssetInfo assetInfo = new AssetInfo(id_C, id_C, id_P, prodInfo.getJSONObject("wrdN"),
+                            prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
+                            prodInfo.getString("pic"), assetChgObj.getInteger("lAT"));
+                    asset.setInfo(assetInfo);
+                    AssetAStock assetAStock = new AssetAStock(wn2qty);
+                    asset.setAStock((JSONObject) JSON.toJSON(assetAStock));
+                    JSONArray view = qt.setArray("info", "aStock");
+                    asset.setView(view);
+                    jsonBulkAsset = qt.setJson("type", "insert",
+                            "insert", asset);
+
+                    if (isLsa) {
+                        lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_CB, id_P, prodInfo.getJSONObject("wrdN"),
+                                prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
+                                prodInfo.getString("pic"), assetChgObj.getInteger("lAT"), 1.0, wn2qty);
+
+                        jsonBulkLsasset = qt.setJson("type", "insert",
+                                "insert", lsasset);
+                    } else {
+                        if (!id_C.equals(id_CB)) {
+                            lSAsset lsasset = new lSAsset(id_A, id_CB, id_CB, id_C, id_P, prodInfo.getJSONObject("wrdN"),
+                                    prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
+                                    prodInfo.getString("pic"), assetChgObj.getInteger("lAT"), 1.0, wn2qty);
+
+                            JSONObject jsonBulkLbasset = qt.setJson("type", "insert",
+                                    "insert", lsasset);
+                            listBulkLbasset.add(jsonBulkLbasset);
+                        }
+                        lBAsset lbasset = new lBAsset(id_A, id_C, id_C, id_CB, id_P, prodInfo.getJSONObject("wrdN"),
+                                prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
+                                prodInfo.getString("pic"), assetChgObj.getInteger("lAT"), 1.0, wn2qty);
+
+                        jsonBulkLsasset = qt.setJson("type", "insert",
+                                "insert", lbasset);
+                    }
+                }
+
+                listBulkAsset.add(jsonBulkAsset);
+                listBulkLsasset.add(jsonBulkLsasset);
+
+                LogFlow log = new LogFlow("moneyflow", jsonLog.getString("id"), jsonLog.getString("id_FS"),
+                        "stoChg", id_U, grpU, id_P, jsonLog.getString("grpB"), jsonLog.getString("grp"),
+                        jsonLog.getString("id_OP"), id_O, jsonLog.getInteger("index"), id_C,
+                        jsonLog.getString("id_CS"), prodInfo.getString("pic"), tokData.getString("dep"),
+                        prodInfo.getJSONObject("wrdN").getString("cn") + jsonLog.getString("zcndesc"),
+                        jsonLog.getInteger("imp"), prodInfo.getJSONObject("wrdN"), tokData.getJSONObject("wrdNU"));
+                log.setLogData_money(id_A, "", wn2qty);
+                System.out.println("moneyflow=" + JSON.toJSON(log));
+
+
+//                // send 1 log for Asset out ( should be in setStock)
+//                LogFlow log = new LogFlow(tokData, jsonOItem, order.getAction(),
+//                        order.getInfo().getId_CB(), id_O, index, "assetflow", "stoChg",
+//                        jsonOItem.getJSONObject("wrdN").getString("cn")+"出仓了" + abs(wn2qtySum), 3);
+//
+//                Double logPrice = order.getOItem().getJSONArray("objItem").getJSONObject(index).getDouble("wn4price");
+////        Integer logStatus = order.getAction().getJSONArray("objAction").getJSONObject(index).getInteger("bcdStatus");
+//                log.setLogData_assetflow(abs(wn2qtySum), logPrice, jsonFromHit.getString("id_A"), jsonFromHit.getString("grp"));
+//
+                ws.sendWS(log);
+            }
+        }
+    }
+
 
     public void setBulkInsert(List<JSONObject> listBulk, Object obj) {
         JSONObject jsonBulk = qt.setJson("type", "insert",

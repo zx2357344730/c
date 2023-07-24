@@ -333,7 +333,7 @@ public class Qt {
         Query query = new Query(new Criteria("_id").is(id));
         Update update = new Update();
         jsonUpdate.forEach((k, v) -> update.inc(k, (Number) v));
-        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
+        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         update.inc("tvs", 1);
         try {
             mongoTemplate.updateFirst(query, update, classType);
@@ -349,7 +349,7 @@ public class Qt {
         Query query = new Query(new Criteria("_id").is(id));
         Update update = new Update();
         update.inc(updateKey, updateValue);
-        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
+        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         update.inc("tvs", 1);
         try {
             mongoTemplate.updateFirst(query, update, classType);
@@ -365,7 +365,7 @@ public class Qt {
         Query query = new Query(new Criteria("_id").is(id));
         Update update = new Update();
         jsonUpdate.forEach(update::push);
-        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
+        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         update.inc("tvs", 1);
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         if (updateResult.getModifiedCount() == 0) {
@@ -377,7 +377,7 @@ public class Qt {
         Query query = new Query(new Criteria("_id").is(id));
         Update update = new Update();
         update.push(updateKey, updateValue);
-        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
+        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         update.inc("tvs", 1);
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         if (updateResult.getModifiedCount() == 0) {
@@ -390,7 +390,7 @@ public class Qt {
         Query query = new Query(new Criteria("_id").is(id));
         Update update = new Update();
         jsonUpdate.forEach(update::pull);
-        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
+        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         update.inc("tvs", 1);
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         if (updateResult.getModifiedCount() == 0) {
@@ -402,7 +402,7 @@ public class Qt {
         Query query = new Query(new Criteria("_id").is(id));
         Update update = new Update();
         update.pull(updateKey, updateValue);
-        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
+        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         update.inc("tvs", 1);
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         if (updateResult.getModifiedCount() == 0) {
@@ -435,13 +435,13 @@ public class Qt {
                     if (key.equals("info"))
                     {
                         JSONObject valJson = this.toJson(val);
-                        valJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
+                        valJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
                     }
                     update.set(key, val);
                 }
             }
             if (!keyVal.keySet().contains("info")) {
-                update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
+                update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             }
             update.inc("tvs", 1);
             UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
@@ -469,7 +469,7 @@ public class Qt {
                     update.set(key, val);
                 }
             }
-            update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
+            update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             update.inc("tvs", 1);
             UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
             System.out.println("inSetMD" + updateResult);
@@ -499,7 +499,7 @@ public class Qt {
                             update.set(key, val);
                         }
                     }
-                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
+                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
                     update.inc("tvs", 1);
                     bulk.updateOne(query, update);
 

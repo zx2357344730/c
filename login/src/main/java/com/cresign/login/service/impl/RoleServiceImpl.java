@@ -72,7 +72,7 @@ public class RoleServiceImpl implements RoleService {
 
         //authFilterService.getUserUpdateAuth(id_U,id_C,"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
-        if (grpU.equals("1099") && !listType.equals("lSProd")) {
+        if (grpU.equals("1099") && !(listType.equals("lSProd")|| listType.equals("lSInfo"))) {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, LoginEnum.GRP_NOT_AUTH.getCode(), null);
 
         }

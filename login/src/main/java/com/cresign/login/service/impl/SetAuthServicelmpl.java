@@ -281,21 +281,14 @@ public class SetAuthServicelmpl implements SetAuthService {
      */
     @Override
     public ApiResponse setUserPic(String id_U, String pic) {
-        try {
             qt.setMDContent(id_U, qt.setJson("info.pic", pic), User.class);
             return retResult.ok(CodeEnum.OK.getCode(), "修改成功");
-        } catch (Exception e) {
-            return retResult.ok(CodeEnum.OK.getCode(), "修改失败");
-        }
     }
+
 
     @Override
     public ApiResponse getMySwitchComp(String id_U, String lang) {
-//        Query userQ = new Query(
-//                new Criteria("_id").is(id_U));
-//
-//        userQ.fields().include("rolex.objComp");
-//        User one = mongoTemplate.findOne(userQ, User.class);
+
         User one = qt.getMDContent(id_U, "rolex.objComp", User.class);
 
         if (one == null)

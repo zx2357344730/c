@@ -73,7 +73,6 @@ public class RefreshTokenController {
     public String refreshToken2(@RequestParam("id_U") String id_U, @RequestParam("id_C") String id_C
             ,@RequestParam("refreshToken") String refreshToken,@RequestParam("web") String web
             ,@RequestParam("token") String token) {
-        System.out.println("进入token2");
         return refreshTokenService.refreshToken2(refreshToken, id_C, web,id_U,token);
     }
 
