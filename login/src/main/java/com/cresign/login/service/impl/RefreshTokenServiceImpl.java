@@ -160,6 +160,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 if (refreshTokenResult.equals(id_U)) {
 
                     JSONObject rdSet = qt.getRDSet(clientType + "Token", token);
+                    qt.errPrint("rdSet", null, rdSet, clientType, token);
                     if (rdSet == null)
                     {
                         // 通过id_U查询该用户
@@ -170,8 +171,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                                 user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
                                 user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
                                 clientType);
-
-                    } else {
+                    }
+                    else {
                         qt.setRDSet(clientType + "Token", token, rdSet, 500L);
                     }
                     return token;

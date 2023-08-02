@@ -30,6 +30,8 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -276,9 +278,12 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     @OnError
     public void onError(Throwable error) {
         // 输出错误信息
+        StringWriter writer = new StringWriter();
+        PrintWriter printWriter= new PrintWriter(writer);
+        error.printStackTrace(printWriter);
         String msg = WebSocketUserServer.bz+"-Error: "+error;
-        ws.sendUsageFlow(qt.setJson("cn", "Websocket Error"+error.getMessage()), msg, "wsError", "WS");
-        error.printStackTrace();
+        String msg2 = writer.toString().substring(0, 650);
+        ws.sendUsageFlow(qt.setJson("cn", msg), msg2, "wsError", "WS");
     }
 
     /**
@@ -494,9 +499,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                     if ("token".equals(logData.getSubType()) && "usageflow".equals(logData.getLogType())) {
                         JSONObject data = logData.getData();
                         System.out.println("请求 RT2 api:");
-                        loginClient.refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("refreshTokenJiu")
+                        String newToken = loginClient.refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("refreshTokenJiu")
                                 ,data.getString("clientType"),data.getString("token"));
-//                        data.put("refreshToken",newToken);
+
+                        data.put("token",newToken);
                         logData.setData(data);
                         logData.getData().remove("refreshTokenJiu");
                         logData.setId_Us(qt.setArray(logData.getId_U()));

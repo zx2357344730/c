@@ -1,5 +1,6 @@
 package com.cresign.tools.pojo.po;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
@@ -39,5 +40,7 @@ public class Init {
     private JSONObject logInit;
 
     private JSONObject pdfInit;
+
+    private JSONArray seMethod;
 
 }

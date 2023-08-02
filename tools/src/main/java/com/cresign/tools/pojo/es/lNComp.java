@@ -49,15 +49,15 @@ public class lNComp {
 
     private String id_CM;
 
-    private JSONObject wrdN;
+    private JSONObject wrdN;//TODO RACHEL - > wrdNC
 
     private JSONObject wrddesc;
 
-    private JSONObject wrdTag;
+    private JSONObject wrdTag; //TODO RACHEL - > { cn: [], en: [], jp: []}
 
-    private String ref;
+    private String ref; //TODO RACHEL - > no need
 
-    private String pic;
+    private String pic; //TODO RACHEL - > picC
 
     private String tmd;
 

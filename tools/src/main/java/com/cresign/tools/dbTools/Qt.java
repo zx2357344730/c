@@ -668,29 +668,31 @@ public class Qt {
 
     public Asset getConfig(String id_C, String ref, List <String> listField) {
 
-        if(this.hasRDHashItem("login:module_id","compId-"+ id_C, ref))
-        {
-            String id_A = this.getRDHashStr("login:module_id","compId-" + id_C, ref);
-            System.out.println("id_A from redis"+id_A);
-            return this.getMDContent(id_A, listField, Asset.class);
-        } else {
-            System.out.println("getConfig from ES"+id_C+ "   "+ref);
-            JSONArray result = this.getES("lSAsset", this.setESFilt("id_C",id_C,"ref",ref,"grp","1003"), 1);
+        if (id_C != null && !id_C.equals("")) {
+            if (this.hasRDHashItem("login:module_id", "compId-" + id_C, ref)) {
+                String id_A = this.getRDHashStr("login:module_id", "compId-" + id_C, ref);
+                System.out.println("id_A from redis" + id_A);
+                return this.getMDContent(id_A, listField, Asset.class);
+            } else {
+                JSONArray result = this.getES("lSAsset", this.setESFilt("id_C", id_C, "ref", ref, "grp", "1003"), 1);
 
-            if (result.size() == 1) {
-                String id_A = result.getJSONObject(0).getString("id_A");
-                System.out.println("getConfig ES"+id_A);
+                if (result.size() == 1) {
+                    String id_A = result.getJSONObject(0).getString("id_A");
+                    System.out.println("getConfig ES" + id_A);
 
-                Asset asset = this.getMDContent(id_A, listField, Asset.class);
-                this.putRDHash("login:module_id", "compId-" + id_C, ref, asset.getId());
+                    Asset asset = this.getMDContent(id_A, listField, Asset.class);
+                    this.putRDHash("login:module_id", "compId-" + id_C, ref, asset.getId());
 
-                return asset;
+                    return asset;
+                }
             }
-            Asset nothing = new Asset();
-            nothing.setId("none");
-
-            return nothing;
         }
+
+        Asset nothing = new Asset();
+        nothing.setId("none");
+
+        return nothing;
+
     }
 
     //////////////-----------------------------------------------
@@ -1142,6 +1144,30 @@ public class Qt {
     {
         //条件数组不为空
         if (filterArray.size() > 0) {
+            JSONObject jsonWrd = new JSONObject();
+            for (int i = 0; i < filterArray.size(); i++) {
+                JSONObject filter = filterArray.getJSONObject(i);
+                String key = filter.getString("filtKey");
+                String val = filter.getString("filtVal");
+                if ("eq".equals(filter.getString("method")) && key.startsWith("wrd")) {
+                    if (jsonWrd.getJSONArray(key) != null) {
+                        jsonWrd.getJSONArray(key).add(val);
+                    } else {
+                        jsonWrd.put(key, this.setArray(val));
+                    }
+                    filterArray.remove(i);
+                    i--;
+                }
+            }
+            jsonWrd.forEach((k, v) ->{
+                JSONArray arrayWrd = jsonWrd.getJSONArray(k);
+                if (arrayWrd.size() > 1) {
+                    this.setESFilt(filterArray, k, "contain", arrayWrd);
+                } else {
+                    this.setESFilt(filterArray, k, "eq", arrayWrd.getString(0));
+                }
+            });
+
             int i = 0;
             while (i < filterArray.size()) {
                 //拿到每一组筛选条件

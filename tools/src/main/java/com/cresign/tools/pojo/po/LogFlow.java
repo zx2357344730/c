@@ -171,13 +171,13 @@ public class LogFlow {
         this.data = data;
     }
 
-    public void setLogData_duraflow (Long taStart, Long taFin, String type) {
-        JSONObject data = new JSONObject();
-        data.put("taStart", taStart);
-        data.put("taFin",taFin);
-        data.put("type", type);
-        this.data = data;
-    }
+//    public void setLogData_duraflow (Long taStart, Long taFin, String type) {
+//        JSONObject data = new JSONObject();
+//        data.put("taStart", taStart);
+//        data.put("taFin",taFin);
+//        data.put("type", type);
+//        this.data = data;
+//    }
 
     public void setLogData_assetflow (Double qtynow, Double price, String id_A, String grpA) {
         JSONObject data = new JSONObject();
