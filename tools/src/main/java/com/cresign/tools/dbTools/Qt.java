@@ -890,7 +890,7 @@ public class Qt {
                 request.indices(indices);
                 request.source(sourceBuilder);
                 SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-                System.out.println(response);
+//                System.out.println(response);
 
                 return this.hit2Array(response);
 

@@ -76,7 +76,8 @@ public enum LoginEnum {
     SMS_CODE_NOT_CORRECT("045003"),
     // 短信发送成功
     SMS_SEND_SUCCESS("045004"),
-
+    // 短信登录失败
+    SMS_LOGIN_FAIL("045005"),
     ;
     /**
      * 异常状态码

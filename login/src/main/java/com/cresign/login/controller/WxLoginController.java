@@ -78,6 +78,8 @@ public class WxLoginController {
     @SecurityParameter
     @PostMapping("/v1/decodeUserInfo")
     public ApiResponse decodeUserInfo(@RequestBody JSONObject reqJson) {
+        System.out.println("进入微信小程序解密用户数据接口：");
+        System.out.println(JSON.toJSONString(reqJson));
         try {
             return wxLoginService.decodeUserInfo(reqJson);
         } catch (Exception e) {
@@ -97,15 +99,24 @@ public class WxLoginController {
     @PostMapping("/v1/wxAsLogin")
     public ApiResponse wXLoginByIdWx(@RequestBody JSONObject reqJson) {
         try {
+            System.out.println("进入wxAsLogin：");
+            System.out.println(JSON.toJSONString(reqJson));
             String uuId = request.getHeader("uuId");
             System.out.println("uuId:");
             System.out.println(uuId);
             return wxLoginService.wXLoginByIdWx(
                     reqJson.getString("id_WX"),
                     request.getHeader("clientType"));
-        } catch (Exception e) {
+        } catch (Exception e){
+            System.out.println("出现异常:");
+//            e.printStackTrace();
             return getUserToken.err(reqJson, "WxLoginController.wXLoginByIdWx", e);
         }
+//        try {
+//
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "WxLoginController.wXLoginByIdWx", e);
+//        }
     }
 
     /**

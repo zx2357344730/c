@@ -25,7 +25,7 @@ import java.io.Serializable;
 public class lNUser implements Serializable {
 
     public lNUser(String id_U, JSONObject wrdN, JSONObject wrddesc, JSONObject wrdNReal, JSONObject wrdTag, String pic,
-                  String id_APP, String id_WX, String cem, String mbn, String cnty, String defNG, String defCR) {
+                  String id_APP, String id_WX, String cem, String mbn, String cnty, String defNG, long defCR) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn", "");
@@ -42,7 +42,7 @@ public class lNUser implements Serializable {
         this.mbn = mbn == null ? "" : mbn;
         this.cnty = cnty == null ? "" : cnty;
         this.defNG = defNG == null ? "" : defNG;
-        this.defCR = defCR == null ? "" : defCR;
+        this.defCR = defCR;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
@@ -73,7 +73,7 @@ public class lNUser implements Serializable {
 
     private String defNG;
 
-    private String defCR;
+    private long defCR;
 
     private String tmd;
 

@@ -94,4 +94,15 @@ public interface SetAuthService {
      * @ver 版本号: 1.0.0
      */
     ApiResponse setUserPic(String id_U,String pic);
+
+    /**
+     * 更新用户cid，推送id方法
+     * @param id_U 用户id
+     * @param cid	推送id
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/31
+     * @ver 版本号: 1.0.0
+     */
+    ApiResponse setUserCid(String id_U,String cid);
 }

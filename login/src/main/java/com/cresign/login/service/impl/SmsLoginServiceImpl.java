@@ -1,5 +1,6 @@
 package com.cresign.login.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.enumeration.LoginEnum;
@@ -11,6 +12,7 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
@@ -21,6 +23,7 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.User;
+import com.cresign.tools.pojo.po.userCard.UserInfo;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -33,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.StringTokenizer;
 
 /**
  * 短信登录接口实现类
@@ -66,10 +70,25 @@ public class SmsLoginServiceImpl implements SmsLoginService {
     @Resource
     private CoupaUtil coupaUtil;
 
+    @Autowired
+    private DbUtils dbUtils;
+
     @Override
     public ApiResponse getSmsLoginNum(String phone)  {
 
         try {
+            Query mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
+            JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone + "_off"));
+            JSONObject userLn = null;
+            if (null != es && es.size() > 0) {
+                userLn = es.getJSONObject(0);
+            }
+            if (ObjectUtils.isNotEmpty(mongoTemplate.findOne(mbnQue, User.class))||null!=userLn) {
+                JSONObject result = new JSONObject();
+                result.put("t_type", 2);
+                result.put("t_desc", "该账户正在注销中！！！");
+                return retResult.ok(CodeEnum.OK.getCode(), result);
+            }
             String[] phones = {phone};
 
             SMSTencent.sendSMS(phones, 6, SMSTemplateEnum.LOGIN.getTemplateId(), SMSTypeEnum.LOGIN.getSmsType());
@@ -78,14 +97,28 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 
             throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, LoginEnum.SMS_SEND_CODE_ERROR.getCode(), null);
         }
-
-        return retResult.ok(CodeEnum.OK.getCode(), null);
+        JSONObject result = new JSONObject();
+        result.put("t_type", 1);
+        result.put("t_desc", "操作成功");
+        return retResult.ok(CodeEnum.OK.getCode(), result);
 
     }
 
     @Override
     public ApiResponse smsLogin(String phone, String smsNum, String clientType) {
 
+        Query mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
+        JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone + "_off"));
+        JSONObject userLn = null;
+        if (null != es && es.size() > 0) {
+            userLn = es.getJSONObject(0);
+        }
+        if (ObjectUtils.isNotEmpty(mongoTemplate.findOne(mbnQue, User.class))||null!=userLn) {
+            JSONObject result = new JSONObject();
+            result.put("t_type", 2);
+            result.put("t_desc", "该账户正在注销中！！！");
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        }
         // 判断是否存在这个 key
         if (redisTemplate0.hasKey(SMSTypeEnum.LOGIN.getSmsType() + phone)) {
 
@@ -122,6 +155,18 @@ SMS_CODE_NOT_FOUND.getCode(), null);
     public ApiResponse getSmsRegisterNum(String phone) {
 
         try {
+            Query mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
+            JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone + "_off"));
+            JSONObject userLn = null;
+            if (null != es && es.size() > 0) {
+                userLn = es.getJSONObject(0);
+            }
+            if (ObjectUtils.isNotEmpty(mongoTemplate.findOne(mbnQue, User.class))||null!=userLn) {
+                JSONObject result = new JSONObject();
+                result.put("t_type", 2);
+                result.put("t_desc", "该账户正在注销中！！！");
+                return retResult.ok(CodeEnum.OK.getCode(), result);
+            }
             String[] phones = {phone};
 
             SMSTencent.sendSMS(phones, 6, SMSTemplateEnum.REGISTER.getTemplateId(), SMSTypeEnum.REGISTER.getSmsType());
@@ -129,8 +174,11 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         } catch (RuntimeException  e) {
             throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, LoginEnum.SMS_SEND_CODE_ERROR.getCode(), null);
         }
-
-        return retResult.ok(CodeEnum.OK.getCode(), null);
+        JSONObject result = new JSONObject();
+        result.put("t_type", 1);
+        result.put("t_desc", "操作成功");
+        return retResult.ok(CodeEnum.OK.getCode(), result);
+//        return retResult.ok(CodeEnum.OK.getCode(), null);
      }
 
     @Override
@@ -146,9 +194,11 @@ SMS_CODE_NOT_FOUND.getCode(), null);
                     Query mbnQue = new Query(new Criteria("info.mbn").is(phone));
 
                     User user = mongoTemplate.findOne(mbnQue, User.class);
-
+//                    JSONObject userLn = qt.getES("lNUser", qt.setESFilt("mbn", phone)).getJSONObject(0);
                     //存在则不是注册，返回个人信息
-                    if (ObjectUtils.isNotEmpty(user)) {
+                    if (ObjectUtils.isNotEmpty(user)
+//                            || null!=userLn
+                    ) {
 
                         // 返回json数据给前端
                         JSONObject result = loginResult.allResult(user, clientType, "sms");
@@ -264,6 +314,19 @@ SMS_CODE_NOT_FOUND.getCode(), null);
                         }
 
                         return retResult.ok(CodeEnum.OK.getCode(), result);
+                    } else {
+                        mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
+                        JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone + "_off"));
+                        JSONObject userLn = null;
+                        if (null != es && es.size() > 0) {
+                            userLn = es.getJSONObject(0);
+                        }
+                        if (ObjectUtils.isNotEmpty(mongoTemplate.findOne(mbnQue, User.class))||null!=userLn) {
+                            JSONObject result = new JSONObject();
+                            result.put("t_type", 2);
+                            result.put("t_desc", "该账户正在注销中！！！");
+                            return retResult.ok(CodeEnum.OK.getCode(), result);
+                        }
                     }
 
 
@@ -305,6 +368,242 @@ SMS_CODE_NOT_FOUND.getCode(), null);
                         SMS_CODE_NOT_FOUND.getCode(), null);
             }
 
+    }
+
+    @Override
+    public ApiResponse logOffUser(String id_U) {
+        System.out.println("进入注销输出:");
+        User user = qt.getMDContent(id_U, "info", User.class);
+        String[] s = user.getInfo().getMbn().split("_");
+        if (user.getId().equals("5f28bf314f65cc7dc2e60262")) {
+            return retResult.ok(CodeEnum.OK.getCode(), "操作失败!");
+        }
+        if (s.length == 1) {
+            String mbn = user.getInfo().getMbn()+"_off";
+            qt.setMDContent(id_U,qt.setJson("info.mbn", mbn),User.class);
+            System.out.println("user:");
+            System.out.println(JSON.toJSONString(user));
+            JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
+            System.out.println("userLn:");
+            System.out.println(JSON.toJSONString(userLn));
+            qt.setES("lNUser", qt.setESFilt("id_U", id_U), qt.setJson("mbn", mbn));
+            JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
+            System.out.println("userLb:");
+            System.out.println(JSON.toJSONString(userLb));
+            qt.setES("lBUser", qt.setESFilt("id_U", id_U), qt.setJson("mbn", mbn));
+            return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+        } else {
+            return retResult.ok(CodeEnum.OK.getCode(), "已申请注销！！");
+        }
+    }
+
+    @Override
+    public ApiResponse secureLogOffUser(String mbn) {
+        System.out.println("进入解除注销输出:");
+        JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", mbn + "_off"));
+        JSONObject userLn;
+        if (null != es && es.size() > 0) {
+            userLn = es.getJSONObject(0);
+            User user = qt.getMDContent(userLn.getString("id_U"), "info", User.class);
+//        StringTokenizer st = new StringTokenizer(user.getInfo().getMbn(),"_");
+            String[] st = user.getInfo().getMbn().split("_");
+            if (st.length == 1) {
+                return retResult.ok(CodeEnum.OK.getCode(), "2");
+            }
+            if (st[1].equals("off")) {
+                qt.setMDContent(userLn.getString("id_U"),qt.setJson("info.mbn", mbn),User.class);
+                qt.setES("lNUser", qt.setESFilt("id_U", userLn.getString("id_U")), qt.setJson("mbn", mbn));
+                qt.setES("lBUser", qt.setESFilt("id_U", userLn.getString("id_U")), qt.setJson("mbn", mbn));
+                return retResult.ok(CodeEnum.OK.getCode(), "1");
+            } else {
+                return retResult.ok(CodeEnum.OK.getCode(), "3");
+            }
+        } else {
+            return retResult.ok(CodeEnum.OK.getCode(), "3");
+        }
+    }
+
+    String hz = "Test";
+    String zj = "tangTang";
+    String kara = "test_kara";
+    String ld = "LD";
+    String kevin = "admin_K";
+    @Override
+    public ApiResponse setTestUser(String name,String type) {
+        JSONObject result = new JSONObject();
+        String id_U = null;
+        String[] re = new String[0];
+        String[] reKey = new String[]{"info.mbn","info.id_WX","info.id_APP","info.id_AUN"};
+        String[] reKeyEs = new String[]{"mbn","id_WX","id_APP","id_AUN"};
+        boolean isSet = true;
+        delFan(name);
+        if(kara.equals(name)){
+            id_U = "62318c9a890df37b8079952d";
+            re = getInfo(id_U,type);
+        } else if (zj.equals(name)) {
+            id_U = "6256789ae1908c03460f906f";
+            re = getInfo(id_U,type);
+        } else if (ld.equals(name)) {
+            id_U = "6229913cf890c1140c720b71";
+            re = getInfo(id_U,type);
+        } else if (kevin.equals(name)) {
+//            isSet = false;
+            id_U = "5f28bf314f65cc7dc2e60386";
+            re = getInfo(id_U,type);
+        } else {
+            isSet = false;
+            result.put("t_type", 3);
+            result.put("t_desc", "不识别");
+        }
+        if (isSet) {
+            if (re.length == 0) {
+                result.put("t_type", 2);
+                result.put("t_desc", name+" --- 操作失败!已经是:"+type+",状态！");
+            } else {
+                JSONObject setObj = new JSONObject();
+                JSONObject setObjEs = new JSONObject();
+                for (int i = 0; i < re.length; i++) {
+                    if (!re[i].equals("null")) {
+                        setObj.put(reKey[i],re[i]);
+                        setObjEs.put(reKeyEs[i],re[i]);
+                    }
+                }
+//                qt.setMDContent(id_U,qt.setJson("info.mbn", re[0],"info.id_WX",re[1],"info.id_APP"
+//                        ,re[2],"info.id_AUN",re[3]),User.class);
+                qt.setMDContent(id_U,setObj,User.class);
+//                qt.setES("lNUser", qt.setESFilt("id_U", id_U), qt.setJson("mbn", re[0]
+//                        ,"id_WX",re[1],"id_APP",re[2],"id_AUN",re[3]));
+                qt.setES("lNUser", qt.setESFilt("id_U", id_U), setObjEs);
+//                qt.setES("lBUser", qt.setESFilt("id_U", id_U), qt.setJson("mbn", re[0],"id_WX",re[1],"id_APP",re[2],"id_AUN",re[3]));
+                result.put("t_type", 1);
+                result.put("t_desc", name+" --- 操作成功!");
+            }
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), result);
+    }
+
+    @Override
+    public ApiResponse delTestUser(String name) {
+        return retResult.ok(CodeEnum.OK.getCode(), delFan(name));
+    }
+
+    private JSONObject delFan(String name){
+        JSONObject result = new JSONObject();
+        if (kara.equals(name)) {
+            String mbn = "+8618682131169";
+            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
+            User user = mongoTemplate.findOne(mbnQue, User.class);
+            if (null != user && !"62318c9a890df37b8079952d".equals(user.getId())) {
+//                qt.delMD(user.getId(),User.class);
+//                JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
+//                JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
+//                qt.delES("lNUser",userLn.getString("id_ES"));
+//                qt.delES("lBUser",userLb.getString("id_ES"));
+                delFanCore(user.getId());
+                result.put("t_type", 1);
+                result.put("t_desc", name+" --- 操作成功!");
+            } else {
+                result.put("t_type", 2);
+                result.put("t_desc", name+" --- 操作失败!");
+            }
+        } else if (ld.equals(name)) {
+            String mbn = "+8618200806197";
+            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
+            User user = mongoTemplate.findOne(mbnQue, User.class);
+            if (null != user && !"6229913cf890c1140c720b71".equals(user.getId())) {
+//                qt.delMD(user.getId(),User.class);
+//                JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
+//                JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
+//                qt.delES("lNUser",userLn.getString("id_ES"));
+//                qt.delES("lBUser",userLb.getString("id_ES"));
+                delFanCore(user.getId());
+                result.put("t_type", 1);
+                result.put("t_desc", name+" --- 操作成功!");
+            } else {
+                result.put("t_type", 2);
+                result.put("t_desc", name+" --- 操作失败!");
+            }
+        } else if (zj.equals(name)) {
+            String mbn = "+8619906364962";
+            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
+            User user = mongoTemplate.findOne(mbnQue, User.class);
+            if (null != user && !"6256789ae1908c03460f906f".equals(user.getId())) {
+                delFanCore(user.getId());
+                result.put("t_type", 1);
+                result.put("t_desc", name+" --- 操作成功!");
+            } else {
+                result.put("t_type", 2);
+                result.put("t_desc", name+" --- 操作失败!");
+            }
+        } else if (kevin.equals(name)) {
+            String mbn = "+8613929900723";
+            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
+            User user = mongoTemplate.findOne(mbnQue, User.class);
+            if (null != user && !"5f28bf314f65cc7dc2e60386".equals(user.getId())) {
+                delFanCore(user.getId());
+                result.put("t_type", 1);
+                result.put("t_desc", name+" --- 操作成功!");
+            } else {
+                result.put("t_type", 2);
+                result.put("t_desc", name+" --- 操作失败!");
+            }
+        } else {
+            result.put("t_type", 3);
+            result.put("t_desc", name+" --- 操作失败!");
+        }
+        return result;
+    }
+
+    private void delFanCore(String id_U){
+        qt.delMD(id_U,User.class);
+        JSONArray esLn = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
+        if (null != esLn && esLn.size() > 0) {
+            JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
+            qt.delES("lNUser",userLn.getString("id_ES"));
+        }
+        JSONArray esLb = qt.getES("lBUser", qt.setESFilt("id_U", id_U));
+        if (null != esLb && esLb.size() > 0) {
+            JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
+            qt.delES("lBUser",userLb.getString("id_ES"));
+        }
+    }
+
+    private String[] getInfo(String id_U,String type){
+        User user = qt.getMDContent(id_U, "info", User.class);
+        UserInfo info = user.getInfo();
+        String[] s = info.getMbn().split("_");
+        String[] re;
+        if ("test".equals(type)&&s.length==1) {
+            re = new String[4];
+            re[0] = (info.getMbn()+"_"+hz);
+            re[1] = info.getId_WX()==null?"null":(info.getId_WX()+"_"+hz);
+            re[2] = info.getId_APP()==null?"null":(info.getId_APP()+"_"+hz);
+            re[3] = info.getId_AUN()==null?"null":(info.getId_AUN()+"_"+hz);
+        } else if ("ok".equals(type) && s.length > 1&&s[1].equals(hz)
+//                && s.length > 1 && s[1].equals(hz)
+        ) {
+            re = new String[4];
+            re[0] = info.getMbn().split("_")[0];
+            if (null != info.getId_WX()) {
+                String[] wxS = info.getId_WX().split("_");
+                re[1] = "";
+                for (int i = 0; i < wxS.length-1; i++) {
+                    re[1] += wxS[i];
+                    System.out.println(re[1]);
+                    if (i != wxS.length - 2) {
+                        re[1] += "_";
+                        System.out.println(re[1]);
+                    }
+                }
+            } else {
+                re[1] = "null";
+            }
+            re[2] = info.getId_APP()==null?"null":(info.getId_APP().split("_")[0]);
+            re[3] = info.getId_AUN()==null?"null":(info.getId_AUN().split("_")[0]);
+        } else {
+            re = new String[0];
+        }
+        return re;
     }
 
     /**

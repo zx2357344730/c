@@ -148,6 +148,8 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                     System.out.println(JSON.toJSONString(requestMap));
                     String content ;
                     String aesKey;
+                    System.out.println("输出key:");
+                    System.out.println(RED_KEY+uuId);
                     JSONObject re = JSONObject.parseObject(redisTemplate0.opsForValue().get(RED_KEY+uuId));
                     if (null == re) {
                         throw  new RuntimeException("id对应秘钥为空!");

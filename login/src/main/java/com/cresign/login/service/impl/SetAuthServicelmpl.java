@@ -281,8 +281,23 @@ public class SetAuthServicelmpl implements SetAuthService {
      */
     @Override
     public ApiResponse setUserPic(String id_U, String pic) {
-            qt.setMDContent(id_U, qt.setJson("info.pic", pic), User.class);
-            return retResult.ok(CodeEnum.OK.getCode(), "修改成功");
+        qt.setMDContent(id_U, qt.setJson("info.pic", pic), User.class);
+        return retResult.ok(CodeEnum.OK.getCode(), "修改成功");
+    }
+
+    /**
+     * 更新用户cid，推送id方法
+     * @param id_U 用户id
+     * @param cid	推送id
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/31
+     * @ver 版本号: 1.0.0
+     */
+    @Override
+    public ApiResponse setUserCid(String id_U,String cid) {
+        qt.setMDContent(id_U, qt.setJson("info.id_APP", cid), User.class);
+        return retResult.ok(CodeEnum.OK.getCode(), "修改成功");
     }
 
 

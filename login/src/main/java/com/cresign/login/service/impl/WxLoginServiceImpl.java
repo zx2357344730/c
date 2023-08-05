@@ -197,15 +197,33 @@ public class WxLoginServiceImpl implements WxLoginService {
 
         // 创建Auth对象存放查询后的结果
         User user = mongoTemplate.findOne(query, User.class);
-
+//        JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_WX", unionid)).getJSONObject(0);
         // 判断两种情况：
         // 1. 账号已经绑定了
         // 2. 账号未绑定
-        if (ObjectUtils.isEmpty(user)) {
+        if (ObjectUtils.isEmpty(user)
+//                || null!=userLn
+        ) {
 
              throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
 WX_NOT_BIND.getCode(),unionid);
 
+        }
+        String phone = user.getInfo().getMbn();
+        String[] s = phone.split("_");
+//                Query mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
+//                JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone + "_off"));
+//                JSONObject userLn = null;
+//                if (null != es && es.size() > 0) {
+//                    userLn = es.getJSONObject(0);
+//                }
+        if ( s.length > 1 && s[1].equals("off")
+//                        ObjectUtils.isNotEmpty(mongoTemplate.findOne(mbnQue, User.class))||null!=userLn
+        ) {
+            JSONObject result = new JSONObject();
+            result.put("t_type", 2);
+            result.put("t_desc", "该账户正在注销中！！！");
+            return retResult.ok(CodeEnum.OK.getCode(), result);
         }
 
         // 已经绑定了
@@ -302,28 +320,50 @@ WX_NOT_BIND.getCode(),unionid);
     @Override
     public ApiResponse wXLoginByIdWx(String id_WX, String clientType) {
 
-        //创建查询对象
-        Query query = new Query();
+        try {
+            //创建查询对象
+            Query query = new Query();
 
-        //添加查询条件
-        // 判断是什么端的，然后查找那个 id
-        query.addCriteria(new Criteria("info.id_WX").is(id_WX));
+            //添加查询条件
+            // 判断是什么端的，然后查找那个 id
+            query.addCriteria(new Criteria("info.id_WX").is(id_WX));
 
 
-        //进行查询并返回结果
-        User user = mongoTemplate.findOne(query, User.class);
+            //进行查询并返回结果
+            User user = mongoTemplate.findOne(query, User.class);
 
-        // 判断用户是否存在
-        if (user!=null){
+            // 判断用户是否存在
+            if (user!=null){
 
-            // 获取用户登录的数据
-            JSONObject result = loginResult.allResult(user, clientType, "wx");
+                String phone = user.getInfo().getMbn();
+                String[] s = phone.split("_");
+//                Query mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
+//                JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone + "_off"));
+//                JSONObject userLn = null;
+//                if (null != es && es.size() > 0) {
+//                    userLn = es.getJSONObject(0);
+//                }
+                if ( s.length > 1 && s[1].equals("off")
+//                        ObjectUtils.isNotEmpty(mongoTemplate.findOne(mbnQue, User.class))||null!=userLn
+                ) {
+                    JSONObject result = new JSONObject();
+                    result.put("t_type", 2);
+                    result.put("t_desc", "该账户正在注销中！！！");
+                    return retResult.ok(CodeEnum.OK.getCode(), result);
+                }
 
-            return retResult.ok(CodeEnum.OK.getCode(), result);
+                // 获取用户登录的数据
+                JSONObject result = loginResult.allResult(user, clientType, "wx");
 
+                return retResult.ok(CodeEnum.OK.getCode(), result);
+
+            }
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
         throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-WX_NOT_BIND.getCode(), null);
+                WX_NOT_BIND.getCode(), null);
     }
 
     @Override
@@ -342,7 +382,22 @@ WX_NOT_BIND.getCode(), null);
 
         // 判断用户是否存在
         if (user!=null){
-
+            String phone = user.getInfo().getMbn();
+            String[] s = phone.split("_");
+//                Query mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
+//                JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone + "_off"));
+//                JSONObject userLn = null;
+//                if (null != es && es.size() > 0) {
+//                    userLn = es.getJSONObject(0);
+//                }
+            if ( s.length > 1 && s[1].equals("off")
+//                        ObjectUtils.isNotEmpty(mongoTemplate.findOne(mbnQue, User.class))||null!=userLn
+            ) {
+                JSONObject result = new JSONObject();
+                result.put("t_type", 2);
+                result.put("t_desc", "该账户正在注销中！！！");
+                return retResult.ok(CodeEnum.OK.getCode(), result);
+            }
             // 获取用户登录的数据
             JSONObject result = loginResult.allResult(user, clientType, "wx");
 
@@ -589,10 +644,11 @@ SMS_CODE_NOT_FOUND.getCode(), null);
 
         mongoTemplate.insert(user);
 
-//        lNUser addLNUser = new lNUser(id_U,wrdNMap,null,null,null,avatarUrl,null
-//                ,unionId,null,"",phoneNumber,"China","cn","CNY"
-//                ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()),DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//        qt.addES("lNUser",addLNUser);
+        lNUser addLNUser = new lNUser(id_U,wrdNMap,null,null,null,avatarUrl,null
+                ,unionId,null,"",phoneNumber,"China","cn",0
+                ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())
+                ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        qt.addES("lNUser",addLNUser);
 
         // 3.插入ES lbuser索引中新增列表
         JSONObject wrdNCB = new JSONObject();
@@ -635,14 +691,16 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         System.out.println("--getPhone--");
 
 //        return retResult.ok( CodeEnum.OK.getCode(), 0);
-
-        JSONObject userInfo = qt.getES("lNUser", qt.setESFilt("mbn",("+"+countryCode+phone))).getJSONObject(0);
-        if (null != userInfo) {
-            System.out.println("userInfo:");
-            System.out.println(JSON.toJSONString(userInfo));
-            qt.setES("lNUser", qt.setESFilt("mbn",("+"+countryCode+phone)), qt.setJson("id_WX",id_WX));
-            qt.setMDContent(userInfo.getString("id_U"),qt.setJson("info.id_WX",id_WX),User.class);
-            return retResult.ok( CodeEnum.OK.getCode(), 1);
+        JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", ("+" + countryCode + phone)));
+        if (null != es && es.size() > 0) {
+            JSONObject userInfo = es.getJSONObject(0);
+            if (null != userInfo) {
+                System.out.println("userInfo:");
+                System.out.println(JSON.toJSONString(userInfo));
+                qt.setES("lNUser", qt.setESFilt("mbn",("+"+countryCode+phone)), qt.setJson("id_WX",id_WX));
+                qt.setMDContent(userInfo.getString("id_U"),qt.setJson("info.id_WX",id_WX),User.class);
+                return retResult.ok( CodeEnum.OK.getCode(), 1);
+            }
         }
         return retResult.ok( CodeEnum.OK.getCode(), 0);
     }

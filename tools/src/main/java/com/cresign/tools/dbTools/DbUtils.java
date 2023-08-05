@@ -12,6 +12,7 @@ import com.cresign.tools.pojo.es.lSAsset;
 import com.cresign.tools.pojo.po.*;
 import com.cresign.tools.pojo.po.assetCard.AssetAStock;
 import com.cresign.tools.pojo.po.assetCard.AssetInfo;
+import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.cresign.tools.reflectTools.ApplicationContextTools;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -2072,6 +2073,39 @@ public class DbUtils {
                 "id", id,
                 "update", json);
         listBulk.add(jsonBulk);
+    }
+
+    public boolean getUserByIdAndInfo(String id_U,JSONObject info){
+        User user = qt.getMDContent(id_U, "info", User.class);
+        if (null == user || null == user.getInfo()) {
+            return false;
+        }
+        JSONObject userInfo = JSON.parseObject(JSON.toJSONString(user.getInfo()));
+        JSONArray keys = JSONArray.parseArray(JSON.toJSONString(info.keySet()));
+        boolean mongodbUser = true;
+        for (int i = 0; i < keys.size(); i++) {
+            if (!userInfo.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
+                mongodbUser = false;
+                break;
+            }
+        }
+        JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
+        boolean esLnUser = true;
+        for (int i = 0; i < keys.size(); i++) {
+            if (!userLn.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
+                esLnUser = false;
+                break;
+            }
+        }
+        JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
+        boolean esLbUser = true;
+        for (int i = 0; i < keys.size(); i++) {
+            if (!userLb.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
+                esLbUser = false;
+                break;
+            }
+        }
+        return mongodbUser || esLnUser || esLbUser;
     }
 
 

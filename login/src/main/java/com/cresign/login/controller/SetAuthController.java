@@ -125,6 +125,25 @@ public class SetAuthController {
         }
     }
 
+    /**
+     * 更新用户cid，推送id方法
+     * @param reqJson 请求参数体
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/7/31
+     * @ver 版本号: 1.0.0
+     */
+    @SecurityParameter
+    @PostMapping("/v1/setUserCid")
+    public ApiResponse setUserCid(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        try {
+            return setAuthService.setUserCid(tokData.getString("id_U"), reqJson.getString("cid"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "SetAuthController.setUserCid", e);
+        }
+    }
+
 //    @SecurityParameter
 //    @PostMapping("/v1/get_my_switch1")
 //    public ApiResponse getMySwitchComp1() {

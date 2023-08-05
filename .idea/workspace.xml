@@ -6,9 +6,21 @@
   <component name="ChangeListManager">
     <list default="true" id="128c9a26-d44c-4e41-b0e6-dabc284dd13b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/SetAuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/SetAuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/SmsLoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/SmsLoginController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/WxLoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/WxLoginController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/enumeration/LoginEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/enumeration/LoginEnum.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/SetAuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/SetAuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/SmsLoginService.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/SmsLoginService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SetAuthServicelmpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SetAuthServicelmpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SmsLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SmsLoginServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/WxLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/WxLoginServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/utils/RegisterUserUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/utils/RegisterUserUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/advice/DecodeRequestBodyAdvice.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/advice/DecodeRequestBodyAdvice.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/DbUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/DbUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Qt.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Qt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/es/lNUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/es/lNUser.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
