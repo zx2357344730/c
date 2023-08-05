@@ -1,0 +1,97 @@
+private ApiResponse joinAddData(String join_user, Map <Object, Object> entries,int type) throws IOException {
+        /*
+          1. 先检查公司是否存在
+          2. 将用户加入公司
+         */
+//        Query compQ = new Query(new Criteria("_id").is(entries.get("id_C")));
+//        Comp one = mongoTemplate.findOne(compQ, Comp.class);
+//
+        Comp compOne = qt.getMDContent(entries.get("id_C").toString(), "info", Comp.class);
+        if (ObjectUtils.isEmpty(compOne)) {
+            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.COMP_NOT_FOUND.getCode(), null) ;
+        }
+
+        // 判断用户存不存在
+        Query userQ = new Query(new Criteria("_id").is(join_user));
+        User userJson = mongoTemplate.findOne(userQ, User.class);
+        //JSONObject userJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(userQ, User.class));
+        User userOne = qt.getMDContent(join_user, "rolex.objComp", User.class);
+
+        // 不存在则返回出去
+        if (null == userOne) {
+            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_IS_NO_FOUND.getCode(), null);
+        }
+//
+//        Query userQuery = new Query();
+//        userQuery.addCriteria(new Criteria("_id").is(join_user)
+//                .and("rolex.objComp."+entries.get("id_C")).exists(true));
+//
+//        User userOne = mongoTemplate.findOne(userQuery, User.class);
+
+        if (null != userOne.getRolex().getJSONObject("objComp").getJSONObject(entries.get("id_C").toString())) {
+            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_JOIN_IS_HAVE.getCode(), null);
+        }
+
+        JSONObject rolex = new JSONObject(3);
+
+        JSONObject objMod = new JSONObject(5);
+        objMod.put("ref", "a-core-0");
+        objMod.put("mod", "a-core");
+        objMod.put("bcdState", 1);
+        objMod.put("bcdLevel", 0);
+        objMod.put("tfin", -1);
+        JSONObject modAuth = new JSONObject();
+        modAuth.put("a-core-0", objMod);
+
+        rolex.put("modAuth", modAuth);
+        rolex.put("id_C", entries.get("id_C"));
+        if (type==0) {
+            rolex.put("grpU", "1009");
+        } else {
+            rolex.put("grpU", entries.get("grpU"));
+        }
+        rolex.put("dep", "1000");
+//        Update update = new Update();
+//        update.set("rolex.objComp."+entries.get("id_C"), rolex).set("info.def_C", entries.get("id_C"));
+//
+//        Query upUserQ = new Query(new Criteria("_id").is(join_user));
+//
+//        mongoTemplate.updateFirst(upUserQ, update, User.class);
+        qt.setMDContent(join_user,qt.setJson("rolex.objComp."+entries.get("id_C"),rolex,"info.def_C", entries.get("id_C")), User.class);
+
+
+        JSONArray searchResult = qt.getES("lbuser", qt.setESFilt("id_CB", entries.get("id_C"), "id_U", join_user ),1);
+
+        if (searchResult.size() == 0) {
+
+            // 查询要加入公司的数据
+//            Query joinCompQ = new Query(new Criteria("_id").is(entries.get("id_C")));
+//            joinCompQ.fields().include("info");
+//            Comp compOne = mongoTemplate.findOne(joinCompQ, Comp.class);
+            //JSONObject compOne = (JSONObject) JSON.toJSON(mongoTemplate.findOne(joinCompQ, Comp.class));
+
+            lBUser addLBUser = new lBUser(join_user, entries.get("id_C").toString(), userJson.getInfo().getWrdN(),
+                    compOne.getInfo().getWrdN(), userJson.getInfo().getWrdNReal(),userJson.getInfo().getWrddesc(), "1009",
+                    userJson.getInfo().getMbn(), "", userJson.getInfo().getId_WX(), userJson.getInfo().getPic());
+
+            qt.addES("lbuser",qt.toJson(addLBUser));
+
+//            IndexRequest indexRequest = new IndexRequest("lbuser");
+//            indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
+//            try {
+//                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+//
+//            } catch (IOException e) {
+//
+//                throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_JOIN_COMP_ERROR.getCode(), null);
+//            }
+            //TODO ZEJIN
+            //在这里发switchComp 的日志
+
+
+            return retResult.ok(CodeEnum.OK.getCode(), null);
+
+        }
+        throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+                USER_JOIN_IS_HAVE.getCode(), null);
+    }

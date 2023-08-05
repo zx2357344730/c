@@ -653,32 +653,19 @@ public class DateUtils {
      */
     public static int differentDays(String str1,String str2) {
         SimpleDateFormat sdf=new SimpleDateFormat(DateEnum.DATE_ONLY.getDate());
-        System.out.println("yr"+str1);
-
-        System.out.println("yr"+str2);
 
         try {
             Calendar cal1 = Calendar.getInstance();
-            System.out.println("yr"+str2);
-
             cal1.setTime(sdf.parse(str1));
-            System.out.println("yr"+str2);
-
 
             Calendar cal2 = Calendar.getInstance();
-            System.out.println("yr"+str2);
-
             cal2.setTime(sdf.parse(str2));
-            System.out.println("yr"+str2);
 
             int day1= cal1.get(Calendar.DAY_OF_YEAR);
             int day2 = cal2.get(Calendar.DAY_OF_YEAR);
-            System.out.println("yr"+str2);
-
 
             int year1 = cal1.get(Calendar.YEAR);
             int year2 = cal2.get(Calendar.YEAR);
-            System.out.println("yr"+year1+year2);
             if(year1 != year2)   //同一年
             {
                 int timeDistance = 0 ;

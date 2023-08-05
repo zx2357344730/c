@@ -119,7 +119,8 @@ public class SetAuthController {
     public ApiResponse setUserPic(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
         try {
-            return setAuthService.setUserPic(tokData.getString("id_U"), reqJson.getString("pic"));
+            return setAuthService.setUserPic(tokData.getString("id_U"),
+                    reqJson.getString("pic"));
         } catch (Exception e) {
             return getUserToken.err(new JSONObject(), "SetAuthController.setUserPic", e);
         }

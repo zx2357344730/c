@@ -23,7 +23,10 @@ public enum  DateEnum {
 
     DATE_TIME_SSS("yyyy/MM/dd HH:mm:ss SSS","日期格式：年/月/日 时:分:秒 毫秒"),
 
-    DATE_TIME_FULL("yyyy/MM/dd HH:mm:ss","日期格式：年/月/日 时:分:秒");
+    DATE_TIME_FULL("yyyy/MM/dd HH:mm:ss","日期格式：年/月/日 时:分:秒"),
+
+    DATE_TIME_SERIAL("yyMMddHHmmss" , "日期格式：年月日时分秒");
+
 
     private String date;
 
