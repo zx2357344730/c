@@ -205,7 +205,8 @@ public class WxLoginController {
                     reqJson.getString("avatarUrl"),
                     reqJson.getString("unionId"),
                     reqJson.getInteger("countryCode"),
-                    reqJson.getString("phoneNumber")
+                    reqJson.getString("phoneNumber"),
+                    reqJson.getString("realName")
             );
         } catch (Exception e) {
             return getUserToken.err(reqJson, "WxLoginController.wxmpRegister", e);

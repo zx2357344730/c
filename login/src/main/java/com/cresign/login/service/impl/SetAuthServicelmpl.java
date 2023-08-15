@@ -249,6 +249,28 @@ public class SetAuthServicelmpl implements SetAuthService {
 
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } else {
+//            qt.getES("lSUser",);
+//            qt.setES("lsuser");
+//            Comp compInfo = qt.getMDContent(id_C, "info", Comp.class);
+//            if (null == compInfo || null == compInfo.getInfo()) {
+//                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+//            }
+//            JSONObject objCompInfo = new JSONObject();
+//            objCompInfo.put("grpU","1099");
+//            objCompInfo.put("id_C",id_C);
+//            objCompInfo.put("dep","1000");
+//            objCompInfo.put("picC",compInfo.getInfo().getPic());
+//            objCompInfo.put("wrdNC",compInfo.getInfo().getWrdN());
+//            JSONObject modAuth = new JSONObject();
+//            JSONObject core = new JSONObject();
+//            core.put("tfin","-1");
+//            core.put("ref","a-core-0");
+//            core.put("mod","a-core");
+//            core.put("bcdState","1");
+//            core.put("bcdLevel","0");
+//            modAuth.put("a-core-0",core);
+//            objCompInfo.put("modAuth",modAuth);
+//            qt.setMDContent(id_U,qt.setJson("rolex.objComp."+id_C,objCompInfo), User.class);
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
         }
 

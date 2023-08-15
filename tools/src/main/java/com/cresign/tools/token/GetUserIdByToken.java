@@ -70,7 +70,7 @@ public class GetUserIdByToken {
         e.printStackTrace(printWriter);
         String msg = params.toJSONString();
         String msg2 = writer.toString().substring(0, 450);
-        ws.sendUsageFlow(qt.setJson("cn", apiName), apiName + "/n" + msg + "/n/n" + msg2, "error", "ALL");
+//        ws.sendUsageFlow(qt.setJson("cn", apiName), apiName + "/n" + msg + "/n/n" + msg2, "error", "ALL");
 
         throw new ErrorResponseException(HttpStatus.OK, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), writer.toString());
     }

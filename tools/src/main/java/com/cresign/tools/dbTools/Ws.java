@@ -17,9 +17,12 @@ import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.User;
+import com.cresign.tools.request.HttpClientUtil;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class Ws {
@@ -53,11 +56,14 @@ public class Ws {
             System.out.println("发送WS完成");
 
         }
+    public void sendWSOnlyXin(String mqKey,LogFlow log){
+        rocketMQTemplate.convertAndSend(mqKey, JSON.toJSONString(log));
+        System.out.println("发送WS-Xin完成:"+mqKey);
+    }
 
         public void sendESOnly(LogFlow log){
             rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
             System.out.println("发送ES完成");
-
         }
 
     /**
@@ -126,6 +132,108 @@ public class Ws {
 
         this.sendESOnly(logContent);
 
+    }
+    public void sendWSXin(String mqKey,LogFlow logContent){
+
+        // the log's id_Us may have users
+        // if so, getES and get id_APP to push
+        // else set id_Us + cidArray as usual
+        JSONArray id_Us = new JSONArray();
+
+        JSONArray cidArray = new JSONArray();
+        // 获取公司编号
+        String id_C = logContent.getId_C();
+        // 获取供应商编号
+        String id_CS = logContent.getId_CS();
+
+        if (logContent.getId_Us() == null)
+            logContent.setId_Us(new JSONArray());
+
+        // fill up id_Us and cidArray (user array info)
+        // by FlowControl... and you can do things like, you
+        // my comp first then CS comp
+        // if id_Us is listed, i should not change that
+        if (logContent.getId_Us().size() > 0)
+        {
+            cidArray = logContent.getId_APPs();
+        } else {
+            // get from flowControl
+            setUserListByFlowId(id_C, logContent, id_Us, cidArray);
+            if (id_CS != null && !id_C.equals(id_CS)) {
+                setUserListByFlowId(id_CS, logContent, id_Us, cidArray);
+            }
+            logContent.setId_Us(id_Us);
+        }
+
+        qt.errPrint("what is going", null, logContent, id_Us, cidArray);
+        System.out.println("sendWS:");
+        System.out.println(JSON.toJSONString(logContent));
+        this.sendWSOnlyXin(mqKey,logContent);
+
+        if (cidArray.size() > 0) {
+            String wrdNUC = "小银【系统】";
+            JSONObject wrdNU = logContent.getWrdNU();
+            if (null != wrdNU && null != wrdNU.getString("cn")) {
+                wrdNUC = wrdNU.getString("cn");
+            }
+            // 调用推送集合消息方法
+            this.sendPushBatch(cidArray, wrdNUC, logContent.getZcndesc());
+        }
+
+        // remove id_Us and id_APPs
+        logContent.setId_Us(null);
+        logContent.setId_APPs(null);
+
+        System.out.println("发送ES"+logContent);
+
+        this.sendESOnly(logContent);
+
+    }
+    static String url = "https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/push";
+    public void push2(LogFlow logContent,String id_UNew){
+        JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_UNew));
+        if (null != es && es.size() != 0
+                && es.getJSONObject(0).getString("id_APP")!=null) {
+            JSONObject map = new JSONObject();
+            map.put("cids",es.getJSONObject(0).getString("id_APP"));
+//            map.put("cids","5d9d7d3dbb0fa44311841d142bc83cec");
+            map.put("title",logContent.getWrdN().getString("cn"));
+            map.put("content",logContent.getZcndesc());
+            JSONObject options = new JSONObject();
+            JSONObject HW = new JSONObject();
+            HW.put("/message/android/category","WORK");
+            options.put("HW",HW);
+            map.put("options",options);
+            JSONObject date = new JSONObject();
+            date.put("data1","1");
+            date.put("data2","2");
+            map.put("date",date);
+            map.put("request_id", UUID.randomUUID().toString().replace("-",""));
+            String s = HttpClientUtil.doPostJson(url, map, "utf-8");
+            System.out.println("请求结果:");
+            System.out.println(s);
+        }
+    }
+
+    public void sendWSEs(LogFlow logContent){
+        JSONArray cidArray = new JSONArray();
+        if (cidArray.size() > 0) {
+            String wrdNUC = "小银【系统】";
+            JSONObject wrdNU = logContent.getWrdNU();
+            if (null != wrdNU && null != wrdNU.getString("cn")) {
+                wrdNUC = wrdNU.getString("cn");
+            }
+            // 调用推送集合消息方法
+            this.sendPushBatch(cidArray, wrdNUC, logContent.getZcndesc());
+        }
+
+        // remove id_Us and id_APPs
+        logContent.setId_Us(null);
+        logContent.setId_APPs(null);
+
+        System.out.println("发送ES"+logContent);
+
+        this.sendESOnly(logContent);
     }
 
     /**
@@ -345,6 +453,34 @@ public class Ws {
         } else if (type.equals("WS"))
         {
             this.sendWSOnly(log);
+        }
+    }
+
+    public void sendUsageFlowNew(JSONObject wrdN, String msg, String subType, String type,String thisB)
+    {
+        // set sys log format:
+        LogFlow log = new LogFlow();
+        log.setSysLog("6141b6797e8ac90760913fd0", subType, msg, 3, wrdN);
+
+
+        JSONArray id_Us = new JSONArray();
+        JSONArray id_APPs = new JSONArray();
+
+        // find all users in the "system usageflow group
+        this.setUserListByFlowId("6141b6797e8ac90760913fd0", log, id_Us, id_APPs );
+        if (type.equals("ALL"))
+        {   //send WS, write ES, send push
+            this.sendWSXin(thisB,log);
+        } else if (type.equals("WSES"))
+        {  // no Push
+            this.sendESOnly(log);
+            this.sendWSOnlyXin(thisB,log);
+        } else if (type.equals("ES"))
+        {
+            this.sendESOnly(log);
+        } else if (type.equals("WS"))
+        {
+            this.sendWSOnlyXin(thisB,log);
         }
     }
 

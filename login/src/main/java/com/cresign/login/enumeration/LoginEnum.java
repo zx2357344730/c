@@ -39,7 +39,8 @@ public enum LoginEnum {
     COMP_NOT_FOUND("042001"),
     //用户已经不在该公司了
     USER_NOT_IN_COMP("042002"),
-
+    //用户已经在注销了
+    USER_REG_OFF("042003"),
 
 
 

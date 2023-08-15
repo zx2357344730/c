@@ -107,6 +107,18 @@ public class Qt {
         return result;
     }
 
+    public <T> T  getMDContentAll(String id, Class<T> classType) {
+
+        Query query = new Query(new Criteria("_id").is(id));
+        T result;
+        try {
+            result = mongoTemplate.findOne(query, classType);
+        } catch (Exception e){
+            throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
+        }
+        return result;
+    }
+
 //    public <T> T  getMDContentByKv(String key,String val,  List<String>  fields, Class<T> classType) {
 //
 //        Query query = new Query(new Criteria(key).is(val));

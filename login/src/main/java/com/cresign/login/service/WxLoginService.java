@@ -105,7 +105,7 @@ public interface WxLoginService {
      * @updated 2021-03-09 18:57
      * @return java.lang.String
      */
-    ApiResponse wxmpRegister(String nickName, String avatarUrl, String unionId, Integer countryCode, String phoneNumber);
+    ApiResponse wxmpRegister(String nickName, String avatarUrl, String unionId, Integer countryCode, String phoneNumber,String realName);
 
 //    ApiResponse uploadWXHeadSculpture(String path);
 

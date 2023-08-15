@@ -60,6 +60,7 @@ public enum PurchaseEnum {
     ERR_PURCHASE_INFO_IS_NULL("05003"),
     // 购买失败 : tang
     ERR_PURCHASE_FAIL("05004"),
+    ERR_KEY_IS_NULL("05005"),
     ;
     /**
      * 异常状态码
