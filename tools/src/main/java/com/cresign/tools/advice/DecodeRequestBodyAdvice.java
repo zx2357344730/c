@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -148,8 +147,6 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                     System.out.println(JSON.toJSONString(requestMap));
                     String content ;
                     String aesKey;
-                    System.out.println("输出key:");
-                    System.out.println(RED_KEY+uuId);
                     JSONObject re = JSONObject.parseObject(redisTemplate0.opsForValue().get(RED_KEY+uuId));
                     if (null == re) {
                         throw  new RuntimeException("id对应秘钥为空!");

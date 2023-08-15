@@ -57,9 +57,9 @@ public interface SmsLoginService {
     ApiResponse smsRegister(String phone, Integer phoneType, String smsNum, String clientType, String id_APP, String pic, JSONObject wrdN) throws IOException;
 
 
-    ApiResponse logOffUser(String id_U);
+    ApiResponse regOffUser(String id_U);
 
-    ApiResponse secureLogOffUser(String mbn);
+    ApiResponse regBackUser(String mbn);
 
     ApiResponse setTestUser(String name,String type);
 

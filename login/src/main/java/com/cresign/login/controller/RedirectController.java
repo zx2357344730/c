@@ -4,9 +4,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.service.RedirectService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.token.GetUserIdByToken;
+import com.cresign.tools.authFilt.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;

@@ -75,9 +75,11 @@ public class UsageServiceImpl implements UsageService {
         return retResult.ok(CodeEnum.OK.getCode(), null);
     }
 
+
     @Override
     public ApiResponse getFav(String id_U) {
         User user = qt.getMDContent(id_U, "fav", User.class);
+        //All new user must have fav and cookiex card, but it may not exists for old users
         if (user.getFav() == null)
         {
             JSONObject initFav = qt.setJson("objFav", new JSONArray(), "objInfo", new JSONArray());
@@ -86,9 +88,15 @@ public class UsageServiceImpl implements UsageService {
         }
         if (user.getFav().getJSONArray("objInfo") == null)
         {
-//            JSONObject initFav = qt.setJson("objFav", new JSONArray(), "objInfo", new JSONArray());
-//            qt.setMDContent(id_U, qt.setJson("fav", initFav), User.class);
-//            user.setFav(initFav);
+            JSONObject initFav = qt.setJson("objInfo", new JSONArray());
+            qt.setMDContent(id_U, qt.setJson("fav.objInfo", initFav), User.class);
+            user.getFav().put("objInfo", initFav);
+        }
+        if (user.getFav().getJSONArray("objFav") == null)
+        {
+            JSONObject initFav = qt.setJson("objFav", new JSONArray());
+            qt.setMDContent(id_U, qt.setJson("fav.objFav", initFav), User.class);
+            user.getFav().put("objFav", initFav);
         }
         return retResult.ok(CodeEnum.OK.getCode(), user.getFav());
     }
@@ -97,7 +105,11 @@ public class UsageServiceImpl implements UsageService {
     public ApiResponse delFav(String id_U, String id_O, Integer index, String id, String id_FS) {
         JSONObject jsonFav = qt.setJson("id_O", id_O, "index", index, "id", id, "id_FS", id_FS);
         qt.pullMDContent(id_U, "fav.objFav", jsonFav, User.class);
-        qt.pullMDContent(id_O, "action.objAction." + index + ".arrUA", id_U, Order.class);
+        try {
+            qt.pullMDContent(id_O, "action.objAction." + index + ".arrUA", id_U, Order.class);
+        } catch (Exception e) {
+            return retResult.ok(CodeEnum.OK.getCode(), "任务单已删除");
+        }
         return retResult.ok(CodeEnum.OK.getCode(), "");
     }
 

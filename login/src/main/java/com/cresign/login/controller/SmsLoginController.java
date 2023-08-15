@@ -5,7 +5,7 @@ import com.cresign.login.service.SmsLoginService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.enumeration.manavalue.HeaderEnum;
-import com.cresign.tools.token.GetUserIdByToken;
+import com.cresign.tools.authFilt.GetUserIdByToken;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -113,25 +113,25 @@ public class SmsLoginController {
     }
 
     @SecurityParameter
-    @PostMapping("/v1/logOffUser")
-    public ApiResponse logOffUser()  {
+    @PostMapping("/v1/regOffUser")
+    public ApiResponse regOffUser()  {
         try {
-            return smsLoginService.logOffUser(
+            return smsLoginService.regOffUser(
                     getUserToken.getTokenOfUserId(request.getHeader("authorization")
                             , request.getHeader("clientType"))
             );
         } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "SmsLoginController.logOffUser", e);
+            return getUserToken.err(new JSONObject(), "SmsLoginController.regOffUser", e);
         }
     }
 
     @SecurityParameter
-    @PostMapping("/v1/secureLogOffUser")
-    public ApiResponse secureLogOffUser(@RequestBody JSONObject reqJson)  {
+    @PostMapping("/v1/regBackUser")
+    public ApiResponse regBackUser(@RequestBody JSONObject reqJson)  {
         try {
-            return smsLoginService.secureLogOffUser(reqJson.getString("mbn"));
+            return smsLoginService.regBackUser(reqJson.getString("mbn"));
         } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "SmsLoginController.secureLogOffUser", e);
+            return getUserToken.err(new JSONObject(), "SmsLoginController.regBackUser", e);
         }
     }
 

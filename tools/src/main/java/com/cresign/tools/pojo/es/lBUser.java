@@ -52,7 +52,7 @@ public class lBUser implements Serializable {
 
     private JSONObject wrdN;
 
-    private JSONObject wrdNCB;
+    private JSONObject wrdNCB; // need delete
 
     private String grpU;
 
@@ -81,5 +81,5 @@ public class lBUser implements Serializable {
 
     private String cnty;
 
-    private String dep;// 新增当前lBUser
+
 }

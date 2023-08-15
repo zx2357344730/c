@@ -12,7 +12,6 @@ import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.LogFlow;
-import com.cresign.tools.request.HttpClientUtil;
 import io.netty.channel.ChannelHandler.Sharable;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.rocketmq.spring.annotation.MessageModel;
@@ -53,7 +52,6 @@ import java.util.UUID;
         topic = WebSocketUserServer.WsId.topic,
         selectorExpression = WebSocketUserServer.WsId.tap,
         messageModel = MessageModel.BROADCASTING,
-//        messageModel = MessageModel.CLUSTERING,
         consumerGroup = WebSocketUserServer.WsId.group
 )
 public class WebSocketUserServer implements RocketMQListener<String> {

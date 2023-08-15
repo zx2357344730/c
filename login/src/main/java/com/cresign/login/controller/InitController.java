@@ -4,7 +4,7 @@ package com.cresign.login.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.service.InitService;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.token.GetUserIdByToken;
+import com.cresign.tools.authFilt.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

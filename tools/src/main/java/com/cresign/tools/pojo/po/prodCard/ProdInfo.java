@@ -47,9 +47,11 @@ public class ProdInfo {
 
     private JSONObject wrddesc;
 
-    private String grp;private String grpB;
+    private String grp;
+    private String grpB;
 
-    private String ref;private String refB;
+    private String ref;
+    private String refB;
 
     private String pic;
 

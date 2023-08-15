@@ -5,7 +5,7 @@ import com.cresign.purchase.service.ZjTestService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.pojo.po.LogFlow;
-import com.cresign.tools.token.GetUserIdByToken;
+import com.cresign.tools.authFilt.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

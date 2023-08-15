@@ -6,9 +6,13 @@ import lombok.Getter;
 public enum ToolEnum {
 
     //assset不存在
-    ASSET_NOT_FOUND("021005"),
 
     DB_ERROR("029001"),
+
+    SAVE_DB_ERROR("029003"),
+
+    ES_DB_ERROR("029002"),
+
     //公司文件容量不足
     POWER_NOT_ENOUGH("030011"),
 
@@ -18,7 +22,7 @@ public enum ToolEnum {
     /**
      * 异常状态码
      */
-    private String code;
+    private final String code;
 
     /**
      * 带参构造方法

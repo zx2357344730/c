@@ -19,7 +19,6 @@ import com.cresign.tools.pojo.po.*;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.lang.StringUtils;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.bson.types.ObjectId;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -73,7 +72,6 @@ public class Qt {
     //MDB - done: get, getMany, del, new, inc, set, push, pull
     //MDB - need: ops, opsExec
     //ESS - done: get, getFilt, del, add, set
-    //ESS - need: ops, opsExec
     //RED - done: set/hash, hasKey, put/set, get expire
     //Other - done: toJson, jsonTo, list2Map, getConfig, filterBuilder
     //Other - need: getRecentLog, judgeComp, chkUnique,, checkOrder, updateSize
@@ -98,18 +96,6 @@ public class Qt {
 
             fields.forEach(query.fields()::include);
         }
-        T result;
-        try {
-            result = mongoTemplate.findOne(query, classType);
-        } catch (Exception e){
-            throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
-        }
-        return result;
-    }
-
-    public <T> T  getMDContentAll(String id, Class<T> classType) {
-
-        Query query = new Query(new Criteria("_id").is(id));
         T result;
         try {
             result = mongoTemplate.findOne(query, classType);
@@ -352,7 +338,7 @@ public class Qt {
         } catch (Exception e)
         {
             System.out.println("error"+e);
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
 
     }
@@ -368,7 +354,7 @@ public class Qt {
         } catch (Exception e)
         {
             System.out.println("error"+e);
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
     }
 
@@ -381,7 +367,7 @@ public class Qt {
         update.inc("tvs", 1);
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         if (updateResult.getModifiedCount() == 0) {
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), "");
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), "");
         }
     }
 
@@ -393,11 +379,12 @@ public class Qt {
         update.inc("tvs", 1);
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         if (updateResult.getModifiedCount() == 0) {
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), "");
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), "");
         }
     }
 
 
+    //Pull multiple Key Values from a single id
     public void pullMDContent(String id, JSONObject jsonUpdate, Class<?> classType) {
         Query query = new Query(new Criteria("_id").is(id));
         Update update = new Update();
@@ -406,7 +393,7 @@ public class Qt {
         update.inc("tvs", 1);
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         if (updateResult.getModifiedCount() == 0) {
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), "");
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), "");
         }
     }
 
@@ -418,7 +405,7 @@ public class Qt {
         update.inc("tvs", 1);
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         if (updateResult.getModifiedCount() == 0) {
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), "");
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), "");
         }
     }
 
@@ -460,11 +447,8 @@ public class Qt {
             System.out.println("inSetMD" + updateResult);
         } catch (Exception e)
         {
-            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
-//            if (updateResult.getModifiedCount() == 0) {
-//                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), "");
-//            }
     }
     public void setMDContentMany(HashSet setId, JSONObject keyVal, Class<?> classType) {
         try {
@@ -487,7 +471,7 @@ public class Qt {
             System.out.println("inSetMD" + updateResult);
         } catch (Exception e)
         {
-            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
     }
     public void setMDContentMany(List<JSONObject> listBulk, Class<?> classType) {
@@ -522,8 +506,7 @@ public class Qt {
             });
             BulkWriteResult execute = bulk.execute();
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
     }
 
@@ -535,8 +518,7 @@ public class Qt {
             mongoTemplate.remove(query,classType);
         } catch (Exception e)
         {
-            System.out.println("error"+e);
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
     }
 
@@ -548,8 +530,7 @@ public class Qt {
             mongoTemplate.remove(query,classType);
         } catch (Exception e)
         {
-            System.out.println("error"+e);
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
     }
 
@@ -559,8 +540,7 @@ public class Qt {
             mongoTemplate.insert(obj);
         } catch (Exception e)
         {
-            System.out.println("error"+e);
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
 
     }
@@ -571,8 +551,7 @@ public class Qt {
             mongoTemplate.save(obj);
         } catch (Exception e)
         {
-            System.out.println("error"+e);
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
 
     }
@@ -675,6 +654,17 @@ public class Qt {
             return result.getJSONObject(0).getString("id_A");
         } else
             return "";
+    }
+
+    public String getId_U(String phone)
+    {
+        JSONArray result = this.getES("lNUser", this.setESFilt("mbn","exact",phone));
+
+        if (result.size() == 1) {
+            return result.getJSONObject(0).getString("id_A");
+        } else
+            return "";
+
     }
 
 
@@ -839,7 +829,7 @@ public class Qt {
             client.index(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
             e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
         }
     }
 
@@ -882,7 +872,7 @@ public class Qt {
 
         } catch (IOException e) {
             e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
         }
     }
 
@@ -904,13 +894,13 @@ public class Qt {
                 request.indices(indices);
                 request.source(sourceBuilder);
                 SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-//                System.out.println(response);
+                System.out.println(response);
 
                 return this.hit2Array(response);
 
             } catch (IOException e) {
                 e.printStackTrace();
-                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
             }
         }
 
@@ -940,7 +930,7 @@ public class Qt {
 
         } catch (IOException e) {
             e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
         }
     }
 
@@ -955,7 +945,7 @@ public class Qt {
             countResponse = client.count(countRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
         }
         return countResponse.getCount();
 
@@ -989,7 +979,7 @@ public class Qt {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
         }
 
     }
@@ -1004,7 +994,7 @@ public class Qt {
             client.update(updateRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
         }
 
     }
@@ -1033,7 +1023,7 @@ public class Qt {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
         }
     }
 
@@ -1051,7 +1041,7 @@ public class Qt {
             System.out.println("删除是否成功:" + response.getResult());
         } catch (IOException e) {
             e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
         }
     }
 
@@ -1136,7 +1126,7 @@ public class Qt {
         JSONObject jsonCapacity = asset.getPowerup().getJSONObject("capacity");
         //超额
         if (fileSize > 0 && fileSize + jsonCapacity.getLong("used") > jsonCapacity.getLong("total")) {
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.POWER_NOT_ENOUGH.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.POWER_NOT_ENOUGH.getCode(), "");
         }
         JSONObject jsonUpdate = setJson("powerup.capacity.used", fileSize);
         incMDContent(asset.getId(), jsonUpdate, Asset.class);

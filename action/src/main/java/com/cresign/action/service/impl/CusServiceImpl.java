@@ -16,12 +16,11 @@ import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.Order;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.pojo.po.orderCard.OrderCusmsg;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author tang

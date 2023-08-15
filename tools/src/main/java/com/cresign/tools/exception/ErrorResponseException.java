@@ -1,7 +1,6 @@
 package com.cresign.tools.exception;
 
 import lombok.Getter;
-import org.apache.skywalking.apm.toolkit.trace.TraceContext;
 import org.springframework.http.HttpStatus;
 
 /**

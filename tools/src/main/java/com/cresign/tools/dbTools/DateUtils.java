@@ -166,9 +166,9 @@ public class DateUtils {
                 if (null != dateD3) {
                     flag = dateD.getTime() >= dateD2.getTime() && dateD.getTime() <= dateD3.getTime();
                 }
-            } else if (is == Constants.INT_TEN) {
+            } else if (is == 10) {
                 flag = dateD.getTime() < dateD2.getTime();
-            } else if (is == Constants.INT_ELEVEN) {
+            } else if (is == 11) {
                 if (null != dateD3) {
                     flag = dateD.getTime() < dateD2.getTime() || dateD.getTime() > dateD3.getTime();
                 }

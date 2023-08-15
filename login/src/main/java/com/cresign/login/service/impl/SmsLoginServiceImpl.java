@@ -78,7 +78,7 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 
         try {
             JSONObject result = new JSONObject();
-            if(getIsOff(phone,result)){
+            if(isRegOff(phone,result)){
                 return retResult.ok(CodeEnum.OK.getCode(), result);
             }
 //            Query mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
@@ -112,7 +112,7 @@ public class SmsLoginServiceImpl implements SmsLoginService {
     public ApiResponse smsLogin(String phone, String smsNum, String clientType) {
 
         JSONObject resultNew = new JSONObject();
-        if(getIsOff(phone,resultNew)){
+        if(isRegOff(phone,resultNew)){
             return retResult.ok(CodeEnum.OK.getCode(), resultNew);
         }
 //        Query mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
@@ -133,21 +133,15 @@ public class SmsLoginServiceImpl implements SmsLoginService {
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
             if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.LOGIN.getSmsType() + phone))) {
 
-//                Query query = new Query(new Criteria("info.mbn").is(phone));
-//
-//                User user = mongoTemplate.findOne(query, User.class);
-
-//                JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone));
-                JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn","exact",phone));
-                if (null == es || es.size() == 0) {
+                String id_U = qt.getId_U(phone);
+                if (id_U.equals("")) {
                     throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
                             LOGIN_NOTFOUND_USER.getCode(),null);
                 }
-//                User user = qt.getMDContentAll(getEsV(es,"id_U"),User.class);
-                User user = qt.getMDContent(getEsV(es,"id_U"),qt.strList("info","rolex"),User.class);
+
+                User user = qt.getMDContent(id_U,qt.strList("info","rolex"),User.class);
                 if (ObjectUtils.isEmpty(user)) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-LOGIN_NOTFOUND_USER.getCode(), null);
+                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(), null);
                 }
 
                 // 返回json数据给前端
@@ -155,14 +149,12 @@ LOGIN_NOTFOUND_USER.getCode(), null);
 
                 return retResult.ok(CodeEnum.OK.getCode(), result);
             } else {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-SMS_CODE_NOT_CORRECT.getCode(), null);
+                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.SMS_CODE_NOT_CORRECT.getCode(), null);
 
             }
 
         } else {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-SMS_CODE_NOT_FOUND.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.SMS_CODE_NOT_FOUND.getCode(), null);
         }
 
     }
@@ -172,23 +164,11 @@ SMS_CODE_NOT_FOUND.getCode(), null);
 
         try {
             JSONObject result = new JSONObject();
-            if(getIsOff(phone,result)){
+            if(isRegOff(phone,result)){
                 return retResult.ok(CodeEnum.OK.getCode(), result);
             }
-//            Query mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
-//            JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone + "_off"));
-//            JSONObject userLn = null;
-//            if (null != es && es.size() > 0) {
-//                userLn = es.getJSONObject(0);
-//            }
-//            if (ObjectUtils.isNotEmpty(mongoTemplate.findOne(mbnQue, User.class))||null!=userLn) {
-//                JSONObject result = new JSONObject();
-//                result.put("t_type", 2);
-//                result.put("t_desc", "该账户正在注销中！！！");
-//                return retResult.ok(CodeEnum.OK.getCode(), result);
-//            }
-            String[] phones = {phone};
 
+            String[] phones = {phone};
             SMSTencent.sendSMS(phones, 6, SMSTemplateEnum.REGISTER.getTemplateId(), SMSTypeEnum.REGISTER.getSmsType());
 
         } catch (RuntimeException  e) {
@@ -198,7 +178,6 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         result.put("t_type", 1);
         result.put("t_desc", "操作成功");
         return retResult.ok(CodeEnum.OK.getCode(), result);
-//        return retResult.ok(CodeEnum.OK.getCode(), null);
      }
 
     @Override
@@ -211,22 +190,16 @@ SMS_CODE_NOT_FOUND.getCode(), null);
                 // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
                 if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
 
-//                    Query mbnQue = new Query(new Criteria("info.mbn").is(phone));
-//
-//                    User user = mongoTemplate.findOne(mbnQue, User.class);
-                    JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn","exact",phone));
-                    if (null == es || es.size() == 0
-//                            || !getIsEsKV(es, qt.setJson("mbn", phone))
-                    ) {
+//                    JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn","exact",phone));
+                    String id_U = qt.getId_U(phone);
+                    if (id_U.equals("")) {
                         throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
                                 LOGIN_NOTFOUND_USER.getCode(),null);
                     }
-                    User user = qt.getMDContent(getEsV(es,"id_U"),qt.strList("info","rolex"),User.class);
-//                    User user = qt.getMDContentAll(getEsV(es,"id_U"),User.class);
-//                    JSONObject userLn = qt.getES("lNUser", qt.setESFilt("mbn", phone)).getJSONObject(0);
+                    User user = qt.getMDContent(id_U,qt.strList("info","rolex"),User.class);
+
                     //存在则不是注册，返回个人信息
                     if (ObjectUtils.isNotEmpty(user)
-//                            || null!=userLn
                     ) {
 
                         // 返回json数据给前端
@@ -345,21 +318,10 @@ SMS_CODE_NOT_FOUND.getCode(), null);
                         return retResult.ok(CodeEnum.OK.getCode(), result);
                     } else {
                         JSONObject result = new JSONObject();
-                        if(getIsOff(phone,result)){
+                        if(isRegOff(phone,result)){
                             return retResult.ok(CodeEnum.OK.getCode(), result);
                         }
-//                        mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
-//                        JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone + "_off"));
-//                        JSONObject userLn = null;
-//                        if (null != es && es.size() > 0) {
-//                            userLn = es.getJSONObject(0);
-//                        }
-//                        if (ObjectUtils.isNotEmpty(mongoTemplate.findOne(mbnQue, User.class))||null!=userLn) {
-//                            JSONObject result = new JSONObject();
-//                            result.put("t_type", 2);
-//                            result.put("t_desc", "该账户正在注销中！！！");
-//                            return retResult.ok(CodeEnum.OK.getCode(), result);
-//                        }
+
                     }
 
 
@@ -404,7 +366,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
     }
 
     @Override
-    public ApiResponse logOffUser(String id_U) {
+    public ApiResponse regOffUser(String id_U) {
         System.out.println("进入注销输出:");
         User user = qt.getMDContent(id_U, "info", User.class);
         String[] s = user.getInfo().getMbn().split("_");
@@ -431,7 +393,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
     }
 
     @Override
-    public ApiResponse secureLogOffUser(String mbn) {
+    public ApiResponse regBackUser(String mbn) {
         System.out.println("进入解除注销输出:");
         JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", mbn + "_off"));
         JSONObject userLn;
@@ -654,34 +616,29 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         err.add(reZ);
     }
 
-    private boolean getIsOff(String phone,JSONObject result){
-        Query mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
-        JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone + "_off"));
-        JSONObject userLn = null;
-        if (null != es && es.size() > 0) {
-            userLn = es.getJSONObject(0);
-        }
-        if (ObjectUtils.isNotEmpty(mongoTemplate.findOne(mbnQue, User.class))||null!=userLn) {
+    private boolean isRegOff(String phone,JSONObject result){
+//        Query mbnQue = new Query(new Criteria("info.mbn").is(phone+"_off"));
+//        JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone + "_off"));
+//        JSONObject userLn = null;
+//        if (null != es && es.size() > 0) {
+//            userLn = es.getJSONObject(0);
+//        }
+//        if (ObjectUtils.isNotEmpty(mongoTemplate.findOne(mbnQue, User.class))||null!=userLn) {
+//            result.put("t_type", 2);
+//            result.put("t_desc", "该账户正在注销中！！！");
+//            return true;
+//        }
+
+        String id_U_off = qt.getId_U(phone+"_off");
+        if (id_U_off.equals("")) {
             result.put("t_type", 2);
             result.put("t_desc", "该账户正在注销中！！！");
+            return false;
+        }
+        else {
             return true;
         }
-        return false;
     }
 
-    public boolean getIsEsKV(JSONArray es,JSONObject data){
-        int jiShu = 0;
-        JSONObject esObj = es.getJSONObject(0);
-        for (String key : data.keySet()) {
-            if (esObj.getString(key).equals(data.getString(key))) {
-                jiShu++;
-            }
-        }
-        return jiShu == data.keySet().size();
-    }
-
-    public String getEsV(JSONArray es,String key){
-        return es.getJSONObject(0).getString(key);
-    }
 
 }
