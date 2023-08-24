@@ -934,21 +934,9 @@ public class CusServiceImpl implements CusService {
 //        id_Us.add(logUser);
 //        id_Us.add(sendUser);
         logFlow.setId_Us(id_Us);
-//        ws.sendWSNew(logFlow,0);
         ws.sendWS(logFlow);
     }
-
-//    /**
-//     * 发送日志到rocketMQ方法
-//     * @param logFlow	日志信息
-//     * @author tang
-//     * @date 创建时间: 2023/5/29
-//     * @ver 版本号: 1.0.0
-//     */
-//    public void sendMsgOne(LogFlow logFlow){
-//        ws.sendWSNew(logFlow);
-//    }
-
+    
     /**
      * 发送日志信息到指定的id_U方法
      * @param sendUser	指定的id_U（用户编号）
@@ -968,8 +956,6 @@ public class CusServiceImpl implements CusService {
         JSONObject data = logFlow.getData();
         data.put("id_UPointTo",logFlow.getId_Us());
         logFlow.setData(data);
-//        logFlow.setData(data);
-//        ws.sendWSNew(logFlow,0);
         ws.sendWS(logFlow);
     }
 

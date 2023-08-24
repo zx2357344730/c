@@ -26,7 +26,7 @@ public class ErrorResponseException extends RuntimeException{
     /**
      * 返回信息
      */
-    private String message;
+//    private String message;
 
     private String des;
 

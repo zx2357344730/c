@@ -269,7 +269,6 @@ public class ActionServiceImpl implements ActionService {
             // 设置发送对象
             logFlow.setId_Us(id_Us);
             // 发送websocket
-//            ws.sendWSNew(logFlow,0);
             ws.sendWS(logFlow);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } catch (Exception e) {
@@ -327,7 +326,6 @@ public class ActionServiceImpl implements ActionService {
             // 设置发送对象
             logFlow.setId_Us(id_Us);
             // 调用新方法发送websocket
-//            ws.sendWSNew(logFlow,0);
             ws.sendWS(logFlow);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } catch (Exception e) {
@@ -430,7 +428,6 @@ public class ActionServiceImpl implements ActionService {
         logL.setId_Us(id_Us);
 //        ws.sendWS(logL);
         // 发送日志信息
-//        ws.sendWSNew(logL,0);
         ws.sendWS(logL);
         return retResult.ok(CodeEnum.OK.getCode(), "发送成功");
     }
@@ -455,7 +452,6 @@ public class ActionServiceImpl implements ActionService {
         data.put("id_UPointTo",logFlow.getId_Us());
         logFlow.setData(data);
 //        logFlow.setData(data);
-//        ws.sendWSNew(logFlow,0);
         ws.sendWS(logFlow);
     }
 
@@ -531,7 +527,6 @@ public class ActionServiceImpl implements ActionService {
         logFlow.setId_Us(id_Us);
         logFlow.setTmd(dateNow);
         // 发送日志
-//        ws.sendWSNew(logFlow,0);
         ws.sendWS(logFlow);
         // 更新日志回访次数
         qt.setMDContent(id_O, qt.setJson("oQc.objQc."+index+".foCount",foUp), Order.class);
@@ -568,13 +563,11 @@ public class ActionServiceImpl implements ActionService {
                 , tokData.getJSONObject("wrdNU"));
         // 设置日志data
         logLNewMsg.setData(data);
-//        ws.sendWS(logLNewMsg);
         // 设置接收用户
         logLNewMsg.setId_Us(id_Us);
         // 设置时间并且把时间加一秒
         logLNewMsg.setTmd(DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1));
         // 发送websocket
-//        ws.sendWSNew(logLNewMsg,0);
         ws.sendWS(logLNewMsg);
         return retResult.ok(CodeEnum.OK.getCode(), result);
     }
@@ -596,7 +589,6 @@ public class ActionServiceImpl implements ActionService {
         logFlow.setId_Us(id_Us);
         logFlow.getData().put("type",type);
         ws.sendWS(logFlow);
-//        ws.sendWSNew(logFlow,0);
     }
 
     /**
@@ -1301,7 +1293,6 @@ public class ActionServiceImpl implements ActionService {
 
 //            ws.sendWS(logL);
             logL.setId_Us(id_UsLog);
-//            ws.sendWSNew(logL,0);
             ws.sendWS(logL);
         }
 
@@ -1386,7 +1377,6 @@ public class ActionServiceImpl implements ActionService {
 
 //                ws.sendWS(log);
                 log.setId_Us(id_UsLog);
-//                ws.sendWSNew(log,0);
                 ws.sendWS(log);
             }
             //getOStock (if not null)
@@ -2007,10 +1997,10 @@ public class ActionServiceImpl implements ActionService {
         return retResult.ok(CodeEnum.OK.getCode(), "done");
     }
 
-    private void activateThis(JSONObject actData, String id_O, Integer index, String myCompId, String id_U, String grpU, String dep, JSONObject wrdNU)
+    private Integer activateThis(JSONObject actData, String id_O, Integer index, String myCompId, String id_U, String grpU, String dep, JSONObject wrdNU)
     {
-        OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(actData.get("orderOItem")), OrderOItem.class);
-        OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(actData.get("orderAction")), OrderAction.class);
+        OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(actData.getJSONArray("oItemArray").getJSONObject(index)), OrderOItem.class);
+        OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(actData.getJSONArray("actionArray").getJSONObject(index)), OrderAction.class);
 
         // 根据零件递归信息获取零件信息，并且制作日志
         unitAction.setBcdStatus(0);
@@ -2033,22 +2023,26 @@ public class ActionServiceImpl implements ActionService {
 
         ws.sendWS(logLP);
 
+        Integer totalSubCount = 0;
+
         // check if objSub > 0, if so, activate also next, if so(activate next)
         if (unitOItem.getObjSub() > 0)
         {
-            this.activateThis(actData, id_O, index + 1, myCompId, id_U, grpU, dep, wrdNU);
+            Integer subCountWithin = this.activateThis(actData, id_O, index + 1, myCompId, id_U, grpU, dep, wrdNU);
+            totalSubCount = unitOItem.getObjSub() + subCountWithin;
         }
 
         // check if next oItem (index + 1 + objSub(0) > size && has seq == 1
-        Integer seqCheck = index + 1 + unitOItem.getObjSub();
-        if (seqCheck < actData.getInteger("size") && unitOItem.getId_P().equals(""))
+        Integer seqCheckIndex = index + 1 + totalSubCount;
+        if (seqCheckIndex < actData.getInteger("size") && unitOItem.getId_P().equals(""))
         {
-            String seqNext = actData.getJSONArray("oItemArray").getJSONObject(seqCheck).getString("seq");
+            String seqNext = actData.getJSONArray("oItemArray").getJSONObject(seqCheckIndex).getString("seq");
             if (seqNext.equals("1"))
             {
-                this.activateThis(actData, id_O, seqCheck, myCompId, id_U, grpU, dep, wrdNU);
+                this.activateThis(actData, id_O, seqCheckIndex, myCompId, id_U, grpU, dep, wrdNU);
             }
         }
+        return totalSubCount;
     }
 
     // this special Pushing API is for Start all orders from casItemx if they are "materials"
@@ -2560,7 +2554,6 @@ public class ActionServiceImpl implements ActionService {
             id_Us.add(id_U);
             logLPNew.setId_Us(id_Us);
             logLPNew.setTmd(dateNow);
-//            ws.sendWSNew(logLPNew,0);
             ws.sendWS(logLPNew);
         }
 
@@ -2588,7 +2581,6 @@ public class ActionServiceImpl implements ActionService {
                             logLPDef.setId_Us(qt.setArray(id_U));
                             dateNow = DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1);
                             logLPDef.setTmd(dateNow);
-//                            ws.sendWSNew(logLPDef,0);
                             ws.sendWS(logLPDef);
                         }
                     } else if (defReplySon.getInteger("type") == 2) {
@@ -2604,7 +2596,6 @@ public class ActionServiceImpl implements ActionService {
                             logLPDef.setId_Us(qt.setArray(id_U));
                             dateNow = DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1);
                             logLPDef.setTmd(dateNow);
-//                            ws.sendWSNew(logLPDef,0);
                             ws.sendWS(logLPDef);
                         }
                     } else {
@@ -2617,7 +2608,6 @@ public class ActionServiceImpl implements ActionService {
                         logLPDef.setId_Us(qt.setArray(id_U));
                         dateNow = DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1);
                         logLPDef.setTmd(dateNow);
-//                        ws.sendWSNew(logLPDef,0);
                         ws.sendWS(logLPDef);
                     }
                 }

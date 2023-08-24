@@ -26,9 +26,9 @@ import java.util.Map;
 @ControllerAdvice  //不指定包默认加了@Controller和@RestController都能控制
 public class CommonExceptionHandler {
 
-    @Autowired
-    private LocalMessage localMessage;
-
+//    @Autowired
+//    private LocalMessage localMessage;
+//
 
 
     /**
@@ -64,9 +64,7 @@ public class CommonExceptionHandler {
 
         map.put("message", "i am in  exception 1"+JSON.toJSONString(map));
 
-//        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
         map.put("des", JSON.toJSONString(map));
-//        log.error(JSON.toJSONString(map));
         System.out.println("i am in  exception 1");
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(JSON.toJSONString(map));
@@ -106,15 +104,12 @@ public class CommonExceptionHandler {
 
         map.put("message", "i am in  exception 2"+JSON.toJSONString(map));
 
-//        map.put("des", localMessage.getLocaleMessage(map.get("code").toString(), "", params));
         map.put("des", JSON.toJSONString(map));
         System.out.println("i am in  exception 2");
 
         reEx.printStackTrace();
 
         System.out.println(reEx);
-
-//        log.error(JSON.toJSONString(map));
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(JSON.toJSONString(map));
 

@@ -1411,17 +1411,16 @@ public class Qt {
     public JSONObject getRDSet(String collection, String key)
     {
         String result = redisTemplate0.opsForValue().get(collection + ":" + key);
-
 //            System.out.println("result:"+result);
         return JSONObject.parseObject(result);
     }
-    public JSONObject getRDSet(String key)
-    {
-        String result = redisTemplate0.opsForValue().get(key);
-
-//            System.out.println("result:"+result);
-        return JSONObject.parseObject(result);
-    }
+//    public JSONObject getRDSet(String key)
+//    {
+//        String result = redisTemplate0.opsForValue().get(key);
+//
+////            System.out.println("result:"+result);
+//        return JSONObject.parseObject(result);
+//    }
 
     public String getRDSetStr(String collection, String key)
     {
@@ -1478,4 +1477,59 @@ public class Qt {
         return jsonArray;
     }
 
+    public void checkNull(JSONObject jsonDb, JSONArray arrayField) {
+        JSONArray arrayResult = new JSONArray();
+        for (int i = 0; i < arrayField.size(); i++) {
+            String field = arrayField.getString(i);
+            String[] splitField = field.split("\\.");
+            JSONObject jsonClone = this.cloneObj(jsonDb);
+            StringBuffer key = new StringBuffer();
+            for (int j = 0; j < splitField.length; j++) {
+                String split = splitField[j];
+                String[] isArray = split.split("\\[");
+                System.out.println("jsonClone=" + jsonClone);
+                if (j == splitField.length - 1) {
+                    if (jsonClone.get(split) == null) {
+                        arrayResult.add(key);
+                        break;
+                    } else {
+                        System.out.println("result=" + jsonClone.get(split));
+                    }
+                } else {
+                    if (isArray.length == 2) {
+                        System.out.println("array");
+                        Integer index = Integer.valueOf(isArray[1].substring(0, isArray[1].length() - 1));
+                        System.out.println("index=" + index);
+                        if (jsonClone.getJSONArray(isArray[0]) == null) {
+                            key.append(isArray[0]);
+                            arrayResult.add(key);
+                            break;
+                        } else if (jsonClone.getJSONArray(isArray[0]).getJSONObject(index) == null) {
+                            key.append(split);
+                            arrayResult.add(key);
+                            break;
+                        } else {
+                            key.append(split);
+                            jsonClone = jsonClone.getJSONArray(isArray[0]).getJSONObject(index);
+                        }
+                    } else {
+                        System.out.println("json");
+                        if (jsonClone.getJSONObject(split) == null) {
+                            key.append(split);
+                            arrayResult.add(key);
+                            break;
+                        } else {
+                            key.append(split);
+                            jsonClone = jsonClone.getJSONObject(split);
+                        }
+
+                    }
+                }
+
+            }
+        }
+        if (arrayResult.size() > 0) {
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.VALUE_IS_NULL.getCode(), arrayResult.toJSONString());
+        }
+    }
 }

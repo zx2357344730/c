@@ -13,6 +13,8 @@ public enum ToolEnum {
 
     ES_DB_ERROR("029002"),
 
+    VALUE_IS_NULL("029009"),
+
     //公司文件容量不足
     POWER_NOT_ENOUGH("030011"),
 

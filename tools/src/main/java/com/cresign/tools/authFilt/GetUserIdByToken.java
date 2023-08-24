@@ -63,7 +63,7 @@ public class GetUserIdByToken {
     public ApiResponse err(JSONObject params, String apiName, Exception e)
     {
         if (e.getClass().equals(ErrorResponseException.class) &&
-                !((ErrorResponseException) e).getStatus().equals(HttpStatus.OK))
+                ((ErrorResponseException) e).getStatus().equals(HttpStatus.OK))
         {
             System.out.println(e.getClass());
             System.out.println(((ErrorResponseException) e).getCode());

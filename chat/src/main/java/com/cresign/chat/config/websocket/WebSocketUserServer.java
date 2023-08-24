@@ -53,12 +53,7 @@ import java.util.UUID;
         consumerGroup = WsId.group
 )
 public class WebSocketUserServer implements RocketMQListener<String> {
-//    public static class WsId {
-//        public static final String ws = "1";
-//        public static final String topic = "wsTopic"+ws;
-//        public static final String tap = "wsTap"+ws;
-//        public static final String group = "wsGroup"+ws;
-//    }
+
     @Override
     public boolean equals(Object obj){
         return super.equals(obj);
