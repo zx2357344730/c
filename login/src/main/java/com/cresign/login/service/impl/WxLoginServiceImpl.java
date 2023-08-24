@@ -325,7 +325,7 @@ WX_NOT_BIND.getCode(),unionid);
 
     @Override
     public ApiResponse wXLoginByIdWx(String id_WX, String clientType) {
-
+        System.out.println("id_WX:"+id_WX);
         try {
 //            //创建查询对象
 //            Query query = new Query();

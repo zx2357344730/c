@@ -1415,6 +1415,13 @@ public class Qt {
 //            System.out.println("result:"+result);
         return JSONObject.parseObject(result);
     }
+    public JSONObject getRDSet(String key)
+    {
+        String result = redisTemplate0.opsForValue().get(key);
+
+//            System.out.println("result:"+result);
+        return JSONObject.parseObject(result);
+    }
 
     public String getRDSetStr(String collection, String key)
     {

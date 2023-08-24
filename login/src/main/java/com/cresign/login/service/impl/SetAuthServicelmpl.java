@@ -13,9 +13,12 @@ import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
+import com.cresign.tools.pojo.es.lSUser;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.User;
+import com.cresign.tools.pojo.po.compCard.CompInfo;
+import com.cresign.tools.pojo.po.userCard.UserInfo;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -249,29 +252,36 @@ public class SetAuthServicelmpl implements SetAuthService {
 
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } else {
-//            qt.getES("lSUser",);
-//            qt.setES("lsuser");
-//            Comp compInfo = qt.getMDContent(id_C, "info", Comp.class);
-//            if (null == compInfo || null == compInfo.getInfo()) {
-//                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
-//            }
-//            JSONObject objCompInfo = new JSONObject();
-//            objCompInfo.put("grpU","1099");
-//            objCompInfo.put("id_C",id_C);
-//            objCompInfo.put("dep","1000");
-//            objCompInfo.put("picC",compInfo.getInfo().getPic());
-//            objCompInfo.put("wrdNC",compInfo.getInfo().getWrdN());
-//            JSONObject modAuth = new JSONObject();
-//            JSONObject core = new JSONObject();
-//            core.put("tfin","-1");
-//            core.put("ref","a-core-0");
-//            core.put("mod","a-core");
-//            core.put("bcdState","1");
-//            core.put("bcdLevel","0");
-//            modAuth.put("a-core-0",core);
-//            objCompInfo.put("modAuth",modAuth);
-//            qt.setMDContent(id_U,qt.setJson("rolex.objComp."+id_C,objCompInfo), User.class);
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+            JSONArray es = qt.getES("lSUser", qt.setESFilt("id_U", id_U, "id_C", id_C));
+            UserInfo info = user.getInfo();
+            Comp compInfo = qt.getMDContent(id_C, "info", Comp.class);
+            if (null == compInfo || null == compInfo.getInfo()) {
+                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+            }
+            String thisGrpU;
+            if (null == es || es.size() == 0) {
+                thisGrpU = "1099";
+                lSUser lsUser = new lSUser(id_U,id_C, info.getWrdN()
+                        ,info.getWrdNReal(),info.getWrddesc(),thisGrpU,info.getMbn(),"", info.getPic());
+                qt.addES("lSUser",lsUser);
+                addRoleCompInfo(id_C, id_U,thisGrpU,compInfo.getInfo().getPic(),compInfo.getInfo().getWrdN());
+            } else {
+                JSONObject jsonObject = es.getJSONObject(0);
+                thisGrpU = jsonObject.getString("grpU");
+                addRoleCompInfo(id_C, id_U,thisGrpU
+                        ,compInfo.getInfo().getPic(),compInfo.getInfo().getWrdN());
+            }
+
+//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+            JSONObject result = new JSONObject();
+            result.put("grpU", thisGrpU);
+            result.put("dep", "1000");
+            result.put("picC", compInfo.getInfo().getPic());
+//            result.put("pic", comp.getInfo().getString("pic"));
+            result.put("wrdNC", compInfo.getInfo().getWrdN());
+//            result.put("wrdNU", comp.getInfo().getJSONObject("wrdN"));
+            result.put("id_C", id_C);
+            return retResult.ok(CodeEnum.OK.getCode(), result);
         }
 
     }
@@ -318,8 +328,19 @@ public class SetAuthServicelmpl implements SetAuthService {
      */
     @Override
     public ApiResponse setUserCid(String id_U,String cid) {
+        qt.setES("lNUser",qt.setESFilt("id_U",id_U),qt.setJson("id_APP",cid));
         qt.setMDContent(id_U, qt.setJson("info.id_APP", cid), User.class);
         return retResult.ok(CodeEnum.OK.getCode(), "修改成功");
+    }
+
+    @Override
+    public ApiResponse getUserCid(String id_U) {
+        JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
+        if (null != es && es.size() > 0) {
+            JSONObject esInfo = es.getJSONObject(0);
+            return retResult.ok(CodeEnum.OK.getCode(), esInfo.getString("id_APP"));
+        }
+        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(), null);
     }
 
 
@@ -373,6 +394,25 @@ public class SetAuthServicelmpl implements SetAuthService {
         }
 
         return retResult.ok(CodeEnum.OK.getCode(), result);
+    }
+
+    public void addRoleCompInfo(String id_C, String id_U,String grpU,String picC,JSONObject wrdN){
+        JSONObject objCompInfo = new JSONObject();
+        objCompInfo.put("grpU",grpU);
+        objCompInfo.put("id_C",id_C);
+        objCompInfo.put("dep","1000");
+        objCompInfo.put("picC",picC);
+        objCompInfo.put("wrdNC",wrdN);
+        JSONObject modAuth = new JSONObject();
+        JSONObject core = new JSONObject();
+        core.put("tfin","-1");
+        core.put("ref","a-core-0");
+        core.put("mod","a-core");
+        core.put("bcdState","1");
+        core.put("bcdLevel","0");
+        modAuth.put("a-core-0",core);
+        objCompInfo.put("modAuth",modAuth);
+        qt.setMDContent(id_U,qt.setJson("rolex.objComp."+id_C,objCompInfo), User.class);
     }
 
 //    @Override

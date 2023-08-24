@@ -269,7 +269,8 @@ public class ActionServiceImpl implements ActionService {
             // 设置发送对象
             logFlow.setId_Us(id_Us);
             // 发送websocket
-            ws.sendWSNew(logFlow,0);
+//            ws.sendWSNew(logFlow,0);
+            ws.sendWS(logFlow);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } catch (Exception e) {
             result.put("desc","申请评分异常");
@@ -326,7 +327,8 @@ public class ActionServiceImpl implements ActionService {
             // 设置发送对象
             logFlow.setId_Us(id_Us);
             // 调用新方法发送websocket
-            ws.sendWSNew(logFlow,0);
+//            ws.sendWSNew(logFlow,0);
+            ws.sendWS(logFlow);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } catch (Exception e) {
             result.put("desc","评分异常");
@@ -428,7 +430,8 @@ public class ActionServiceImpl implements ActionService {
         logL.setId_Us(id_Us);
 //        ws.sendWS(logL);
         // 发送日志信息
-        ws.sendWSNew(logL,0);
+//        ws.sendWSNew(logL,0);
+        ws.sendWS(logL);
         return retResult.ok(CodeEnum.OK.getCode(), "发送成功");
     }
 
@@ -452,7 +455,8 @@ public class ActionServiceImpl implements ActionService {
         data.put("id_UPointTo",logFlow.getId_Us());
         logFlow.setData(data);
 //        logFlow.setData(data);
-        ws.sendWSNew(logFlow,0);
+//        ws.sendWSNew(logFlow,0);
+        ws.sendWS(logFlow);
     }
 
     /**
@@ -527,7 +531,8 @@ public class ActionServiceImpl implements ActionService {
         logFlow.setId_Us(id_Us);
         logFlow.setTmd(dateNow);
         // 发送日志
-        ws.sendWSNew(logFlow,0);
+//        ws.sendWSNew(logFlow,0);
+        ws.sendWS(logFlow);
         // 更新日志回访次数
         qt.setMDContent(id_O, qt.setJson("oQc.objQc."+index+".foCount",foUp), Order.class);
         // 添加返回结果
@@ -569,7 +574,8 @@ public class ActionServiceImpl implements ActionService {
         // 设置时间并且把时间加一秒
         logLNewMsg.setTmd(DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1));
         // 发送websocket
-        ws.sendWSNew(logLNewMsg,0);
+//        ws.sendWSNew(logLNewMsg,0);
+        ws.sendWS(logLNewMsg);
         return retResult.ok(CodeEnum.OK.getCode(), result);
     }
 
@@ -1295,7 +1301,8 @@ public class ActionServiceImpl implements ActionService {
 
 //            ws.sendWS(logL);
             logL.setId_Us(id_UsLog);
-            ws.sendWSNew(logL,0);
+//            ws.sendWSNew(logL,0);
+            ws.sendWS(logL);
         }
 
         // setup User's Fav card
@@ -1379,7 +1386,8 @@ public class ActionServiceImpl implements ActionService {
 
 //                ws.sendWS(log);
                 log.setId_Us(id_UsLog);
-                ws.sendWSNew(log,0);
+//                ws.sendWSNew(log,0);
+                ws.sendWS(log);
             }
             //getOStock (if not null)
             //was 0.3 then set to 1
@@ -2552,7 +2560,8 @@ public class ActionServiceImpl implements ActionService {
             id_Us.add(id_U);
             logLPNew.setId_Us(id_Us);
             logLPNew.setTmd(dateNow);
-            ws.sendWSNew(logLPNew,0);
+//            ws.sendWSNew(logLPNew,0);
+            ws.sendWS(logLPNew);
         }
 
         if (null != defReply) {
@@ -2579,7 +2588,8 @@ public class ActionServiceImpl implements ActionService {
                             logLPDef.setId_Us(qt.setArray(id_U));
                             dateNow = DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1);
                             logLPDef.setTmd(dateNow);
-                            ws.sendWSNew(logLPDef,0);
+//                            ws.sendWSNew(logLPDef,0);
+                            ws.sendWS(logLPDef);
                         }
                     } else if (defReplySon.getInteger("type") == 2) {
                         JSONArray id_P = defReplySon.getJSONArray("id_P");
@@ -2594,7 +2604,8 @@ public class ActionServiceImpl implements ActionService {
                             logLPDef.setId_Us(qt.setArray(id_U));
                             dateNow = DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1);
                             logLPDef.setTmd(dateNow);
-                            ws.sendWSNew(logLPDef,0);
+//                            ws.sendWSNew(logLPDef,0);
+                            ws.sendWS(logLPDef);
                         }
                     } else {
                         logLPDef = new LogFlow("msg",id_FS,
@@ -2606,7 +2617,8 @@ public class ActionServiceImpl implements ActionService {
                         logLPDef.setId_Us(qt.setArray(id_U));
                         dateNow = DateUtils.getDateNowAddSecond(DateEnum.DATE_TIME_FULL.getDate(),dateNow,1);
                         logLPDef.setTmd(dateNow);
-                        ws.sendWSNew(logLPDef,0);
+//                        ws.sendWSNew(logLPDef,0);
+                        ws.sendWS(logLPDef);
                     }
                 }
             }

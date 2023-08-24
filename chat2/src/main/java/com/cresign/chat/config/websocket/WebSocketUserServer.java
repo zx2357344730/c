@@ -53,7 +53,7 @@ import java.util.UUID;
         consumerGroup = WsId.group
 )
 public class WebSocketUserServer implements RocketMQListener<String> {
-//    public static class WsId {
+    //    public static class WsId {
 //        public static final String ws = "1";
 //        public static final String topic = "wsTopic"+ws;
 //        public static final String tap = "wsTap"+ws;
@@ -136,9 +136,9 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     /**
      * 注入的时候，给类的 service 注入
      * @param qt	DB工具类
-//     * @param logService	日志接口
-//     * @param redisTemplate0	redis下标为1的数据库模板
-//     * @param rocketMQTemplate	rocketMQ模板
+    //     * @param logService	日志接口
+    //     * @param redisTemplate0	redis下标为1的数据库模板
+    //     * @param rocketMQTemplate	rocketMQ模板
      * @author tang
      * @ver 1.0.0
      * @date 2022/6/22

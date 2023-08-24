@@ -5,24 +5,44 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="128c9a26-d44c-4e41-b0e6-dabc284dd13b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ZjTestController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/ZjTestService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ZjTestServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/es/lSUser.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/utils/WsId.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/Chat2App.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/client/DetailsClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/client/LoginClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/common/ChatConstants.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/common/ChatEnum.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/config/mq/MqToEs.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/config/websocket/WebSocketConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/config/websocket/WebSocketLoginServer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/config/websocket/WebSocketServerPi.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/config/websocket/WebSocketTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/controller/LogController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/service/LogService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/service/fallback/DetailsFallbackFactory.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/service/fallback/LoginFallbackFactory.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/service/impl/LogServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/utils/AesUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/utils/RsaUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/utils/RsaUtilF.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/utils/WsId.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/chkin/ChKin.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/chkin/Hr.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/CusServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/CusServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/WxLoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/WxLoginController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/enumeration/LoginEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/enumeration/LoginEnum.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/WxLoginService.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/WxLoginService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chat/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/resources/bootstrap.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/SetAuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/SetAuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/SetAuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/SetAuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/RedirectServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/RedirectServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SetAuthServicelmpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SetAuthServicelmpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SmsLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SmsLoginServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/WxLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/WxLoginServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/PurchaseEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/PurchaseEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ActionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ActionServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ZjTestServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ZjTestServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Qt.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Qt.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Ws.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Ws.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/es/lBUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/es/lBUser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/request/HttpClientUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/request/HttpClientUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/token/GetUserIdByToken.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/token/GetUserIdByToken.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/LogFlow.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/LogFlow.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,24 +83,26 @@
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/KaiFaShuJu/GitHubDesktop/tang/G_x_Java/5/ccpl&quot;
+    &quot;last_opened_file_path&quot;: &quot;D:/KaiFaShuJu/GitHubDesktop/tang/G_x_Java/5/ccpl/chat2/src/main&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\KaiFaShuJu\GitHubDesktop\tang\G_x_Java\5\ccpl\chat2\src\main" />
       <recent name="D:\KaiFaShuJu\GitHubDesktop\tang\G_x_Java\5\ccpl" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.cresign.chat.utils" />
       <recent name="com.cresign.login.utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.PurchaseApp">
-    <configuration name="ActionApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.cresign.action.ActionApp" />
-      <module name="action" />
+  <component name="RunManager" selected="Application.Chat2App">
+    <configuration name="Chat2App" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.cresign.chat.Chat2App" />
+      <module name="chat2" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="com.cresign.action.*" />
+          <option name="PATTERN" value="com.cresign.chat.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -88,9 +110,10 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="ChatApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+    <configuration name="ChatApp" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.cresign.chat.ChatApp" />
       <module name="chat" />
+      <option name="PROGRAM_PARAMETERS" value="-Dserver.port=5101" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="com.cresign.chat.*" />
@@ -140,13 +163,24 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Unnamed" type="CompoundRunConfigurationType">
+      <toRun name="ChatApp" type="Application" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.ChatApp" />
+      <item itemvalue="Application.Chat2App" />
+      <item itemvalue="Application.GatewayApp" />
+      <item itemvalue="Application.LoginApp" />
+      <item itemvalue="Application.PurchaseApp" />
+      <item itemvalue="Compound.Unnamed" />
+    </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.Chat2App" />
         <item itemvalue="Application.PurchaseApp" />
-        <item itemvalue="Application.ChatApp" />
         <item itemvalue="Application.GatewayApp" />
         <item itemvalue="Application.LoginApp" />
-        <item itemvalue="Application.ActionApp" />
       </list>
     </recent_temporary>
   </component>

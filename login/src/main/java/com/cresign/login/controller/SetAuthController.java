@@ -145,6 +145,17 @@ public class SetAuthController {
         }
     }
 
+    @SecurityParameter
+    @PostMapping("/v1/getUserCid")
+    public ApiResponse getUserCid() {
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+        try {
+            return setAuthService.getUserCid(tokData.getString("id_U"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "SetAuthController.getUserCid", e);
+        }
+    }
+
 //    @SecurityParameter
 //    @PostMapping("/v1/get_my_switch1")
 //    public ApiResponse getMySwitchComp1() {

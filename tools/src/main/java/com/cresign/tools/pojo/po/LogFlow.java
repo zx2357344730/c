@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DoubleUtils;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.pojo.po.chkin.ChKin;
+import com.cresign.tools.pojo.po.chkin.Hr;
 import com.cresign.tools.pojo.po.orderCard.OrderAction;
 import com.cresign.tools.pojo.po.orderCard.OrderOItem;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -96,6 +98,33 @@ public class LogFlow {
 
     private static class Hod{
         private static final LogFlow instance = new LogFlow();
+    }
+
+    public void setLogData_ChKin(ChKin chKin){
+        JSONObject data = new JSONObject();
+        data.put("type",chKin.getType());
+        data.put("chkType",chKin.getChkType());
+        data.put("locLat", chKin.getLocLat());
+        data.put("locLong", chKin.getLocLong());
+        data.put("teStart", chKin.getTeStart());
+        data.put("teEnd", chKin.getTeEnd());
+        data.put("date", chKin.getDate());
+        data.put("id_UC",chKin.getId_UC());
+        data.put("teDur",chKin.getTeDur());
+        data.put("state",chKin.getState());
+        data.put("arrDayMiss",chKin.getArrDayMiss());
+        this.data = data;
+    }
+    public void setLogData_Hr(Hr hr){
+        JSONObject data = new JSONObject();
+        data.put("grpUNow",hr.getGrpUNow());
+        data.put("wn0Hire",hr.getWn0Hire());
+        data.put("grpUNew", hr.getGrpUNew());
+        data.put("id_UA", hr.getId_UA());
+        data.put("wrddesc", hr.getWrddesc());
+        data.put("wrdappv", hr.getWrdappv());
+        data.put("dep", hr.getDep());
+        this.data = data;
     }
 
     public void setLogData_action (OrderAction orderAction, OrderOItem orderOItem) {

@@ -109,15 +109,16 @@ public class ZjTestServiceImpl implements ZjTestService {
     public static final String red = "wsl";
     @Override
     public ApiResponse sendLog(LogFlow logFlow) {
-        String id_u = logFlow.getId_U();
-        String rdSetStr = qt.getRDSetStr(red, id_u);
-        System.out.println("rdSetStr:"+rdSetStr);
-        if ((null != rdSetStr && !"".equals(rdSetStr))) {
-            ws.sendWSXin(rdSetStr,logFlow);
-        } else {
-            ws.sendWSEs(logFlow);
-            ws.push2(logFlow,id_u);
-        }
+//        String id_u = logFlow.getId_U();
+//        String rdSetStr = qt.getRDSetStr(red, id_u);
+//        System.out.println("rdSetStr:"+rdSetStr);
+//        if ((null != rdSetStr && !"".equals(rdSetStr))) {
+////            ws.sendWSXin(rdSetStr,logFlow);
+//        } else {
+//            ws.sendWSEs(logFlow);
+////            ws.push2(logFlow,id_u);
+//        }
+        ws.sendWS(logFlow);
         return retResult.ok(CodeEnum.OK.getCode(), "发送成功");
     }
 }

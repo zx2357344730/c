@@ -130,8 +130,19 @@ public class RedirectServiceImpl implements RedirectService {
         data.put("latitude",latitude);
         log.setData(data);
         log.setId_Us(id_Us);
-        // 发送日志
-        ws.sendWSOnly(log);
+        JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, entries.get("id_U").toString());
+        if (null != rdInfo && rdInfo.size()>0) {
+            for (String cli : rdInfo.keySet()) {
+                JSONObject cliInfo = rdInfo.getJSONObject(cli);
+                // 发送日志
+                ws.sendWSOnly(cliInfo.getString("mqKey"),log);
+            }
+//            JSONObject cliInfo = rdInfo.getJSONObject("uniapp");
+//            // 发送日志
+//            ws.sendWSOnly(cliInfo.getString("mqKey"),log);
+        } else {
+            return retResult.ok(CodeEnum.OK.getCode(), "操作失败，用户离线");
+        }
         return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
     }
 

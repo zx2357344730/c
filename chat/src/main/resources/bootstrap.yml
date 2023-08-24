@@ -1,6 +1,7 @@
 spring:
   application:
     name: chat-config
+#    name: chat-config2
   cloud:
     nacos:
       config:

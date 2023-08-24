@@ -105,4 +105,6 @@ public interface SetAuthService {
      * @ver 版本号: 1.0.0
      */
     ApiResponse setUserCid(String id_U,String cid);
+
+    ApiResponse getUserCid(String id_U);
 }

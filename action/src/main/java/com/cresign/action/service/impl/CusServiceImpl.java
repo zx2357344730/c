@@ -934,7 +934,8 @@ public class CusServiceImpl implements CusService {
 //        id_Us.add(logUser);
 //        id_Us.add(sendUser);
         logFlow.setId_Us(id_Us);
-        ws.sendWSNew(logFlow,0);
+//        ws.sendWSNew(logFlow,0);
+        ws.sendWS(logFlow);
     }
 
 //    /**
@@ -968,7 +969,8 @@ public class CusServiceImpl implements CusService {
         data.put("id_UPointTo",logFlow.getId_Us());
         logFlow.setData(data);
 //        logFlow.setData(data);
-        ws.sendWSNew(logFlow,0);
+//        ws.sendWSNew(logFlow,0);
+        ws.sendWS(logFlow);
     }
 
     /**
