@@ -5,19 +5,25 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.client.LoginClient;
 import com.cresign.chat.utils.AesUtil;
+import com.cresign.chat.utils.Oauth;
 import com.cresign.chat.utils.RsaUtil;
 import com.cresign.chat.utils.WsId;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
+import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.LogFlow;
+import com.cresign.tools.pojo.po.User;
 import io.netty.channel.ChannelHandler.Sharable;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.spring.annotation.MessageModel;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
@@ -105,6 +111,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     private static Ws ws;
 
+    private static Oauth oauth;
+
 //    /**
 //     * 注入redis数据库下标1模板
 //     */
@@ -143,7 +151,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //            , LogService logService
 //            , StringRedisTemplate redisTemplate0
 //            , RocketMQTemplate rocketMQTemplate
-            ,LoginClient loginClient) {
+            ,LoginClient loginClient,Oauth oauth) {
 //        WebSocketUserServer.logService = logService;
         WebSocketUserServer.qt = qt;
         WebSocketUserServer.ws = ws;
@@ -151,6 +159,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //        WebSocketUserServer.redisTemplate0 = redisTemplate0;
 //        WebSocketUserServer.rocketMQTemplate = rocketMQTemplate;
         WebSocketUserServer.loginClient = loginClient;
+        WebSocketUserServer.oauth = oauth;
     }
 
     /**
@@ -549,7 +558,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     public void onMessageWeb(String message){
         JSONObject map = JSONObject.parseObject(message);
         System.out.println("收到ws消息:");
-        System.out.println(map);
+//        System.out.println(map);
         if (null != map) {
             String id = map.getString("id");
 //            System.out.println("进入这里-1");
@@ -590,38 +599,70 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 // 调用解密并且发送信息方法
                 LogFlow logData = RsaUtil.encryptionSend(map, WebSocketUserServer.keyJava.get(this.onlyId)
                         .getString("privateKeyJava"));
+                System.out.println(JSON.toJSONString(logData));
                 if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())) {
                     System.out.println("在本服务:");
 
                     if ("token".equals(logData.getSubType()) && "usageflow".equals(logData.getLogType())) {
-                        JSONObject data = logData.getData();
-                        System.out.println("请求 RT2 api:");
-                        String newToken = loginClient.refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("refreshTokenJiu")
-                                ,data.getString("clientType"),data.getString("token"));
-
-                        data.put("token",newToken);
-                        String client = data.getString("client");
-                        logData.setData(data);
-                        logData.getData().remove("refreshTokenJiu");
-                        logData.setId_Us(qt.setArray(logData.getId_U()));
-                        logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-                        JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, logData.getId_U());
-                        if (null != rdInfo && rdInfo.size()>0 && null != rdInfo.getJSONObject(client)) {
-//                            for (String cli : rdInfo.keySet()) {
-//                                JSONObject cliInfo = rdInfo.getJSONObject(cli);
+                        try {
+                            JSONObject data = logData.getData();
+                            System.out.println("请求 RT2 api:");
+//                            String newToken = loginClient.refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("refreshTokenJiu")
+//                                    ,data.getString("clientType"),data.getString("token"));
+                            String newToken = refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("token")
+                                    ,data.getString("refreshTokenJiu"),data.getString("clientType"));
+                            System.out.println("refreshToken2:"+logData.getId_U());
+                            System.out.println(newToken);
+                            String client = data.getString("clientType");
+                            if (null == client) {
+                                return;
+                            }
+                            if (null != newToken) {
+                                data.put("token",newToken);
+                                System.out.println("newToken:");
+                                System.out.println(newToken);
+                                logData.setData(data);
+                                logData.getData().remove("refreshTokenJiu");
+                                logData.setId_Us(qt.setArray(logData.getId_U()));
+                                logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//                                JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, logData.getId_U());
+//                                System.out.println("rdInfo:");
+//                                System.out.println(JSON.toJSONString(rdInfo));
+//                                if (null != rdInfo && rdInfo.size()>0 && null != rdInfo.getJSONObject(client)) {
+////                            for (String cli : rdInfo.keySet()) {
+////                                JSONObject cliInfo = rdInfo.getJSONObject(cli);
+////
+////                            }
+////                            // 放到mq
+////                            ws.sendWSOnly(rdInfo.getJSONObject(client).getString("mqKey"),logData);
 //
-//                            }
-//                            // 放到mq
-//                            ws.sendWSOnly(rdInfo.getJSONObject(client).getString("mqKey"),logData);
-                            //每次响应之前随机获取AES的key，加密data数据
-                            String key = AesUtil.getKey();
-                            // 加密logContent数据
-                            JSONObject stringMap = aes(logData,key);
-                            stringMap.put("en",true);
-                            if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())) {
+//                                }
+                            } else {
+                                logData = new LogFlow();
+                                logData.setId_U(logData.getId_U());
+                                logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                                logData.setId_Us(qt.setArray(logData.getId_U()));
+//                    logData.setId_APPs(qt.setArray(appIdOld));
+                                logData.setLogType("msg");
+                                logData.setSubType("refreshTokenErr");
+                                JSONObject dataNew = new JSONObject();
+                                dataNew.put("client",client);
+                                logData.setData(dataNew);
+                                logData.setZcndesc("refreshToken为空!");
+                            }
+                            if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())
+                                    && null!=WebSocketUserServer.clients.get(logData.getId_U()).get(client)) {
+                                //每次响应之前随机获取AES的key，加密data数据
+                                String key = AesUtil.getKey();
+                                // 加密logContent数据
+                                JSONObject stringMap = aes(logData,key);
+                                stringMap.put("en",true);
                                 String onlyId = WebSocketUserServer.clients.get(logData.getId_U()).get(client);
                                 WebSocketUserServer.webSocketSet.get(logData.getId_U()).get(onlyId).sendMessage(stringMap,key,true);
                             }
+                        } catch (Exception e){
+                            System.out.println("这里出现异常:"+e.getMessage());
+                            e.printStackTrace();
                         }
                     } else {
                         logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
@@ -976,5 +1017,41 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //            return null;
 //        }
         return WebSocketUserServer.clients.get(id_U).get(client);
+    }
+
+    private static String refreshToken2(String id_U, String id_C, String token,String refreshToken, String clientType){
+        // 判断 传过来的参数是否为空
+        if (StringUtils.isNotEmpty(refreshToken)) {
+
+//            // 从redis 中查询出该用户的 refreshToken
+            String refreshTokenResult = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
+            System.out.println("refreshTokenResult:");
+            System.out.println(refreshTokenResult);
+
+            // 判断 refreshToken 是否为空
+            if (StringUtils.isNotEmpty(refreshTokenResult)) {
+
+                // 不为空则判断 传过来的 refreshToken 是否与 redis中的 refreshToken一致
+                if (refreshTokenResult.equals(id_U)) {
+
+                    JSONObject rdSet = qt.getRDSet(clientType + "Token", token);
+                    qt.errPrint("rdSet", null, rdSet, clientType, token);
+                    if (rdSet == null)
+                    {
+                        // 通过id_U查询该用户
+                        User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp."+ id_C), User.class);
+                        token = oauth.setToken(user, id_C,
+                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
+                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
+                                clientType);
+                    }
+                    else {
+                        qt.setRDSet(clientType + "Token", token, rdSet, 500L);
+                    }
+                    return token;
+                }
+            }
+        }
+        return null;
     }
 }

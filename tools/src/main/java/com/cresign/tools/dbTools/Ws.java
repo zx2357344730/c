@@ -98,6 +98,8 @@ public class Ws {
      *  logContrent.getJSONArray("id_Us") / id_APPs[]
      */
     public void sendWS(LogFlow logContent){
+        System.out.println("logContent:");
+        System.out.println(JSON.toJSONString(logContent));
 
         // the log's id_Us may have users
         // if so, getES and get id_APP to push
@@ -838,6 +840,8 @@ public class Ws {
                 pushUsers.add(id_U);
                 continue;
             }
+            System.out.println("rdInfo:"+id_U);
+            System.out.println(JSON.toJSONString(rdInfo));
             for (String cli : rdInfo.keySet()) {
                 JSONObject cliInfo = rdInfo.getJSONObject(cli);
                 if (null == cliInfo) {

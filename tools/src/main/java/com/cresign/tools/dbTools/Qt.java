@@ -661,7 +661,7 @@ public class Qt {
         JSONArray result = this.getES("lNUser", this.setESFilt("mbn","exact",phone));
 
         if (result.size() == 1) {
-            return result.getJSONObject(0).getString("id_A");
+            return result.getJSONObject(0).getString("id_U");
         } else
             return "";
 
