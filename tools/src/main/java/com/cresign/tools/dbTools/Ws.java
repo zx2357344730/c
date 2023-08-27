@@ -252,7 +252,7 @@ public class Ws {
 //
 //    }
     static String url = "https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/push";
-    private void push2(String title,String content,JSONArray pushAppIds){
+    public void push2(String title,String content,JSONArray pushAppIds){
 //        JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_UNew));
 //        if (null != es && es.size() != 0
 //                && es.getJSONObject(0).getString("id_APP")!=null) {
@@ -407,10 +407,10 @@ public class Ws {
             }
             // 判断群id一样
             if (roomId.equals(logFlowId)) {
-                System.out.println("进入各FC 的loop: id=" + logContent.getId());
+//                System.out.println("进入各FC 的loop: id=" + logContent.getId());
                 // 获取群用户id列表
                 JSONArray objUser = roomSetting.getJSONArray("objUser");
-                System.out.println("objUser:" + JSON.toJSONString(objUser));
+//                System.out.println("objUser:" + JSON.toJSONString(objUser));
                 // 创建存储推送用户信息
                 // 遍历群用户id列表
                 for (int j = 0; j < objUser.size(); j++) {
@@ -707,47 +707,48 @@ public class Ws {
 //            }
             System.out.println("推送用户列表:");
             System.out.println(JSON.toJSONString(pushUsers));
-            JSONArray pushApps = new JSONArray();
-            JSONArray pushPads = new JSONArray();
-            for (int i = 0; i < pushUsers.size(); i++) {
-                String id_U = pushUsers.getString(i);
-                JSONObject mqKey = getMqKey(id_U);
-                boolean isApp = false;
-                boolean isPad = false;
-                if (null != mqKey) {
-                    JSONObject app = mqKey.getJSONObject("app");
-                    if (null != app) {
-                        pushApps.add(app.getString("appId"));
-                        isApp = true;
-                    }
-                    JSONObject pad = mqKey.getJSONObject("pad");
-                    if (null != pad) {
-                        pushPads.add(pad.getString("appId"));
-                        isPad = true;
-                    }
-                    if (isApp && isPad) {
-                        continue;
-                    }
-                }
-                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
-                if (null != es && es.size() > 0 && null != es.getJSONObject(0)) {
-                    JSONObject esObj = es.getJSONObject(0);
-                    if (!isApp) {
-                        if (null != esObj.getString("id_APP") && !"".equals(esObj.getString("id_APP"))) {
-                            pushApps.add(esObj.getString("id_APP"));
-                        }
-                    }
-                    if (!isPad) {
-                        if (null != esObj.getString("id_Pad") && !"".equals(esObj.getString("id_Pad"))) {
-                            pushPads.add(esObj.getString("id_Pad"));
-                        }
-                    }
-                }
-            }
-            System.out.println("推送app:");
-            System.out.println(JSON.toJSONString(pushApps));
-            System.out.println("推送pad:");
-            System.out.println(JSON.toJSONString(pushPads));
+//            JSONArray pushApps = new JSONArray();
+//            JSONArray pushPads = new JSONArray();
+//            for (int i = 0; i < pushUsers.size(); i++) {
+//                String id_U = pushUsers.getString(i);
+//                JSONObject mqKey = getMqKey(id_U);
+//                boolean isApp = false;
+//                boolean isPad = false;
+//                if (null != mqKey) {
+//                    JSONObject app = mqKey.getJSONObject("app");
+//                    if (null != app) {
+//                        pushApps.add(app.getString("appId"));
+//                        isApp = true;
+//                    }
+//                    JSONObject pad = mqKey.getJSONObject("pad");
+//                    if (null != pad) {
+//                        pushPads.add(pad.getString("appId"));
+//                        isPad = true;
+//                    }
+//                    if (isApp && isPad) {
+//                        continue;
+//                    }
+//                }
+//                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
+//                if (null != es && es.size() > 0 && null != es.getJSONObject(0)) {
+//                    JSONObject esObj = es.getJSONObject(0);
+//                    if (!isApp) {
+//                        if (null != esObj.getString("id_APP") && !"".equals(esObj.getString("id_APP"))) {
+//                            pushApps.add(esObj.getString("id_APP"));
+//                        }
+//                    }
+//                    if (!isPad) {
+//                        if (null != esObj.getString("id_Pad") && !"".equals(esObj.getString("id_Pad"))) {
+//                            pushPads.add(esObj.getString("id_Pad"));
+//                        }
+//                    }
+//                }
+//            }
+//            System.out.println("推送app:");
+//            System.out.println(JSON.toJSONString(pushApps));
+//            System.out.println("推送pad:");
+//            System.out.println(JSON.toJSONString(pushPads));
+
 //            push2(wrdNUC,logContent.getZcndesc(),pushAppIds);
 //            sendESOnlyNew(logContent);
         }
@@ -842,6 +843,7 @@ public class Ws {
             }
             System.out.println("rdInfo:"+id_U);
             System.out.println(JSON.toJSONString(rdInfo));
+            boolean isSendMq = false;
             for (String cli : rdInfo.keySet()) {
                 JSONObject cliInfo = rdInfo.getJSONObject(cli);
                 if (null == cliInfo) {
@@ -852,6 +854,7 @@ public class Ws {
                 } else {
                     String mqKey = cliInfo.getString("mqKey");
                     if (null!=mqKey) {
+                        isSendMq = true;
 //                        userAppId = cliInfo.getString("appId");
 //                        id_APPs.set(i,userAppId);
                         if (null == mqGroupId.getJSONObject(mqKey)) {
@@ -878,23 +881,27 @@ public class Ws {
 //                            }
 //                        }
                         mqGroupId.put(mqKey,mqIdAndAppId);
-                    } else {
-//                        pushPadAppIds.add(id_U);
-//                        if ("".equals(userAppId)) continue;
-//                        pushAppIds.add(userAppId);
-                        pushUsers.add(id_U);
                     }
+//                    else {
+////                        pushPadAppIds.add(id_U);
+////                        if ("".equals(userAppId)) continue;
+////                        pushAppIds.add(userAppId);
+////                        pushUsers.add(id_U);
+//                    }
                 }
+            }
+            if (!isSendMq) {
+                pushUsers.add(id_U);
             }
         }
         sendMqOrPush(mqGroupId,pushUsers,logContent);
     }
 
-    public String getClient(LogFlow logContent){
-        if (null != logContent.getData()&&null!=logContent.getData().getString("client")) {
-            return logContent.getData().getString("client");
-        }
-        return "web";
-    }
+//    public String getClient(LogFlow logContent){
+//        if (null != logContent.getData()&&null!=logContent.getData().getString("client")) {
+//            return logContent.getData().getString("client");
+//        }
+//        return "web";
+//    }
 
 }

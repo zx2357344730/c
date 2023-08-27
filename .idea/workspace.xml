@@ -5,12 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="128c9a26-d44c-4e41-b0e6-dabc284dd13b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/utils/Oauth.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/utils/Oauth.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chat/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/resources/bootstrap.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/resources/bootstrap.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Qt.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Qt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat2/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Ws.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Ws.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -65,7 +63,7 @@
       <recent name="com.cresign.login.utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.ChatApp">
+  <component name="RunManager" selected="Application.Chat2App">
     <configuration name="Chat2App" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.cresign.chat.Chat2App" />
       <module name="chat2" />
@@ -146,10 +144,10 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.LoginApp" />
+        <item itemvalue="Application.Chat2App" />
         <item itemvalue="Application.PurchaseApp" />
         <item itemvalue="Application.GatewayApp" />
-        <item itemvalue="Application.Chat2App" />
+        <item itemvalue="Application.LoginApp" />
       </list>
     </recent_temporary>
   </component>

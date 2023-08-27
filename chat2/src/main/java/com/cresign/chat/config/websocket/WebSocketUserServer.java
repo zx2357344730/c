@@ -5,19 +5,25 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.client.LoginClient;
 import com.cresign.chat.utils.AesUtil;
+import com.cresign.chat.utils.Oauth;
 import com.cresign.chat.utils.RsaUtil;
 import com.cresign.chat.utils.WsId;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
+import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.LogFlow;
+import com.cresign.tools.pojo.po.User;
 import io.netty.channel.ChannelHandler.Sharable;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.spring.annotation.MessageModel;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
@@ -53,12 +59,7 @@ import java.util.UUID;
         consumerGroup = WsId.group
 )
 public class WebSocketUserServer implements RocketMQListener<String> {
-    //    public static class WsId {
-//        public static final String ws = "1";
-//        public static final String topic = "wsTopic"+ws;
-//        public static final String tap = "wsTap"+ws;
-//        public static final String group = "wsGroup"+ws;
-//    }
+
     @Override
     public boolean equals(Object obj){
         return super.equals(obj);
@@ -110,6 +111,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 
     private static Ws ws;
 
+    private static Oauth oauth;
+
 //    /**
 //     * 注入redis数据库下标1模板
 //     */
@@ -148,7 +151,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //            , LogService logService
 //            , StringRedisTemplate redisTemplate0
 //            , RocketMQTemplate rocketMQTemplate
-            ,LoginClient loginClient) {
+            ,LoginClient loginClient,Oauth oauth) {
 //        WebSocketUserServer.logService = logService;
         WebSocketUserServer.qt = qt;
         WebSocketUserServer.ws = ws;
@@ -156,6 +159,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //        WebSocketUserServer.redisTemplate0 = redisTemplate0;
 //        WebSocketUserServer.rocketMQTemplate = rocketMQTemplate;
         WebSocketUserServer.loginClient = loginClient;
+        WebSocketUserServer.oauth = oauth;
     }
 
     /**
@@ -595,49 +599,150 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 // 调用解密并且发送信息方法
                 LogFlow logData = RsaUtil.encryptionSend(map, WebSocketUserServer.keyJava.get(this.onlyId)
                         .getString("privateKeyJava"));
-                if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())) {
-                    System.out.println("在本服务:");
-
-                    if ("token".equals(logData.getSubType()) && "usageflow".equals(logData.getLogType())) {
+                System.out.println(JSON.toJSONString(logData));
+                if (null!=logData.getSubType() && null!=logData.getLogType()
+                        && "token".equals(logData.getSubType())
+                        && "usageflow".equals(logData.getLogType())) {
+                    try {
                         JSONObject data = logData.getData();
                         System.out.println("请求 RT2 api:");
-                        String newToken = loginClient.refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("refreshTokenJiu")
-                                ,data.getString("clientType"),data.getString("token"));
-
-                        data.put("token",newToken);
-                        String client = data.getString("client");
-                        logData.setData(data);
-                        logData.getData().remove("refreshTokenJiu");
-                        logData.setId_Us(qt.setArray(logData.getId_U()));
-                        logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-                        JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, logData.getId_U());
-                        if (null != rdInfo && rdInfo.size()>0 && null != rdInfo.getJSONObject(client)) {
-//                            for (String cli : rdInfo.keySet()) {
-//                                JSONObject cliInfo = rdInfo.getJSONObject(cli);
+//                            String newToken = loginClient.refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("refreshTokenJiu")
+//                                    ,data.getString("clientType"),data.getString("token"));
+                        String newToken = refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("token")
+                                ,data.getString("refreshTokenJiu"),data.getString("clientType"));
+                        System.out.println("refreshToken2:"+logData.getId_U());
+                        System.out.println(newToken);
+                        String client = data.getString("clientType");
+                        if (null == client) {
+                            return;
+                        }
+                        if (null != newToken) {
+                            data.put("token",newToken);
+                            System.out.println("newToken:");
+                            System.out.println(newToken);
+                            logData.setData(data);
+                            logData.getData().remove("refreshTokenJiu");
+                            logData.setId_Us(qt.setArray(logData.getId_U()));
+                            logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//                                JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, logData.getId_U());
+//                                System.out.println("rdInfo:");
+//                                System.out.println(JSON.toJSONString(rdInfo));
+//                                if (null != rdInfo && rdInfo.size()>0 && null != rdInfo.getJSONObject(client)) {
+////                            for (String cli : rdInfo.keySet()) {
+////                                JSONObject cliInfo = rdInfo.getJSONObject(cli);
+////
+////                            }
+////                            // 放到mq
+////                            ws.sendWSOnly(rdInfo.getJSONObject(client).getString("mqKey"),logData);
 //
-//                            }
-//                            // 放到mq
-//                            ws.sendWSOnly(rdInfo.getJSONObject(client).getString("mqKey"),logData);
+//                                }
+                        } else {
+                            logData = new LogFlow();
+                            logData.setId_U(logData.getId_U());
+                            logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                            logData.setId_Us(qt.setArray(logData.getId_U()));
+//                    logData.setId_APPs(qt.setArray(appIdOld));
+                            logData.setLogType("msg");
+                            logData.setSubType("refreshTokenErr");
+                            JSONObject dataNew = new JSONObject();
+                            dataNew.put("client",client);
+                            logData.setData(dataNew);
+                            logData.setZcndesc("refreshToken为空!");
+                        }
+                        if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())
+                                && null!=WebSocketUserServer.clients.get(logData.getId_U()).get(client)) {
                             //每次响应之前随机获取AES的key，加密data数据
                             String key = AesUtil.getKey();
                             // 加密logContent数据
                             JSONObject stringMap = aes(logData,key);
                             stringMap.put("en",true);
-                            if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())) {
-                                String onlyId = WebSocketUserServer.clients.get(logData.getId_U()).get(client);
-                                WebSocketUserServer.webSocketSet.get(logData.getId_U()).get(onlyId).sendMessage(stringMap,key,true);
-                            }
+                            String onlyId = WebSocketUserServer.clients.get(logData.getId_U()).get(client);
+                            WebSocketUserServer.webSocketSet.get(logData.getId_U()).get(onlyId).sendMessage(stringMap,key,true);
                         }
-                    } else {
-                        logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-                        // 放到mq
-//                        ws.sendWS(logData);
-                        sendLogCore(logData,false);
+                    } catch (Exception e){
+                        System.out.println("这里出现异常:"+e.getMessage());
+                        e.printStackTrace();
                     }
                 } else {
-                    System.out.println("不在本服务:");
+                    logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                    // 放到mq
+//                        ws.sendWS(logData);
                     sendLogCore(logData,false);
                 }
+//                if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())) {
+//                    System.out.println("在本服务:");
+//
+//                    if ("token".equals(logData.getSubType()) && "usageflow".equals(logData.getLogType())) {
+//                        try {
+//                            JSONObject data = logData.getData();
+//                            System.out.println("请求 RT2 api:");
+////                            String newToken = loginClient.refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("refreshTokenJiu")
+////                                    ,data.getString("clientType"),data.getString("token"));
+//                            String newToken = refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("token")
+//                                    ,data.getString("refreshTokenJiu"),data.getString("clientType"));
+//                            System.out.println("refreshToken2:"+logData.getId_U());
+//                            System.out.println(newToken);
+//                            String client = data.getString("clientType");
+//                            if (null == client) {
+//                                return;
+//                            }
+//                            if (null != newToken) {
+//                                data.put("token",newToken);
+//                                System.out.println("newToken:");
+//                                System.out.println(newToken);
+//                                logData.setData(data);
+//                                logData.getData().remove("refreshTokenJiu");
+//                                logData.setId_Us(qt.setArray(logData.getId_U()));
+//                                logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+////                                JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, logData.getId_U());
+////                                System.out.println("rdInfo:");
+////                                System.out.println(JSON.toJSONString(rdInfo));
+////                                if (null != rdInfo && rdInfo.size()>0 && null != rdInfo.getJSONObject(client)) {
+//////                            for (String cli : rdInfo.keySet()) {
+//////                                JSONObject cliInfo = rdInfo.getJSONObject(cli);
+//////
+//////                            }
+//////                            // 放到mq
+//////                            ws.sendWSOnly(rdInfo.getJSONObject(client).getString("mqKey"),logData);
+////
+////                                }
+//                            } else {
+//                                logData = new LogFlow();
+//                                logData.setId_U(logData.getId_U());
+//                                logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//                                logData.setId_Us(qt.setArray(logData.getId_U()));
+////                    logData.setId_APPs(qt.setArray(appIdOld));
+//                                logData.setLogType("msg");
+//                                logData.setSubType("refreshTokenErr");
+//                                JSONObject dataNew = new JSONObject();
+//                                dataNew.put("client",client);
+//                                logData.setData(dataNew);
+//                                logData.setZcndesc("refreshToken为空!");
+//                            }
+//                            if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())
+//                                    && null!=WebSocketUserServer.clients.get(logData.getId_U()).get(client)) {
+//                                //每次响应之前随机获取AES的key，加密data数据
+//                                String key = AesUtil.getKey();
+//                                // 加密logContent数据
+//                                JSONObject stringMap = aes(logData,key);
+//                                stringMap.put("en",true);
+//                                String onlyId = WebSocketUserServer.clients.get(logData.getId_U()).get(client);
+//                                WebSocketUserServer.webSocketSet.get(logData.getId_U()).get(onlyId).sendMessage(stringMap,key,true);
+//                            }
+//                        } catch (Exception e){
+//                            System.out.println("这里出现异常:"+e.getMessage());
+//                            e.printStackTrace();
+//                        }
+//                    } else {
+//                        logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//                        // 放到mq
+////                        ws.sendWS(logData);
+//                        sendLogCore(logData,false);
+//                    }
+//                } else {
+//                    System.out.println("不在本服务:");
+//                    sendLogCore(logData,false);
+//                }
 //                ws.sendWSOnly(logData);
             }
         }
@@ -789,20 +894,13 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     }
 
     private static void sendLogCore(LogFlow logContent,boolean isMQ){
-        //每次响应之前随机获取AES的key，加密data数据
-        String key = AesUtil.getKey();
-
-        // 加密logContent数据
-        JSONObject stringMap = aes(logContent,key);
-        stringMap.put("en",true);
-
         if (!isMQ) {
             ws.getUserIdsOrAppIds(logContent);
         }
         boolean isOffline = "msg".equals(logContent.getLogType()) && "Offline".equals(logContent.getSubType());
         if (logContent.getId_Us().size() > 0) {
-            System.out.println("群消息:");
             JSONArray id_Us = logContent.getId_Us();
+            System.out.println("群消息:"+JSON.toJSONString(id_Us));
 //            JSONArray id_APPs = logContent.getId_APPs();
             JSONObject mqGroupId = new JSONObject();
             JSONArray pushUsers = new JSONArray();
@@ -811,9 +909,9 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //            JSONArray pushPadAppIds = new JSONArray();
             for (int i = 0; i < id_Us.size(); i++) {
                 String id_UNew = id_Us.getString(i);
-                System.out.println("idU:"+id_UNew);
                 JSONObject rdInfo = ws.getMqKey(id_UNew);
                 if (null == rdInfo) {
+//                    System.out.println("添加推送:"+id_UNew);
 //                    pushPadAppIds.add(id_UNew);
 //                    if ("".equals(id_APPs.getString(i))) continue;
 //                    pushAppIds.add(id_APPs.getString(i));
@@ -827,13 +925,37 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //                            .forEach(w -> w.sendMessage(stringMap,key,true));
                     for (String client : WebSocketUserServer.clients.get(id_UNew).keySet()) {
                         String onlyId = WebSocketUserServer.clients.get(id_UNew).get(client);
+                        //每次响应之前随机获取AES的key，加密data数据
+                        String key = AesUtil.getKey();
+                        // 加密logContent数据
+                        JSONObject stringMap = aes(logContent,key);
+                        stringMap.put("en",true);
                         WebSocketUserServer.webSocketSet.get(id_UNew).get(onlyId).sendMessage(stringMap,key,true);
                         rdInfo.remove(client);
                     }
-                    for (String client : rdInfo.keySet()) {
-                        closeWS(id_UNew,client,rdInfo.getJSONObject(client).getString("appId"));
+                    if (!isMQ) {
+                        ws.sendESOnlyNew(logContent);
                     }
-                    ws.sendESOnlyNew(logContent);
+                    for (String client : rdInfo.keySet()) {
+                        JSONObject rdInfoData = rdInfo.getJSONObject(client);
+                        if (isMQ) {
+                            closeWS(id_UNew,client,rdInfoData.getString("appId"));
+                        } else {
+                            if (null != rdInfoData) {
+                                String mqKey = rdInfoData.getString("mqKey");
+                                if (null != mqKey && !"".equals(mqKey) && !mqKey.equals(WsId.topic + ":" + WsId.tap)) {
+                                    if (null == mqGroupId.getJSONObject(mqKey)) {
+                                        mqGroupId.put(mqKey,new JSONObject());
+                                    }
+                                    JSONObject mqIdAndAppId = mqGroupId.getJSONObject(mqKey);
+                                    mqIdAndAppId.put(id_UNew,"");
+                                    mqGroupId.put(mqKey,mqIdAndAppId);
+                                } else {
+                                    closeWS(id_UNew,client,rdInfoData.getString("appId"));
+                                }
+                            }
+                        }
+                    }
                 } else {
 //                    String client = ws.getClient(logContent);
                     if (isMQ) {
@@ -846,7 +968,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                             if (null != cliInfo) {
                                 String mqKey = cliInfo.getString("mqKey");
                                 String thisWs = WsId.topic + ":" + WsId.tap;
-                                if ((null != mqKey && !"".equals(mqKey))) {
+                                if (null != mqKey && !"".equals(mqKey)) {
                                     if (thisWs.equals(mqKey)) {
 //                                            rdInfo.remove(cli);
 //                                            qt.setRDSet(Ws.ws_mq_prefix,id_UNew,JSON.toJSONString(rdInfo),6000L);
@@ -859,12 +981,12 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //                                            }
 //                                        }
 //                                        pushPadAppIds.add(id_UNew);
-                                        pushUsers.add(id_UNew);
                                         closeWS(id_UNew,cli,appId);
                                     }
                                 }
                             }
                         }
+                        pushUsers.add(id_UNew);
 //                        String cli = ws.getClient(logContent);
 //                        JSONObject cliInfo = rdInfo.getJSONObject(cli);
 //                        if (null != cliInfo) {
@@ -885,12 +1007,14 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //                        String appId = null;
 //                        String userAppId = id_APPs.getString(i);
 //                        JSONObject rdInfo = ws.getMqKey(id_UNew);
+                        boolean isSendMq = false;
                         for (String cli : rdInfo.keySet()) {
                             JSONObject cliInfo = rdInfo.getJSONObject(cli);
                             if (null != cliInfo) {
                                 String mqKey = cliInfo.getString("mqKey");
 //                                    String thisWs = WsId.topic + ":" + WsId.tap;
-                                if ((null != mqKey && !"".equals(mqKey)) && !mqKey.equals(WsId.topic + ":" + WsId.tap)) {
+                                if (null != mqKey && !"".equals(mqKey) && !mqKey.equals(WsId.topic + ":" + WsId.tap)) {
+                                    isSendMq = true;
 //                                    userAppId = "";
 //                                    id_APPs.set(i,userAppId);
                                     if (null == mqGroupId.getJSONObject(mqKey)) {
@@ -925,13 +1049,17 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //                                                appId = cliInfo.getString("appId");
 //                                            }
 //                                        }
-                                } else {
-//                                    pushPadAppIds.add(id_UNew);
-//                                    if ("".equals(userAppId)) continue;
-//                                    pushAppIds.add(userAppId);
-                                    pushUsers.add(id_UNew);
                                 }
+//                                else {
+////                                    pushPadAppIds.add(id_UNew);
+////                                    if ("".equals(userAppId)) continue;
+////                                    pushAppIds.add(userAppId);
+//                                    pushUsers.add(id_UNew);
+//                                }
                             }
+                        }
+                        if (!isSendMq) {
+                            pushUsers.add(id_UNew);
                         }
 //                        String cli = ws.getClient(logContent);
 //                        JSONObject cliInfo = rdInfo.getJSONObject(cli);
@@ -971,7 +1099,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 }
             }
             if (!isOffline) {
-                ws.sendMqOrPush(mqGroupId,pushUsers,logContent);
+                sendMqOrPush(mqGroupId,pushUsers,logContent);
             }
         }
     }
@@ -981,5 +1109,113 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //            return null;
 //        }
         return WebSocketUserServer.clients.get(id_U).get(client);
+    }
+
+    private static String refreshToken2(String id_U, String id_C, String token,String refreshToken, String clientType){
+        // 判断 传过来的参数是否为空
+        if (StringUtils.isNotEmpty(refreshToken)) {
+
+//            // 从redis 中查询出该用户的 refreshToken
+            String refreshTokenResult = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
+            System.out.println("refreshTokenResult:");
+            System.out.println(refreshTokenResult);
+
+            // 判断 refreshToken 是否为空
+            if (StringUtils.isNotEmpty(refreshTokenResult)) {
+
+                // 不为空则判断 传过来的 refreshToken 是否与 redis中的 refreshToken一致
+                if (refreshTokenResult.equals(id_U)) {
+
+                    JSONObject rdSet = qt.getRDSet(clientType + "Token", token);
+                    qt.errPrint("rdSet", null, rdSet, clientType, token);
+                    if (rdSet == null)
+                    {
+                        // 通过id_U查询该用户
+                        User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp."+ id_C), User.class);
+                        token = oauth.setToken(user, id_C,
+                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
+                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
+                                clientType);
+                    }
+                    else {
+                        qt.setRDSet(clientType + "Token", token, rdSet, 500L);
+                    }
+                    return token;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void sendMqOrPush(JSONObject mqGroupId,JSONArray pushUsers,LogFlow logContent){
+        if (pushUsers.size() > 0) {
+            System.out.println("推送用户列表:");
+            System.out.println(JSON.toJSONString(pushUsers));
+
+//            JSONArray pushApps = new JSONArray();
+//            JSONArray pushPads = new JSONArray();
+//            for (int i = 0; i < pushUsers.size(); i++) {
+//                String id_U = pushUsers.getString(i);
+//                JSONObject mqKey = ws.getMqKey(id_U);
+//                boolean isApp = false;
+//                boolean isPad = false;
+//                if (null != mqKey) {
+//                    JSONObject app = mqKey.getJSONObject("app");
+//                    if (null != app) {
+//                        pushApps.add(app.getString("appId"));
+//                        isApp = true;
+//                    }
+//                    JSONObject pad = mqKey.getJSONObject("pad");
+//                    if (null != pad) {
+//                        pushPads.add(pad.getString("appId"));
+//                        isPad = true;
+//                    }
+//                    if (isApp && isPad) {
+//                        continue;
+//                    }
+//                }
+//                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
+//                if (null != es && es.size() > 0 && null != es.getJSONObject(0)) {
+//                    JSONObject esObj = es.getJSONObject(0);
+//                    if (!isApp) {
+//                        if (null != esObj.getString("id_APP") && !"".equals(esObj.getString("id_APP"))) {
+//                            pushApps.add(esObj.getString("id_APP"));
+//                        }
+//                    }
+//                    if (!isPad) {
+//                        if (null != esObj.getString("id_Pad") && !"".equals(esObj.getString("id_Pad"))) {
+//                            pushPads.add(esObj.getString("id_Pad"));
+//                        }
+//                    }
+//                }
+//            }
+//            System.out.println("推送app:");
+//            System.out.println(JSON.toJSONString(pushApps));
+//            System.out.println("推送pad:");
+//            System.out.println(JSON.toJSONString(pushPads));
+
+//            if (pushApps.size() > 0) {
+//                String wrdNUC = "小银【系统】";
+//                JSONObject wrdNU = logContent.getWrdNU();
+//                if (null != wrdNU && null != wrdNU.getString("cn")) {
+//                    wrdNUC = wrdNU.getString("cn");
+//                }
+//                ws.push2(wrdNUC,logContent.getZcndesc(),pushApps);
+//            }
+        }
+        if (mqGroupId.size() > 0) {
+            for (String mqKey : mqGroupId.keySet()) {
+                JSONObject mqIdArr = mqGroupId.getJSONObject(mqKey);
+//                if (null != mqIdArr && mqIdArr.size() > 0) {
+//                    JSONArray mqAppIdArr = mqGroupAppId.getJSONArray(mqKey);
+//                    logContent.setId_Us(mqIdArr);
+//                    logContent.setId_APPs(mqAppIdArr);
+//                    sendWSOnly(mqKey,logContent);
+//                }
+                logContent.setId_Us(JSONArray.parseArray(JSON.toJSONString(mqIdArr.keySet())));
+//                logContent.setId_APPs(JSONArray.parseArray(JSON.toJSONString(mqIdArr.values())));
+                ws.sendWSOnly(mqKey,logContent);
+            }
+        }
     }
 }
