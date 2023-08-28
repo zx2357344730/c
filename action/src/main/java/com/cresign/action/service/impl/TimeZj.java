@@ -542,10 +542,11 @@ public class TimeZj {
         }
 
         System.out.println("获取职位总人数:"+grpB+"-"+dep+"- id_C:"+id_C);
-        // 根据公司编号获取asset编号
-        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-        // 根据asset编号获取asset的打卡卡片信息
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("chkin00s"));
+//        // 根据公司编号获取asset编号
+//        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
+//        // 根据asset编号获取asset的打卡卡片信息
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("chkin00s"));
+        Asset asset = qt.getConfig(id_C,"a-chkin","chkin00s");
 
         // 打卡卡片信息
         JSONObject chkin00s = asset.getChkin00s();
@@ -567,11 +568,12 @@ public class TimeZj {
             depObj.put(grpB,1);
             objZw.put(dep,depObj);
             chkin00s.put("objZw",objZw);
-            // 创建请求参数存储字典
-            JSONObject mapKey = new JSONObject();
-            // 添加请求参数
-            mapKey.put("chkin00s",chkin00s);
-            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//            // 创建请求参数存储字典
+//            JSONObject mapKey = new JSONObject();
+//            // 添加请求参数
+//            mapKey.put("chkin00s",chkin00s);
+//            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+            qt.setMDContent(asset.getId(),qt.setJson("chkin00s",chkin00s), Asset.class);
             if (isStorageEmpty == 1) {
                 depGrpUNum = new JSONObject();
             }
@@ -586,11 +588,12 @@ public class TimeZj {
                 depObj.put(grpB,grpBObj);
                 objZw.put(dep,depObj);
                 chkin00s.put("objZw",objZw);
-                // 创建请求参数存储字典
-                JSONObject mapKey = new JSONObject();
-                // 添加请求参数
-                mapKey.put("chkin00s",chkin00s);
-                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//                // 创建请求参数存储字典
+//                JSONObject mapKey = new JSONObject();
+//                // 添加请求参数
+//                mapKey.put("chkin00s",chkin00s);
+//                coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+                qt.setMDContent(asset.getId(),qt.setJson("chkin00s",chkin00s), Asset.class);
             }
             if (isStorageEmpty == 1) {
                 depGrpUNum = new JSONObject();
@@ -643,10 +646,11 @@ public class TimeZj {
         int chKinEmpty = 0;
         // 存储打卡信息部门组别下标状态
         int chKinDepGrpBIndex = 0;
-        // 根据公司编号获取asset编号
-        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-        // 根据asset编号获取asset的打卡卡片信息
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("chkin00s"));
+//        // 根据公司编号获取asset编号
+//        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
+//        // 根据asset编号获取asset的打卡卡片信息
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("chkin00s"));
+        Asset asset = qt.getConfig(id_C,"a-chkin","chkin00s");
         // 获取打卡卡片信息
         JSONObject chkin00s = asset.getChkin00s();
         // 获取打卡信息
@@ -732,11 +736,12 @@ public class TimeZj {
             if (chKinEmpty > 0) {
                 chkin00s.put("objData",objData);
             }
-            // 创建请求参数存储字典
-            JSONObject mapKey = new JSONObject();
-            // 添加请求参数
-            mapKey.put("chkin00s",chkin00s);
-            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//            // 创建请求参数存储字典
+//            JSONObject mapKey = new JSONObject();
+//            // 添加请求参数
+//            mapKey.put("chkin00s",chkin00s);
+//            coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+            qt.setMDContent(asset.getId(),qt.setJson("chkin00s",chkin00s), Asset.class);
         }
         JSONObject workInfo = objData.getJSONObject(objGrpB);
         result.put("xb",workInfo.getJSONArray("objXb"));
@@ -930,10 +935,11 @@ public class TimeZj {
             // 设置为空状态为1
             isStorageEmpty = 1;
         }
-        // 根据公司编号获取asset编号
-        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-        // 根据asset编号获取asset的时间处理卡片信息
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
+//        // 根据公司编号获取asset编号
+//        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
+//        // 根据asset编号获取asset的时间处理卡片信息
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
+        Asset asset = qt.getConfig(id_C,"a-chkin",timeCard);
 //        System.out.println("获取任务集合:"+teStart+" - "+grpB+" - "+dep);
 //        System.out.println("查询数据库:");
         // 获取时间处理卡片信息
@@ -1032,10 +1038,11 @@ public class TimeZj {
      * @date 2022/6/9 2:07
      */
     public void setTaskAndZonKai(String id_C){
-        // 根据公司编号获取assetId
-        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-        // 根据assetId获取asset的任务卡片信息
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
+//        // 根据公司编号获取assetId
+//        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
+//        // 根据assetId获取asset的任务卡片信息
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
+        Asset asset = qt.getConfig(id_C,"a-chkin",timeCard);
         // 获取任务卡片信息
 //        JSONObject aArrange = asset.getAArrange2();
         JSONObject aArrange = getAArrangeNew(asset);
@@ -1046,11 +1053,12 @@ public class TimeZj {
         }
         // 清空所有任务信息
         aArrange.put("objTask",new JSONObject());
-        // 创建请求参数存储字典
-        JSONObject mapKey = new JSONObject();
-        // 添加请求参数
-        mapKey.put(timeCard,aArrange);
-        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//        // 创建请求参数存储字典
+//        JSONObject mapKey = new JSONObject();
+//        // 添加请求参数
+//        mapKey.put(timeCard,aArrange);
+//        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+        qt.setMDContent(asset.getId(),qt.setJson(timeCard,aArrange), Asset.class);
     }
 
     /**
@@ -1621,7 +1629,8 @@ public class TimeZj {
         JSONObject result = new JSONObject();
         JSONObject resultNew = new JSONObject();
         // 根据订单编号查询action卡片信息
-        Order insideAction = coupaUtil.getOrderByListKey(id_O, Arrays.asList("action","info"));
+//        Order insideAction = coupaUtil.getOrderByListKey(id_O, Arrays.asList("action","info"));
+        Order insideAction = qt.getMDContent(id_O, qt.strList("action", "info"), Order.class);
         // 判断订单是否为空
         if (null == insideAction || null == insideAction.getInfo()
                 || null == insideAction.getAction()|| null == insideAction.getAction().getJSONObject("grpBGroup")
@@ -1633,8 +1642,9 @@ public class TimeZj {
             return null;
         }
         // 调用方法获取订单信息
-        Order salesOrderData = coupaUtil.getOrderByListKey(
-                insideAction.getInfo().getId_OP(), Collections.singletonList("action"));
+//        Order salesOrderData = coupaUtil.getOrderByListKey(
+//                insideAction.getInfo().getId_OP(), Collections.singletonList("action"));
+        Order salesOrderData = qt.getMDContent(insideAction.getInfo().getId_OP(), "action", Order.class);
         // 判断订单是否为空
         if (null == salesOrderData || null == salesOrderData.getAction()
                 || null == salesOrderData.getAction().getJSONArray("oDates")) {
@@ -1644,17 +1654,18 @@ public class TimeZj {
             System.out.println();
             return null;
         }
-        // 根据公司编号获取asset编号
-        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-        if (null == assetId) {
-            // 返回为空错误信息
-            System.out.println();
-            System.out.println("-查询为空!-");
-            System.out.println();
-            return null;
-        }
-        // 根据asset编号获取asset的打卡卡片信息
-        Asset asset = coupaUtil.getAssetById(assetId, Arrays.asList(timeCard,"chkin00s"));
+//        // 根据公司编号获取asset编号
+//        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
+//        if (null == assetId) {
+//            // 返回为空错误信息
+//            System.out.println();
+//            System.out.println("-查询为空!-");
+//            System.out.println();
+//            return null;
+//        }
+//        // 根据asset编号获取asset的打卡卡片信息
+//        Asset asset = coupaUtil.getAssetById(assetId, Arrays.asList(timeCard,"chkin00s"));
+        Asset asset = qt.getConfig(id_C,"a-chkin",qt.strList(timeCard,"chkin00s"));
         if (null == asset) {
             // 返回为空错误信息
             System.out.println();
@@ -2207,8 +2218,9 @@ public class TimeZj {
             // 判断不为空
             if (null == bmdpt) {
                 // 调用方法获取订单信息
-                Order orderData = coupaUtil.getOrderByListKey(
-                        oDate.getString("id_O"), Collections.singletonList("action"));
+//                Order orderData = coupaUtil.getOrderByListKey(
+//                        oDate.getString("id_O"), Collections.singletonList("action"));
+                Order orderData = qt.getMDContent(oDate.getString("id_O"),"action", Order.class);
                 // 获取进度卡片数据
                 JSONObject actionNew = orderData.getAction();
                 // 获取进度信息

@@ -1152,56 +1152,55 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             System.out.println("推送用户列表:");
             System.out.println(JSON.toJSONString(pushUsers));
 
-//            JSONArray pushApps = new JSONArray();
-//            JSONArray pushPads = new JSONArray();
-//            for (int i = 0; i < pushUsers.size(); i++) {
-//                String id_U = pushUsers.getString(i);
-//                JSONObject mqKey = ws.getMqKey(id_U);
-//                boolean isApp = false;
-//                boolean isPad = false;
-//                if (null != mqKey) {
-//                    JSONObject app = mqKey.getJSONObject("app");
-//                    if (null != app) {
-//                        pushApps.add(app.getString("appId"));
-//                        isApp = true;
-//                    }
-//                    JSONObject pad = mqKey.getJSONObject("pad");
-//                    if (null != pad) {
-//                        pushPads.add(pad.getString("appId"));
-//                        isPad = true;
-//                    }
-//                    if (isApp && isPad) {
-//                        continue;
-//                    }
-//                }
-//                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
-//                if (null != es && es.size() > 0 && null != es.getJSONObject(0)) {
-//                    JSONObject esObj = es.getJSONObject(0);
-//                    if (!isApp) {
-//                        if (null != esObj.getString("id_APP") && !"".equals(esObj.getString("id_APP"))) {
-//                            pushApps.add(esObj.getString("id_APP"));
-//                        }
-//                    }
-//                    if (!isPad) {
-//                        if (null != esObj.getString("id_Pad") && !"".equals(esObj.getString("id_Pad"))) {
-//                            pushPads.add(esObj.getString("id_Pad"));
-//                        }
-//                    }
-//                }
-//            }
-//            System.out.println("推送app:");
-//            System.out.println(JSON.toJSONString(pushApps));
-//            System.out.println("推送pad:");
-//            System.out.println(JSON.toJSONString(pushPads));
-
-//            if (pushApps.size() > 0) {
-//                String wrdNUC = "小银【系统】";
-//                JSONObject wrdNU = logContent.getWrdNU();
-//                if (null != wrdNU && null != wrdNU.getString("cn")) {
-//                    wrdNUC = wrdNU.getString("cn");
-//                }
-//                ws.push2(wrdNUC,logContent.getZcndesc(),pushApps);
-//            }
+            JSONArray pushApps = new JSONArray();
+            JSONArray pushPads = new JSONArray();
+            for (int i = 0; i < pushUsers.size(); i++) {
+                String id_U = pushUsers.getString(i);
+                JSONObject mqKey = ws.getMqKey(id_U);
+                boolean isApp = false;
+                boolean isPad = false;
+                if (null != mqKey) {
+                    JSONObject app = mqKey.getJSONObject("app");
+                    if (null != app) {
+                        pushApps.add(app.getString("appId"));
+                        isApp = true;
+                    }
+                    JSONObject pad = mqKey.getJSONObject("pad");
+                    if (null != pad) {
+                        pushPads.add(pad.getString("appId"));
+                        isPad = true;
+                    }
+                    if (isApp && isPad) {
+                        continue;
+                    }
+                }
+                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
+                if (null != es && es.size() > 0 && null != es.getJSONObject(0)) {
+                    JSONObject esObj = es.getJSONObject(0);
+                    if (!isApp) {
+                        if (null != esObj.getString("id_APP") && !"".equals(esObj.getString("id_APP"))) {
+                            pushApps.add(esObj.getString("id_APP"));
+                        }
+                    }
+                    if (!isPad) {
+                        if (null != esObj.getString("id_Pad") && !"".equals(esObj.getString("id_Pad"))) {
+                            pushPads.add(esObj.getString("id_Pad"));
+                        }
+                    }
+                }
+            }
+            System.out.println("推送app:");
+            System.out.println(JSON.toJSONString(pushApps));
+            System.out.println("推送pad:");
+            System.out.println(JSON.toJSONString(pushPads));
+            if (pushApps.size() > 0) {
+                String wrdNUC = "小银【系统】";
+                JSONObject wrdNU = logContent.getWrdNU();
+                if (null != wrdNU && null != wrdNU.getString("cn")) {
+                    wrdNUC = wrdNU.getString("cn");
+                }
+                ws.push2(wrdNUC,logContent.getZcndesc(),pushApps);
+            }
         }
         if (mqGroupId.size() > 0) {
             for (String mqKey : mqGroupId.keySet()) {

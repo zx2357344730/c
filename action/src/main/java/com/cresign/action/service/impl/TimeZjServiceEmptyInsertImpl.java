@@ -211,7 +211,8 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                                             objAction = actionIdO.getJSONArray(conflictTaskCopy.getId_O());
                                             if (null == objAction) {
                                                 // 根据冲突任务订单编号获取订单信息 - t
-                                                Order order = coupaUtil.getOrderByListKey(conflictTaskCopy.getId_O(), Collections.singletonList("action"));
+//                                                Order order = coupaUtil.getOrderByListKey(conflictTaskCopy.getId_O(), Collections.singletonList("action"));
+                                                Order order = qt.getMDContent(conflictTaskCopy.getId_O(),"action", Order.class);
                                                 // 获取进度卡片的所有递归信息
                                                 objAction = order.getAction().getJSONArray("objAction");
                                                 actionIdO.put(conflictTaskCopy.getId_O(),objAction);
@@ -1020,7 +1021,8 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                                         if (null == objAction) {
 //                                            System.out.println("为空-获取数据库-5:"+conflictTaskCopy.getId_O());
                                             // 根据冲突任务订单编号获取订单信息 - t
-                                            Order order = coupaUtil.getOrderByListKey(conflictTaskCopy.getId_O(), Collections.singletonList("action"));
+//                                            Order order = coupaUtil.getOrderByListKey(conflictTaskCopy.getId_O(), Collections.singletonList("action"));
+                                            Order order = qt.getMDContent(conflictTaskCopy.getId_O(),"action", Order.class);
                                             // 获取进度卡片的所有递归信息
                                             objAction = order.getAction().getJSONArray("objAction");
                                             actionIdO.put(conflictTaskCopy.getId_O(),objAction);
@@ -1111,8 +1113,9 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
      */
     public ApiResponse removeTime(String id_O, String id_C){
         // 调用方法获取订单信息
-        Order order = coupaUtil.getOrderByListKey(
-                id_O, Arrays.asList("casItemx","action"));
+//        Order order = coupaUtil.getOrderByListKey(
+//                id_O, Arrays.asList("casItemx","action"));
+        Order order = qt.getMDContent(id_O,qt.strList("casItemx","action"), Order.class);
         // 判断订单是否为空
         if (null == order || null == order.getCasItemx() || null == order.getAction()) {
             // 返回为空错误信息
@@ -1122,10 +1125,11 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
         JSONArray objOrder = order.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
         // 获取主订单的时间处理所在日期存储信息
         JSONObject timeRecord = order.getAction().getJSONObject("timeRecord");
-        // 根据公司编号获取asset编号
-        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-        // 根据asset编号，获取asset的时间处理卡片信息
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
+//        // 根据公司编号获取asset编号
+//        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
+//        // 根据asset编号，获取asset的时间处理卡片信息
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
+        Asset asset = qt.getConfig(id_C,"a-chkin",timeCard);
         // 获取时间处理卡片信息
 //        JSONObject aArrange = asset.getAArrange2();
         JSONObject aArrange = getAArrangeNew(asset);
@@ -1241,19 +1245,21 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
         });
         // 添加镜像任务信息
         aArrange.put("objTask",objTaskImage);
-        // 创建请求参数存储字典
-        JSONObject mapKey = new JSONObject();
-        // 添加请求参数
-        mapKey.put(timeCard,aArrange);
-        // 请求修改卡片信息
-        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//        // 创建请求参数存储字典
+//        JSONObject mapKey = new JSONObject();
+//        // 添加请求参数
+//        mapKey.put(timeCard,aArrange);
+//        // 请求修改卡片信息
+//        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+        qt.setMDContent(asset.getId(),qt.setJson(timeCard,aArrange), Asset.class);
 
-        // 创建请求更改参数
-        mapKey = new JSONObject();
-        // 添加请求更改参数信息
-        mapKey.put("action.timeRecord",new JSONObject());
-        // 调用接口发起数据库更改信息请求
-        coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+//        // 创建请求更改参数
+//        mapKey = new JSONObject();
+//        // 添加请求更改参数信息
+//        mapKey.put("action.timeRecord",new JSONObject());
+//        // 调用接口发起数据库更改信息请求
+//        coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
+        qt.setMDContent(id_O,qt.setJson("action.timeRecord",new JSONObject()), Order.class);
 
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "时间删除处理成功!");

@@ -51,14 +51,15 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
     public ApiResponse timeSortFromNew(String dep, String grpB, long currentTime
             , int index, String id_C,long taPFinish) {
         TimeZj.isZ = 6;
-        // 根据公司编号获取asset编号
-        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-        // 判断编号为空
-        if (null == assetId) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_ID_NULL.getCode(), "资产编号为空");
-        }
-        // 根据asset编号获取asset的信息
-        Asset asset = coupaUtil.getAssetById(assetId, Arrays.asList(timeCard,"chkin00s"));
+//        // 根据公司编号获取asset编号
+//        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
+//        // 判断编号为空
+//        if (null == assetId) {
+//            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_ID_NULL.getCode(), "资产编号为空");
+//        }
+//        // 根据asset编号获取asset的信息
+//        Asset asset = coupaUtil.getAssetById(assetId, Arrays.asList(timeCard,"chkin00s"));
+        Asset asset = qt.getConfig(id_C,"a-chkin","chkin00s");
         // 判断asset为空
         if (null == asset) {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_NULL.getCode(), "资产为空");
@@ -81,7 +82,8 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
         // 判断处理状态为空或者为0
         if (null == operationState || 0 == operationState) {
             // 调用方法更新aArrange卡片操作状态接口
-            updateArrangeState(1,assetId);
+//            updateArrangeState(1,assetId);
+            updateArrangeState(1,asset.getId());
         } else {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_TASK_PROCESSING.getCode(), "资产时间正在处理中");
         }
@@ -109,39 +111,46 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
             // 判断预计结束时间等于实际结束时间
             if (tePFinish == taPFinish) {
                 // 调用方法更新aArrange卡片操作状态接口
-                updateArrangeState(0,assetId);
+//                updateArrangeState(0,assetId);
+                updateArrangeState(0,asset.getId());
                 // 抛出操作成功异常
                 return retResult.ok(CodeEnum.OK.getCode(), "无需处理!");
             } else if (tePFinish > taPFinish) {
                 // 调用方法更新aArrange卡片操作状态接口
-                updateArrangeState(0,assetId);
+//                updateArrangeState(0,assetId);
+                updateArrangeState(0,asset.getId());
                 // 抛出操作成功异常
                 return retResult.ok(CodeEnum.OK.getCode(), "时间小于无需处理!");
             } else {
                 if ((taPFinish-tePFinish)>50000) {
                     // 调用方法更新aArrange卡片操作状态接口
-                    updateArrangeState(0,assetId);
+//                    updateArrangeState(0,assetId);
+                    updateArrangeState(0,asset.getId());
                     // 抛出操作成功异常
                     return retResult.ok(CodeEnum.OK.getCode(), "当前超时时间超过50000不支持处理!");
                 }
                 // 调用方法获取订单信息
-                Order orderNew = coupaUtil.getOrderByListKey(
-                        taskUsed.getId_O(), Collections.singletonList("info"));
+//                Order orderNew = coupaUtil.getOrderByListKey(
+//                        taskUsed.getId_O(), Collections.singletonList("info"));
+                Order orderNew = qt.getMDContent(taskUsed.getId_O(),"info", Order.class);
                 // 判断订单为空或者订单info卡片信息为空或者订单info卡片内的id_OP字段为空
                 if (null == orderNew || null == orderNew.getInfo() || null == orderNew.getInfo().getId_OP()) {
                     // 调用方法更新aArrange卡片操作状态接口
-                    updateArrangeState(0,assetId);
+//                    updateArrangeState(0,assetId);
+                    updateArrangeState(0,asset.getId());
                     throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
                 }
                 // 调用方法获取订单信息
-                Order salesOrderData = coupaUtil.getOrderByListKey(
-                        orderNew.getInfo().getId_OP(), Arrays.asList("oItem", "info", "view", "action", "casItemx"));
+//                Order salesOrderData = coupaUtil.getOrderByListKey(
+//                        orderNew.getInfo().getId_OP(), Arrays.asList("oItem", "info", "view", "action", "casItemx"));
+                Order salesOrderData = qt.getMDContent(orderNew.getInfo().getId_OP(),qt.strList("oItem", "info", "view", "action", "casItemx"), Order.class);
 //            System.out.println("--------");
 //            System.out.println(JSON.toJSONString(salesOrderData));
                 // 判断订单是否为空
                 if (null == salesOrderData || null == salesOrderData.getAction() || null == salesOrderData.getOItem()
                         || null == salesOrderData.getCasItemx()) {
-                    updateArrangeState(0,assetId);
+//                    updateArrangeState(0,assetId);
+                    updateArrangeState(0,asset.getId());
                     // 返回为空错误信息
                     throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
                 }
@@ -215,7 +224,8 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
                     // 添加订单编号
                     objOrderList.add(id_OInside);
                     // 根据订单编号查询action卡片信息
-                    Order insideAction = coupaUtil.getOrderByListKey(id_OInside, Collections.singletonList("action"));
+//                    Order insideAction = coupaUtil.getOrderByListKey(id_OInside, Collections.singletonList("action"));
+                    Order insideAction = qt.getMDContent(id_OInside,"action", Order.class);
                     // 获取递归信息
                     JSONArray objAction = insideAction.getAction().getJSONArray("objAction");
                     // 获取组别对应部门信息
@@ -805,11 +815,13 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
                 // 根据当前唯一标识删除信息
                 onlyRefState.remove(random);
             }
-            updateArrangeState(0,assetId);
+//            updateArrangeState(0,assetId);
+            updateArrangeState(0,asset.getId());
             // 抛出操作成功异常
             return retResult.ok(CodeEnum.OK.getCode(), "处理成功!");
         } catch (Exception ex) {
-            updateArrangeState(0,assetId);
+//            updateArrangeState(0,assetId);
+            updateArrangeState(0,asset.getId());
             System.out.println("出现异常");
             ex.printStackTrace();
             // 抛出操作成功异常
@@ -881,14 +893,15 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
      */
     @Override
     public ApiResponse delOrAddAArrange(String id_C,JSONObject object) {
-        // 根据公司编号获取asset编号
-        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-        // 判断asset编号为空
-        if (null == assetId) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_ID_NULL.getCode(), "资产编号为空");
-        }
-        // 根据asset编号获取asset信息
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
+//        // 根据公司编号获取asset编号
+//        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
+//        // 判断asset编号为空
+//        if (null == assetId) {
+//            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_ID_NULL.getCode(), "资产编号为空");
+//        }
+//        // 根据asset编号获取asset信息
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
+        Asset asset = qt.getConfig(id_C,"a-chkin",timeCard);
         // 判断asset为空
         if (null == asset) {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_NULL.getCode(), "资产为空");
@@ -1001,11 +1014,11 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
             // 添加返回状态
             result.put("state",0);
         }
-        // 创建请求更改参数
-        JSONObject mapKey = new JSONObject();
-        // 添加请求更改参数信息
-        mapKey.put(timeCard+".objTask",objTask);
-        qt.setMDContent(assetId,mapKey,Asset.class);
+//        // 创建请求更改参数
+//        JSONObject mapKey = new JSONObject();
+//        // 添加请求更改参数信息
+//        mapKey.put(timeCard+".objTask",objTask);
+        qt.setMDContent(asset.getId(),qt.setJson(timeCard+".objTask",objTask),Asset.class);
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), result);
     }
@@ -1020,10 +1033,11 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
      * @ver 版本号: 1.0.0
      */
     private void updateArrangeState(int operationState,String assetId){
-        // 创建请求参数存储字典
-        JSONObject mapKey = new JSONObject();
-        // 添加请求参数
-        mapKey.put(timeCard+".operationState",operationState);
-        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//        // 创建请求参数存储字典
+//        JSONObject mapKey = new JSONObject();
+//        // 添加请求参数
+//        mapKey.put(timeCard+".operationState",operationState);
+//        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+        qt.setMDContent(assetId,qt.setJson(timeCard+".operationState",operationState), Asset.class);
     }
 }

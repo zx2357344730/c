@@ -53,7 +53,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
     @Override
     public ApiResponse moveAArrange(String id_C, String moveId_A, String coverMoveId_A) {
         // 根据asset编号获取asset的时间处理卡片信息
-        Asset asset = coupaUtil.getAssetById(coverMoveId_A, Arrays.asList(timeCard,"info"));
+//        Asset asset = coupaUtil.getAssetById(coverMoveId_A, Arrays.asList(timeCard,"info"));
+        Asset asset = qt.getMDContent(coverMoveId_A,qt.strList(timeCard,"info"), Asset.class);
         if (null == asset) {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_NULL.getCode(), "被移动的资产为空");
         }
@@ -74,7 +75,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_ARRANGE_OBJ_TASK_NULL.getCode(), "被移动的资产Arrange内objTask为空");
         }
         // 根据asset编号获取asset的时间处理卡片信息
-        Asset assetMove = coupaUtil.getAssetById(moveId_A, Arrays.asList(timeCard,"info"));
+//        Asset assetMove = coupaUtil.getAssetById(moveId_A, Arrays.asList(timeCard,"info"));
+        Asset assetMove = qt.getMDContent(moveId_A,qt.strList(timeCard,"info"), Asset.class);
         if (null == assetMove) {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_NULL.getCode(), "移动的资产为空");
         }
@@ -98,11 +100,12 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         }
         // 添加信息
         aArrangeMove.put("objTask",objTask);
-        // 创建请求参数存储字典
-        JSONObject mapKey = new JSONObject();
-        // 添加请求参数
-        mapKey.put(timeCard,aArrangeMove);
-        coupaUtil.updateAssetByKeyAndListKeyVal("id",moveId_A,mapKey);
+//        // 创建请求参数存储字典
+//        JSONObject mapKey = new JSONObject();
+//        // 添加请求参数
+//        mapKey.put(timeCard,aArrangeMove);
+//        coupaUtil.updateAssetByKeyAndListKeyVal("id",moveId_A,mapKey);
+        qt.setMDContent(moveId_A,qt.setJson(timeCard,aArrangeMove), Asset.class);
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "移动AArrange成功!");
     }
@@ -119,8 +122,9 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
     @Override
     public ApiResponse getEstimateStartTime(String id_O, String id_C, Long teStart) {
         // 调用方法获取订单信息
-        Order salesOrderData = coupaUtil.getOrderByListKey(
-                id_O, Arrays.asList("info", "action", "casItemx"));
+//        Order salesOrderData = coupaUtil.getOrderByListKey(
+//                id_O, Arrays.asList("info", "action", "casItemx"));
+        Order salesOrderData = qt.getMDContent(id_O,qt.strList("info", "action", "casItemx"), Order.class);
         System.out.println("--------");
         System.out.println(JSON.toJSONString(salesOrderData));
         // 判断订单是否为空
@@ -130,7 +134,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         }
         if (null != salesOrderData.getInfo().getId_OP()) {
             id_O = salesOrderData.getInfo().getId_OP();
-            salesOrderData = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info", "action"));
+//            salesOrderData = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info", "action"));
+            salesOrderData = qt.getMDContent(id_O,qt.strList("info", "action"), Order.class);
             // 判断订单是否为空
             if (null == salesOrderData || null == salesOrderData.getInfo() || null == salesOrderData.getAction()) {
                 // 返回为空错误信息
@@ -141,10 +146,11 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         JSONObject grpUNumAll = new JSONObject();
         // 获取递归订单列表
         JSONArray objOrder = salesOrderData.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
-        // 根据公司编号获取asset编号
-        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-        // 根据asset编号获取asset的打卡卡片信息
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("chkin00s"));
+//        // 根据公司编号获取asset编号
+//        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
+//        // 根据asset编号获取asset的打卡卡片信息
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("chkin00s"));
+        Asset asset = qt.getConfig(id_C,"a-chkin","chkin00s");
         // 获取打卡卡片信息
         JSONObject chkin00s = asset.getChkin00s();
         // 获取职位人数信息
@@ -205,7 +211,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 continue;
             }
             // 根据订单编号查询action卡片信息
-            Order insideAction = coupaUtil.getOrderByListKey(id_OInside, Collections.singletonList("action"));
+//            Order insideAction = coupaUtil.getOrderByListKey(id_OInside, Collections.singletonList("action"));
+            Order insideAction = qt.getMDContent(id_OInside,"action", Order.class);
             System.out.println();
             System.out.println(JSON.toJSONString(insideAction));
             // 获取组别对应部门信息
@@ -306,8 +313,9 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             // 判断不为空
             if (null == bmdpt) {
                 // 调用方法获取订单信息
-                Order orderData = coupaUtil.getOrderByListKey(
-                        oDate.getString("id_O"), Collections.singletonList("action"));
+//                Order orderData = coupaUtil.getOrderByListKey(
+//                        oDate.getString("id_O"), Collections.singletonList("action"));
+                Order orderData = qt.getMDContent(oDate.getString("id_O"),"action", Order.class);
                 // 获取进度卡片数据
                 JSONObject actionNew = orderData.getAction();
                 // 获取进度信息
@@ -400,8 +408,9 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
     public ApiResponse getAtFirst(String id_O, Long teStart, String id_C, Integer wn0TPrior){
         TimeZj.isZ = 6;
         // 调用方法获取订单信息
-        Order salesOrderData = coupaUtil.getOrderByListKey(
-                id_O, Arrays.asList("oItem", "info", "view", "action", "casItemx"));
+//        Order salesOrderData = coupaUtil.getOrderByListKey(
+//                id_O, Arrays.asList("oItem", "info", "view", "action", "casItemx"));
+        Order salesOrderData = qt.getMDContent(id_O,qt.strList("oItem", "info", "view", "action", "casItemx"), Order.class);
         System.out.println("--------");
         System.out.println(JSON.toJSONString(salesOrderData));
         // 判断订单是否为空
@@ -505,10 +514,11 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         JSONArray objOrder = salesOrderData.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
         // 存储递归订单列表的订单编号集合
         JSONArray objOrderList = new JSONArray();
-        // 根据公司编号获取asset编号
-        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-        // 根据asset编号获取asset的打卡卡片信息
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("chkin00s"));
+//        // 根据公司编号获取asset编号
+//        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
+//        // 根据asset编号获取asset的打卡卡片信息
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList("chkin00s"));
+        Asset asset = qt.getConfig(id_C,"a-chkin","chkin00s");
         // 获取打卡卡片信息
         JSONObject chkin00s = asset.getChkin00s();
         // 获取职位人数信息
@@ -567,7 +577,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             // 添加订单编号
             objOrderList.add(id_OInside);
             // 根据订单编号查询action卡片信息
-            Order insideAction = coupaUtil.getOrderByListKey(id_OInside, Collections.singletonList("action"));
+//            Order insideAction = coupaUtil.getOrderByListKey(id_OInside, Collections.singletonList("action"));
+            Order insideAction = qt.getMDContent(id_OInside,"action", Order.class);
             // 获取递归信息
             JSONArray objAction = insideAction.getAction().getJSONArray("objAction");
             // 获取组别对应部门信息
