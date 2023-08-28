@@ -116,7 +116,8 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
         if (null == objActionNext) {
 //            System.out.println("为空-获取数据库:"+id_oNext);
             // 根据当前订单编号获取订单信息
-            Order orderNext = coupaUtil.getOrderByListKey(id_oNext, Collections.singletonList("action"));
+//            Order orderNext = coupaUtil.getOrderByListKey(id_oNext, Collections.singletonList("action"));
+            Order orderNext = qt.getMDContent(id_oNext,"action", Order.class);
             // 获取订单递归信息
             objActionNext = orderNext.getAction().getJSONArray("objAction");
             actionIdO.put(id_oNext,objActionNext);
@@ -572,10 +573,11 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                 });
             });
         });
-        // 根据公司编号获取asset编号
-        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-        // 根据asset编号获取asset的时间处理卡片信息
-        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
+//        // 根据公司编号获取asset编号
+//        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
+//        // 根据asset编号获取asset的时间处理卡片信息
+//        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
+        Asset asset = qt.getConfig(id_C, "a-chkin", timeCard);
         // 获取时间处理卡片信息
 //        JSONObject aArrange = asset.getAArrange2();
         JSONObject aArrange = getAArrangeNew(asset);
@@ -1032,7 +1034,8 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             if (null == objAction) {
 //                System.out.println("为空-获取数据库-2:"+taskX.getId_O());
                 // 根据被冲突任务订单编号获取订单信息
-                Order order = coupaUtil.getOrderByListKey(conflictTaskCopy.getId_O(), Collections.singletonList("action"));
+//                Order order = coupaUtil.getOrderByListKey(conflictTaskCopy.getId_O(), Collections.singletonList("action"));
+                Order order = qt.getMDContent(conflictTaskCopy.getId_O(),"action", Order.class);
                 // 获取递归信息
                 objAction = order.getAction().getJSONArray("objAction");
                 actionIdO.put(conflictTaskCopy.getId_O(),objAction);
@@ -1194,7 +1197,8 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                                             if (null == objAction) {
 //                                                System.out.println("为空-获取数据库-3:"+conflictTaskDataCopy.getId_O());
                                                 // 根据冲突任务订单编号获取订单信息
-                                                Order order = coupaUtil.getOrderByListKey(conflictTaskDataCopy.getId_O(), Collections.singletonList("action"));
+//                                                Order order = coupaUtil.getOrderByListKey(conflictTaskDataCopy.getId_O(), Collections.singletonList("action"));
+                                                Order order = qt.getMDContent(conflictTaskDataCopy.getId_O(),"action", Order.class);
                                                 // 获取所有递归信息
                                                 objAction = order.getAction().getJSONArray("objAction");
                                                 actionIdO.put(conflictTaskDataCopy.getId_O(),objAction);
