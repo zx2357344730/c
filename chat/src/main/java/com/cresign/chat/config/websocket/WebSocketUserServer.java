@@ -139,9 +139,9 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     /**
      * 注入的时候，给类的 service 注入
      * @param qt	DB工具类
-    //     * @param logService	日志接口
-    //     * @param redisTemplate0	redis下标为1的数据库模板
-    //     * @param rocketMQTemplate	rocketMQ模板
+//     * @param logService	日志接口
+//     * @param redisTemplate0	redis下标为1的数据库模板
+//     * @param rocketMQTemplate	rocketMQ模板
      * @author tang
      * @ver 1.0.0
      * @date 2022/6/22
@@ -224,7 +224,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             cliInfo.put("mqKey",mqKey);
             cliInfo.put("appId",appId);
             rdInfo.put(client,cliInfo);
-            qt.setRDSet(Ws.ws_mq_prefix,uId,JSON.toJSONString(rdInfo),6000L);
+            qt.setRDSet(ws.ws_mq_prefix,uId,JSON.toJSONString(rdInfo),6000L);
 
 //            System.out.println("sessionId:"+this.session.getId());
 //            System.out.println("onlyId:"+this.onlyId);
@@ -434,15 +434,16 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @ver 1.0.0
      * @updated 2020/8/5 9:14:20
      */
-    public synchronized static void sendLog(LogFlow logContent) {
-        System.out.println("logContent:");
-        System.out.println(JSON.toJSONString(logContent));
-        // 设置日志时间
-        logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-        sendLogCore(logContent,false);
-
-    }
+//    public synchronized static void sendLog(LogFlow logContent) {
+//        System.out.println("logContent:");
+//        System.out.println(JSON.toJSONString(logContent));
+//        // 设置日志时间
+//        logContent.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//        sendLogCore(logContent,false);
+//        ws.sendESOnly(logContent);
+//
+//    }
 //        if ("link".equals(logContent.getSubType())) {
 //            //每次响应之前随机获取AES的key，加密data数据
 //            String key = AesUtil.getKey();
@@ -669,81 +670,9 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //                        ws.sendWS(logData);
                     sendLogCore(logData,false);
                 }
-//                if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())) {
-//                    System.out.println("在本服务:");
-//
-//                    if ("token".equals(logData.getSubType()) && "usageflow".equals(logData.getLogType())) {
-//                        try {
-//                            JSONObject data = logData.getData();
-//                            System.out.println("请求 RT2 api:");
-////                            String newToken = loginClient.refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("refreshTokenJiu")
-////                                    ,data.getString("clientType"),data.getString("token"));
-//                            String newToken = refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("token")
-//                                    ,data.getString("refreshTokenJiu"),data.getString("clientType"));
-//                            System.out.println("refreshToken2:"+logData.getId_U());
-//                            System.out.println(newToken);
-//                            String client = data.getString("clientType");
-//                            if (null == client) {
-//                                return;
-//                            }
-//                            if (null != newToken) {
-//                                data.put("token",newToken);
-//                                System.out.println("newToken:");
-//                                System.out.println(newToken);
-//                                logData.setData(data);
-//                                logData.getData().remove("refreshTokenJiu");
-//                                logData.setId_Us(qt.setArray(logData.getId_U()));
-//                                logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-////                                JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, logData.getId_U());
-////                                System.out.println("rdInfo:");
-////                                System.out.println(JSON.toJSONString(rdInfo));
-////                                if (null != rdInfo && rdInfo.size()>0 && null != rdInfo.getJSONObject(client)) {
-//////                            for (String cli : rdInfo.keySet()) {
-//////                                JSONObject cliInfo = rdInfo.getJSONObject(cli);
-//////
-//////                            }
-//////                            // 放到mq
-//////                            ws.sendWSOnly(rdInfo.getJSONObject(client).getString("mqKey"),logData);
-////
-////                                }
-//                            } else {
-//                                logData = new LogFlow();
-//                                logData.setId_U(logData.getId_U());
-//                                logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//                                logData.setId_Us(qt.setArray(logData.getId_U()));
-////                    logData.setId_APPs(qt.setArray(appIdOld));
-//                                logData.setLogType("msg");
-//                                logData.setSubType("refreshTokenErr");
-//                                JSONObject dataNew = new JSONObject();
-//                                dataNew.put("client",client);
-//                                logData.setData(dataNew);
-//                                logData.setZcndesc("refreshToken为空!");
-//                            }
-//                            if (WebSocketUserServer.webSocketSet.containsKey(logData.getId_U())
-//                                    && null!=WebSocketUserServer.clients.get(logData.getId_U()).get(client)) {
-//                                //每次响应之前随机获取AES的key，加密data数据
-//                                String key = AesUtil.getKey();
-//                                // 加密logContent数据
-//                                JSONObject stringMap = aes(logData,key);
-//                                stringMap.put("en",true);
-//                                String onlyId = WebSocketUserServer.clients.get(logData.getId_U()).get(client);
-//                                WebSocketUserServer.webSocketSet.get(logData.getId_U()).get(onlyId).sendMessage(stringMap,key,true);
-//                            }
-//                        } catch (Exception e){
-//                            System.out.println("这里出现异常:"+e.getMessage());
-//                            e.printStackTrace();
-//                        }
-//                    } else {
-//                        logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//                        // 放到mq
-////                        ws.sendWS(logData);
-//                        sendLogCore(logData,false);
-//                    }
-//                } else {
-//                    System.out.println("不在本服务:");
-//                    sendLogCore(logData,false);
-//                }
-//                ws.sendWSOnly(logData);
+                //TODO ZEJIN 是websocket 就必须发一次， 另外的就在 ws。sendLog 发一次就好了
+                ws.sendESOnly(logData);
+
             }
         }
     }
@@ -782,28 +711,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //        }
         sendLogCore(logContent,true);
 
-    }
-
-    /**
-     * 当前总在线人数加1
-     * 无参
-     * @author tang
-     * @ver 1.0.0
-     * @date 2022/6/23
-     */
-    private static synchronized void addOnlineCount(){
-        WebSocketUserServer.totalOnlineCount++;
-    }
-
-    /**
-     * 当前总在线人数减1
-     * 无参
-     * @author tang
-     * @ver 1.0.0
-     * @date 2022/6/23
-     */
-    private static synchronized void subOnlineCount(){
-        WebSocketUserServer.totalOnlineCount--;
     }
 
     /**
@@ -933,9 +840,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                         WebSocketUserServer.webSocketSet.get(id_UNew).get(onlyId).sendMessage(stringMap,key,true);
                         rdInfo.remove(client);
                     }
-                    if (!isMQ) {
-                        ws.sendESOnlyNew(logContent);
-                    }
+                    //TODO ZEJIN 没必要在sendlogCore这里sendES
+//                    if (!isMQ) {
+//                        ws.sendESOnly(logContent);
+//                    }
                     for (String client : rdInfo.keySet()) {
                         JSONObject rdInfoData = rdInfo.getJSONObject(client);
                         if (isMQ) {
