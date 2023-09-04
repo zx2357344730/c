@@ -773,7 +773,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @ver 版本号: 1.0.0
      */
     public static void sendMqOrPush(JSONObject mqGroupId,JSONObject pushUserObj,LogFlow logContent){
-        if (pushUserObj.size() > 0) {
+        if (logContent.getImp() >= 3 && pushUserObj.size() > 0) {
             System.out.println("推送用户列表:");
             System.out.println(JSON.toJSONString(pushUserObj.keySet()));
             // 创建存储appId列表

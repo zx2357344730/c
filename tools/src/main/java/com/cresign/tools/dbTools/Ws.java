@@ -3,6 +3,8 @@ package com.cresign.tools.dbTools;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.encrypt.HttpClientUtils;
+import com.cresign.tools.encrypt.RSAUtils;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.request.HttpClientUtil;
@@ -373,20 +375,20 @@ public class Ws {
 
     }
 
-//    private String getPushToken(){
-//        String appKey = "ShxgT3kg6s73NbuZeAe3I";
-//        String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
-//        long timestamp = System.currentTimeMillis();
-//
-//        JSONObject tokenPost = new JSONObject();
-//        tokenPost.put("sign", RSAUtils.getSHA256Str(appKey+timestamp+masterSecret));
-//        tokenPost.put("timestamp",timestamp);
-//        tokenPost.put("appkey",appKey);
-//        String s = HttpClientUtils.httpPost("https://restapi.getui.com/v2/" + appId + "/auth", tokenPost);
-//        JSONObject tokenResult = JSON.parseObject(s);
-//        JSONObject data = tokenResult.getJSONObject("data");
-//        return data.getString("token");
-//    }
+    private String getPushToken(){
+        String appKey = "ShxgT3kg6s73NbuZeAe3I";
+        String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
+        long timestamp = System.currentTimeMillis();
+
+        JSONObject tokenPost = new JSONObject();
+        tokenPost.put("sign", RSAUtils.getSHA256Str(appKey+timestamp+masterSecret));
+        tokenPost.put("timestamp",timestamp);
+        tokenPost.put("appkey",appKey);
+        String s = HttpClientUtils.httpPost("https://restapi.getui.com/v2/" + appId + "/auth", tokenPost);
+        JSONObject tokenResult = JSON.parseObject(s);
+        JSONObject data = tokenResult.getJSONObject("data");
+        return data.getString("token");
+    }
 
     /**
      * 获取用户的redis信息
@@ -414,7 +416,7 @@ public class Ws {
      * @ver 版本号: 1.0.0
      */
     public void sendMqOrPush(JSONObject mqGroupId,JSONObject pushUserObj,LogFlow logContent){
-        if (pushUserObj.size() > 0) {
+        if (logContent.getImp() >= 3 && pushUserObj.size() > 0) {
             System.out.println("推送用户列表:");
             System.out.println(JSON.toJSONString(pushUserObj.keySet()));
             // 创建存储appId列表

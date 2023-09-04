@@ -41,13 +41,6 @@ import java.util.UUID;
 @ServerEndpoint("/wsU/msg/{uId}/{publicKey}/{token}/{appId}/{client}")
 @Component
 @Sharable
-//@RocketMQMessageListener(
-//        topic = "chatTopic",
-//        selectorExpression = "chatTap",
-//        messageModel = MessageModel.BROADCASTING,
-////        messageModel = MessageModel.CLUSTERING,
-//        consumerGroup = "topicF-chat"
-//)
 @RocketMQMessageListener(
         topic = WsId.topic,
         selectorExpression = WsId.tap,
@@ -474,28 +467,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     }
 
     /**
-     * 当前总在线人数加1
-     * 无参
-     * @author tang
-     * @ver 1.0.0
-     * @date 2022/6/23
-     */
-    private static synchronized void addOnlineCount(){
-        WebSocketUserServer.totalOnlineCount++;
-    }
-
-    /**
-     * 当前总在线人数减1
-     * 无参
-     * @author tang
-     * @ver 1.0.0
-     * @date 2022/6/23
-     */
-    private static synchronized void subOnlineCount(){
-        WebSocketUserServer.totalOnlineCount--;
-    }
-
-    /**
      * 获取当前总在线人数
      * 无参
      * @return int  返回结果: 结果
@@ -795,7 +766,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @ver 版本号: 1.0.0
      */
     public static void sendMqOrPush(JSONObject mqGroupId,JSONObject pushUserObj,LogFlow logContent){
-        if (pushUserObj.size() > 0) {
+        if (logContent.getImp() >= 3 && pushUserObj.size() > 0) {
             System.out.println("推送用户列表:");
             System.out.println(JSON.toJSONString(pushUserObj.keySet()));
             // 创建存储appId列表
