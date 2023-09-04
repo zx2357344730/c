@@ -57,6 +57,10 @@ public class Ws {
         // 调用发送日志核心方法
         sendWSCore(log);
     }
+//    public void sendWSOnlyXin(String mqKey,LogFlow log){
+//        rocketMQTemplate.convertAndSend(mqKey, JSON.toJSONString(log));
+//        System.out.println("发送WS-Xin完成:"+mqKey);
+//    }
 
     /**
      * 写入es方法，写入并且清空发送用户列表和appId列表
@@ -197,10 +201,10 @@ public class Ws {
             }
             // 判断群id一样
             if (roomId.equals(logFlowId)) {
-                System.out.println("进入各FC 的loop: id=" + logContent.getId());
+//                System.out.println("进入各FC 的loop: id=" + logContent.getId());
                 // 获取群用户id列表
                 JSONArray objUser = roomSetting.getJSONArray("objUser");
-                System.out.println("objUser:" + JSON.toJSONString(objUser));
+//                System.out.println("objUser:" + JSON.toJSONString(objUser));
                 // 创建存储推送用户信息
                 // 遍历群用户id列表
                 for (int j = 0; j < objUser.size(); j++) {
@@ -299,75 +303,75 @@ public class Ws {
         }
     }
 
-//    public void sendUsageFlowNew(JSONObject wrdN, String msg, String subType, String type,String thisB)
-//    {
-//        // set sys log format:
-//        LogFlow log = new LogFlow();
-//        log.setSysLog("6141b6797e8ac90760913fd0", subType, msg, 3, wrdN);
-//
-//        // find all users in the "system usageflow group
-//        this.setUserListByFlowId("6141b6797e8ac90760913fd0", log);
-//        if (type.equals("ALL"))
-//        {   //send WS, write ES, send push
-//            this.sendWS(log);
-//        } else if (type.equals("WSES"))
-//        {  // no Push
-//            this.sendESOnly(log);
-//            this.sendWSOnlyNew(log);
-//        } else if (type.equals("ES"))
-//        {
-//            this.sendESOnly(log);
-//        } else if (type.equals("WS"))
-//        {
-//            this.sendWSOnlyNew(log);
-//        }
-//    }
-//
-//    private void sendPushBatch(JSONArray cidArray,String title,String body){
-//        String s;
-//        JSONObject heads = new JSONObject();
-//        String token = this.getPushToken();
-//        heads.put("token",token);
-//        JSONObject push;
-//
-//        String group_name = "任务组名";
-//        String request_id = qt.GetObjectId();
-//        JSONObject settings = new JSONObject();
-//        int ttl = 3600000;
-//        settings.put("ttl",ttl);
-//        JSONObject strategy = new JSONObject();
-//        strategy.put("default",4);
-//        settings.put("strategy",strategy);
-//        JSONObject push_message = new JSONObject();
-//        JSONObject notification = new JSONObject();
-//        notification.put("title",title+"_toLP");
-//        notification.put("body",body);
-//        notification.put("click_type","startapp");
-//        notification.put("url","https://www.cresign.cn");
-//        push_message.put("notification",notification);
-//
-//        push = new JSONObject();
-//        push.put("request_id",request_id);
-//        push.put("group_name",group_name);
-//        push.put("settings",settings);
-//        push.put("push_message",push_message);
-//
-//        s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/message", push, heads);
-//
-//        JSONObject re = JSONObject.parseObject(s);
-//
-//        if (re != null) {
-//            String taskid = re.getJSONObject("data").getString("taskid");
-//            JSONObject audience = new JSONObject();
-//            audience.put("cid", cidArray);
-//            push = new JSONObject();
-//            push.put("audience", audience);
-//            push.put("taskid", taskid);
-//            push.put("is_async", true);
-//            s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/cid", push, heads);
-//        }
-//
-//    }
+    public void sendUsageFlowNew(JSONObject wrdN, String msg, String subType, String type,String thisB)
+    {
+        // set sys log format:
+        LogFlow log = new LogFlow();
+        log.setSysLog("6141b6797e8ac90760913fd0", subType, msg, 3, wrdN);
+
+        // find all users in the "system usageflow group
+        this.setUserListByFlowId("6141b6797e8ac90760913fd0", log);
+        if (type.equals("ALL"))
+        {   //send WS, write ES, send push
+            this.sendWS(log);
+        } else if (type.equals("WSES"))
+        {  // no Push
+            this.sendESOnly(log);
+            this.sendWSOnlyNew(log);
+        } else if (type.equals("ES"))
+        {
+            this.sendESOnly(log);
+        } else if (type.equals("WS"))
+        {
+            this.sendWSOnlyNew(log);
+        }
+    }
+
+    private void sendPushBatch(JSONArray cidArray,String title,String body){
+        String s;
+        JSONObject heads = new JSONObject();
+        String token = this.getPushToken();
+        heads.put("token",token);
+        JSONObject push;
+
+        String group_name = "任务组名";
+        String request_id = qt.GetObjectId();
+        JSONObject settings = new JSONObject();
+        int ttl = 3600000;
+        settings.put("ttl",ttl);
+        JSONObject strategy = new JSONObject();
+        strategy.put("default",4);
+        settings.put("strategy",strategy);
+        JSONObject push_message = new JSONObject();
+        JSONObject notification = new JSONObject();
+        notification.put("title",title+"_toLP");
+        notification.put("body",body);
+        notification.put("click_type","startapp");
+        notification.put("url","https://www.cresign.cn");
+        push_message.put("notification",notification);
+
+        push = new JSONObject();
+        push.put("request_id",request_id);
+        push.put("group_name",group_name);
+        push.put("settings",settings);
+        push.put("push_message",push_message);
+
+        s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/message", push, heads);
+
+        JSONObject re = JSONObject.parseObject(s);
+
+        if (re != null) {
+            String taskid = re.getJSONObject("data").getString("taskid");
+            JSONObject audience = new JSONObject();
+            audience.put("cid", cidArray);
+            push = new JSONObject();
+            push.put("audience", audience);
+            push.put("taskid", taskid);
+            push.put("is_async", true);
+            s = HttpClientUtils.httpPostAndHead("https://restapi.getui.com/v2/" + appId + "/push/list/cid", push, heads);
+        }
+
+    }
 
 //    private String getPushToken(){
 //        String appKey = "ShxgT3kg6s73NbuZeAe3I";

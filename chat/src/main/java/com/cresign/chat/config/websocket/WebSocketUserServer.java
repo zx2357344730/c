@@ -474,6 +474,28 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     }
 
     /**
+     * 当前总在线人数加1
+     * 无参
+     * @author tang
+     * @ver 1.0.0
+     * @date 2022/6/23
+     */
+    private static synchronized void addOnlineCount(){
+        WebSocketUserServer.totalOnlineCount++;
+    }
+
+    /**
+     * 当前总在线人数减1
+     * 无参
+     * @author tang
+     * @ver 1.0.0
+     * @date 2022/6/23
+     */
+    private static synchronized void subOnlineCount(){
+        WebSocketUserServer.totalOnlineCount--;
+    }
+
+    /**
      * 获取当前总在线人数
      * 无参
      * @return int  返回结果: 结果
