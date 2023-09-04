@@ -1,85 +1,81 @@
 package com.cresign.tools.dbTools;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.pojo.po.Asset;
+import com.cresign.tools.pojo.po.LogFlow;
+import com.cresign.tools.request.HttpClientUtil;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.UUID;
+
 /**
  * @author kevin
  * @ClassName Qt
  * @Description
  * @updated 2022/9/11 10:05 AM
  * @ver 1.0.0
- **/
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.encrypt.HttpClientUtils;
-import com.cresign.tools.encrypt.RSAUtils;
-import com.cresign.tools.enumeration.DateEnum;
-import com.cresign.tools.pojo.po.Asset;
-import com.cresign.tools.pojo.po.LogFlow;
-import com.cresign.tools.pojo.po.User;
-import com.cresign.tools.request.HttpClientUtil;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.UUID;
-
+ */
 @Service
 public class Ws {
 
-        @Autowired
-        private Qt qt;
-
-        public static final String appId = "KVB0qQq0fRArupojoL4WM9";
-        public static final String ws_mq_prefix = "wsl";
+    @Autowired
+    private Qt qt;
+    public static final String appId = "KVB0qQq0fRArupojoL4WM9";
+    public static final String ws_mq_prefix = "wsl";
 
     /**
-         * 注入RocketMQ模板
-         */
-        @Autowired
-        private RocketMQTemplate rocketMQTemplate;
+     * 注入RocketMQ模板
+     */
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
 
-        /**
-         * 发送MQ信息
-         *
-         * @return 返回结果:
-         * @author tang
-         * @date 创建时间: 2023/4/15
-         * @ver 版本号: 1.0.0
-         */
-        // 1。 receive logFlow only
-        // 2. use roket to send ES, Chat, push
-        // 3. Push
-        public void sendWSOnly(String mqKey,LogFlow log){
-//            rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(log));
-            rocketMQTemplate.convertAndSend(mqKey, JSON.toJSONString(log));
-            System.out.println("发送WS完成:"+mqKey);
+    /**
+     * 直接发送MQ信息方法
+     * 1。 receive logFlow only
+     * 2. use roket to send ES, Chat, push
+     * 3. Push
+     * @author tang
+     * @date 创建时间: 2023/4/15
+     * @ver 版本号: 1.0.0
+     */
+    public void sendWSOnly(String mqKey,LogFlow log){
+        rocketMQTemplate.convertAndSend(mqKey, JSON.toJSONString(log));
+        System.out.println("发送WS完成:"+mqKey);
+    }
 
-        }
+    /**
+     * 发送日志
+     * @param log	日志信息
+     * @author tang
+     * @date 创建时间: 2023/9/4
+     * @ver 版本号: 1.0.0
+     */
     public void sendWSOnlyNew(LogFlow log){
-//            rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(log));
-//        for (int i = 0; i < log.getId_Us().size(); i++) {
-//            String mqKey = qt.getRDSetStr(Ws.ws_mq_prefix, log.getId_Us().getString(i));
-//            rocketMQTemplate.convertAndSend(mqKey, JSON.toJSONString(log));
-//            System.out.println("发送WS完成:"+mqKey);
-//        }
+        // 调用发送日志核心方法
         sendWSCore(log);
     }
 
-        public void sendESOnly(LogFlow log){
-            log.setId_Us(null);
-            log.setId_APPs(null);
-
-            rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
-            System.out.println("发送ES完成");
-        }
-
+    /**
+     * 写入es方法，写入并且清空发送用户列表和appId列表
+     * @param log	日志信息
+     * @author tang
+     * @date 创建时间: 2023/9/4
+     * @ver 版本号: 1.0.0
+     */
+    public void sendESOnly(LogFlow log){
+        log.setId_Us(null);
+        log.setId_APPs(null);
+        rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
+        System.out.println("发送ES完成");
+    }
 
     /**
      * 发送MQ信息给 WS 来群发
      * 发给MQ ES 来 add ES to flow
      * 发Push to cidArray (get from flowControl)
-     * @return 返回结果:
      * @author tang
      * @date 创建时间: 2023/4/15
      * @ver 版本号: 1.0.0
@@ -93,163 +89,29 @@ public class Ws {
         // the log's id_Us may have users
         // if so, getES and get id_APP to push
         // else set id_Us + cidArray as usual
-//        JSONArray id_Us = new JSONArray();
-//
-//        JSONArray cidArray = new JSONArray();
-//        // 获取公司编号
-//        String id_C = logContent.getId_C();
-//        // 获取供应商编号
-//        String id_CS = logContent.getId_CS();
-//
-//        if (logContent.getId_Us() == null) {
-//            logContent.setId_Us(new JSONArray());
-//        }
-//        if (null == logContent.getId_APPs()) {
-//            logContent.setId_APPs(new JSONArray());
-//        }
-//
-//        // fill up id_Us and cidArray (user array info)
-//        // by FlowControl... and you can do things like, you
-//        // my comp first then CS comp
-//        // if id_Us is listed, i should not change that
-//        if (logContent.getId_Us().size() > 0)
-//        {
-////            cidArray = logContent.getId_APPs();
-//            if (logContent.getId_APPs().size() == 0) {
-//                // 遍历用户列表
-//                for (int i = 0; i < logContent.getId_Us().size(); i++) {
-//                    // 获取用户ID
-//                    String id_U = logContent.getId_Us().getString(i);
-//                    // 查询数据库用户的id_App
-//                    User user = qt.getMDContent(id_U, "info", User.class);
-//                    // 判断不为空
-//                    if (null != user && null != user.getInfo() && null != user.getInfo().getId_APP()) {
-//                        logContent.getId_APPs().add(user.getInfo().getId_APP());
-//                    } else {
-//                        logContent.getId_APPs().add("");
-//                    }
-//                }
-//            }
-//        } else {
-//            // get from flowControl
-//            setUserListByFlowId(id_C, logContent);
-//            if (id_CS != null && !id_C.equals(id_CS)) {
-//                setUserListByFlowId(id_CS, logContent);
-//            }
-//        }
         getUserIdsOrAppIds(logContent);
         qt.errPrint("what is going", null, logContent);
         System.out.println("sendWS:");
         System.out.println(JSON.toJSONString(logContent));
-//        JSONArray id_Us = logContent.getId_Us();
-//        JSONArray id_APPs = logContent.getId_APPs();
-//        JSONObject mqGroupId = new JSONObject();
-//        JSONObject mqGroupAppId = new JSONObject();
-//        JSONArray pushAppIds = new JSONArray();
-//        for (int i = 0; i < id_Us.size(); i++) {
-//            String id_U = id_Us.getString(i);
-//            String userAppId = id_APPs.getString(i);
-//            String mqKey = getMqKey(null,id_U);
-//            if (null!=mqKey) {
-//                JSONArray mqIdArr = mqGroupId.getJSONArray(mqKey);
-//                mqIdArr.add(id_U);
-//                mqGroupId.put(mqKey,mqIdArr);
-//                JSONArray mqAppIdArr = mqGroupAppId.getJSONArray(mqKey);
-//                mqAppIdArr.add(userAppId);
-//                mqGroupAppId.put(mqKey,mqAppIdArr);
-//            } else {
-//                if ("".equals(userAppId)) continue;
-//                pushAppIds.add(userAppId);
-//            }
-//        }
-//        sendMqOrPush(mqGroupId,mqGroupAppId,pushAppIds,logContent);
         sendWSCore(logContent);
-//        this.sendWSOnly(logContent);
-//
-//        if (logContent.getId_APPs().size() > 0) {
-//            String wrdNUC = "小银【系统】";
-//            JSONObject wrdNU = logContent.getWrdNU();
-//            if (null != wrdNU && null != wrdNU.getString("cn")) {
-//                wrdNUC = wrdNU.getString("cn");
-//            }
-//            // 调用推送集合消息方法
-//            this.sendPushBatch(logContent.getId_APPs(), wrdNUC, logContent.getZcndesc());
-//        }
-
-//        // remove id_Us and id_APPs
-//        logContent.setId_Us(null);
-//        logContent.setId_APPs(null);
-//
-////        System.out.println("发送ES"+logContent);
-//
         this.sendESOnly(logContent);
-
     }
-//    public void sendWSXin(String mqKey,LogFlow logContent){
-//
-//        // the log's id_Us may have users
-//        // if so, getES and get id_APP to push
-//        // else set id_Us + cidArray as usual
-////        JSONArray id_Us = new JSONArray();
-////
-////        JSONArray cidArray = new JSONArray();
-//        // 获取公司编号
-//        String id_C = logContent.getId_C();
-//        // 获取供应商编号
-//        String id_CS = logContent.getId_CS();
-//
-//        if (logContent.getId_Us() == null)
-//            logContent.setId_Us(new JSONArray());
-//
-//        // fill up id_Us and cidArray (user array info)
-//        // by FlowControl... and you can do things like, you
-//        // my comp first then CS comp
-//        // if id_Us is listed, i should not change that
-//        if (logContent.getId_Us().size() > 0)
-//        {
-//            cidArray = logContent.getId_APPs();
-//        } else {
-//            // get from flowControl
-//            setUserListByFlowId(id_C, logContent);
-//            if (id_CS != null && !id_C.equals(id_CS)) {
-//                setUserListByFlowId(id_CS, logContent);
-//            }
-//        }
-//
-//        qt.errPrint("what is going", null, logContent);
-//        System.out.println("sendWS:");
-//        System.out.println(JSON.toJSONString(logContent));
-//        this.sendWSOnlyXin(mqKey,logContent);
-//
-//        if (logContent.getId_APPs().size() > 0) {
-//            String wrdNUC = "小银【系统】";
-//            JSONObject wrdNU = logContent.getWrdNU();
-//            if (null != wrdNU && null != wrdNU.getString("cn")) {
-//                wrdNUC = wrdNU.getString("cn");
-//            }
-//            // 调用推送集合消息方法
-//            this.sendPushBatch(logContent.getId_APPs(), wrdNUC, logContent.getZcndesc());
-//        }
-//
-//        // remove id_Us and id_APPs
-//        logContent.setId_Us(null);
-//        logContent.setId_APPs(null);
-//
-//        System.out.println("发送ES"+logContent);
-//
-//        this.sendESOnly(logContent);
-//
-//    }
+
     static String url = "https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/push";
+    /**
+     * app发送推送方法
+     * @param title	推送标题
+     * @param content	推送内容
+     * @param pushAppIds	推送用户列表
+     * @author tang
+     * @date 创建时间: 2023/9/4
+     * @ver 版本号: 1.0.0
+     */
     public void push2(String title,String content,JSONArray pushAppIds){
-//        JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_UNew));
-//        if (null != es && es.size() != 0
-//                && es.getJSONObject(0).getString("id_APP")!=null) {
-//
-//        }
+        System.out.println("推送用户:");
+        System.out.println(JSON.toJSONString(pushAppIds));
         JSONObject map = new JSONObject();
         map.put("cids",pushAppIds);
-//            map.put("cids","5d9d7d3dbb0fa44311841d142bc83cec");
         map.put("title",title);
         map.put("content",content);
         JSONObject options = new JSONObject();
@@ -262,97 +124,32 @@ public class Ws {
         date.put("data2","2");
         map.put("date",date);
         map.put("request_id", UUID.randomUUID().toString().replace("-",""));
-        String s = HttpClientUtil.doPostJson(url, map, "utf-8");
+        String s = HttpClientUtil.sendPost(map,url);
         System.out.println("请求结果:");
         System.out.println(s);
     }
+    /**
+     * pad发送推送方法
+     * @param pushAppIds	推送编号列表
+     * @author tang
+     * @date 创建时间: 2023/9/4
+     * @ver 版本号: 1.0.0
+     */
     private void padPush(JSONArray pushAppIds){
         System.out.println("进入pad推送:");
         System.out.println(JSON.toJSONString(pushAppIds));
     }
 
-//    public void sendWSEs(LogFlow logContent){
-//        JSONArray cidArray = new JSONArray();
-//        if (cidArray.size() > 0) {
-//            String wrdNUC = "小银【系统】";
-//            JSONObject wrdNU = logContent.getWrdNU();
-//            if (null != wrdNU && null != wrdNU.getString("cn")) {
-//                wrdNUC = wrdNU.getString("cn");
-//            }
-//            // 调用推送集合消息方法
-//            this.sendPushBatch(cidArray, wrdNUC, logContent.getZcndesc());
-//        }
-//
-//        // remove id_Us and id_APPs
-//        logContent.setId_Us(null);
-//        logContent.setId_APPs(null);
-//
-//        System.out.println("发送ES"+logContent);
-//
-//        this.sendESOnly(logContent);
-//    }
-
-//    /**
-//     * 发送MQ信息，根据指定的id_Us发送，所以id_Us不能为空！
-//     * @param logContent	日志信息
-//     * @param type	是否获取id_App
-//     * @author tang
-//     * @date 创建时间: 2023/7/3
-//     * @ver 版本号: 1.0.0
-//     */
-//    public void sendWSNew(LogFlow logContent,int type){
-//        // 定义存储id_Apps
-//        JSONArray cidArray;
-//        // 获取发送用户列表
-//        JSONArray id_Us = logContent.getId_Us();
-//        // 判断类型
-//        if (type == 0) {
-//            // 创建对象
-//            cidArray = new JSONArray();
-//            // 遍历用户列表
-//            for (int i = 0; i < id_Us.size(); i++) {
-//                // 获取用户ID
-//                String id_U = id_Us.getString(i);
-//                // 查询数据库用户的id_App
-//                User user = qt.getMDContent(id_U, "info", User.class);
-//                // 判断不为空
-//                if (null != user&&null!=user.getInfo()&&null!=user.getInfo().getId_APP()) {
-//                    cidArray.add(user.getInfo().getId_APP());
-//                } else {
-//                    cidArray.add("");
-//                }
-//            }
-//        } else {
-//            // 直接获取日志的id_App
-//            cidArray = logContent.getId_APPs();
-//        }
-//
-//        qt.errPrint("what is going", null, logContent, logContent.getId_Us(), cidArray);
-//        System.out.println("sendWS:");
-//        System.out.println(JSON.toJSONString(logContent));
-////        this.sendWSOnly(logContent);
-//
-//        if (cidArray.size() > 0) {
-//            String wrdNUC = "小银【系统】";
-//            JSONObject wrdNU = logContent.getWrdNU();
-//            if (null != wrdNU && null != wrdNU.getString("cn")) {
-//                wrdNUC = wrdNU.getString("cn");
-//            }
-//            // 调用推送集合消息方法
-//            this.sendPushBatch(cidArray, wrdNUC, logContent.getZcndesc());
-//        }
-//
-//        // remove id_Us and id_APPs
-//        logContent.setId_Us(null);
-//        logContent.setId_APPs(null);
-//
-//        System.out.println("发送ES"+logContent);
-//
-//        this.sendESOnly(logContent);
-//
-//    }
-    public void setUserListByGrpU(LogFlow log, String id_C, String grpU)
-    {
+    /**
+     * 获取es用户id列表和appId列表
+     * @param log	日志信息
+     * @param id_C	公司编号
+     * @param grpU	组别
+     * @author tang
+     * @date 创建时间: 2023/9/4
+     * @ver 版本号: 1.0.0
+     */
+    public void setUserListByGrpU(LogFlow log, String id_C, String grpU) {
         JSONArray userList = qt.getES("lBUser", qt.setESFilt("id_CB", id_C, "grpU", grpU));
 
         JSONArray userIds = new JSONArray();
@@ -366,9 +163,16 @@ public class Ws {
         log.setId_APPs(userPushIds);
     }
 
-    // id_Us[] and id_APPs use flowcontrol (prepareUserList)
+    /**
+     * 获取群用户列表
+     * id_Us[] and id_APPs use flowcontrol (prepareUserList)
+     * @param id_C	公司编号
+     * @param logContent	日志信息
+     * @author tang
+     * @date 创建时间: 2023/9/4
+     * @ver 版本号: 1.0.0
+     */
     public void setUserListByFlowId(String id_C, LogFlow logContent) {
-        
         Asset asset = qt.getConfig(id_C,"a-auth","flowControl");
         if (null == asset || asset.getId().equals("none") || null == asset.getFlowControl()) {
             return;
@@ -376,9 +180,6 @@ public class Ws {
         if (null == logContent.getId_Us()) {
             logContent.setId_Us(new JSONArray());
         }
-//        if (null == logContent.getId_APPs()) {
-//            logContent.setId_APPs(new JSONArray());
-//        }
         // 获取卡片信息
         JSONObject flowControl = asset.getFlowControl();
         // 获取卡片data信息
@@ -407,49 +208,11 @@ public class Ws {
                     JSONObject thisUser = objUser.getJSONObject(j);
                     String id_U = thisUser.getString("id_U");
                     // 获取群用户id
-//                    id_Us.add(thisUser.getString("id_U"));
                     logContent.getId_Us().add(id_U);
-//                    String id_App = thisUser.getString("id_APP");
-//                    String id_AppES = null;
-//                    JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
-//                    if (null != es && es.size() > 0 && null != es.getJSONObject(0)) {
-//                        JSONObject esObj = es.getJSONObject(0);
-//                        if (null != esObj.getString("id_APP") && !"".equals(esObj.getString("id_APP"))) {
-//                            id_AppES = esObj.getString("id_APP");
-//                        }
-//                    }
-//                    if (null != id_App && !"".equals(id_App)) {
-////                        cidArray.add(id_client);
-//                        if (null != id_AppES) {
-//                            if (!id_AppES.equals(id_App)) {
-//                                logContent.getId_APPs().add(id_AppES);
-//                            } else {
-//                                logContent.getId_APPs().add(id_App);
-//                            }
-//                        } else {
-//                            logContent.getId_APPs().add(id_App);
-//                        }
-//                    } else {
-////                        cidArray.add("");
-//                        logContent.getId_APPs().add("");
-//                    }
-//                    // 判断群用户id不等于当前ws连接用户id (push id_APP
-//                    if (thisUser.getInteger("imp") <= logContent.getImp()) {
-//                        String id_client = thisUser.getString("id_APP");
-//                        if (null != id_client && !"".equals(id_client)) {
-//                            cidArray.add(id_client);
-//                            logContent.getId_APPs().add(id_client);
-//                        } else {
-//                            cidArray.add("");
-//                            logContent.getId_APPs().add("");
-//                        }
-//                    }
                 }
             }
         }
     }
-
-
 
 //    public void prepareUserByGrpU(String id_C,String grpU,LogFlow logContent){
 ////
@@ -513,8 +276,7 @@ public class Ws {
 //
 //
 
-    public void sendUsageFlow(JSONObject wrdN, String msg, String subType, String type)
-    {
+    public void sendUsageFlow(JSONObject wrdN, String msg, String subType, String type) {
         // set sys log format:
         LogFlow log = new LogFlow();
         log.setSysLog("6141b6797e8ac90760913fd0", subType, msg, 3, wrdN);
@@ -607,156 +369,126 @@ public class Ws {
 //
 //    }
 
-    private String getPushToken(){
-        String appKey = "ShxgT3kg6s73NbuZeAe3I";
-        String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
-        long timestamp = System.currentTimeMillis();
+//    private String getPushToken(){
+//        String appKey = "ShxgT3kg6s73NbuZeAe3I";
+//        String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
+//        long timestamp = System.currentTimeMillis();
+//
+//        JSONObject tokenPost = new JSONObject();
+//        tokenPost.put("sign", RSAUtils.getSHA256Str(appKey+timestamp+masterSecret));
+//        tokenPost.put("timestamp",timestamp);
+//        tokenPost.put("appkey",appKey);
+//        String s = HttpClientUtils.httpPost("https://restapi.getui.com/v2/" + appId + "/auth", tokenPost);
+//        JSONObject tokenResult = JSON.parseObject(s);
+//        JSONObject data = tokenResult.getJSONObject("data");
+//        return data.getString("token");
+//    }
 
-        JSONObject tokenPost = new JSONObject();
-        tokenPost.put("sign", RSAUtils.getSHA256Str(appKey+timestamp+masterSecret));
-        tokenPost.put("timestamp",timestamp);
-        tokenPost.put("appkey",appKey);
-        String s = HttpClientUtils.httpPost("https://restapi.getui.com/v2/" + appId + "/auth", tokenPost);
-        JSONObject tokenResult = JSON.parseObject(s);
-        JSONObject data = tokenResult.getJSONObject("data");
-        return data.getString("token");
-    }
-
+    /**
+     * 获取用户的redis信息
+     * @param id_U	用户编号
+     * @return 返回结果: {@link JSONObject}
+     * @author tang
+     * @date 创建时间: 2023/9/2
+     * @ver 版本号: 1.0.0
+     */
     public JSONObject getMqKey(String id_U){
         JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, id_U);
         if (null != rdInfo && rdInfo.size() > 0) {
-//            String cliNew = null;
-//            for (String cli : rdInfo.keySet()) {
-//                JSONObject cliInfo = rdInfo.getJSONObject(cli);
-//                if (null != cliInfo) {
-//                    String mqKey = cliInfo.getString("mqKey");
-////                    if (mqKey.equals(thisWs)) {
-////                        cliNew = cli;
-////                        break;
-////                    }
-//                    if ((null != mqKey && !"".equals(mqKey))) {
-//                        if (null != thisWs && thisWs.equals(mqKey)) {
-//                            rdInfo.remove(cli);
-//                            qt.setRDSet(Ws.ws_mq_prefix,id_U,JSON.toJSONString(rdInfo),6000L);
-//                            return null;
-//                        } else {
-//                            return cliInfo;
-//                        }
-//                    }
-//                }
-//            }
-//            JSONObject cliInfo = rdInfo.getJSONObject(client);
-//            if (null != cliInfo) {
-//                String mqKey = cliInfo.getString("mqKey");
-////                    if (mqKey.equals(thisWs)) {
-////                        cliNew = cli;
-////                        break;
-////                    }
-//                if ((null != mqKey && !"".equals(mqKey))) {
-//                    if (null != thisWs && thisWs.equals(mqKey)) {
-//                        rdInfo.remove(client);
-//                        qt.setRDSet(Ws.ws_mq_prefix,id_U,JSON.toJSONString(rdInfo),6000L);
-//                        return null;
-//                    } else {
-//                        return cliInfo;
-//                    }
-//                }
-//            }
             return rdInfo;
-//            String mqKey = rdInfo.getString("mqKey");
-//            if ((null != mqKey && !"".equals(mqKey))) {
-//                if (null != thisWs && thisWs.equals(mqKey)) {
-////                    qt.delRD(Ws.ws_mq_prefix,id_U);
-//                    rdInfo.remove()
-//                    return null;
-//                } else {
-//                    return rdInfo;
-//                }
-////            sendWSOnly(rdSetStr,logContent);
-////            sendWSEs(logContent);
-//
-//            }
-//            else {
-//            System.out.println("离线发送:");
-//            if (isMQ) {
-//                qt.delRD(Ws.ws_mq_prefix,id_U);
-//            }
-//            push2(logContent,id_U);
-//            pushUsers.add(id_U);
-//            }
         }
         return null;
     }
-    public void sendMqOrPush(JSONObject mqGroupId,JSONArray pushUsers,LogFlow logContent){
-        if (pushUsers.size() > 0) {
-//            String wrdNUC = "小银【系统】";
-//            JSONObject wrdNU = logContent.getWrdNU();
-//            if (null != wrdNU && null != wrdNU.getString("cn")) {
-//                wrdNUC = wrdNU.getString("cn");
-//            }
-            System.out.println("推送用户列表:");
-            System.out.println(JSON.toJSONString(pushUsers));
-//            JSONArray pushApps = new JSONArray();
-//            JSONArray pushPads = new JSONArray();
-//            for (int i = 0; i < pushUsers.size(); i++) {
-//                String id_U = pushUsers.getString(i);
-//                JSONObject mqKey = getMqKey(id_U);
-//                boolean isApp = false;
-//                boolean isPad = false;
-//                if (null != mqKey) {
-//                    JSONObject app = mqKey.getJSONObject("app");
-//                    if (null != app) {
-//                        pushApps.add(app.getString("appId"));
-//                        isApp = true;
-//                    }
-//                    JSONObject pad = mqKey.getJSONObject("pad");
-//                    if (null != pad) {
-//                        pushPads.add(pad.getString("appId"));
-//                        isPad = true;
-//                    }
-//                    if (isApp && isPad) {
-//                        continue;
-//                    }
-//                }
-//                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
-//                if (null != es && es.size() > 0 && null != es.getJSONObject(0)) {
-//                    JSONObject esObj = es.getJSONObject(0);
-//                    if (!isApp) {
-//                        if (null != esObj.getString("id_APP") && !"".equals(esObj.getString("id_APP"))) {
-//                            pushApps.add(esObj.getString("id_APP"));
-//                        }
-//                    }
-//                    if (!isPad) {
-//                        if (null != esObj.getString("id_Pad") && !"".equals(esObj.getString("id_Pad"))) {
-//                            pushPads.add(esObj.getString("id_Pad"));
-//                        }
-//                    }
-//                }
-//            }
-//            System.out.println("推送app:");
-//            System.out.println(JSON.toJSONString(pushApps));
-//            System.out.println("推送pad:");
-//            System.out.println(JSON.toJSONString(pushPads));
 
-//            push2(wrdNUC,logContent.getZcndesc(),pushAppIds);
-//            sendESOnlyNew(logContent);
+    /**
+     * 发送推送和mq消息方法
+     * @param mqGroupId	mq信息
+     * @param pushUserObj	推送用户列表
+     * @param logContent	日志信息
+     * @author tang
+     * @date 创建时间: 2023/9/4
+     * @ver 版本号: 1.0.0
+     */
+    public void sendMqOrPush(JSONObject mqGroupId,JSONObject pushUserObj,LogFlow logContent){
+        if (pushUserObj.size() > 0) {
+            System.out.println("推送用户列表:");
+            System.out.println(JSON.toJSONString(pushUserObj.keySet()));
+            // 创建存储appId列表
+            JSONArray pushApps = new JSONArray();
+            // 创建存储padId列表
+            JSONArray pushPads = new JSONArray();
+            for (String id_U : pushUserObj.keySet()) {
+                // 获取redis信息
+                JSONObject mqKey = getMqKey(id_U);
+                // 存储判断redis有appId
+                boolean isApp = false;
+                // 存储判断redis有padId
+                boolean isPad = false;
+                if (null != mqKey) {
+                    JSONObject app = mqKey.getJSONObject("app");
+                    if (null != app) {
+                        pushApps.add(app.getString("appId"));
+                        // 设置有
+                        isApp = true;
+                    }
+                    JSONObject pad = mqKey.getJSONObject("pad");
+                    if (null != pad) {
+                        pushPads.add(pad.getString("appId"));
+                        // 设置有
+                        isPad = true;
+                    }
+                    // 判断都有，直接开启下一次循环
+                    if (isApp && isPad) {
+                        continue;
+                    }
+                }
+                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
+                if (null != es && es.size() > 0 && null != es.getJSONObject(0)) {
+                    JSONObject esObj = es.getJSONObject(0);
+                    if (!isApp) {
+                        if (null != esObj.getString("id_APP") && !"".equals(esObj.getString("id_APP"))) {
+                            pushApps.add(esObj.getString("id_APP"));
+                        }
+                    }
+                    if (!isPad) {
+                        if (null != esObj.getString("id_Pad") && !"".equals(esObj.getString("id_Pad"))) {
+                            pushPads.add(esObj.getString("id_Pad"));
+                        }
+                    }
+                }
+            }
+            System.out.println("推送app:");
+            System.out.println(JSON.toJSONString(pushApps));
+            System.out.println("推送pad:");
+            System.out.println(JSON.toJSONString(pushPads));
+            if (pushApps.size() > 0) {
+                String wrdNUC = "小银【系统】";
+                JSONObject wrdNU = logContent.getWrdNU();
+                if (null != wrdNU && null != wrdNU.getString("cn")) {
+                    wrdNUC = wrdNU.getString("cn");
+                }
+                // 调用app发送推送方法
+                push2(wrdNUC,logContent.getZcndesc(),pushApps);
+            }
         }
         if (mqGroupId.size() > 0) {
             for (String mqKey : mqGroupId.keySet()) {
                 JSONObject mqIdArr = mqGroupId.getJSONObject(mqKey);
-//                if (null != mqIdArr && mqIdArr.size() > 0) {
-//                    JSONArray mqAppIdArr = mqGroupAppId.getJSONArray(mqKey);
-//                    logContent.setId_Us(mqIdArr);
-//                    logContent.setId_APPs(mqAppIdArr);
-//                    sendWSOnly(mqKey,logContent);
-//                }
+                // 获取用户列表
                 logContent.setId_Us(JSONArray.parseArray(JSON.toJSONString(mqIdArr.keySet())));
-//                logContent.setId_APPs(JSONArray.parseArray(JSON.toJSONString(mqIdArr.values())));
+                // 发送mq信息
                 sendWSOnly(mqKey,logContent);
             }
         }
     }
 
+    /**
+     * 获取日志发送列表
+     * @param logContent	日志信息
+     * @author tang
+     * @date 创建时间: 2023/9/2
+     * @ver 版本号: 1.0.0
+     */
     public void getUserIdsOrAppIds(LogFlow logContent){
         // 获取公司编号
         String id_C = logContent.getId_C();
@@ -769,14 +501,11 @@ public class Ws {
         if (null == logContent.getId_APPs()) {
             logContent.setId_APPs(new JSONArray());
         }
-
         // fill up id_Us and cidArray (user array info)
         // by FlowControl... and you can do things like, you
         // my comp first then CS comp
         // if id_Us is listed, i should not change that
-        if (logContent.getId_Us().size() > 0)
-        {
-//            cidArray = logContent.getId_APPs();
+        if (logContent.getId_Us().size() > 0) {
             if (logContent.getId_APPs().size() == 0) {
                 // 遍历用户列表
                 for (int i = 0; i < logContent.getId_Us().size(); i++) {
@@ -792,14 +521,6 @@ public class Ws {
                             logContent.getId_APPs().add("");
                         }
                     }
-//                    // 查询数据库用户的id_App
-//                    User user = qt.getMDContent(id_U, "info", User.class);
-//                    // 判断不为空
-//                    if (null != user && null != user.getInfo() && null != user.getInfo().getId_APP()) {
-//                        logContent.getId_APPs().add(user.getInfo().getId_APP());
-//                    } else {
-//                        logContent.getId_APPs().add("");
-//                    }
                 }
             }
         } else {
@@ -811,86 +532,66 @@ public class Ws {
         }
     }
 
+    /**
+     * 发送日志核心方法
+     * @param logContent	日志信息
+     * @author tang
+     * @date 创建时间: 2023/9/4
+     * @ver 版本号: 1.0.0
+     */
     private void sendWSCore(LogFlow logContent){
         JSONArray id_Us = logContent.getId_Us();
-//        JSONArray id_APPs = logContent.getId_APPs();
+        // 存储发送mq信息
         JSONObject mqGroupId = new JSONObject();
-        JSONArray pushUsers = new JSONArray();
-//        JSONObject mqGroupAppId = new JSONObject();
-//        JSONArray pushAppIds = new JSONArray();
-//        JSONArray pushPadAppIds = new JSONArray();
+        // 存储需要推送的用户列表
+        JSONObject pushUserObj = new JSONObject();
         for (int i = 0; i < id_Us.size(); i++) {
             String id_U = id_Us.getString(i);
-//            String userAppId = id_APPs.getString(i);
+            // 获取redis信息
             JSONObject rdInfo = getMqKey(id_U);
+            // 判断redis信息为空
             if (null == rdInfo) {
-//                pushPadAppIds.add(id_U);
-//                if ("".equals(userAppId)) continue;
-//                pushAppIds.add(userAppId);
-                pushUsers.add(id_U);
+                // 添加推送
+                pushUserObj.put(id_U,0);
                 continue;
             }
-            System.out.println("rdInfo:"+id_U);
-            System.out.println(JSON.toJSONString(rdInfo));
+            // 存储判断不为当前mq，默认为当前mq
             boolean isSendMq = false;
+            // 存储是否是app端
+            boolean isApp = false;
             for (String cli : rdInfo.keySet()) {
+                // 获取端信息
                 JSONObject cliInfo = rdInfo.getJSONObject(cli);
                 if (null == cliInfo) {
-//                    pushPadAppIds.add(id_U);
-//                    if ("".equals(userAppId)) continue;
-//                    pushAppIds.add(userAppId);
-                    pushUsers.add(id_U);
+                    // 添加推送
+                    pushUserObj.put(id_U,0);
                 } else {
                     String mqKey = cliInfo.getString("mqKey");
                     if (null!=mqKey) {
+                        // 设置不为当前mq
                         isSendMq = true;
-//                        userAppId = cliInfo.getString("appId");
-//                        id_APPs.set(i,userAppId);
                         if (null == mqGroupId.getJSONObject(mqKey)) {
                             mqGroupId.put(mqKey,new JSONObject());
                         }
-//                        JSONArray mqIdArr = mqGroupId.getJSONArray(mqKey);
-//                        mqIdArr.add(id_U);
-//                        mqGroupId.put(mqKey,mqIdArr);
-//                        JSONArray mqAppIdArr = mqGroupAppId.getJSONArray(mqKey);
-//                        mqAppIdArr.add(userAppId);
-//                        mqGroupAppId.put(mqKey,mqAppIdArr);
+                        // 添加mq推送信息
                         JSONObject mqIdAndAppId = mqGroupId.getJSONObject(mqKey);
                         mqIdAndAppId.put(id_U,"");
-//                        String appId = mqIdAndAppId.getString(id_U);
-//                        if (null == appId) {
-//                            if (cli.equals("app")) {
-//                                mqIdAndAppId.put(id_U,userAppId);
-//                            } else {
-//                                mqIdAndAppId.put(id_U,"");
-//                            }
-//                        } else {
-//                            if ("".equals(appId) && cli.equals("app")) {
-//                                mqIdAndAppId.put(id_U,userAppId);
-//                            }
-//                        }
                         mqGroupId.put(mqKey,mqIdAndAppId);
+                    } else {
+                        if (cli.equals("app")) {
+                            isApp = true;
+                        }
                     }
-//                    else {
-////                        pushPadAppIds.add(id_U);
-////                        if ("".equals(userAppId)) continue;
-////                        pushAppIds.add(userAppId);
-////                        pushUsers.add(id_U);
-//                    }
                 }
             }
-            if (!isSendMq) {
-                pushUsers.add(id_U);
+            // 判断不为当前mq，或者是app
+            if (!isSendMq || isApp) {
+                // 添加推送
+                pushUserObj.put(id_U,0);
             }
         }
-        sendMqOrPush(mqGroupId,pushUsers,logContent);
+        // 调用发送推送和mq消息方法
+        sendMqOrPush(mqGroupId,pushUserObj,logContent);
     }
-
-//    public String getClient(LogFlow logContent){
-//        if (null != logContent.getData()&&null!=logContent.getData().getString("client")) {
-//            return logContent.getData().getString("client");
-//        }
-//        return "web";
-//    }
 
 }

@@ -8,6 +8,7 @@ import com.cresign.chat.service.LogService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.GetUserIdByToken;
+import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.pojo.po.LogFlow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +37,9 @@ public class LogController {
     @Autowired
     private HttpServletRequest request;
 
+    @Autowired
+    private Ws ws;
+
     /**
      * 发送
      * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
@@ -59,7 +63,7 @@ public class LogController {
      */
     @PostMapping("/v1/sendWS")
     public void sendLogWS(@RequestBody LogFlow logData){
-        WebSocketUserServer.sendLog(logData);
+        ws.sendWS(logData);
     }
 
     /**

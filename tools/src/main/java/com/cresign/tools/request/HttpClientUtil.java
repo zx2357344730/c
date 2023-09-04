@@ -2,18 +2,23 @@ package com.cresign.tools.request;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -87,6 +92,44 @@ public class HttpClientUtil {
             }
         }catch(Exception ex){
             ex.printStackTrace();
+        }
+        return result;
+    }
+
+    public static String sendPost(JSONObject json, String URL
+//            ,String token
+    ) {
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpPost post = new HttpPost(URL);
+        post.setHeader("Content-Type", "application/json");
+        post.setHeader("Authorization", "Basic YWRtaW46");
+//        post.setHeader("x-access-token",token);
+        String result;
+        try {
+            StringEntity s = new StringEntity(json.toString(), "utf-8");
+            s.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
+                    "application/json"));
+            post.setEntity(s);
+            // 发送请求
+            HttpResponse httpResponse = client.execute(post);
+            // 获取响应输入流
+            InputStream inStream = httpResponse.getEntity().getContent();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    inStream, StandardCharsets.UTF_8));
+            StringBuilder strBer = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null)
+                strBer.append(line).append("\n");
+            inStream.close();
+            result = strBer.toString();
+            if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                System.out.println("请求服务器成功，做相应处理");
+            } else {
+                System.out.println("请求服务端失败");
+            }
+        } catch (Exception e) {
+            System.out.println("请求异常："+e.getMessage());
+            throw new RuntimeException(e);
         }
         return result;
     }
