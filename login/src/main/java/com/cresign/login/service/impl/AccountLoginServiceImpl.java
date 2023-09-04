@@ -9,7 +9,6 @@ import com.cresign.login.service.AccountLoginService;
 import com.cresign.login.utils.LoginResult;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
@@ -52,9 +51,6 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 
     @Autowired
     private StringRedisTemplate redisTemplate0;
-
-    @Resource
-    private CoupaUtil coupaUtil;
 
     @Autowired
     private Qt qt;

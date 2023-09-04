@@ -63,7 +63,7 @@ public class OrderOItem {
 
         this.id_P = id_P == null ? "": id_P;
         this.id_OP = id_OP  == null ? "": id_OP;
-        this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
+        this.id_CP = id_CP == null || id_CP.equals("") ? id_C: id_CP;
         this.id_C = id_C;
         this.id_CB = id_CB;
         this.id_O = id_O;
@@ -73,6 +73,7 @@ public class OrderOItem {
         this.refB = refB == null? "": refB;
         this.grp = grp == null? "1000": grp;
         this.grpB = grpB == null? "1000": grpB;
+//        this.arrP = arrP == null? 0 : arrP;
         this.wn0prior = wn0prior;
         this.seq = index == 0 ? "0" : "2" ;
         this.priority = 1;
@@ -140,6 +141,8 @@ public class OrderOItem {
     private String pic  = "";
 
     private Integer objSub  = 0;
+
+    private Integer arrP = 0;
 
 
     /**

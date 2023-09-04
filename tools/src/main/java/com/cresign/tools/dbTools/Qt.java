@@ -100,6 +100,7 @@ public class Qt {
         try {
             result = mongoTemplate.findOne(query, classType);
         } catch (Exception e){
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
         }
         return result;
@@ -144,6 +145,7 @@ public class Qt {
         try {
             result = mongoTemplate.findOne(query, classType);
         } catch (Exception e){
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
         }
         return result;
@@ -213,7 +215,7 @@ public class Qt {
             return mongoTemplate.find(query, classType);
         } catch (Exception e)
         {
-            System.out.println("error"+e);
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
         }
     }
@@ -228,7 +230,7 @@ public class Qt {
             return mongoTemplate.find(query, classType);
         } catch (Exception e)
         {
-            System.out.println("error"+e);
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
         }
     }
@@ -337,7 +339,7 @@ public class Qt {
             mongoTemplate.updateFirst(query, update, classType);
         } catch (Exception e)
         {
-            System.out.println("error"+e);
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
 
@@ -353,7 +355,7 @@ public class Qt {
             mongoTemplate.updateFirst(query, update, classType);
         } catch (Exception e)
         {
-            System.out.println("error"+e);
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
     }
@@ -367,6 +369,7 @@ public class Qt {
         update.inc("tvs", 1);
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
         if (updateResult.getModifiedCount() == 0) {
+
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), "");
         }
     }
@@ -447,6 +450,7 @@ public class Qt {
             System.out.println("inSetMD" + updateResult);
         } catch (Exception e)
         {
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
     }
@@ -471,6 +475,7 @@ public class Qt {
             System.out.println("inSetMD" + updateResult);
         } catch (Exception e)
         {
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
     }
@@ -506,6 +511,7 @@ public class Qt {
             });
             BulkWriteResult execute = bulk.execute();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
     }
@@ -518,6 +524,7 @@ public class Qt {
             mongoTemplate.remove(query,classType);
         } catch (Exception e)
         {
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
     }
@@ -530,6 +537,7 @@ public class Qt {
             mongoTemplate.remove(query,classType);
         } catch (Exception e)
         {
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
     }
@@ -540,6 +548,7 @@ public class Qt {
             mongoTemplate.insert(obj);
         } catch (Exception e)
         {
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
 
@@ -551,6 +560,7 @@ public class Qt {
             mongoTemplate.save(obj);
         } catch (Exception e)
         {
+            e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
 
@@ -1114,22 +1124,25 @@ public class Qt {
 //            String id_A = getId_A(id_C, "a-core");
 //            Asset asset = getMDContent(id_A, "powerup.capacity", Asset.class);
         Asset asset = getConfig(id_C, "a-core", Arrays.asList("powerup.capacity", "view"));
+        System.out.println("id_C=" + id_C);
+        System.out.println("asset=" + asset);
+        if (!asset.getId().equals("none")) {
+            if (asset.getPowerup() == null) {
+                JSONObject power = this.getInitData().getNewComp().getJSONObject("a-core").getJSONObject("powerup");
+                JSONArray newView = asset.getView();
+                newView.add("powerup");
+                this.setMDContent(asset.getId(), this.setJson("powerup", power, "view", newView), Asset.class);
+                asset.setPowerup(power);
+            }
+            JSONObject jsonCapacity = asset.getPowerup().getJSONObject("capacity");
+            //超额
+            if (fileSize > 0 && fileSize + jsonCapacity.getLong("used") > jsonCapacity.getLong("total")) {
+                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.POWER_NOT_ENOUGH.getCode(), "");
+            }
+            JSONObject jsonUpdate = setJson("powerup.capacity.used", fileSize);
+            incMDContent(asset.getId(), jsonUpdate, Asset.class);
+        }
 
-        if (asset.getPowerup() == null)
-        {
-            JSONObject power =  this.getInitData().getNewComp().getJSONObject("a-core").getJSONObject("powerup");
-            JSONArray newView = asset.getView();
-            newView.add("powerup");
-            this.setMDContent(asset.getId(), this.setJson("powerup", power, "view", newView), Asset.class);
-            asset.setPowerup(power);
-        }
-        JSONObject jsonCapacity = asset.getPowerup().getJSONObject("capacity");
-        //超额
-        if (fileSize > 0 && fileSize + jsonCapacity.getLong("used") > jsonCapacity.getLong("total")) {
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.POWER_NOT_ENOUGH.getCode(), "");
-        }
-        JSONObject jsonUpdate = setJson("powerup.capacity.used", fileSize);
-        incMDContent(asset.getId(), jsonUpdate, Asset.class);
     }
 
     public void setESFilt (JSONArray filterArray, Object key, String method, Object val )
@@ -1178,12 +1191,12 @@ public class Qt {
                 String method = conditionMap.getString("method");
 
                 // 每一条都要对 wrdxxx 处理 增加 语言.cn处理
-                boolean isArray = conditionMap.get("filtKey").getClass().isArray();
+                boolean isArray = conditionMap.get("filtKey") instanceof ArrayList;
                 if (isArray) {
                     for (int fk = 0; fk < conditionMap.getJSONArray("filtKey").size(); fk++)
                     {
                         String filtKey = conditionMap.getJSONArray("filtKey").getString(fk);
-                        if (filtKey.startsWith("wrd") && !filtKey.equals(".cn"))
+                        if (filtKey.startsWith("wrd") && !filtKey.endsWith(".cn"))
                         {
                             conditionMap.getJSONArray("filtKey").set(fk, filtKey + ".cn");
                         }
@@ -1191,7 +1204,7 @@ public class Qt {
                 } else {
                     String filtKey = conditionMap.getString("filtKey");
 
-                    if (filtKey.startsWith("wrd") && !filtKey.equals(".cn"))
+                    if (filtKey.startsWith("wrd") && !filtKey.endsWith(".cn"))
                     {
                         conditionMap.put("filtKey", filtKey + ".cn");
                     }
@@ -1414,13 +1427,6 @@ public class Qt {
 //            System.out.println("result:"+result);
         return JSONObject.parseObject(result);
     }
-//    public JSONObject getRDSet(String key)
-//    {
-//        String result = redisTemplate0.opsForValue().get(key);
-//
-////            System.out.println("result:"+result);
-//        return JSONObject.parseObject(result);
-//    }
 
     public String getRDSetStr(String collection, String key)
     {
@@ -1464,7 +1470,7 @@ public class Qt {
         return object;
     }
 
-    public JSONObject cloneObj(JSONObject json) {
+    public JSONObject cloneObj(Object json) {
         //json.toJSONString();
         String jsonString = JSON.toJSONString(json, SerializerFeature.DisableCircularReferenceDetect);
         JSONObject jsonObject = JSON.parseObject(jsonString);
@@ -1477,7 +1483,7 @@ public class Qt {
         return jsonArray;
     }
 
-    public void checkNull(JSONObject jsonDb, JSONArray arrayField) {
+    public boolean checkNull(Object jsonDb, JSONArray arrayField) {
         JSONArray arrayResult = new JSONArray();
         for (int i = 0; i < arrayField.size(); i++) {
             String field = arrayField.getString(i);
@@ -1529,7 +1535,10 @@ public class Qt {
             }
         }
         if (arrayResult.size() > 0) {
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.VALUE_IS_NULL.getCode(), arrayResult.toJSONString());
+            return false;
+//            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.VALUE_IS_NULL.getCode(), arrayResult.toJSONString());
+        } else {
+            return true;
         }
     }
 }

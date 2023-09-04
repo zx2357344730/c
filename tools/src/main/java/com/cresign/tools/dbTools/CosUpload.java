@@ -14,6 +14,14 @@ import com.qcloud.cos.region.Region;
 import com.qcloud.cos.transfer.Download;
 import com.qcloud.cos.transfer.TransferManager;
 import com.qcloud.cos.transfer.TransferManagerConfiguration;
+import com.tencentcloudapi.common.Credential;
+import com.tencentcloudapi.common.exception.TencentCloudSDKException;
+import com.tencentcloudapi.common.profile.ClientProfile;
+import com.tencentcloudapi.common.profile.HttpProfile;
+import com.tencentcloudapi.cvm.v20170312.models.AssociateSecurityGroupsResponse;
+import com.tencentcloudapi.vpc.v20170312.VpcClient;
+import com.tencentcloudapi.vpc.v20170312.models.DescribeSecurityGroupPoliciesRequest;
+import com.tencentcloudapi.vpc.v20170312.models.DescribeSecurityGroupPoliciesResponse;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -142,26 +150,32 @@ public class CosUpload {
      * ##Params: delKey
      */
     public static long delCresign(String keyPath) {
-        // 3 生成cos客户端
-        COSClient cosclient = new COSClient(cred, clientConfig);
-        boolean bool = cosclient.doesObjectExist(bucketName, keyPath);
-        if (bool) {
-            long size = getCresignSize(keyPath);
-            cosclient.deleteObject(bucketName, keyPath);
-            cosclient.shutdown();
-            return size;
+        System.out.println("keyPath=" + keyPath);
+        if (keyPath != null && !keyPath.equals("")) {
+            // 3 生成cos客户端
+            COSClient cosclient = new COSClient(cred, clientConfig);
+            boolean bool = cosclient.doesObjectExist(bucketName, keyPath);
+            if (bool) {
+                long size = getCresignSize(keyPath);
+                cosclient.deleteObject(bucketName, keyPath);
+                cosclient.shutdown();
+                return size;
+            }
         }
         return 0;
     }
     public static long delCFiles(String keyPath) {
-        // 3 生成cos客户端
-        COSClient cosclient = new COSClient(cred, clientConfig);
-        boolean bool = cosclient.doesObjectExist(bucketName2, keyPath);
-        if (bool) {
-            long size = getCFilesSize(keyPath);
-            cosclient.deleteObject(bucketName2, keyPath);
-            cosclient.shutdown();
-            return size;
+        System.out.println("keyPath=" + keyPath);
+        if (keyPath != null && !keyPath.equals("")) {
+            // 3 生成cos客户端
+            COSClient cosclient = new COSClient(cred, clientConfig);
+            boolean bool = cosclient.doesObjectExist(bucketName2, keyPath);
+            if (bool) {
+                long size = getCFilesSize(keyPath);
+                cosclient.deleteObject(bucketName2, keyPath);
+                cosclient.shutdown();
+                return size;
+            }
         }
         return 0;
     }
@@ -657,5 +671,25 @@ public class CosUpload {
             listObjectsRequest.setMarker(nextMarker);
         } while (objectListing.isTruncated());
         return size;
+    }
+
+    public static Object getScurity() throws TencentCloudSDKException {
+        Credential cred = new Credential(secretId, secretKey);
+        // 实例化一个http选项，可选的，没有特殊需求可以跳过
+        HttpProfile httpProfile = new HttpProfile();
+        httpProfile.setEndpoint("vpc.tencentcloudapi.com");
+        // 实例化一个client选项，可选的，没有特殊需求可以跳过
+        ClientProfile clientProfile = new ClientProfile();
+        clientProfile.setHttpProfile(httpProfile);
+        // 实例化要请求产品的client对象,clientProfile是可选的
+        VpcClient client = new VpcClient(cred, "ap-guangzhou", clientProfile);
+        // 实例化一个请求对象,每个接口都会对应一个request对象
+        DescribeSecurityGroupPoliciesRequest req = new DescribeSecurityGroupPoliciesRequest();
+        req.setSecurityGroupId("sg-h0tr6kcj");
+        // 返回的resp是一个DescribeSecurityGroupPoliciesResponse的实例，与请求对象对应
+        DescribeSecurityGroupPoliciesResponse resp = client.DescribeSecurityGroupPolicies(req);
+        // 输出json格式的字符串回包
+        System.out.println(DescribeSecurityGroupPoliciesResponse.toJsonString(resp));
+        return AssociateSecurityGroupsResponse.toJsonString(resp);
     }
 }

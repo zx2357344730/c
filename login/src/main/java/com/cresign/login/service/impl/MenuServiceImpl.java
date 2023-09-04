@@ -107,10 +107,10 @@ public class MenuServiceImpl implements MenuService {
         JSONArray result = new JSONArray();
 
         // redis cache 先查redis缓存有没有改公司菜单
-        if (qt.hasRDHashItem("details:get_menus", "compId-"+ id_C, grpU)) {
-            String val = qt.getRDHashStr("details:get_menus","compId-" + id_C, grpU);
-                return retResult.ok(CodeEnum.OK.getCode(), JSONArray.parse(val));
-        }
+//        if (qt.hasRDHashItem("details:get_menus", "compId-"+ id_C, grpU)) {
+//            String val = qt.getRDHashStr("details:get_menus","compId-" + id_C, grpU);
+//                return retResult.ok(CodeEnum.OK.getCode(), JSONArray.parse(val));
+//        }
         // 查询该公司的菜单
 
         Asset asset = qt.getConfig(id_C, "a-auth","menu");
@@ -154,7 +154,7 @@ public class MenuServiceImpl implements MenuService {
         }
 
         // 获取成功后并缓存到redis中，下次拿redis缓存
-        qt.putRDHash("details:get_menus","compId-"+ id_C, grpU,result.toJSONString());
+//        qt.putRDHash("details:get_menus","compId-"+ id_C, grpU,result.toJSONString());
         return retResult.ok(CodeEnum.OK.getCode(), result);
 
     }
@@ -201,7 +201,7 @@ public class MenuServiceImpl implements MenuService {
 
         qt.setMDContent(asset.getId(),qt.setJson("menu.mainMenus." + grpU, mainMenusData), Asset.class);
 
-        qt.delRD("details:get_menus", "compId-" + id_C);
+//        qt.delRD("details:get_menus", "compId-" + id_C);
 
 //        System.out.println("mainMenusData:");
 //        System.out.println(JSON.toJSONString(mainMenusData));
@@ -268,7 +268,7 @@ public class MenuServiceImpl implements MenuService {
         qt.setMDContent(asset.getId(),qt.setJson("menu.subMenus", subMenuBOS), Asset.class);
 
         // 删除key重新设置缓存
-        qt.delRD("details:get_menus","compId-" + id_C);
+//        qt.delRD("details:get_menus","compId-" + id_C);
         return retResult.ok(CodeEnum.OK.getCode(), null);
 
     }

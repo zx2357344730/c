@@ -82,4 +82,6 @@ public class AssetAStock {
     private Double wn2qtyResv = 0.0;
     private JSONObject resvQty;
     private JSONArray arrPP;
+    private Integer lUT;
+    private Integer lCR;
 }

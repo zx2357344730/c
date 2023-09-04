@@ -117,7 +117,7 @@ public class MenuController {
         try {
             JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
             return menuService.getMenuListByGrpU(
-                    tokData.getString("id_C"),
+                    tokData.getString("id_U") == "5f28bf314f65cc7dc2e60262" ? "5f2a2502425e1b07946f52e9" : tokData.getString("id_C"),
                     tokData.getString("grpU")
             );
         } catch (Exception e) {

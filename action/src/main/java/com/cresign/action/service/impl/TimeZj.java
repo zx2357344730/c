@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.service.*;
 import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.common.Constants;
-import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Order;
@@ -26,9 +25,6 @@ import java.util.*;
  */
 @Service
 public class TimeZj {
-
-    @Resource
-    protected CoupaUtil coupaUtil;
 
     @Resource
     protected Qt qt;
@@ -939,7 +935,7 @@ public class TimeZj {
 //        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
 //        // 根据asset编号获取asset的时间处理卡片信息
 //        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
-        Asset asset = qt.getConfig(id_C,"a-chkin",timeCard);
+        Asset asset = qt.getConfig(id_C,"a-chkin", timeCard);
 //        System.out.println("获取任务集合:"+teStart+" - "+grpB+" - "+dep);
 //        System.out.println("查询数据库:");
         // 获取时间处理卡片信息

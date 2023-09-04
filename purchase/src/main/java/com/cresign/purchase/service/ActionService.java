@@ -10,13 +10,14 @@ public interface ActionService {
 
     /**
      * 通用日志方法(action,prob,msg) - 注释完成
+     *
      * @return java.lang.String  返回结果: 结果
      * @author tang
      * @ver 1.0.0
      * @date 2021/6/16 14:35
      */
-    ApiResponse changeActionStatus(String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,
-            String id_FC, String id_FS, JSONObject tokData) throws IOException;
+    JSONObject changeActionStatus(String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,
+                                  String id_FC, String id_FS, JSONObject tokData);
 
     ApiResponse changeActionStatusNew(String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,
                                    String id_FC, String id_FS, JSONObject tokData,JSONArray id_Us) throws IOException;

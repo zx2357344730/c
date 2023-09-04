@@ -26,7 +26,7 @@ public class lBUser implements Serializable {
 
     public lBUser(String id_U, String id_CB, JSONObject wrdN, JSONObject wrdNCB, JSONObject wrdNReal, JSONObject wrddesc, String grpU,
                   String mbn, String refU,
-                  String id_WX, String pic) {
+                  String id_WX, String pic, String dep) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn","");
@@ -42,6 +42,7 @@ public class lBUser implements Serializable {
         this.refU = refU == null ? "" : refU;
         this.id_WX = id_WX == null ? "" : id_WX;
         this.pic = pic == null ? "" : pic;
+        this.dep = dep == null ? "1000" : dep;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
@@ -81,5 +82,5 @@ public class lBUser implements Serializable {
 
     private String cnty;
 
-
+    private String dep;
 }

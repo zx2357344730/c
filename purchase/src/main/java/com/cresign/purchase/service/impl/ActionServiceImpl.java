@@ -640,19 +640,20 @@ public class ActionServiceImpl implements ActionService {
         qt.setMDContent(id_O, qt.setJson("action.objAction." + index + ".arrUA", id_UA), Order.class);
     }
     /**
-         * 操作开始，暂停，恢复功能 - 注释完成
-         * @return java.lang.String  返回结果: 结果
-         * @author tang
-         * @ver 1.0.0
-         * @date 2020/8/6 9:22
-         */
+     * 操作开始，暂停，恢复功能 - 注释完成
+     *
+     * @return java.lang.String  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
+     * @date 2020/8/6 9:22
+     */
 
 
         @Override
         @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
-        public ApiResponse changeActionStatus(String logType, Integer status, String msg,
-                                              Integer index, String id_O, Boolean isLink,
-                                              String id_FC, String id_FS, JSONObject tokData) {
+        public JSONObject changeActionStatus(String logType, Integer status, String msg,
+                                             Integer index, String id_O, Boolean isLink,
+                                             String id_FC, String id_FS, JSONObject tokData) {
 
                 JSONObject actData = this.getActionData(id_O, index);
 
@@ -708,6 +709,12 @@ public class ActionServiceImpl implements ActionService {
 
                 // 判断属于什么操作
                 switch (status) {
+                    case 0: // ready
+                        message = "[准备开始]" + msg;
+                        orderAction.setBcdStatus(status);
+                        isStateChg = true;
+
+                        break;
                     case 1:
                         // Start an OItem, DG just start, Task just start, Quest start + update Prob
                         if (orderAction.getBcdStatus() != 0) {
@@ -756,9 +763,9 @@ public class ActionServiceImpl implements ActionService {
                     case 3:
                     case -8: // resume OItem
                         if (orderAction.getBcdStatus() != 8) {
-                            return retResult.ok(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
+//                            return retResult.ok(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
 
-//                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
+                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
                         }
 
                         message = "[已恢复执行]" + msg;
@@ -1020,7 +1027,8 @@ public class ActionServiceImpl implements ActionService {
 
 
             // 抛出操作成功异常
-            return retResult.ok(CodeEnum.OK.getCode(), res);
+            return res;
+//            return retResult.ok(CodeEnum.OK.getCode(), res);
         }
 
     @Override
@@ -1291,7 +1299,6 @@ public class ActionServiceImpl implements ActionService {
                 logL.setActionTime(0L, DateUtils.getTimeStamp(), duraType);
             }
 
-//            ws.sendWS(logL);
             logL.setId_Us(id_UsLog);
             ws.sendWS(logL);
         }
@@ -1375,7 +1382,6 @@ public class ActionServiceImpl implements ActionService {
                 Double price = orderOItem.getWn4price() == null ? 0.0: orderOItem.getWn4price();
                 log.setLogData_assetflow(qtyAdding, price, "","");
 
-//                ws.sendWS(log);
                 log.setId_Us(id_UsLog);
                 ws.sendWS(log);
             }
@@ -2103,7 +2109,6 @@ public class ActionServiceImpl implements ActionService {
 
                                     JSONObject mapKey = new JSONObject();
                                     mapKey.put("action.objAction." + unitAction.getSubParts().getJSONObject(k).getInteger("index"), subAction);
-//                                    coupaUtil.updateOrderByListKeyVal(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey);
                                     qt.setMDContent(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey, Order.class);
                                     System.out.println("unit " + subOItem.getGrpB() + subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
                                     String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
@@ -2362,6 +2367,8 @@ public class ActionServiceImpl implements ActionService {
                 oItemData.getInteger("lUT"),oItemData.getInteger("lCR"),oItemData.getDouble("wn2qtyneed"),
                 oItemData.getDouble("wn4price"),oItemData.getJSONObject("wrdNP"),oItemData.getJSONObject("wrdN"),
                 oItemData.getJSONObject("wrddesc"),oItemData.getJSONObject("wrdprep"));
+        // All Task/Quest orders are AUTO
+        unitOItem.setSeq("3");
 
         JSONArray prtPrev = new JSONArray();
 
@@ -2690,6 +2697,8 @@ public class ActionServiceImpl implements ActionService {
                 1,1,1.0,
                 0.0,probData.getJSONObject("wrdNP"),probData.getJSONObject("wrdN"),
                 probData.getJSONObject("wrddesc"),probData.getJSONObject("wrdprep"));
+        // this is also auto task
+        unitOItem.setSeq("3");
 
         // Need to store id_O and Index into action Card so we will able to set prob finish
         JSONArray upPrnt = new JSONArray();
@@ -2763,17 +2772,23 @@ public class ActionServiceImpl implements ActionService {
 
 
                 if (statusType.equals(0)) {
-                    if (subStatus.equals(0) || subStatus.equals(1) || subStatus.equals(-8) || subStatus.equals(7)) {
-                        newStatus = 8;
+                    if (subStatus.equals(1) || subStatus.equals(-8)) {
+//                        newStatus = 8;
                         newMsg = "全单暂停";
+                        this.changeActionStatus("action", 8, "全单暂停", subPartIndex, subPartId_O, isLink,
+                                subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), tokData);
                     }
                 } else if (statusType.equals(1)) {
-                    if (subStatus.equals(0)) {
-                        newStatus = 1;
-                        newMsg = "全单开始";
+                    if (subStatus.equals(2) || subStatus.equals(9)) {
+//                        newStatus = 0;
+                        newMsg = "全单准备";
+                        this.changeActionStatus("action", 0, "全单准备", subPartIndex, subPartId_O, isLink,
+                                subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), tokData);
                     } else if (subStatus.equals(8)) {
-                        newStatus = -8;
+//                        newStatus = -8;
                         newMsg = "全单再开";
+                        this.changeActionStatus("action", -8, "全单再开", subPartIndex, subPartId_O, isLink,
+                                subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), tokData);
                     }
                 } else if (statusType.equals(2)) {
                     if (subStatus.equals(1) || subStatus.equals(-8) || subStatus.equals(7) || subStatus.equals(8)) {
@@ -2782,7 +2797,7 @@ public class ActionServiceImpl implements ActionService {
                     }
                 }
 
-                if (!newStatus.equals(0)) {
+//                if (!newStatus.equals(0)) {
                     //newStatus need to update mdb and send a log
 
                     subAction.setBcdStatus(newStatus);
@@ -2799,7 +2814,7 @@ public class ActionServiceImpl implements ActionService {
 
                     ws.sendWS(logLP);
 
-                }
+//                }
             }
 
             return retResult.ok(CodeEnum.OK.getCode(), "Status batch changed");

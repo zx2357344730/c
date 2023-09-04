@@ -699,7 +699,7 @@ public class FlowServiceImpl implements FlowService {
             }
 
             JSONObject defResultBP = asset.getDef().getJSONObject("objlBP");
-            JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
+//            JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
 
             for (OrderOItem orderOItem : unitOItem) {
                 System.out.println(orderOItem.getGrpB());
@@ -725,7 +725,7 @@ public class FlowServiceImpl implements FlowService {
 
             JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
 
-            JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
+//            JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
 
             for (OrderOItem orderOItem : unitOItem) {
                 String grp = orderOItem.getGrp();
@@ -2526,8 +2526,9 @@ public class FlowServiceImpl implements FlowService {
 
             String subOrderId = casList.getJSONObject(i).getString("id_O");
 
-                    qt.delES("action", qt.setESFilt("id_O", subOrderId));
-                    qt.delES("assetflow", qt.setESFilt("data.id_O", subOrderId));
+            qt.delES("action", qt.setESFilt("id_O", "exact",subOrderId));
+            qt.delES("assetflow", qt.setESFilt("data.id_O", "exact",subOrderId));
+            qt.delES("msg", qt.setESFilt("id_O", "exact",subOrderId));
 
                 // delete that order        // 删除订单
             if (!subOrderId.equals(id_O)) {
@@ -2553,6 +2554,7 @@ public class FlowServiceImpl implements FlowService {
 
 //        coupaUtil.updateOrderByListKeyVal(id_O,orderData);
         qt.setMDContent(id_O,orderData, Order.class);
+        qt.delES("assetflow", qt.setESFilt("id_O", id_O));
 
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "删除成功！！!!!");
