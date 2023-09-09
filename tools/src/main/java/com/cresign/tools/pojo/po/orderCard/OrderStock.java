@@ -50,11 +50,20 @@ public class OrderStock {
 
     private Integer index;
 
+    // this is only for 领用，把生产的放进下个生产工序
     private JSONArray objShip = new JSONArray();
 
     private JSONObject resvQty = new JSONObject();
 
     private Double wn2qtynow;
+
+
+    // 在货车上的数量
+    private Double wn2qtyship;
+
+    // 产品完成数量 - 不可以objShip 只可 wn2qtyship
+    private Double wn2qtynowS;
+
     private Double wn2qtymade;
 
 }

@@ -550,7 +550,8 @@ public class DbUtils {
             arrayArrP = order.getOItem().getJSONArray("arrP");
 
         if (arrayCard == null || arrayOItem == null || arrayArrP == null || arrayOItem.size() != arrayArrP.size()) {
-            System.out.println(2);
+            System.out.println("checkCard, null @ 553");
+
             throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
         }
 
@@ -813,6 +814,11 @@ public class DbUtils {
 
             if (oStock != null && cardList.contains("oStock"))
             {
+                if (oStock.size() <= i || oStock.getJSONObject(i) == null)
+                {
+                    this.initOStock(oItem.getJSONObject(i),oStock, i);
+                }
+
                 Double madePercent = DoubleUtils.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"),oItem.getJSONObject(i).getDouble("wn2qtyneed"));
                 wn2made = DoubleUtils.add(wn2made, madePercent);
                 oStock.getJSONObject(i).put("index", i);
@@ -837,6 +843,10 @@ public class DbUtils {
             }
             if (action != null && cardList.contains("action"))
             {
+                if (action.size() <= i || action.getJSONObject(i) == null)
+                {
+                    this.initAction(oItem.getJSONObject(i),action, i);
+                }
                 count = action.getJSONObject(i).getInteger("bcdStatus") == 2 ? 1: 0 + count;
                 action.getJSONObject(i).put("index", i);
 
@@ -1148,15 +1158,15 @@ public class DbUtils {
         }
     }
 
-    public void scriptEngineExec(JSONArray arrayObjExec, JSONObject jsonObjVar) {
+    public void scriptEngineExec(JSONArray arrayExec, JSONObject jsonVars) {
         try {
-            for (int i = 0; i < arrayObjExec.size(); i++) {
-                JSONObject jsonObjExec = arrayObjExec.getJSONObject(i);
-                String method = jsonObjExec.getString("method");
+            for (int i = 0; i < arrayExec.size(); i++) {
+                JSONObject jsonExec = arrayExec.getJSONObject(i);
+                String method = jsonExec.getString("method");
                 System.out.println("method=" + method);
 
                 //just break down params
-                JSONArray arrayParams = (JSONArray) jsonObjExec.getJSONObject("params").clone();
+                JSONArray arrayParams = (JSONArray) jsonExec.getJSONObject("params").clone();
 //                JSONObject jsonParams = (JSONObject) jsonObjExec.getJSONObject("params").clone();
                 JSONObject jsonParams = new JSONObject();
                 for (int j = 0; j < arrayParams.size(); j++) {
@@ -1168,7 +1178,7 @@ public class DbUtils {
                         if (val.startsWith("##OP")) {
                             String[] valSplit = val.split("\\.");
                             System.out.println("paramSplit.length=" + valSplit.length);
-                            Object var = scriptEngineVar(jsonObjVar.get(valSplit[1]), jsonObjVar);
+                            Object var = scriptEngineVar(jsonVars.getJSONObject(valSplit[1]).get("val"), jsonVars);
                             if (valSplit.length == 2) {
                                 jsonParam.put("val", var);
                             } else if (valSplit.length > 2) {
@@ -1201,6 +1211,7 @@ public class DbUtils {
                     //Key!! invoke here with bean + params
                     Object invoke = method1.invoke(bean, jsonParams);
                     System.out.println("invoke=" + invoke);
+
                 } else {
                     //发日志
                     //Else, send log in "method" logFlow
@@ -1217,13 +1228,13 @@ public class DbUtils {
         }
     }
 
-    public Object scriptEngineVar(Object obj, JSONObject jsonObjGlobal) {
+    public Object scriptEngineVar(Object obj, JSONObject jsonVars) {
         try {
             if (obj instanceof String) {
                 String var = obj.toString();
                 System.out.println("");
                 System.out.println("var=" + var);
-                System.out.println("jsonObjGlobal=" + jsonObjGlobal);
+                System.out.println("jsonVars=" + jsonVars);
                 if (var.startsWith("##")) {
                     //Get from card
                     if (var.startsWith("##C")) {
@@ -1235,7 +1246,7 @@ public class DbUtils {
                                 String varSplit = varSplits[i];
                                 if (varSplit.startsWith("##")) {
                                     String key = varSplit.substring(2);
-                                    Object result = scriptEngineVar(jsonObjGlobal.get(key), jsonObjGlobal);
+                                    Object result = scriptEngineVar(jsonVars.getJSONObject(key).get("val"), jsonVars);
                                     System.out.println("##CC=" + key + ":" + result);
                                     sb.append(result);
                                 } else {
@@ -1362,7 +1373,7 @@ public class DbUtils {
                         String varSubstring = var.substring(4);
                         String[] varSplit = varSubstring.split("##");
                         System.out.println("##F=" + varSplit[0] + "," + varSplit[1] + "," + varSplit[2]);
-                        String result = (String) scriptEngineVar(jsonObjGlobal.get(varSplit[2]), jsonObjGlobal);
+                        String result = (String) scriptEngineVar(jsonVars.getJSONObject(varSplit[2]).get("val"), jsonVars);
                         System.out.println("result=" + result);
                         JSONObject jsonResult = JSONObject.parseObject(result);
                         System.out.println("jsonResult=" + jsonResult);
@@ -1489,7 +1500,7 @@ public class DbUtils {
                                     String key = arrayKey[i];
                                     System.out.println("key=" + key);
                                     // I am calling myself again here
-                                    Object result = scriptEngineVar(jsonObjGlobal.get(key), jsonObjGlobal);
+                                    Object result = scriptEngineVar(jsonVars.getJSONObject(key).get("val"), jsonVars);
                                     System.out.println(i + ":" + result);
                                     bindings.put(key, result);
                                 }
@@ -1571,6 +1582,7 @@ public class DbUtils {
                     "refOP", "",
                     "prob", new JSONArray(),
                     "sumChild", 0, "sumPrev", 0,
+                    "layer", 0,
                     "prtNext", new JSONArray(),
                     "prtPrev", new JSONArray(),
                     "subParts", new JSONArray(),
@@ -1696,9 +1708,7 @@ public class DbUtils {
         if (id_A == null) {
             JSONArray filterArray = qt.setESFilt("id_C", tokData.getString("id_C"), "id_CB", id_CB, "id_P", id_P, "locAddr", locAddr);
             JSONArray arrayEs = qt.getES("lSAsset", filterArray);
-            if (arrayEs.size() == 0) {
-                id_A = "";
-            } else {
+            if (arrayEs.size() > 0) {
                 id_A = arrayEs.getJSONObject(0).getString("id_A");
             }
         }
@@ -1730,9 +1740,7 @@ public class DbUtils {
             if (id_A == null) {
                 JSONArray filterArray = qt.setESFilt("id_C", id_C, "id_CB", id_CB, "id_P", id_P);
                 JSONArray arrayEs = qt.getES(listType, filterArray);
-                if (arrayEs.size() == 0) {
-                    id_A = "";
-                } else {
+                if (arrayEs.size() > 0) {
                     id_A = arrayEs.getJSONObject(0).getString("id_A");
                 }
             }
@@ -1768,24 +1776,35 @@ public class DbUtils {
     public void updateAsset(Order order, JSONArray arrayLsasset, JSONArray arrayLbasset, String type) {
         HashSet setId_A = new HashSet();
         HashSet setId_P = new HashSet();
+        HashSet setAuthId = new HashSet();
         JSONArray arrayId_A = new JSONArray();
         JSONArray arrayId_AB = new JSONArray();
         for (int i = 0; i < arrayLsasset.size(); i++) {
             JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
-            arrayId_A.add(jsonLsasset.getString("id_A"));
-            setId_A.add(jsonLsasset.getString("id_A"));
+            String id_A = jsonLsasset.getString("id_A");
+            if (id_A != null) {
+                arrayId_A.add(id_A);
+                setId_A.add(id_A);
+            }
             setId_P.add(jsonLsasset.getString("id_P"));
 
+            String id_C = jsonLsasset.getJSONObject("tokData").getString("id_C");
+            setAuthId.add(qt.getId_A(id_C, "a-auth"));
         }
         //TODO RACH make a new should(must[]) @ filterBuilder
         for (int i = 0; i < arrayLbasset.size(); i++) {
             JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
-            arrayId_AB.add(jsonLbasset.getString("id_A"));
-            if (jsonLbasset.getJSONObject("tokData").getString("id_C").equals(jsonLbasset.getString("id_C"))) {
-                arrayId_A.add(jsonLbasset.getString("id_A"));
+            String id_A = jsonLbasset.getString("id_A");
+            if (id_A != null) {
+                arrayId_AB.add(id_A);
+                if (jsonLbasset.getJSONObject("tokData").getString("id_C").equals(jsonLbasset.getString("id_C"))) {
+                    arrayId_A.add(id_A);
+                }
+                setId_A.add(id_A);
             }
-            setId_A.add(jsonLbasset.getString("id_A"));
             setId_P.add(jsonLbasset.getString("id_P"));
+            String id_C = jsonLbasset.getJSONObject("tokData").getString("id_C");
+            setAuthId.add(qt.getId_A(id_C, "a-auth"));
         }
         JSONArray filterArray = qt.setESFilt("id_A", "contain", arrayId_A);
         JSONArray filterArrayB = qt.setESFilt("id_A", "contain", arrayId_AB);
@@ -1800,21 +1819,31 @@ public class DbUtils {
         List<?> prods = qt.getMDContentMany(setId_P, "info", Prod.class);
         JSONObject allProdObj = qt.list2Obj(prods, "id");
 
+        List<Asset> auths = (List<Asset>) qt.getMDContentMany(setAuthId, Arrays.asList("info", "def"), Asset.class);
+        System.out.println("auths=" + auths);
+        JSONObject allAuthObj = new JSONObject();
+        for (Asset auth : auths) {
+            allAuthObj.put(auth.getInfo().getId_C(), auth);
+        }
+
         for (int i = 0; i < arrayLsasset.size(); i++) {
             JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
             String id_A = jsonLsasset.getString("id_A");
             String id_P = jsonLsasset.getString("id_P");
+            String id_C = jsonLsasset.getJSONObject("tokData").getString("id_C");
 
             if (jsonLsas.getJSONObject(id_A) != null) {
                 jsonLsasset.put("jsonLsa", jsonLsas.getJSONObject(id_A));
                 jsonLsasset.put("jsonAsset", allAssetObj.getJSONObject(id_A));
             }
             jsonLsasset.put("jsonProd", allProdObj.getJSONObject(id_P));
+            jsonLsasset.put("lUT", allAuthObj.getJSONObject(id_C).getJSONObject("def").getJSONArray("lUT").getInteger(0));
         }
         for (int i = 0; i < arrayLbasset.size(); i++) {
             JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
             String id_A = jsonLbasset.getString("id_A");
             String id_P = jsonLbasset.getString("id_P");
+            String id_C = jsonLbasset.getJSONObject("tokData").getString("id_C");
 
             if (jsonLbas.getJSONObject(id_A) != null) {
                 jsonLbasset.put("jsonLsa", jsonLbas.getJSONObject(id_A));
@@ -1824,6 +1853,7 @@ public class DbUtils {
                 }
             }
             jsonLbasset.put("jsonProd", allProdObj.getJSONObject(id_P));
+            jsonLbasset.put("lUT", allAuthObj.getJSONObject(id_C).getJSONObject("def").getJSONArray("lUT").getInteger(0));
         }
 
         System.out.println("arraylsasset=" + arrayLsasset);
@@ -1870,6 +1900,7 @@ public class DbUtils {
 
     public void assetValueChange(Order order, JSONArray arrayAssetChg, List<JSONObject> listBulkAsset, List<JSONObject> listBulkLsasset,
                           List<JSONObject> listBulkLbasset, String type, Boolean isLsa) {
+
         String id_O = order.getId();
         JSONArray arrayOItem = order.getOItem().getJSONArray("objItem");
         for (int i = 0; i < arrayAssetChg.size(); i++) {
@@ -1883,6 +1914,7 @@ public class DbUtils {
             Integer index = assetChgObj.getInteger("index");
             String id_P = assetChgObj.getString("id_P");
             Double wn2qty = assetChgObj.getDouble("wn2qty");
+            Integer lUT = assetChgObj.getInteger("lUT");
             JSONObject jsonBulkAsset = null;
             JSONObject jsonBulkLsasset = null;
             String id_A = null;
@@ -1897,6 +1929,8 @@ public class DbUtils {
 
 
             //K - should use lAT to check if this is Stock
+            JSONObject prodInfo = assetChgObj.getJSONObject("jsonProd").getJSONObject("info");
+            Integer lCR = prodInfo.getInteger("lCR");
             if (assetChgObj.getString("locAddr") != null) {
                 JSONObject jsonOItem = arrayOItem.getJSONObject(index);
                 Double wn4price = jsonOItem.getDouble("wn4price");
@@ -1930,11 +1964,11 @@ public class DbUtils {
                                 System.out.println("updateSpaceQty=" + updateSpaceQty);
                                 System.out.println("qty=" + qty);
                                 //货架格子小于移动格子
-                                if (DoubleUtils.compareTo(qty, 0) == -1) {
+                                if (DoubleUtils.doubleGt(0, qty)) {
                                     throw new ErrorResponseException(HttpStatus.OK, ToolEnum.PROD_NOT_ENOUGH.getCode(), null);
                                 }
                                 //大于，减去数量
-                                if (DoubleUtils.compareTo(qty, 0) == 1) {
+                                if (DoubleUtils.doubleGt(qty, 0)) {
                                     arraySpaceQty.set(j, qty);
                                 }
                                 //等于，删除格子数组和数量数组对应的数组元素
@@ -1970,6 +2004,8 @@ public class DbUtils {
 
                             AssetAStock assetAStock = new AssetAStock(
                                     wn4price, locAddr, arrayLocSpace, arraySpaceQty, remain, jsonResvQty);
+                            assetAStock.setLUT(lUT);
+                            assetAStock.setLCR(lCR);
                             JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
                             jsonBulkAsset = qt.setJson("type", "update",
                                     "id", id_A,
@@ -1979,7 +2015,9 @@ public class DbUtils {
                                     "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
                                     "locSpace", arrayLocSpace,
                                     "spaceQty", arraySpaceQty,
-                                    "wn2qtyResv", remain);
+                                    "wn2qtyResv", remain,
+                                    "lUT", lUT,
+                                    "lCR", lCR);
                             jsonBulkLsasset = qt.setJson("type", "update",
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
@@ -1993,6 +2031,8 @@ public class DbUtils {
                                     "id", jsonLsa.getString("id_ES"));
                         } else {
                             AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayLocSpace, arraySpaceQty, assetChgObj.getJSONArray("arrPP"));
+                            assetAStock.setLUT(lUT);
+                            assetAStock.setLCR(lCR);
                             JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
                             jsonBulkAsset = qt.setJson("type", "update",
                                     "id", id_A,
@@ -2001,22 +2041,24 @@ public class DbUtils {
                             qt.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
                                     "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
                                     "locSpace", arrayLocSpace,
-                                    "spaceQty", arraySpaceQty);
+                                    "spaceQty", arraySpaceQty,
+                                    "lUT", lUT,
+                                    "lCR", lCR);
                             jsonBulkLsasset = qt.setJson("type", "update",
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
                         }
                     }
                     else {
-                        if (DoubleUtils.doubleEquals(aStock.getDouble("wn2qty"), wn2qty)) {
+                        if (DoubleUtils.doubleEquals(aStock.getDouble("wn2qty"), -wn2qty)) {
                             jsonBulkAsset = qt.setJson("type", "delete",
                                     "id", id_A);
                             jsonBulkLsasset = qt.setJson("type", "delete",
                                     "id", jsonLsa.getString("id_ES"));
                         } else {
-                            AssetAStock assetAStock = new AssetAStock(
-                                    wn4price,
-                                    locAddr, arrayLocSpace, arraySpaceQty);
+                            AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayLocSpace, arraySpaceQty);
+                            assetAStock.setLUT(lUT);
+                            assetAStock.setLCR(lCR);
                             JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
                             jsonBulkAsset = qt.setJson("type", "update",
                                     "id", id_A,
@@ -2025,7 +2067,9 @@ public class DbUtils {
                             qt.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
                                     "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
                                     "locSpace", arrayLocSpace,
-                                    "spaceQty", arraySpaceQty);
+                                    "spaceQty", arraySpaceQty,
+                                    "lUT", lUT,
+                                    "lCR", lCR);
                             jsonBulkLsasset = qt.setJson("type", "update",
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
@@ -2043,12 +2087,16 @@ public class DbUtils {
                     asset.setInfo(assetInfo);
                     if ("proc".equals(type)) {
                         AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayUpdateLocSpace, arrayUpdateSpaceQty, assetChgObj.getJSONArray("arrPP"));
+                        assetAStock.setLUT(lUT);
+                        assetAStock.setLCR(lCR);
                         asset.setAStock(qt.toJson(assetAStock));
                         asset.setView(qt.setArray("info", "aStock"));
                         jsonBulkAsset = qt.setJson("type", "insert",
                                 "insert", asset);
                     } else {
                         AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayUpdateLocSpace, arrayUpdateSpaceQty);
+                        assetAStock.setLUT(lUT);
+                        assetAStock.setLCR(lCR);
                         asset.setAStock(qt.toJson(assetAStock));
                         asset.setView(qt.setArray("info", "aStock"));
                         jsonBulkAsset = qt.setJson("type", "insert",
@@ -2060,6 +2108,8 @@ public class DbUtils {
                     lsasset.setLocAddr(locAddr);
                     lsasset.setLocSpace(arrayUpdateLocSpace);
                     lsasset.setSpaceQty(arrayUpdateSpaceQty);
+                    lsasset.setLUT(lUT);
+                    lsasset.setLCR(lCR);
 
                     jsonBulkLsasset = qt.setJson("type", "insert",
                             "insert", lsasset);
@@ -2098,7 +2148,6 @@ public class DbUtils {
                ws.sendWS(log);
             }
             else {
-                JSONObject prodInfo = assetChgObj.getJSONObject("jsonProd").getJSONObject("info");
                 //存在金钱
                 if (assetChgObj.getJSONObject("jsonLsa") != null) {
                     JSONObject jsonLsa = assetChgObj.getJSONObject("jsonLsa");
@@ -2106,6 +2155,8 @@ public class DbUtils {
                     JSONObject jsonAsset = assetChgObj.getJSONObject("jsonAsset");
                     JSONObject aStock = jsonAsset.getJSONObject("aStock");
                     AssetAStock assetAStock = new AssetAStock(DoubleUtils.add(aStock.getDouble("wn4price"), wn2qty));
+                    assetAStock.setLUT(lUT);
+                    assetAStock.setLCR(lCR);
                     JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
                     jsonBulkAsset = qt.setJson("type", "update",
                             "id", id_A,
@@ -2114,7 +2165,9 @@ public class DbUtils {
                     if (!isLsa && !id_C.equals(id_CB)) {
                         JSONObject jsonLba = assetChgObj.getJSONObject("jsonLba");
                         qt.upJson(jsonLba, "wn4price", DoubleUtils.add(aStock.getDouble("wn4price"), wn2qty),
-                                "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn2qty));
+                                "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn2qty),
+                                "lUT", lUT,
+                                "lCR", lCR);
                         JSONObject jsonBulkLbasset = qt.setJson("type", "update",
                                 "id", jsonLba.getString("id_ES"),
                                 "update", jsonLba);
@@ -2122,7 +2175,9 @@ public class DbUtils {
                     }
 
                     qt.upJson(jsonLsa, "wn4price", DoubleUtils.add(aStock.getDouble("wn4price"), wn2qty),
-                            "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn2qty));
+                            "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn2qty),
+                            "lUT", lUT,
+                            "lCR", lCR);
                     jsonBulkLsasset = qt.setJson("type", "update",
                             "id", jsonLsa.getString("id_ES"),
                             "update", jsonLsa);
@@ -2138,6 +2193,8 @@ public class DbUtils {
                             prodInfo.getString("pic"), assetChgObj.getInteger("lAT"));
                     asset.setInfo(assetInfo);
                     AssetAStock assetAStock = new AssetAStock(wn2qty);
+                    assetAStock.setLUT(lUT);
+                    assetAStock.setLCR(lCR);
                     asset.setAStock((JSONObject) JSON.toJSON(assetAStock));
                     JSONArray view = qt.setArray("info", "aStock");
                     asset.setView(view);
@@ -2148,7 +2205,8 @@ public class DbUtils {
                         lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_CB, id_P, prodInfo.getJSONObject("wrdN"),
                                 prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
                                 prodInfo.getString("pic"), assetChgObj.getInteger("lAT"), 1.0, wn2qty);
-
+                        lsasset.setLUT(lUT);
+                        lsasset.setLCR(lCR);
                         jsonBulkLsasset = qt.setJson("type", "insert",
                                 "insert", lsasset);
                     } else {
@@ -2156,7 +2214,8 @@ public class DbUtils {
                             lSAsset lsasset = new lSAsset(id_A, id_CB, id_CB, id_C, id_P, prodInfo.getJSONObject("wrdN"),
                                     prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
                                     prodInfo.getString("pic"), assetChgObj.getInteger("lAT"), 1.0, wn2qty);
-
+                            lsasset.setLUT(lUT);
+                            lsasset.setLCR(lCR);
                             JSONObject jsonBulkLbasset = qt.setJson("type", "insert",
                                     "insert", lsasset);
                             listBulkLbasset.add(jsonBulkLbasset);
@@ -2164,7 +2223,8 @@ public class DbUtils {
                         lBAsset lbasset = new lBAsset(id_A, id_C, id_C, id_CB, id_P, prodInfo.getJSONObject("wrdN"),
                                 prodInfo.getJSONObject("wrddesc"), "1030", prodInfo.getString("ref"),
                                 prodInfo.getString("pic"), assetChgObj.getInteger("lAT"), 1.0, wn2qty);
-
+                        lbasset.setLUT(lUT);
+                        lbasset.setLCR(lCR);
                         jsonBulkLsasset = qt.setJson("type", "insert",
                                 "insert", lbasset);
                     }

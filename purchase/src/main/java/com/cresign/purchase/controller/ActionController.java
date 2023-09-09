@@ -3,9 +3,11 @@ package com.cresign.purchase.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.purchase.service.ActionService;
+import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.GetUserIdByToken;
+import com.cresign.tools.enumeration.CodeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +36,9 @@ public class ActionController {
 
     @Autowired
     private GetUserIdByToken getUserToken;
+
+    @Autowired
+    private RetResult retResult;
 
 
     /**
@@ -195,7 +200,7 @@ public class ActionController {
     public ApiResponse statusChange(@RequestBody JSONObject reqJson) throws IOException {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
         try {
-            return actionService.changeActionStatus(
+            JSONObject res = actionService.changeActionStatus(
                     reqJson.getString("logType"),
                     reqJson.getInteger("status"),
                     reqJson.getString("msg"),
@@ -205,6 +210,7 @@ public class ActionController {
                     reqJson.getString("id_FC"),
                     reqJson.getString("id_FS"),
                     tokData);
+            return retResult.ok(CodeEnum.OK.getCode(), res);
         } catch (Exception e) {
             return getUserToken.err(reqJson, "statusChg", e);
         }

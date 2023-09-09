@@ -12,7 +12,6 @@ import com.cresign.login.utils.wxlogin.web.WxAuthUtil;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.CosUpload;
-import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
@@ -29,7 +28,6 @@ import com.cresign.tools.request.HttpClientUtil;
 import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -117,12 +115,6 @@ public class WxLoginServiceImpl implements WxLoginService {
 
     @Autowired
     private RegisterUserUtils registerUserUtils;
-
-    @Autowired
-    private RestHighLevelClient restHighLevelClient;
-
-    @Resource
-    private CoupaUtil coupaUtil;
 
 
 //    /**
@@ -733,7 +725,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         JSONObject wrdNCB = new JSONObject();
         wrdNCB.put("cn", "Cresign");
 
-        lBUser addLBUser = new lBUser(id_U,"5f2a2502425e1b07946f52e9", wrdNMap, wrdNCB, wrdNReal,null, "1099", phoneNumber, "", unionId, avatarUrl);
+        lBUser addLBUser = new lBUser(id_U,"5f2a2502425e1b07946f52e9", wrdNMap, wrdNCB, wrdNReal,null, "1099", phoneNumber, "", unionId, avatarUrl,"1000");
 
         qt.addES("lbuser",addLBUser);
 //        IndexRequest indexRequest = new IndexRequest("lbuser");

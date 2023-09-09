@@ -18,7 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class ProdInfo {
 
     public ProdInfo(String id_C, String id_CP, String id_CB, JSONObject wrdN, JSONObject wrddesc, String grp,
-                  String ref, String pic, Integer lDC, Integer lUT) {
+                  String ref, String pic, Integer lUT) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn","");
@@ -31,7 +31,6 @@ public class ProdInfo {
         this.grp = grp == null ? "1000": grp;
         this.ref = ref == null ? "": ref;
         this.pic = pic  == null ? "": pic;
-        this.lDC = lDC  == null ? 0: lDC;
         this.lUT = lUT  == null ? 0: lUT;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
@@ -42,6 +41,8 @@ public class ProdInfo {
     private String id_CP;
 
     private String id_CB;
+
+    private String id_PP;
 
     private JSONObject wrdN;
 
@@ -55,8 +56,8 @@ public class ProdInfo {
 
     private String pic;
 
-    @JsonProperty("lDC")
-    private Integer lDC;
+//    @JsonProperty("lDC")
+//    private Integer lDC;
 
     @JsonProperty("lUT")
     private Integer lUT;

@@ -1402,8 +1402,6 @@ public class ModuleServicelmpl implements ModuleService {
 
         String new_id_C = qt.GetObjectId();
 
-//        InitJava init = qt.getMDContent("cn_java", "newComp", InitJava.class);
-
         InitJava init = qt.getInitData();
         JSONObject newComp = init.getNewComp();
         Comp comp = qt.jsonTo(newComp.getJSONObject("comp"), Comp.class);
@@ -1464,7 +1462,7 @@ public class ModuleServicelmpl implements ModuleService {
 
         lBUser lbuser = new lBUser(uid,new_id_C,user.getInfo().getWrdN(),comp.getInfo().getWrdN(),
                 user.getInfo().getWrdNReal(),user.getInfo().getWrddesc(),"1001",user.getInfo().getMbn(),
-                "",user.getInfo().getId_WX(),user.getInfo().getPic());
+                "",user.getInfo().getId_WX(),user.getInfo().getPic(),"1000");
 
         qt.addES( "lbuser", lbuser);
 

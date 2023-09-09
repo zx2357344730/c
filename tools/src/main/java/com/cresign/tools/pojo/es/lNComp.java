@@ -23,7 +23,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "lNComp")
 public class lNComp {
 
-    public lNComp(String id_C, String id_CP,  JSONObject wrdN, JSONObject wrddesc, String ref, String pic) {
+    public lNComp(String id_C, String id_CP,  JSONObject wrdNC, JSONObject wrddesc, String ref, String pic) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn", "");
@@ -34,11 +34,11 @@ public class lNComp {
         this.id_C = id_C;
         this.id_CM = id_C;
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
-        this.wrdN = wrdN == null ? (JSONObject) wrdEmpty.clone(): wrdN;
+        this.wrdNC = wrdNC == null ? (JSONObject) wrdEmpty.clone(): wrdNC;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
 //        this.wrdTag = wrdTag == null ? jsonTag: wrdTag;
         this.ref = ref == null ? "": ref;
-        this.pic = pic == null ? "": pic;
+        this.picC = pic == null ? "": pic;
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
@@ -49,7 +49,7 @@ public class lNComp {
 
     private String id_CM;
 
-    private JSONObject wrdN;//TODO RACHEL - > wrdNC
+    private JSONObject wrdNC;//TODO RACHEL - > wrdNC
 
     private JSONObject wrddesc;
 
@@ -57,7 +57,7 @@ public class lNComp {
 
     private String ref; //TODO RACHEL - > no need
 
-    private String pic; //TODO RACHEL - > picC
+    private String picC; //TODO RACHEL - > picC
 
     private String tmd;
 

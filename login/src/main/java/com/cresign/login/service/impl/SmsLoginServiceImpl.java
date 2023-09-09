@@ -10,7 +10,6 @@ import com.cresign.login.utils.RegisterUserUtils;
 import com.cresign.login.utils.tencentcloudapi.sms.SMSTencent;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.dbTools.CoupaUtil;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.dbTools.Qt;
@@ -66,9 +65,6 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 
     @Autowired
     private RetResult retResult;
-
-    @Resource
-    private CoupaUtil coupaUtil;
 
     @Autowired
     private DbUtils dbUtils;
