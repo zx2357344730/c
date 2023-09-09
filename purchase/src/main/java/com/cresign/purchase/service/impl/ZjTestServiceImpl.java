@@ -1,5 +1,6 @@
 package com.cresign.purchase.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.purchase.enumeration.PurchaseEnum;
@@ -21,7 +22,10 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author tang
@@ -40,6 +44,9 @@ public class ZjTestServiceImpl implements ZjTestService {
     private RetResult retResult;
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private HttpServletResponse response;
+    private static final String sharePrefix = "share";
 
     @Override
     public ApiResponse getMdSetEs(String key, String esIndex,String condition,String val) {
@@ -57,6 +64,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         }
         query.fields().include("info");
         List<User> users = mongoTemplate.find(query, User.class);
+
         System.out.println("长度:");
         System.out.println(users.size());
         int shu = 0;
@@ -120,5 +128,54 @@ public class ZjTestServiceImpl implements ZjTestService {
 //        }
         ws.sendWS(logFlow);
         return retResult.ok(CodeEnum.OK.getCode(), "发送成功");
+    }
+
+    @Override
+    public ApiResponse shareSave(JSONObject data) {
+        /*
+        data:
+        id_U, tmk, tdur (86400L), wrdNU, wn0open, zcndesc描述, wrdN id_X, listType
+         */
+        Long tdur = data.getLong("tdur");
+        String shareId = UUID.randomUUID().toString().replace("-","");
+        boolean isSetRd = true;
+        if (null == tdur) {
+            tdur = (long)(86400*2);
+        } else if (tdur == -1) {
+            isSetRd = false;
+        }
+        if (isSetRd) {
+            qt.setRDSet(sharePrefix,shareId,data,tdur);
+        } else {
+            shareId+="_ES";
+            data.put("shareId",shareId);
+            qt.addES("linkflow",data);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), shareId);
+    }
+
+    @Override
+    public ApiResponse shareOpen(String shareId) {
+        System.out.println("分享打开输出:"+shareId);
+        boolean isEs = shareId.endsWith("_ES");
+        if (!isEs) {
+            JSONObject rdSet = qt.getRDSet(sharePrefix, shareId);
+            System.out.println(rdSet);
+            if (null != rdSet) {
+                return retResult.ok(CodeEnum.OK.getCode(), rdSet);
+            }
+//            try {
+//                response.sendRedirect("https://www.cresign.cn");
+//            } catch (IOException e) {
+//                System.out.println("转发异常");
+//            }
+        } else {
+            JSONArray es = qt.getES("linkflow", qt.setESFilt("shareId", shareId));
+            if (null != es && es.size() > 0) {
+                return retResult.ok(CodeEnum.OK.getCode(), es.getJSONObject(0));
+            }
+        }
+        throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                ERR_SHARE_NULL.getCode(),"");
     }
 }

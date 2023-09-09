@@ -30,8 +30,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 //    @Autowired
 //    private StringRedisTemplate redisTemplate0;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+//    @Autowired
+//    private MongoTemplate mongoTemplate;
 
     @Autowired
     private LoginResult loginResult;

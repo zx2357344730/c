@@ -17,6 +17,7 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -39,8 +40,13 @@ public class LogServiceImpl  implements LogService {
     @Autowired
     private DetailsClient detailsClient;
 
-    public static final String appId = "KVB0qQq0fRArupojoL4WM9";
-
+//    public static final String appId = "KVB0qQq0fRArupojoL4WM9";
+    @Value("${thisConfig.appId}")
+    private String appId;
+    @Value("${thisConfig.appKey}")
+    private String appKey;
+    @Value("${thisConfig.masterSecret}")
+    private String masterSecret;
     @Override
     public int getDet(JSONObject reqJson) {
 
@@ -141,8 +147,8 @@ public class LogServiceImpl  implements LogService {
 
     @Override
     public String getToken(){
-        String appKey = "ShxgT3kg6s73NbuZeAe3I";
-        String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
+//        String appKey = "ShxgT3kg6s73NbuZeAe3I";
+//        String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
         long timestamp = System.currentTimeMillis();
 
         JSONObject tokenPost = new JSONObject();

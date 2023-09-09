@@ -1,5 +1,6 @@
 package com.cresign.login.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.FaceBookLoginService;
@@ -8,6 +9,7 @@ import com.cresign.login.utils.RegisterUserUtils;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.DateUtils;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.SMSTypeEnum;
@@ -39,11 +41,11 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class FaceBookLoginServiceImpl implements FaceBookLoginService {
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+//    @Autowired
+//    private MongoTemplate mongoTemplate;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate0;
+//    @Autowired
+//    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private RegisterUserUtils registerUserUtils;
@@ -57,16 +59,17 @@ public class FaceBookLoginServiceImpl implements FaceBookLoginService {
     @Autowired
     private HttpServletRequest request;
 
+    @Autowired
+    private Qt qt;
+
     @Override
     public ApiResponse faceBookLogin(String id_fb, String clientType) {
 
-        Query query = new Query(new Criteria("info.id_fb").is(id_fb));
-        //进行查询并返回结果
-        User user = mongoTemplate.findOne(query, User.class);
-
-        // 判断用户是否存在
-        if (user!=null){
-
+//        Query query = new Query(new Criteria("info.id_fb").is(id_fb));
+//        //进行查询并返回结果
+//        User user = mongoTemplate.findOne(query, User.class);
+        JSONArray es = qt.getES("lNUser", qt.setESFilt("id_fb", id_fb));
+        if (null != es && es.size() > 0) {
 //            //判断公司id是否为空
 //            if (user.getLSComp() != null){
 //
@@ -77,9 +80,23 @@ public class FaceBookLoginServiceImpl implements FaceBookLoginService {
 ////                oauth.setCompMenuAndRole(user.getInfo().get("def_C").toString());
 //                return retResult.ok(CodeEnum.OK.getCode(), result);
 //            }
-
-
         }
+//        // 判断用户是否存在
+//        if (user!=null){
+//
+////            //判断公司id是否为空
+////            if (user.getLSComp() != null){
+////
+////                // 获取用户登录的数据
+////                JSONObject result = loginResult.allResult(user, clientType, "facebook");
+////
+////                // 重新设值用户的默认登录的公司信息到redis中
+//////                oauth.setCompMenuAndRole(user.getInfo().get("def_C").toString());
+////                return retResult.ok(CodeEnum.OK.getCode(), result);
+////            }
+//
+//
+//        }
         throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
 WX_NOT_BIND.getCode(), null);
       }
@@ -87,34 +104,62 @@ WX_NOT_BIND.getCode(), null);
     @Override
     public ApiResponse faceBookRegister(String id_fb, String wcnN, String email, String pic, String phone, String phoneType, String smsNum, String clientID, String clientType) throws IOException {
         // 判断是否存在这个 key
-        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+//        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (qt.getHasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+//            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(qt.getRDKeyStr(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
 
-                Query id_WXQue = new Query(new Criteria("info.id_fb").is(id_fb));
+//                Query id_WXQue = new Query(new Criteria("info.id_fb").is(id_fb));
+//
+//                User userFb = mongoTemplate.findOne(id_WXQue, User.class);
+                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_fb", id_fb));
 
-                User userFb = mongoTemplate.findOne(id_WXQue, User.class);
-
-                if (ObjectUtils.isNotEmpty(userFb)) {
+//                if (ObjectUtils.isNotEmpty(userFb)) {
+//
+//                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//REGISTER_USER_IS_HAVE.getCode(), null);
+//                }
+                if (null == es || es.size() == 0) {
 
                     throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-REGISTER_USER_IS_HAVE.getCode(), null);
+                            REGISTER_USER_IS_HAVE.getCode(), null);
                 }
 
-                Query mbnQue = new Query(new Criteria("info.mbn").is(phone));
+//                Query mbnQue = new Query(new Criteria("info.mbn").is(phone));
+//
+//                User user = mongoTemplate.findOne(mbnQue, User.class);
+                JSONArray esMbn = qt.getES("lNUser", qt.setESFilt("mbn", "exact", phone));
 
-                User user = mongoTemplate.findOne(mbnQue, User.class);
+//                if (ObjectUtils.isNotEmpty(user)) {
+//
+//                    Update update = new Update();
+//                    update.set("info.id_fb", id_fb);
+//                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//                    mongoTemplate.updateFirst(mbnQue, update, User.class);
+//
+//                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+//
+//                    return retResult.ok(CodeEnum.OK.getCode(), null);
+//                }
+                if (null == esMbn || esMbn.size() == 0) {
 
-                if (ObjectUtils.isNotEmpty(user)) {
+//                    Update update = new Update();
+//                    update.set("info.id_fb", id_fb);
+//                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//                    mongoTemplate.updateFirst(mbnQue, update, User.class);
+                    qt.setES("lNUser",es.getJSONObject(0).getString("id_ES")
+                            ,qt.setJson("info.id_fb",id_fb,"info.tmd"
+                                    ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())));
+                    qt.setMDContent(es.getJSONObject(0).getString("id_U")
+                            ,qt.setJson("info.id_fb",id_fb,"info.tmd"
+                                    ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())), User.class);
 
-                    Update update = new Update();
-                    update.set("info.id_fb", id_fb);
-                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-                    mongoTemplate.updateFirst(mbnQue, update, User.class);
-
-                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+//                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+                    qt.setRDF(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
 
                     return retResult.ok(CodeEnum.OK.getCode(), null);
                 }
@@ -146,7 +191,8 @@ REGISTER_USER_IS_HAVE.getCode(), null);
                 // 调用注册用户方法
                 registerUserUtils.registerUser(infoJson);
 
-                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+//                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+                qt.setRDF(SMSTypeEnum.LOGIN.getSmsType() + phone,smsNum);
 
                 return retResult.ok(CodeEnum.OK.getCode(), null);
 

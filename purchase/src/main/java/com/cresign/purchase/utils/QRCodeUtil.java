@@ -12,6 +12,7 @@ import com.qcloud.cos.auth.BasicCOSCredentials;
 import com.qcloud.cos.auth.COSCredentials;
 import com.qcloud.cos.http.HttpMethodName;
 import com.qcloud.cos.region.Region;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -34,6 +35,22 @@ public class QRCodeUtil {
         IMAGE_TYPE.add("jpg");
         IMAGE_TYPE.add("png");
     }
+//    public static String secretId = "AKIDCG7nGXPTGrFSSFPCTYRDm8II3d3Ij2Wk";
+    public static String secretId;
+    @Value("${thisConfig.secretId}")
+    public void setSecretId(String secretId){
+        QRCodeUtil.secretId = secretId;
+    }
+//    public static String secretKey = "7zc2DF2ZcR1QaVIvIPHtFLCoJqBWcT5V";
+    public static String secretKey;
+    @Value("${thisConfig.secretKey}")
+    public void setSecretKey(String secretKey){
+        QRCodeUtil.secretKey = secretKey;
+    }
+//    @Value("${thisConfig.secretId}")
+//    private String secretId;
+//    @Value("${thisConfig.secretKey}")
+//    private String secretKey;
 
     /**
      * zxing方式生成二维码
@@ -103,8 +120,8 @@ public class QRCodeUtil {
     }
 
     private static String getImg(String key){
-        String secretId = "AKIDCG7nGXPTGrFSSFPCTYRDm8II3d3Ij2Wk";
-        String secretKey = "7zc2DF2ZcR1QaVIvIPHtFLCoJqBWcT5V";
+//        String secretId = "AKIDCG7nGXPTGrFSSFPCTYRDm8II3d3Ij2Wk";
+//        String secretKey = "7zc2DF2ZcR1QaVIvIPHtFLCoJqBWcT5V";
 
         // 1 初始化用户身份信息(secretId, secretKey)
         COSCredentials cred = new BasicCOSCredentials(secretId, secretKey);

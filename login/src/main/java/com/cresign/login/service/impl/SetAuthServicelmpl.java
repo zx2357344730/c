@@ -33,8 +33,8 @@ import java.util.Arrays;
 @Service
 public class SetAuthServicelmpl implements SetAuthService {
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+//    @Autowired
+//    private MongoTemplate mongoTemplate;
 
     @Autowired
     private RetResult retResult;
@@ -67,13 +67,14 @@ public class SetAuthServicelmpl implements SetAuthService {
         // 用户的role权限
         String grpU = rolex.getString("grpU");
 
-        Query batchQ = new Query(
-                new Criteria("info.id_C").is(id_C)
-                        .and("info.ref").is("a-auth"));
-        //batchQ.fields().include("role.objAuth." + grpU + "." + listType + "." + grp + ".batch");
-        batchQ.fields().include("role.objData." + grpU + "." + listType);
-
-        Asset asset = mongoTemplate.findOne(batchQ, Asset.class);
+//        Query batchQ = new Query(
+//                new Criteria("info.id_C").is(id_C)
+//                        .and("info.ref").is("a-auth"));
+//        //batchQ.fields().include("role.objAuth." + grpU + "." + listType + "." + grp + ".batch");
+//        batchQ.fields().include("role.objData." + grpU + "." + listType);
+//
+//        Asset asset = mongoTemplate.findOne(batchQ, Asset.class);
+        Asset asset = qt.getConfig(id_C,"a-auth","role");
         //JSONObject roleJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(batchQ, Asset.class));
 
         // 没有设置职位权限
@@ -205,24 +206,98 @@ public class SetAuthServicelmpl implements SetAuthService {
 //    @Transactional(rollbackFor = Exception.class, noRollbackFor = ResponseException.class)
     public ApiResponse switchComp(String id_U, String id_C, String clientType) {
 
-         /*
+//         /*
+//            设置 用户下次登录的公司 def_C
+//         */
+//
+//        // 通过id_U查询该用户
+//
+//        User user = qt.getMDContent(id_U, Arrays.asList("rolex.objComp."+ id_C, "info"), User.class);
+//
+//        //  here delete old Token,
+//        JSONObject userRolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
+//        // if user actually exists in this company
+//        if (userRolex != null) {
+//            oauth.setToken(user, id_C, userRolex.getString("grpU"),
+//                    userRolex.getString("dep"), clientType);
+//
+//            Comp comp = qt.getMDContent(id_C, "info", Comp.class);
+//            JSONObject updateData = new JSONObject();
+//
+//            if (!comp.getInfo().getPic().equals(userRolex.getString("picC")) ||
+//                    !comp.getInfo().getWrdN().equals(userRolex.getJSONObject("wrdNC")))
+//            {
+//                updateData.put("rolex.objComp."+id_C+".wrdNC", comp.getInfo().getWrdN());
+//                updateData.put("rolex.objComp."+id_C+".picC", comp.getInfo().getPic());
+//
+//            }
+//
+//            // 4. update def_C
+////            Query query2 = new Query(new Criteria("_id").is(id_U));
+////            query2.fields().include("info");
+//            updateData.put("info.def_C", id_C);
+//
+//
+////            mongoTemplate.updateFirst(query2, updateQuery, User.class);
+//
+//            qt.setMDContent(id_U, updateData, User.class);
+//
+//            JSONObject result = new JSONObject();
+//            result.put("grpU", userRolex.getString("grpU"));
+//            result.put("dep", userRolex.getString("dep"));
+//            result.put("picC", comp.getInfo().getPic());
+////            result.put("pic", comp.getInfo().getString("pic"));
+//            result.put("wrdNC", comp.getInfo().getWrdN());
+////            result.put("wrdNU", comp.getInfo().getJSONObject("wrdN"));
+//            result.put("id_C", id_C);
+//
+//            return retResult.ok(CodeEnum.OK.getCode(), result);
+//        } else {
+//            JSONArray es = qt.getES("lSUser", qt.setESFilt("id_U", id_U, "id_C", id_C));
+//            UserInfo info = user.getInfo();
+//            Comp compInfo = qt.getMDContent(id_C, "info", Comp.class);
+//            if (null == compInfo || null == compInfo.getInfo()) {
+//                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+//            }
+//            String thisGrpU;
+//            if (null == es || es.size() == 0) {
+//                thisGrpU = "1099";
+//                lSUser lsUser = new lSUser(id_U,id_C, info.getWrdN()
+//                        ,info.getWrdNReal(),info.getWrddesc(),thisGrpU,info.getMbn(),"", info.getPic());
+//                qt.addES("lSUser",lsUser);
+//                addRoleCompInfo(id_C, id_U,thisGrpU,compInfo.getInfo().getPic(),compInfo.getInfo().getWrdN());
+//            } else {
+//                JSONObject jsonObject = es.getJSONObject(0);
+//                thisGrpU = jsonObject.getString("grpU");
+//                addRoleCompInfo(id_C, id_U,thisGrpU
+//                        ,compInfo.getInfo().getPic(),compInfo.getInfo().getWrdN());
+//            }
+//
+////            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+//            JSONObject result = new JSONObject();
+//            result.put("grpU", thisGrpU);
+//            result.put("dep", "1000");
+//            result.put("picC", compInfo.getInfo().getPic());
+////            result.put("pic", comp.getInfo().getString("pic"));
+//            result.put("wrdNC", compInfo.getInfo().getWrdN());
+////            result.put("wrdNU", comp.getInfo().getJSONObject("wrdN"));
+//            result.put("id_C", id_C);
+//            return retResult.ok(CodeEnum.OK.getCode(), result);
+//        }
+
+        /*
             设置 用户下次登录的公司 def_C
          */
-
         // 通过id_U查询该用户
-
         User user = qt.getMDContent(id_U, Arrays.asList("rolex.objComp."+ id_C, "info"), User.class);
-
         //  here delete old Token,
         JSONObject userRolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
         // if user actually exists in this company
         if (userRolex != null) {
             oauth.setToken(user, id_C, userRolex.getString("grpU"),
                     userRolex.getString("dep"), clientType);
-
             Comp comp = qt.getMDContent(id_C, "info", Comp.class);
             JSONObject updateData = new JSONObject();
-
             if (!comp.getInfo().getPic().equals(userRolex.getString("picC")) ||
                     !comp.getInfo().getWrdN().equals(userRolex.getJSONObject("wrdNC")))
             {
@@ -235,8 +310,6 @@ public class SetAuthServicelmpl implements SetAuthService {
 //            Query query2 = new Query(new Criteria("_id").is(id_U));
 //            query2.fields().include("info");
             updateData.put("info.def_C", id_C);
-
-
 //            mongoTemplate.updateFirst(query2, updateQuery, User.class);
 
             qt.setMDContent(id_U, updateData, User.class);
@@ -255,10 +328,14 @@ public class SetAuthServicelmpl implements SetAuthService {
             JSONArray es = qt.getES("lSUser", qt.setESFilt("id_U", id_U, "id_C", id_C));
             UserInfo info = user.getInfo();
             Comp compInfo = qt.getMDContent(id_C, "info", Comp.class);
+            Asset asset = qt.getConfig(id_C, "a-auth", "role");
+            if (null == asset || null == asset.getRole()) {
+                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ASSET_NOT_FOUND.getCode(), null);
+            }
+            String thisGrpU;
             if (null == compInfo || null == compInfo.getInfo()) {
                 throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
             }
-            String thisGrpU;
             if (null == es || es.size() == 0) {
                 thisGrpU = "1099";
                 lSUser lsUser = new lSUser(id_U,id_C, info.getWrdN()

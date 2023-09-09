@@ -6,6 +6,7 @@ import com.cresign.tools.request.HttpClientUtil;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.Serializable;
 
@@ -20,13 +21,23 @@ public class GoogleCheckTokenUtils implements Serializable {
   /**
    * 验证token的地址
    */
-  private static final String GOOGLE_URL = "https://oauth2.googleapis.com/tokeninfo";
- 
+//  private static final String GOOGLE_URL = "https://oauth2.googleapis.com/tokeninfo";
+  public static String GOOGLE_URL;
+  @Value("${thisConfig.GOOGLE_URL}")
+  public void setGoogleUrl(String googleUrl){
+    GoogleCheckTokenUtils.GOOGLE_URL = googleUrl;
+  }
+
   /**
    * 开发者账号上申请的应用的client_id
    */
-  private static final String CLIENT_ID = "271760780779-2n7ftjqfdj7pgr59krtbst1b5b1eemml.apps.googleusercontent.com";
- 
+//  private static final String CLIENT_ID = "271760780779-2n7ftjqfdj7pgr59krtbst1b5b1eemml.apps.googleusercontent.com";
+  public static String CLIENT_ID;
+  @Value("${thisConfig.CLIENT_ID}")
+  public void setClientId(String clientId){
+    GoogleCheckTokenUtils.CLIENT_ID = clientId;
+  }
+
   /**
    * 默认编码为utf-8
    */

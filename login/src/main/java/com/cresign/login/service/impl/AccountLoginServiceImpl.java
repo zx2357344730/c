@@ -41,8 +41,8 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     @Autowired
     private WSFilterClient wsLoginClient;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+//    @Autowired
+//    private MongoTemplate mongoTemplate;
 
     @Autowired
     private LoginResult loginResult;
@@ -50,11 +50,11 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     @Autowired
     private RetResult retResult;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate0;
+//    @Autowired
+//    private StringRedisTemplate redisTemplate0;
 
-    @Resource
-    private CoupaUtil coupaUtil;
+//    @Resource
+//    private CoupaUtil coupaUtil;
 
     @Autowired
     private Qt qt;
@@ -266,9 +266,10 @@ public class AccountLoginServiceImpl implements AccountLoginService {
         JSONObject result = new JSONObject();
         //创建查询对象
 //        Query query = new Query(Criteria.where("info.usn").is(usn));
-        Query query = new Query(Criteria.where("_id").is("5f28bf314f65cc7dc2e60262"));
-        // 创建Auth对象存放查询后的结果
-        User user = mongoTemplate.findOne(query, User.class);
+//        Query query = new Query(Criteria.where("_id").is("5f28bf314f65cc7dc2e60262"));
+//        // 创建Auth对象存放查询后的结果
+//        User user = mongoTemplate.findOne(query, User.class);
+        User user = qt.getMDContent("5f28bf314f65cc7dc2e60262",qt.strList("rolex","info"), User.class);
 
         // 初步判断用户名是否存在
 
@@ -306,7 +307,8 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     public ApiResponse scanLoginCode( String token, String id_U) {
 
         String keyName = SCANCODE_LOGINCOMP + token;
-        Boolean hasKey = redisTemplate0.hasKey(keyName);
+//        Boolean hasKey = redisTemplate0.hasKey(keyName);
+        Boolean hasKey = qt.getHasKey(keyName);
 
         if (!hasKey) {
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
@@ -314,13 +316,15 @@ LOGIN_CODE_OVERDUE.getCode(),null);
         }
 
         // 获取到整个hash
-        Map<Object, Object> entries = redisTemplate0.opsForHash().entries(keyName);
+//        Map<Object, Object> entries = redisTemplate0.opsForHash().entries(keyName);
+//        Map<Object, Object> entries = ;
+        Map<Object, Object> entries = qt.getRDHashAll(SCANCODE_LOGINCOMP,token);
 
-        Query query = new Query(Criteria.where("_id").is(id_U));
-
-        // 创建Auth对象存放查询后的结果
-        User user = mongoTemplate.findOne(query, User.class);
-
+//        Query query = new Query(Criteria.where("_id").is(id_U));
+//
+//        // 创建Auth对象存放查询后的结果
+//        User user = mongoTemplate.findOne(query, User.class);
+        User user = qt.getMDContent(id_U,qt.strList("rolex","info"), User.class);
         if (user == null)
         {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), null);

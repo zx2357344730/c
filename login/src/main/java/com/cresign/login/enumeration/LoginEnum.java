@@ -41,6 +41,7 @@ public enum LoginEnum {
     USER_NOT_IN_COMP("042002"),
     //用户已经在注销了
     USER_REG_OFF("042003"),
+    ASSET_NOT_FOUND("042004"),
 
 
 

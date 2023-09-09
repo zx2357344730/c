@@ -45,11 +45,11 @@ import java.util.List;
 @Service
 public class ModuleServicelmpl implements ModuleService {
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+//    @Autowired
+//    private MongoTemplate mongoTemplate;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate0;
+//    @Autowired
+//    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private Qt qt;
@@ -1166,15 +1166,17 @@ public class ModuleServicelmpl implements ModuleService {
         @Override
     public ApiResponse addModule(String id_U, String oid, String id_C, String ref, Integer bcdLevel) throws IOException {
         //判断公司负责人
-        Query query = new Query(
-                new Criteria("info.id_C").is(id_C)
-                        .and("info.ref").is("a-auth"));
-        query.fields().include("def.id_UM");
-        Asset asset = mongoTemplate.findOne(query, Asset.class);
+//        Query query = new Query(
+//                new Criteria("info.id_C").is(id_C)
+//                        .and("info.ref").is("a-auth"));
+//        query.fields().include("def.id_UM");
+//        Asset asset = mongoTemplate.findOne(query, Asset.class);
+        Asset asset = qt.getConfig(id_C,"a-auth","def");
         if (asset != null || asset.getDef().get("id_UM").equals(id_U)) {
 
             //查询redis订单信息
-            String order = redisTemplate0.opsForValue().get(oid);
+//            String order = redisTemplate0.opsForValue().get(oid);
+            String order = qt.getRDKeyStr(oid);
 
             JSONObject redisMap = (JSONObject) JSON.parse(order);
 
@@ -1196,16 +1198,21 @@ public class ModuleServicelmpl implements ModuleService {
             //control.put("bcdState",1);control.put("pcState",0);
 
             //添加control
-            mongoTemplate.updateFirst(new Query(
-                    new Criteria("info.id_C").is(id_C)
-                            .and("info.ref").is("a-core")), new Update().push("control.objMod", control), Asset.class);
+//            mongoTemplate.updateFirst(new Query(
+//                    new Criteria("info.id_C").is(id_C)
+//                            .and("info.ref").is("a-core")), new Update().push("control.objMod", control), Asset.class);
+            Asset assetCore = qt.getConfig(id_C,"a-core","info");
+            if (null != assetCore) {
+                qt.setMDContent(assetCore.getId(),qt.setJson("control.objMod", control), Asset.class);
+            }
 
             //查询用户  rolex
-            Query rolexQ =  new Query(
-                    new Criteria("_id").is(id_U));
-            rolexQ.fields().include("rolex.objComp."+id_C);
-
-            User user = mongoTemplate.findOne(rolexQ, User.class);
+//            Query rolexQ =  new Query(
+//                    new Criteria("_id").is(id_U));
+//            rolexQ.fields().include("rolex.objComp."+id_C);
+//
+//            User user = mongoTemplate.findOne(rolexQ, User.class);
+            User user = qt.getMDContent(id_U,"rolex", User.class);
 
             JSONObject indexMap = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
 
@@ -1222,16 +1229,18 @@ public class ModuleServicelmpl implements ModuleService {
             objMod.add(module);
 
             //添加rolex
-            mongoTemplate.updateFirst(rolexQ, new Update().set("rolex.objComp."+id_C,indexMap), User.class);
+//            mongoTemplate.updateFirst(rolexQ, new Update().set("rolex.objComp."+id_C,indexMap), User.class);
+            qt.setMDContent(id_U,qt.setJson("rolex.objComp."+id_C,indexMap), User.class);
 
 
             //添加role.objAuth
             this.obtainObjAuth(ref, bcdLevel,id_C);
 
             //获取init模块信息
-            Query Qcn_java = new Query(new Criteria("_id").is("cn_java"));
-            query.fields().include("newComp");
-            InitJava init = mongoTemplate.findOne(Qcn_java, InitJava.class);
+//            Query Qcn_java = new Query(new Criteria("_id").is("cn_java"));
+//            query.fields().include("newComp");
+//            InitJava init = mongoTemplate.findOne(Qcn_java, InitJava.class);
+            InitJava init = qt.getMDContent("cn_java","newComp", InitJava.class);
 
 
             //a-xxx
@@ -1267,9 +1276,10 @@ public class ModuleServicelmpl implements ModuleService {
 
 
         // 获取模块的初始化数据
-        Query initQ = new Query(new Criteria("_id").is("cn_java"));
-        initQ.fields().include("listTypeInit").include("cardInit").include("batchInit");
-        JSONObject initJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(initQ, InitJava.class));
+//        Query initQ = new Query(new Criteria("_id").is("cn_java"));
+//        initQ.fields().include("listTypeInit").include("cardInit").include("batchInit");
+//        JSONObject initJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(initQ, InitJava.class));
+        JSONObject initJson = (JSONObject) JSON.toJSON(qt.getMDContent("cn_java", qt.strList("listTypeInit", "cardInit", "batchInit"), InitJava.class));
 
         //列表可用卡片
         JSONObject listTypeInit = initJson.getJSONObject("listTypeInit");
@@ -1280,12 +1290,13 @@ public class ModuleServicelmpl implements ModuleService {
 
 
 
-        Query authQ = new Query(
-                new Criteria("info.id_C").is(id_C)
-                        .and("info.ref").is("a-auth"));
-        authQ.fields().include("role");
-        authQ.fields().include("def");
-        Asset asset = mongoTemplate.findOne(authQ, Asset.class);
+//        Query authQ = new Query(
+//                new Criteria("info.id_C").is(id_C)
+//                        .and("info.ref").is("a-auth"));
+//        authQ.fields().include("role");
+//        authQ.fields().include("def");
+//        Asset asset = mongoTemplate.findOne(authQ, Asset.class);
+        Asset asset = qt.getConfig(id_C,"a-auth",qt.strList("role","def"));
 
         JSONObject objGrpU = asset.getRole().getJSONObject("objAuth").getJSONObject(grpU);
 
@@ -1379,8 +1390,8 @@ public class ModuleServicelmpl implements ModuleService {
 
 
 
-        mongoTemplate.updateFirst(authQ,new Update().set("role.objAuth."+grpU,objGrpU),Asset.class);
-
+//        mongoTemplate.updateFirst(authQ,new Update().set("role.objAuth."+grpU,objGrpU),Asset.class);
+        qt.setMDContent(asset.getId(),qt.setJson("role.objAuth."+grpU,objGrpU), Asset.class);
     }
 
 
@@ -1416,7 +1427,8 @@ public class ModuleServicelmpl implements ModuleService {
         //真公司标志
         comp.setBcdNet(1);
         comp.setId(new_id_C);
-        mongoTemplate.insert(comp);
+//        mongoTemplate.insert(comp);
+        qt.addMD(comp);
 
         JSONObject rolex = new JSONObject(4);
 
@@ -1667,7 +1679,8 @@ public class ModuleServicelmpl implements ModuleService {
             System.out.println("start making Asset");
 
 
-            mongoTemplate.insert(asset);
+//            mongoTemplate.insert(asset);
+            qt.addMD(asset);
             System.out.println("ok inserted  "+ id);
 
             //指定ES索引

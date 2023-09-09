@@ -9,7 +9,10 @@ import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.request.HttpClientUtil;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
 
@@ -25,7 +28,18 @@ public class Ws {
 
     @Autowired
     private Qt qt;
-    public static final String appId = "KVB0qQq0fRArupojoL4WM9";
+//    public static final String appId = "KVB0qQq0fRArupojoL4WM9";
+    @Value("${thisConfig.appId}")
+    private String appId;
+//    static String url = "https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/push";
+    @Value("${thisConfig.url}")
+    private String url;
+//    private String appKey = "ShxgT3kg6s73NbuZeAe3I";
+//    private String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
+    @Value("${thisConfig.appKey}")
+    private String appKey;
+    @Value("${thisConfig.masterSecret}")
+    private String masterSecret;
     public static final String ws_mq_prefix = "wsl";
 
     /**
@@ -33,6 +47,14 @@ public class Ws {
      */
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
+
+    public void testConfig(){
+        System.out.println("输出测试:");
+        System.out.println(appId);
+        System.out.println(url);
+        System.out.println(appKey);
+        System.out.println(masterSecret);
+    }
 
     /**
      * 直接发送MQ信息方法
@@ -103,7 +125,6 @@ public class Ws {
         this.sendESOnly(logContent);
     }
 
-    static String url = "https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/push";
     /**
      * app发送推送方法
      * @param title	推送标题
@@ -305,8 +326,7 @@ public class Ws {
         }
     }
 
-    public void sendUsageFlowNew(JSONObject wrdN, String msg, String subType, String type,String thisB)
-    {
+    public void sendUsageFlowNew(JSONObject wrdN, String msg, String subType, String type,String thisB) {
         // set sys log format:
         LogFlow log = new LogFlow();
         log.setSysLog("6141b6797e8ac90760913fd0", subType, msg, 3, wrdN);
@@ -376,8 +396,6 @@ public class Ws {
     }
 
     private String getPushToken(){
-        String appKey = "ShxgT3kg6s73NbuZeAe3I";
-        String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
         long timestamp = System.currentTimeMillis();
 
         JSONObject tokenPost = new JSONObject();
@@ -482,6 +500,12 @@ public class Ws {
                 JSONObject mqIdArr = mqGroupId.getJSONObject(mqKey);
                 // 获取用户列表
                 logContent.setId_Us(JSONArray.parseArray(JSON.toJSONString(mqIdArr.keySet())));
+                JSONObject data = logContent.getData();
+                if (null == data) {
+                    data = new JSONObject();
+                }
+                data.put("pushUsers",pushUserObj);
+                logContent.setData(data);
                 // 发送mq信息
                 sendWSOnly(mqKey,logContent);
             }

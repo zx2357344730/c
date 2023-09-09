@@ -80,14 +80,14 @@ public class WxLoginServiceImpl implements WxLoginService {
      */
     public static final String ENCRYPTED_DATA = "encryptedData";
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+//    @Autowired
+//    private MongoTemplate mongoTemplate;
 
     @Autowired
     private LoginResult loginResult;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate0;
+//    @Autowired
+//    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private RetResult retResult;
@@ -504,10 +504,12 @@ WX_NOT_BIND.getCode(), null);
 
 
         // 判断是否存在这个 key
-        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+//        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (qt.getHasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+//            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(qt.getRDKeyStr(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
 
 //                JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone));
                 JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", id_WX));
@@ -594,7 +596,8 @@ WX_NOT_BIND.getCode(), null);
                 // 调用注册用户方法
                 registerUserUtils.registerUser(infoJson);
 
-                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+//                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+                qt.setRDF(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
                 return retResult.ok(CodeEnum.OK.getCode(), null);
             } else {
                 throw new ErrorResponseException(HttpStatus.OK, LoginEnum.

@@ -49,11 +49,11 @@ import java.util.StringTokenizer;
 public class SmsLoginServiceImpl implements SmsLoginService {
 
 
-    @Autowired
-    private StringRedisTemplate redisTemplate0;
+//    @Autowired
+//    private StringRedisTemplate redisTemplate0;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+//    @Autowired
+//    private MongoTemplate mongoTemplate;
 
     @Autowired
     private LoginResult loginResult;
@@ -128,10 +128,12 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 //            return retResult.ok(CodeEnum.OK.getCode(), result);
 //        }
         // 判断是否存在这个 key
-        if (redisTemplate0.hasKey(SMSTypeEnum.LOGIN.getSmsType() + phone)) {
+//        if (redisTemplate0.hasKey(SMSTypeEnum.LOGIN.getSmsType() + phone)) {
+        if (qt.getHasKey(SMSTypeEnum.LOGIN.getSmsType() + phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.LOGIN.getSmsType() + phone))) {
+//            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.LOGIN.getSmsType() + phone))) {
+            if (smsNum.equals(qt.getRDKeyStr(SMSTypeEnum.LOGIN.getSmsType() + phone))) {
 
                 String id_U = qt.getId_U(phone);
                 if (id_U.equals("")) {
@@ -185,10 +187,12 @@ public class SmsLoginServiceImpl implements SmsLoginService {
     public ApiResponse smsRegister(String phone, Integer phoneType, String smsNum,
                                    String clientType, String id_APP, String pic, JSONObject wrdN) throws IOException {
         // 判断是否存在这个 key
-            if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+//        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (qt.getHasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
 
                 // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-                if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+//            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(qt.getRDKeyStr(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
 
 //                    JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn","exact",phone));
                     String id_U = qt.getId_U(phone);
@@ -349,7 +353,8 @@ public class SmsLoginServiceImpl implements SmsLoginService {
                     // 调用注册用户方法
                     registerUserUtils.registerUser(info);
 
-                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
+//                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
+                    qt.setRDF(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
 
                     return retResult.ok(CodeEnum.OK.getCode(), null);
 
@@ -486,56 +491,92 @@ public class SmsLoginServiceImpl implements SmsLoginService {
         JSONObject result = new JSONObject();
         if (kara.equals(name)) {
             String mbn = "+8618682131169";
-            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
-            User user = mongoTemplate.findOne(mbnQue, User.class);
-            if (null != user && !"62318c9a890df37b8079952d".equals(user.getId())) {
-//                qt.delMD(user.getId(),User.class);
-//                JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
-//                JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
-//                qt.delES("lNUser",userLn.getString("id_ES"));
-//                qt.delES("lBUser",userLb.getString("id_ES"));
-                delFanCore(user.getId());
+//            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
+//            User user = mongoTemplate.findOne(mbnQue, User.class);
+            JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", mbn));
+            if (null != es && es.size() > 0 && !"62318c9a890df37b8079952d".equals(es.getJSONObject(0).getString("id_U"))) {
+                delFanCore(es.getJSONObject(0).getString("id_U"));
                 result.put("t_type", 1);
                 result.put("t_desc", name+" --- 操作成功!");
             } else {
                 result.put("t_type", 2);
                 result.put("t_desc", name+" --- 操作失败!");
             }
+//            if (null != user && !"62318c9a890df37b8079952d".equals(user.getId())) {
+////                qt.delMD(user.getId(),User.class);
+////                JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
+////                JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
+////                qt.delES("lNUser",userLn.getString("id_ES"));
+////                qt.delES("lBUser",userLb.getString("id_ES"));
+//                delFanCore(user.getId());
+//                result.put("t_type", 1);
+//                result.put("t_desc", name+" --- 操作成功!");
+//            } else {
+//                result.put("t_type", 2);
+//                result.put("t_desc", name+" --- 操作失败!");
+//            }
         } else if (ld.equals(name)) {
             String mbn = "+8618200806197";
-            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
-            User user = mongoTemplate.findOne(mbnQue, User.class);
-            if (null != user && !"6229913cf890c1140c720b71".equals(user.getId())) {
-//                qt.delMD(user.getId(),User.class);
-//                JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
-//                JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
-//                qt.delES("lNUser",userLn.getString("id_ES"));
-//                qt.delES("lBUser",userLb.getString("id_ES"));
-                delFanCore(user.getId());
+//            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
+//            User user = mongoTemplate.findOne(mbnQue, User.class);
+            JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", mbn));
+            if (null != es && es.size() > 0 && !"6229913cf890c1140c720b71".equals(es.getJSONObject(0).getString("id_U"))) {
+                delFanCore(es.getJSONObject(0).getString("id_U"));
                 result.put("t_type", 1);
                 result.put("t_desc", name+" --- 操作成功!");
             } else {
                 result.put("t_type", 2);
                 result.put("t_desc", name+" --- 操作失败!");
             }
+//            if (null != user && !"6229913cf890c1140c720b71".equals(user.getId())) {
+////                qt.delMD(user.getId(),User.class);
+////                JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
+////                JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", user.getId())).getJSONObject(0);
+////                qt.delES("lNUser",userLn.getString("id_ES"));
+////                qt.delES("lBUser",userLb.getString("id_ES"));
+//                delFanCore(user.getId());
+//                result.put("t_type", 1);
+//                result.put("t_desc", name+" --- 操作成功!");
+//            } else {
+//                result.put("t_type", 2);
+//                result.put("t_desc", name+" --- 操作失败!");
+//            }
         } else if (zj.equals(name)) {
             String mbn = "+8619906364962";
-            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
-            User user = mongoTemplate.findOne(mbnQue, User.class);
-            if (null != user && !"6256789ae1908c03460f906f".equals(user.getId())) {
-                delFanCore(user.getId());
+//            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
+//            User user = mongoTemplate.findOne(mbnQue, User.class);
+            JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", mbn));
+            if (null != es && es.size() > 0 && !"6256789ae1908c03460f906f".equals(es.getJSONObject(0).getString("id_U"))) {
+                delFanCore(es.getJSONObject(0).getString("id_U"));
                 result.put("t_type", 1);
                 result.put("t_desc", name+" --- 操作成功!");
             } else {
                 result.put("t_type", 2);
                 result.put("t_desc", name+" --- 操作失败!");
             }
+//            if (null != user && !"6256789ae1908c03460f906f".equals(user.getId())) {
+//                delFanCore(user.getId());
+//                result.put("t_type", 1);
+//                result.put("t_desc", name+" --- 操作成功!");
+//            } else {
+//                result.put("t_type", 2);
+//                result.put("t_desc", name+" --- 操作失败!");
+//            }
         } else if (kevin.equals(name)) {
             String mbn = "+8613929900723";
-            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
-            User user = mongoTemplate.findOne(mbnQue, User.class);
-            if (null != user && !"5f28bf314f65cc7dc2e60386".equals(user.getId())) {
-                delFanCore(user.getId());
+//            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
+//            User user = mongoTemplate.findOne(mbnQue, User.class);
+            JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", mbn));
+//            if (null != user && !"5f28bf314f65cc7dc2e60386".equals(user.getId())) {
+//                delFanCore(user.getId());
+//                result.put("t_type", 1);
+//                result.put("t_desc", name+" --- 操作成功!");
+//            } else {
+//                result.put("t_type", 2);
+//                result.put("t_desc", name+" --- 操作失败!");
+//            }
+            if (null != es && es.size() > 0 && !"5f28bf314f65cc7dc2e60386".equals(es.getJSONObject(0).getString("id_U"))) {
+                delFanCore(es.getJSONObject(0).getString("id_U"));
                 result.put("t_type", 1);
                 result.put("t_desc", name+" --- 操作成功!");
             } else {

@@ -75,6 +75,7 @@ public class GatewayFilter implements GlobalFilter, Ordered {
                 || url.equals("/file/cos/v1/get_multi_token")
                 || url.equals("/login/wx/v1/getAUN")
                 || url.equals("/login/wx/v1/getPhone")
+                || url.equals("/purchase/zj/v1/share")
 //                || url.equals("/file/picture/v1/picUpload")
         ){
             return chain.filter(exchange);

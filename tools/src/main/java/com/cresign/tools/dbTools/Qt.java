@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.enumeration.SMSTypeEnum;
 import com.cresign.tools.enumeration.ToolEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.*;
@@ -1369,6 +1370,14 @@ public class Qt {
         redisTemplate0.opsForHash().put(collection + ":" + hash, key, val.toString());
         redisTemplate0.expire(collection + ":" + hash, 1000, TimeUnit.HOURS);
     }
+    public void putRDAll(String key, JSONObject jsonObject){
+        redisTemplate0.opsForHash().putAll(key, jsonObject);
+        redisTemplate0.expire(key, 1000, TimeUnit.HOURS);
+    }
+    public void putRDAll(String key, JSONObject jsonObject,int time){
+        redisTemplate0.opsForHash().putAll(key, jsonObject);
+        redisTemplate0.expire(key, time, TimeUnit.HOURS);
+    }
 
     public void putRDHashMany(String collection, String hash, JSONObject data,  Long second)
     {
@@ -1385,6 +1394,12 @@ public class Qt {
     {
         redisTemplate0.opsForValue().set(collection + ":" + key, val.toString());
         redisTemplate0.expire(collection + ":" + key, 1000, TimeUnit.HOURS);
+    }
+    public void setRDF(String key,String val){
+        redisTemplate0.opsForValue().set(key, val, 3, TimeUnit.MINUTES);
+    }
+    public void incrementRD(String keyName,String hk,int l){
+        redisTemplate0.opsForHash().increment(keyName, hk, l);
     }
     public void setRDSet(String collection, String key, Object val, Long second)
     {
@@ -1414,6 +1429,9 @@ public class Qt {
 //            System.out.println("result:"+result);
         return JSONObject.parseObject(result);
     }
+    public Boolean getHasKey(String keyName){
+        return redisTemplate0.hasKey(keyName);
+    }
 //    public JSONObject getRDSet(String key)
 //    {
 //        String result = redisTemplate0.opsForValue().get(key);
@@ -1425,6 +1443,9 @@ public class Qt {
     public String getRDSetStr(String collection, String key)
     {
         return redisTemplate0.opsForValue().get(collection + ":" + key);
+    }
+    public String getRDKeyStr(String key){
+        return redisTemplate0.opsForValue().get(key);
     }
 
     public String getRDHashStr(String collection, String hash, String key)

@@ -41,13 +41,6 @@ import java.util.UUID;
 @ServerEndpoint("/wsU/msg/{uId}/{publicKey}/{token}/{appId}/{client}")
 @Component
 @Sharable
-//@RocketMQMessageListener(
-//        topic = "chatTopic",
-//        selectorExpression = "chatTap",
-//        messageModel = MessageModel.BROADCASTING,
-////        messageModel = MessageModel.CLUSTERING,
-//        consumerGroup = "topicF-chat"
-//)
 @RocketMQMessageListener(
         topic = WsId.topic,
         selectorExpression = WsId.tap,
@@ -552,10 +545,16 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @ver 版本号: 1.0.0
      */
     private static void sendLogCore(LogFlow logContent,boolean isMQ){
+        JSONObject pushUserOld = null;
         // 判断不是mq
         if (!isMQ) {
             // 获取发送用户列表
             ws.getUserIdsOrAppIds(logContent);
+        } else {
+            JSONObject data = logContent.getData();
+            if (null != data && null != data.getJSONObject("pushUsers")) {
+                pushUserOld = data.getJSONObject("pushUsers");
+            }
         }
         // 判断是下线信息
         boolean isOffline = "msg".equals(logContent.getLogType()) && "Offline".equals(logContent.getSubType());
@@ -574,7 +573,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 // 判断redis信息为空
                 if (null == rdInfo) {
                     // 添加推送
-                    pushUserObj.put(id_UNew,0);
+//                    pushUserObj.put(id_UNew,0);
+                    addPushUser(pushUserObj,pushUserOld,id_UNew);
                     continue;
                 }
                 // 判断用户存在
@@ -601,7 +601,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                             // 判断为app端
                             if (isApp) {
                                 // 添加到推送列表
-                                pushUserObj.put(id_UNew,0);
+//                                pushUserObj.put(id_UNew,0);
+                                addPushUser(pushUserObj,pushUserOld,id_UNew);
                             }
                             // 调用清理ws方法
                             closeWS(id_UNew,client,rdInfoData.getString("appId"));
@@ -655,7 +656,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                             }
                         }
                         // 添加到推送列表
-                        pushUserObj.put(id_UNew,0);
+//                        pushUserObj.put(id_UNew,0);
+                        addPushUser(pushUserObj,pushUserOld,id_UNew);
                     } else {
                         // 存储判断不为当前mq，默认为当前mq
                         boolean isSendMq = false;
@@ -838,9 +840,26 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 JSONObject mqIdArr = mqGroupId.getJSONObject(mqKey);
                 // 获取用户列表
                 logContent.setId_Us(JSONArray.parseArray(JSON.toJSONString(mqIdArr.keySet())));
+                JSONObject data = logContent.getData();
+                if (null == data) {
+                    data = new JSONObject();
+                }
+                data.put("pushUsers",pushUserObj);
+                logContent.setData(data);
                 // 发送mq信息
                 ws.sendWSOnly(mqKey,logContent);
             }
+        }
+    }
+
+    public static void addPushUser(JSONObject pushUserObj,JSONObject pushUserOld,String id_U){
+        if (null != pushUserOld) {
+            boolean b = pushUserOld.containsKey(id_U);
+            if (!b) {
+                pushUserObj.put(id_U,0);
+            }
+        } else {
+            pushUserObj.put(id_U,0);
         }
     }
 }

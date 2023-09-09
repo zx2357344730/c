@@ -39,8 +39,8 @@ import java.util.List;
 @Service
 public class MenuServiceImpl implements MenuService {
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+//    @Autowired
+//    private MongoTemplate mongoTemplate;
 
     @Autowired
     private AuthCheck authCheck;
@@ -82,13 +82,14 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public ApiResponse getMenuGrp(String id_C,String ref, String grpType) {
-        Query menuQuery = new Query(
-                new Criteria("info.id_C").is(id_C)
-                        .and("info.ref").is("a-auth")
-                            .and("menu.subMenus.ref").is(ref));
-        menuQuery.fields().include("menu.subMenus.$");
-        Asset asset = mongoTemplate.findOne(menuQuery, Asset.class);
+//        Query menuQuery = new Query(
+//                new Criteria("info.id_C").is(id_C)
+//                        .and("info.ref").is("a-auth")
+//                            .and("menu.subMenus.ref").is(ref));
+//        menuQuery.fields().include("menu.subMenus.$");
+//        Asset asset = mongoTemplate.findOne(menuQuery, Asset.class);
 //        Asset asset = qt.getConfig(id_C, "a-auth", "menu.subMenus");
+        Asset asset = qt.getConfig(id_C,"a-auth","menu");
 
         if (asset == null){
             throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, LoginEnum.MENU_DEL_ERROR.getCode(), null);

@@ -1,5 +1,6 @@
 package com.cresign.purchase.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.pojo.po.LogFlow;
 
@@ -13,4 +14,6 @@ import com.cresign.tools.pojo.po.LogFlow;
 public interface ZjTestService {
     ApiResponse getMdSetEs(String key,String esIndex,String condition,String val);
     ApiResponse sendLog(LogFlow logFlow);
+    ApiResponse shareSave(JSONObject data);
+    ApiResponse shareOpen(String shareId);
 }
