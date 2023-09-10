@@ -88,27 +88,27 @@ public class MenuController {
         }
     }
 
-    @SecurityParameter
-    @PostMapping("/v1/getMenuGrp")
-    public ApiResponse getMenuGrp(@RequestBody JSONObject reqJson) {
-        try {
-            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-            JSONArray canUpdate = authCheck.getUserSelectAuth(
-                    tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
-                    "lSAsset", "1003", "card");
-            if (!canUpdate.contains("menu"))
-            {
-                throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
-            }
-            return menuService.getMenuGrp(
-                    tokData.getString("id_C"),
-                    reqJson.getString("ref"),
-                    reqJson.getString("grpType")
-            );
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "MenuController.getMenuGrp", e);
-        }
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/getMenuGrp")
+//    public ApiResponse getMenuGrp(@RequestBody JSONObject reqJson) {
+//        try {
+//            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+//            JSONArray canUpdate = authCheck.getUserSelectAuth(
+//                    tokData.getString("id_U"), tokData.getString("id_C"),tokData.getString("grpU"),
+//                    "lSAsset", "1003", "card");
+//            if (!canUpdate.contains("menu"))
+//            {
+//                throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode() , null);
+//            }
+//            return menuService.getMenuGrp(
+//                    tokData.getString("id_C"),
+//                    reqJson.getString("ref"),
+//                    reqJson.getString("grpType")
+//            );
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "MenuController.getMenuGrp", e);
+//        }
+//    }
 
 
     @SecurityParameter

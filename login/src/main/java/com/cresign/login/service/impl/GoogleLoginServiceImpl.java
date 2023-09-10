@@ -6,13 +6,8 @@ import com.cresign.login.service.GoogleLoginService;
 import com.cresign.login.utils.googlelogin.GoogleCheckTokenUtils;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.dbTools.Qt;
-import com.cresign.tools.pojo.po.User;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 /**

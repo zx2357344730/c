@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -50,6 +51,30 @@ public class lSBOrder {
         this.pic = pic  == null? "": pic;
         this.lST = lST  == null? 0: lST;
         this.lCR = lCR  == null? 0: lCR;
+        this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+    }
+    public lSBOrder(OrderInfo info, String id_O) {
+        JSONObject wrdEmpty = new JSONObject();
+        wrdEmpty.put("cn","");
+
+        this.id_O = id_O;
+        this.id_OP = info.getId_OP();
+        this.id_C = info.getId_C();
+        this.id_CP = info.getId_CP() == null || id_CP == "" ? id_C: info.getId_CP();
+        this.id_CB = info.getId_CB();
+        this.id_CBP = info.getId_CBP() == null || id_CBP == "" ? id_CB: info.getId_CBP();
+        this.arrP = new JSONArray();
+        this.wrdN = info.getWrdN()  == null? (JSONObject) wrdEmpty.clone(): info.getWrdN();
+        this.wrddesc = wrddesc  == null? (JSONObject) wrdEmpty.clone() : info.getWrddesc();
+//        this.wrddescB = wrddescB == null? (JSONObject) wrdEmpty.clone(): info.getWrddescB();
+        this.grp = info.getGrp() == null? "1000": info.getGrp();
+        this.grpB = info.getGrpB() == null? "1000": info.getGrpB();
+        this.ref = info.getRef() == null? "": info.getRef();
+        this.refB = info.getRefB() == null? "": info.getRefB();
+        this.pic = info.getPic()  == null? "": info.getPic();
+        this.lST = info.getLST()  == null? 0: info.getLST();
+        this.lCR = info.getLCR()  == null? 0: info.getLCR();
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }

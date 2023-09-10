@@ -274,7 +274,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 // 发送到前端
                 this.sendMessage(stringMap,keyAes,true);
             }
-            ws.testConfig();
+//            ws.testConfig();
         } catch (Exception e){
             System.out.println("出现异常:"+e.getMessage());
             e.printStackTrace();

@@ -233,21 +233,21 @@ public class ModuleController {
         }
     }
 
-    @SecurityParameter
-    @PostMapping("/v1/addModule")
-    public ApiResponse addModule(@RequestBody JSONObject reqJson) throws IOException {
-        try {
-            return moduleService.addModule(
-                    //"5f28bf314f65cc7dc2e60346",
-                    getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-                    reqJson.getString("oid"),
-                    reqJson.getString("id_C"),
-                    reqJson.getString("ref"),
-                    reqJson.getInteger("bcdLevel"));
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "ModuleController.addModule", e);
-        }
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/addModule")
+//    public ApiResponse addModule(@RequestBody JSONObject reqJson) throws IOException {
+//        try {
+//            return moduleService.addModule(
+//                    //"5f28bf314f65cc7dc2e60346",
+//                    getTokenOfUserId.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
+//                    reqJson.getString("oid"),
+//                    reqJson.getString("id_C"),
+//                    reqJson.getString("ref"),
+//                    reqJson.getInteger("bcdLevel"));
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "ModuleController.addModule", e);
+//        }
+//    }
 
     @SecurityParameter
     @PostMapping("/v1/addBlankComp")

@@ -167,7 +167,7 @@ public interface ModuleService {
      * @updated 2021/3/5 15:24
      * @return java.lang.String
      */
-    ApiResponse addModule (String id_U, String oid, String id_C, String ref, Integer bcdLevel) throws IOException;
+//    ApiResponse addModule (String id_U, String oid, String id_C, String ref, Integer bcdLevel) throws IOException;
 
     /**
      * 新建公司并添加默认模块

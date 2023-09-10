@@ -11,7 +11,6 @@ import com.cresign.login.utils.wxlogin.applets.WXAesCbcUtil;
 import com.cresign.login.utils.wxlogin.web.WxAuthUtil;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.dbTools.CosUpload;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
@@ -26,28 +25,17 @@ import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.cresign.tools.request.HttpClientUtil;
 import org.apache.commons.lang3.ObjectUtils;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * ##description:
@@ -497,11 +485,11 @@ WX_NOT_BIND.getCode(), null);
 
         // 判断是否存在这个 key
 //        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
-        if (qt.getHasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (qt.hasRDKey(SMSTypeEnum.REGISTER.getSmsType(), phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
 //            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
-            if (smsNum.equals(qt.getRDKeyStr(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(qt.getRDSetStr(SMSTypeEnum.REGISTER.getSmsType(), phone))) {
 
 //                JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone));
                 JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", id_WX));
@@ -589,7 +577,7 @@ WX_NOT_BIND.getCode(), null);
                 registerUserUtils.registerUser(infoJson);
 
 //                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
-                qt.setRDF(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
+                qt.setRDSet(SMSTypeEnum.LOGIN.getSmsType(), phone, smsNum, 180L);
                 return retResult.ok(CodeEnum.OK.getCode(), null);
             } else {
                 throw new ErrorResponseException(HttpStatus.OK, LoginEnum.

@@ -20,18 +20,14 @@ import com.cresign.tools.uuid.UUID19;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * ##description:
@@ -168,7 +164,7 @@ public class RedirectServiceImpl implements RedirectService {
                 JSONObject qrShareCode = prod.getQrShareCode();
                 String code_token = qrShareCode.getString("token");
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                if (qt.getHasKey(SCANCODE_SHAREPROD + code_token)) {
+                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
                     throw new ErrorResponseException(HttpStatus.OK, SearchEnum.PROD_CODE_IS_EXIT.getCode(), code_token);
                 }
             }
@@ -191,8 +187,7 @@ public class RedirectServiceImpl implements RedirectService {
             jsonObject.put("count", data.getString("count"));
             jsonObject.put("used_count", "0");
 //            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-//            qt.putRDAll(keyName,jsonObject);
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token, jsonObject, 600000L);
+            qt.putRDHashMany(SCANCODE_SHAREPROD,token, jsonObject, -1L);
         } else if ("time".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("endTimeSec", data.getString("endTimeSec"));
@@ -242,7 +237,7 @@ public class RedirectServiceImpl implements RedirectService {
                 JSONObject qrShareCode = user.getQrShareCode();
                 String code_token = qrShareCode.getString("token");
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                if (qt.getHasKey(SCANCODE_SHAREPROD + code_token)) {
+                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
                     throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
 PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
@@ -270,8 +265,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
             jsonObject.put("count", data.getString("count"));
             jsonObject.put("used_count", "0");
 //            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-//            qt.putRDAll(keyName,jsonObject);
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,600000L);
+            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,-1L);
         } else if ("time".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("endTimeSec", data.getString("endTimeSec"));
@@ -319,7 +313,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
                 JSONObject qrShareCode = comp.getQrShareCode();
                 String code_token = qrShareCode.getString("token");
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                if (qt.getHasKey(SCANCODE_SHAREPROD + code_token)) {
+                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
                     throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
 PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
@@ -343,8 +337,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
             jsonObject.put("count", data.getString("count"));
             jsonObject.put("used_count", "0");
 //            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-//            qt.putRDAll(keyName, jsonObject);
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,600000L);
+            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,-1L);
         } else if ("time".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("endTimeSec", data.getString("endTimeSec"));
@@ -393,7 +386,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
                 JSONObject qrShareCode = order.getQrShareCode();
                 String code_token = qrShareCode.getString("token");
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                if (qt.getHasKey(SCANCODE_SHAREPROD + code_token)) {
+                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
                     throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
 PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
@@ -425,8 +418,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
             jsonObject.put("count", data.getString("count"));
             jsonObject.put("used_count", "0");
 //            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-//            qt.putRDAll(keyName, jsonObject);
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,600000L);
+            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,-1L);
         } else if ("time".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("endTimeSec", data.getString("endTimeSec"));
@@ -648,7 +640,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         if (StringUtils.isNotEmpty(comp.getJoinCode().getString("token"))) {
             String code_token = comp.getJoinCode().getString("token");
 //            if (redisTemplate0.hasKey(SCANCODE_JOINCOMP + code_token)) {
-            if (qt.getHasKey(SCANCODE_JOINCOMP + code_token)) {
+            if (qt.hasRDKey(SCANCODE_JOINCOMP, code_token)) {
 //                redisTemplate0.delete(SCANCODE_JOINCOMP + code_token);
                 qt.delRD(SCANCODE_JOINCOMP , code_token);
             }
@@ -763,10 +755,10 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
     @Override
     public ApiResponse scanCode(String token,String listType , String id_U) {
 
-        String keyName = SCANCODE_SHAREPROD + token;
+//        String keyName = SCANCODE_SHAREPROD + token;
 
 //        Boolean hasKey = redisTemplate0.hasKey(keyName);
-        Boolean hasKey = qt.getHasKey(keyName);
+        Boolean hasKey = qt.hasRDKey(SCANCODE_SHAREPROD, token);
         if (!hasKey) {
             throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
 PROD_CODE_OVERDUE.getCode(),null);
@@ -839,7 +831,7 @@ PROD_CODE_OVERDUE.getCode(), null);
                     }
                     //使用次数+1
 //                    redisTemplate0.opsForHash().increment(keyName, "used_count", 1);
-                    qt.incrementRD(keyName,"used_count", 1);
+                    qt.incRD(SCANCODE_SHAREPROD, token,"used_count", 1);
                 } catch (RuntimeException e) {
 //                    redisTemplate0.opsForHash().put(keyName, "used_count", String.valueOf(used_count));
                     qt.putRDHash(SCANCODE_SHAREPROD, token,"used_count", String.valueOf(used_count));
@@ -911,7 +903,7 @@ PROD_CODE_OVERDUE.getCode(), null);
         if (StringUtils.isNotEmpty(prod.getQrShareCode().getString("token"))) {
             String code_token = prod.getQrShareCode().getString("token");
 //            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-            if (qt.getHasKey(SCANCODE_SHAREPROD + code_token)) {
+            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
 //                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
                 qt.delRD(SCANCODE_SHAREPROD , code_token);
             }
@@ -972,7 +964,7 @@ PROD_CODE_OVERDUE.getCode(), null);
         if (StringUtils.isNotEmpty(user.getQrShareCode().getString("token"))) {
             String code_token = user.getQrShareCode().getString("token");
 //            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-            if (qt.getHasKey(SCANCODE_SHAREPROD + code_token)) {
+            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
 //                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
                 qt.delRD(SCANCODE_SHAREPROD, code_token);
             }
@@ -1032,7 +1024,7 @@ PROD_CODE_OVERDUE.getCode(), null);
         if (StringUtils.isNotEmpty(comp.getQrShareCode().getString("token"))) {
             String code_token = comp.getQrShareCode().getString("token");
 //            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-            if (qt.getHasKey(SCANCODE_SHAREPROD + code_token)) {
+            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
 //                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
                 qt.delRD(SCANCODE_SHAREPROD, code_token);
             }
@@ -1091,7 +1083,7 @@ PROD_CODE_OVERDUE.getCode(), null);
         if (StringUtils.isNotEmpty(order.getQrShareCode().getString("token"))) {
             String code_token = order.getQrShareCode().getString("token");
 //            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-            if (qt.getHasKey(SCANCODE_SHAREPROD + code_token)) {
+            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
 //                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
                 qt.delRD(SCANCODE_SHAREPROD, code_token);
             }

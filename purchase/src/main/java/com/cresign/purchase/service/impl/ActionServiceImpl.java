@@ -2662,7 +2662,9 @@ public class ActionServiceImpl implements ActionService {
             // get the size of oItem, so I can append new "task" to it
             // 获取oItem的大小，这样我就可以向它附加新的“任务”
             indexProb = actData.getInteger("size");
-            priorProb = actData.getJSONArray("oItemArray").getJSONObject(indexProb - 1).getInteger("wn0prior");
+            if (indexProb > 0) {
+                priorProb = actData.getJSONArray("oItemArray").getJSONObject(indexProb - 1).getInteger("wn0prior");
+            }
         }
 
         OrderAction orderAction = JSONObject.parseObject(JSON.toJSONString(probSet.get("orderAction")),OrderAction.class);
@@ -2686,10 +2688,10 @@ public class ActionServiceImpl implements ActionService {
 //        java.lang.NullPointerException at com.cresign.purchase.service.impl.ActionServiceImpl.createQuest(ActionServiceImpl.java:1412) at com.cresign.purchase.service.impl.ActionServiceImpl$$FastClassBySpringCGLIB$$71b9cf0f.invoke(<generated>) at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218) at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:685) at com.cresign.purchase.service.impl.ActionServiceImpl$$EnhancerBySpringCGLIB$$2f684ac3.createQuest(<generated>) at com.cresign.purchase.controller.ActionController.createQuest$original$vSjocHQQ(ActionController.java:259) at com.cresign.purchase.controller.ActionController.createQuest$original$vSjocHQQ$accessor$5fjkzAdo(ActionController.java) at com.cresign.purchase.controller.ActionController$auxiliary$6PMXB0hl.call(Unknown Source) at
         JSONArray allAction = actData.getJSONArray("actionArray"); // this is action.objAction []
 //
-        if (indexProb - 1 >= 0) {
-            prtPrev.add(qt.setJson("id_O", id_O, "index", indexProb - 1));
-            allAction.getJSONObject(indexProb - 1).getJSONArray("prtNext").add(qt.setJson("id_O", id_O, "index", indexProb));
-        }
+//        if (indexProb - 1 >= 0) {
+//            prtPrev.add(qt.setJson("id_O", id_O, "index", indexProb - 1));
+//            allAction.getJSONObject(indexProb - 1).getJSONArray("prtNext").add(qt.setJson("id_O", id_O, "index", indexProb));
+//        }
 
         OrderOItem unitOItem = new OrderOItem ("",id_O,"",myCompId,myCompId,
                 id_Prob,indexProb,"","",
@@ -2710,7 +2712,8 @@ public class ActionServiceImpl implements ActionService {
         System.out.println("probData"+probData);
 
         OrderAction unitAction = new OrderAction(0,1,7,1,probData.getString("id_OP"),probData.getString("refOP"),"",
-                id_O,index,unitOItem.getRKey(),0,indexProb == 0 ? 0: 1, new JSONArray(),upPrnt,new JSONArray(),prtPrev,
+//                id_O,index,unitOItem.getRKey(),0,indexProb, new JSONArray(),upPrnt,new JSONArray(),prtPrev,
+                id_O,index,unitOItem.getRKey(),0,indexProb, new JSONArray(),upPrnt,new JSONArray(),new JSONArray(),
                 probData.getJSONObject("wrdNP"),probData.getJSONObject("wrdN"));
 
         allAction.add(unitAction);
@@ -2724,7 +2727,7 @@ public class ActionServiceImpl implements ActionService {
                 id_FQ,"stateChg", id_U,grpU,orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),id_O, id_Prob,indexProb, myCompId,myCompId,
                 probData.getString("pic"),dep,"准备解决",3,probData.getJSONObject("wrdN"),wrdNU);
 
-               logProb.setLogData_action(unitAction,unitOItem);
+        logProb.setLogData_action(unitAction,unitOItem);
         logProb.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
 
 //        logProb.setActionData(unitAction.getBisactivate(),unitAction.getBcdStatus(),unitAction.getId_Us(),1.0,
@@ -2737,13 +2740,6 @@ public class ActionServiceImpl implements ActionService {
         qt.setMDContent(id_Prob, probResult, Order.class);
 
         ws.sendWS(logProb);
-
-//        LogFlow logL = new LogFlow("duraflow",id_FC,
-//                id_FQ,"userStat", id_U,grpU,orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),id_O, id_Prob,indexProb, myCompId,myCompId,
-//                probData.getString("pic"),dep,"任务推送",3,probData.getJSONObject("wrdN"),wrdNU);
-//
-//        logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
-//        ws.sendWS(logL);
 
         return retResult.ok(CodeEnum.OK.getCode(), "done");
 

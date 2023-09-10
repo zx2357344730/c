@@ -13,7 +13,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.cresign.tools.enumeration.DateEnum;
-import com.cresign.tools.enumeration.SMSTypeEnum;
 import com.cresign.tools.enumeration.ToolEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.*;
@@ -93,6 +92,25 @@ public class Qt {
     public <T> T  getMDContent(String id,  List<String>  fields, Class<T> classType) {
 
         Query query = new Query(new Criteria("_id").is(id));
+        if (fields != null) {
+
+            fields.forEach(query.fields()::include);
+        }
+        T result;
+        try {
+            result = mongoTemplate.findOne(query, classType);
+        } catch (Exception e){
+            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
+        }
+        return result;
+    }
+
+    public <T> T  getMDContentAP(String id,  JSONObject AP, List<String>  fields, Class<T> classType) {
+
+        Query query = new Query(new Criteria("_id").is(id)
+                .and(AP.getString("key")).is(AP.getString("val")));
+
         if (fields != null) {
 
             fields.forEach(query.fields()::include);
@@ -414,6 +432,38 @@ public class Qt {
     }
 
 
+    public void setMDContentAP(String id,  JSONObject AP, JSONObject keyVal, Class<?> classType) {
+        try {
+        Query query = new Query(new Criteria("_id").is(id)
+                .and(AP.getString("key")).is(AP.getString("val")));
+
+            Update update = new Update();
+            for (String key : keyVal.keySet())
+            {
+                Object val = keyVal.get(key);
+                if (val == null) {
+                    update.unset(key);
+                } else {
+                    if (key.equals("info"))
+                    {
+                        JSONObject valJson = this.toJson(val);
+                        valJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                    }
+                    update.set(key, val);
+                }
+            }
+            if (!keyVal.keySet().contains("info")) {
+                update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+            }
+            update.inc("tvs", 1);
+            UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
+            System.out.println("inSetMD" + updateResult);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
+        }
+    }
     /**
      * set修改mongo
      * @author Kevin
@@ -1209,6 +1259,11 @@ public class Qt {
                     {
                         conditionMap.put("filtKey", filtKey + ".cn");
                     }
+                    if (filtKey.startsWith("ref"))
+                    {
+                        conditionMap.put("method", "prefix");
+                    }
+
                 }
 
                 switch (method) {
@@ -1383,14 +1438,7 @@ public class Qt {
         redisTemplate0.opsForHash().put(collection + ":" + hash, key, val.toString());
         redisTemplate0.expire(collection + ":" + hash, 1000, TimeUnit.HOURS);
     }
-    public void putRDAll(String key, JSONObject jsonObject){
-        redisTemplate0.opsForHash().putAll(key, jsonObject);
-        redisTemplate0.expire(key, 1000, TimeUnit.HOURS);
-    }
-    public void putRDAll(String key, JSONObject jsonObject,int time){
-        redisTemplate0.opsForHash().putAll(key, jsonObject);
-        redisTemplate0.expire(key, time, TimeUnit.HOURS);
-    }
+
 
     public void putRDHashMany(String collection, String hash, JSONObject data,  Long second)
     {
@@ -1403,17 +1451,13 @@ public class Qt {
         redisTemplate0.expire(collection + ":" + hash, second, TimeUnit.SECONDS);
     }
 
-    public void setRDSet(String collection, String key, Object val)
+    public void incRD(String collection, String keyName,String key,int count)
     {
-        redisTemplate0.opsForValue().set(collection + ":" + key, val.toString());
-        redisTemplate0.expire(collection + ":" + key, 1000, TimeUnit.HOURS);
+        redisTemplate0.opsForHash().increment(collection + ":" + keyName, key, count);
+
     }
-    public void setRDF(String key,String val){
-        redisTemplate0.opsForValue().set(key, val, 3, TimeUnit.MINUTES);
-    }
-    public void incrementRD(String keyName,String hk,int l){
-        redisTemplate0.opsForHash().increment(keyName, hk, l);
-    }
+
+
     public void setRDSet(String collection, String key, Object val, Long second)
     {
         redisTemplate0.opsForValue().set(collection + ":" + key, val.toString(), second, TimeUnit.SECONDS);
@@ -1442,23 +1486,10 @@ public class Qt {
 //            System.out.println("result:"+result);
         return JSONObject.parseObject(result);
     }
-    public Boolean getHasKey(String keyName){
-        return redisTemplate0.hasKey(keyName);
-    }
-//    public JSONObject getRDSet(String key)
-//    {
-//        String result = redisTemplate0.opsForValue().get(key);
-//
-////            System.out.println("result:"+result);
-//        return JSONObject.parseObject(result);
-//    }
 
     public String getRDSetStr(String collection, String key)
     {
         return redisTemplate0.opsForValue().get(collection + ":" + key);
-    }
-    public String getRDKeyStr(String key){
-        return redisTemplate0.opsForValue().get(key);
     }
 
     public String getRDHashStr(String collection, String hash, String key)
@@ -1511,7 +1542,12 @@ public class Qt {
         return jsonArray;
     }
 
-    public boolean checkNull(Object jsonDb, JSONArray arrayField) {
+    public boolean isNotNull(Object jsonDb, JSONArray arrayField) {
+        // 1. "info.wrdN.cn"
+        // 2. "order.oItem.objItem[4].lST"
+        // 2. XXXXX "order.oItem.objItem[].lST"
+        // 3. ["info.abc", "order.oItem.objItem"]
+        
         JSONArray arrayResult = new JSONArray();
         for (int i = 0; i < arrayField.size(); i++) {
             String field = arrayField.getString(i);

@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.MenuService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
@@ -21,9 +20,6 @@ import com.cresign.tools.pojo.po.assetCard.MainMenuBO;
 import com.cresign.tools.pojo.po.assetCard.SubMenuBO;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,26 +76,26 @@ public class MenuServiceImpl implements MenuService {
     }
 
 
-    @Override
-    public ApiResponse getMenuGrp(String id_C,String ref, String grpType) {
-//        Query menuQuery = new Query(
-//                new Criteria("info.id_C").is(id_C)
-//                        .and("info.ref").is("a-auth")
-//                            .and("menu.subMenus.ref").is(ref));
-//        menuQuery.fields().include("menu.subMenus.$");
-//        Asset asset = mongoTemplate.findOne(menuQuery, Asset.class);
-//        Asset asset = qt.getConfig(id_C, "a-auth", "menu.subMenus");
-        Asset asset = qt.getConfig(id_C,"a-auth","menu");
-
-        if (asset == null){
-            throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, LoginEnum.MENU_DEL_ERROR.getCode(), null);
-        }
-
-
-        // 当前菜单数组的限定组别
-        //asset.getMenu().getJSONArray("subMenus").getJSONObject(0).getJSONArray(grpType);
-        return retResult.ok(CodeEnum.OK.getCode(), asset.getMenu().getJSONArray("subMenus").getJSONObject(0).getJSONArray(grpType));
-    }
+//    @Override
+//    public ApiResponse getMenuGrp(String id_C,String ref, String grpType) {
+////        Query menuQuery = new Query(
+////                new Criteria("info.id_C").is(id_C)
+////                        .and("info.ref").is("a-auth")
+////                            .and("menu.subMenus.ref").is(ref));
+////        menuQuery.fields().include("menu.subMenus.$");
+////        Asset asset = mongoTemplate.findOne(menuQuery, Asset.class);
+////        Asset asset = qt.getConfig(id_C, "a-auth", "menu.subMenus");
+//        Asset asset = qt.getConfig(id_C,"a-auth","menu");
+//
+//        if (asset == null){
+//            throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, LoginEnum.MENU_DEL_ERROR.getCode(), null);
+//        }
+//
+//
+//        // 当前菜单数组的限定组别
+//        //asset.getMenu().getJSONArray("subMenus").getJSONObject(0).getJSONArray(grpType);
+//        return retResult.ok(CodeEnum.OK.getCode(), asset.getMenu().getJSONArray("subMenus").getJSONObject(0).getJSONArray(grpType));
+//    }
 
 
     @Override
@@ -186,10 +182,10 @@ public class MenuServiceImpl implements MenuService {
             }
             //judge = true的话证明mainMenusData里面控制台被删除，去cn_java找回来（默认不给删除）
             if (judge){
-                Query initQ = new Query(
-                        new Criteria("_id").is("cn_java")
-                            .and("newComp.a-auth.menu.mainMenus.1001.ref").is("PPP"));
-                initQ.fields().include("newComp.a-auth.menu.mainMenus.1001.$");
+//                Query initQ = new Query(
+//                        new Criteria("_id").is("cn_java")
+//                            .and("newComp.a-auth.menu.mainMenus.1001.ref").is("PPP"));
+//                initQ.fields().include("newComp.a-auth.menu.mainMenus.1001.$");
 //                InitJava initJava = mongoTemplate.findOne(initQ, InitJava.class);
                 InitJava initJava = qt.getInitData();
                 //JSONObject转成MainMenuBO实体类添加进mainMenusData数组

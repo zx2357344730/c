@@ -17,14 +17,9 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.uuid.UUID19;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.Map;
 
 /**
@@ -58,9 +53,9 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     @Autowired
     private Qt qt;
 
-    public static final String SCANCODE_LOGINCOMP = "scancode_login:";
+    public static final String SCANCODE_LOGINCOMP = "scancode_login";
 
-    public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_LOGIN_COMP_T = "https://www.cresign.cn/qrCodeTest?qrType=logincomp&t=";
+    public static final String QR_URL = "https://www.cresign.cn/qrCodeTest?qrType=logincomp&t=";
 
 //    /**
 //     * 根据id_U修改appId
@@ -282,22 +277,10 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     public ApiResponse generateLoginCode(String id) {
 
         String token = UUID19.uuid();
-//
-//        JSONObject qrObject = new JSONObject();
-//
-//        qrObject.put("id", id);
-//        qrObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//
-//        String keyName = SCANCODE_LOGINCOMP + token;
-//
-//        qrObject.put("endTimeSec", "300");
-//        redisTemplate0.opsForHash().putAll(keyName, qrObject);
-//        redisTemplate0.expire(keyName, 300, TimeUnit.SECONDS);
 
-        qt.putRDHashMany("scancode_login", token, qt.setJson("id", id, "tmk",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()),
+        qt.putRDHashMany(SCANCODE_LOGINCOMP, token, qt.setJson("id", id, "tmk",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()),
         "tdur", "300"), 300L);
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_LOGIN_COMP_T + token;
-        System.out.println(token);
+        String url = QR_URL + token;
         return retResult.ok(CodeEnum.OK.getCode(), url);
 
     }
@@ -305,13 +288,10 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     @Override
     public ApiResponse scanLoginCode( String token, String id_U) {
 
-        String keyName = SCANCODE_LOGINCOMP + token;
-//        Boolean hasKey = redisTemplate0.hasKey(keyName);
-        Boolean hasKey = qt.getHasKey(keyName);
+        Boolean hasKey = qt.hasRDKey(SCANCODE_LOGINCOMP, token);
 
         if (!hasKey) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-LOGIN_CODE_OVERDUE.getCode(),null);
+            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_CODE_OVERDUE.getCode(),null);
         }
 
         // 获取到整个hash

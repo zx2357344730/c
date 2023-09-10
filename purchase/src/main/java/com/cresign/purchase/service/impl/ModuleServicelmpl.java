@@ -27,11 +27,6 @@ import com.tencentcloudapi.tmt.v20180321.TmtClient;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchRequest;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -1163,104 +1158,104 @@ public class ModuleServicelmpl implements ModuleService {
     }
 
 
-        @Override
-    public ApiResponse addModule(String id_U, String oid, String id_C, String ref, Integer bcdLevel) throws IOException {
-        //判断公司负责人
-//        Query query = new Query(
-//                new Criteria("info.id_C").is(id_C)
-//                        .and("info.ref").is("a-auth"));
-//        query.fields().include("def.id_UM");
-//        Asset asset = mongoTemplate.findOne(query, Asset.class);
-        Asset asset = qt.getConfig(id_C,"a-auth","def");
-        if (asset != null || asset.getDef().get("id_UM").equals(id_U)) {
-
-            //查询redis订单信息
-//            String order = redisTemplate0.opsForValue().get(oid);
-            String order = qt.getRDKeyStr(oid);
-
-            JSONObject redisMap = (JSONObject) JSON.parse(order);
-
-            if (redisMap == null){
-
-                throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, PurchaseEnum.REDIS_ORDER_NO_HAVE.getCode(), null);
-            }
-
-
-
-            //Map<String,Object> control = new HashMap<>();
-            JSONObject control = new JSONObject();
-            control.put("ref",ref);control.put("wcnN",redisMap.getString("wcnN"));
-            control.put("bcdLevel",bcdLevel);control.put("wn0buyUser",redisMap.getString("wn0buyUser"));
-            control.put("id_P",redisMap.getString("id_P"));control.put("wn2PaidPrice",redisMap.getDouble("wn2PaidPrice"));
-            control.put("wn2EstPrice",redisMap.getDouble("wn2EstPrice"));control.put("lCR",redisMap.getString("lCR"));
-            control.put("amk",redisMap.getString("amk"));control.put("tmk",redisMap.getString("tmk"));
-            control.put("tfin",redisMap.getString("tfin"));control.put("id_U",new JSONArray().fluentAdd(id_U));
-            //control.put("bcdState",1);control.put("pcState",0);
-
-            //添加control
-//            mongoTemplate.updateFirst(new Query(
-//                    new Criteria("info.id_C").is(id_C)
-//                            .and("info.ref").is("a-core")), new Update().push("control.objMod", control), Asset.class);
-            Asset assetCore = qt.getConfig(id_C,"a-core","info");
-            if (null != assetCore) {
-                qt.setMDContent(assetCore.getId(),qt.setJson("control.objMod", control), Asset.class);
-            }
-
-            //查询用户  rolex
-//            Query rolexQ =  new Query(
-//                    new Criteria("_id").is(id_U));
-//            rolexQ.fields().include("rolex.objComp."+id_C);
+//        @Override
+//    public ApiResponse addModule(String id_U, String oid, String id_C, String ref, Integer bcdLevel) throws IOException {
+//        //判断公司负责人
+////        Query query = new Query(
+////                new Criteria("info.id_C").is(id_C)
+////                        .and("info.ref").is("a-auth"));
+////        query.fields().include("def.id_UM");
+////        Asset asset = mongoTemplate.findOne(query, Asset.class);
+//        Asset asset = qt.getConfig(id_C,"a-auth","def");
+//        if (asset != null || asset.getDef().get("id_UM").equals(id_U)) {
 //
-//            User user = mongoTemplate.findOne(rolexQ, User.class);
-            User user = qt.getMDContent(id_U,"rolex", User.class);
-
-            JSONObject indexMap = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
-
-
-            JSONArray objMod = indexMap.getJSONArray("objMod");
-
-
-            JSONObject module = new JSONObject(4);
-            module.put("bcdState", 1);
-            module.put("tfin", redisMap.getString("tfin"));
-            module.put("bcdLevel", bcdLevel);
-            module.put("ref", ref);
-
-            objMod.add(module);
-
-            //添加rolex
-//            mongoTemplate.updateFirst(rolexQ, new Update().set("rolex.objComp."+id_C,indexMap), User.class);
-            qt.setMDContent(id_U,qt.setJson("rolex.objComp."+id_C,indexMap), User.class);
-
-
-            //添加role.objAuth
-            this.obtainObjAuth(ref, bcdLevel,id_C);
-
-            //获取init模块信息
-//            Query Qcn_java = new Query(new Criteria("_id").is("cn_java"));
-//            query.fields().include("newComp");
-//            InitJava init = mongoTemplate.findOne(Qcn_java, InitJava.class);
-            InitJava init = qt.getMDContent("cn_java","newComp", InitJava.class);
-
-
-            //a-xxx
-            JSONObject object = init.getNewComp().getJSONObject(ref);
-            object.getJSONObject("info").put("id_C",id_C);
-
-            //调用
-            this.createAsset(id_C, qt.GetObjectId(), ref, object);
-
-
-            //生成order订单  未做
-
-            return retResult.ok(CodeEnum.OK.getCode(),null);
-
-
-        }
-
-        throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.NO_CHARGE_USER.getCode(), null);
-
-    }
+//            //查询redis订单信息
+////            String order = redisTemplate0.opsForValue().get(oid);
+//            String order = qt.getRDSetStr(oid);
+//
+//            JSONObject redisMap = (JSONObject) JSON.parse(order);
+//
+//            if (redisMap == null){
+//
+//                throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, PurchaseEnum.REDIS_ORDER_NO_HAVE.getCode(), null);
+//            }
+//
+//
+//
+//            //Map<String,Object> control = new HashMap<>();
+//            JSONObject control = new JSONObject();
+//            control.put("ref",ref);control.put("wcnN",redisMap.getString("wcnN"));
+//            control.put("bcdLevel",bcdLevel);control.put("wn0buyUser",redisMap.getString("wn0buyUser"));
+//            control.put("id_P",redisMap.getString("id_P"));control.put("wn2PaidPrice",redisMap.getDouble("wn2PaidPrice"));
+//            control.put("wn2EstPrice",redisMap.getDouble("wn2EstPrice"));control.put("lCR",redisMap.getString("lCR"));
+//            control.put("amk",redisMap.getString("amk"));control.put("tmk",redisMap.getString("tmk"));
+//            control.put("tfin",redisMap.getString("tfin"));control.put("id_U",new JSONArray().fluentAdd(id_U));
+//            //control.put("bcdState",1);control.put("pcState",0);
+//
+//            //添加control
+////            mongoTemplate.updateFirst(new Query(
+////                    new Criteria("info.id_C").is(id_C)
+////                            .and("info.ref").is("a-core")), new Update().push("control.objMod", control), Asset.class);
+//            Asset assetCore = qt.getConfig(id_C,"a-core","info");
+//            if (null != assetCore) {
+//                qt.setMDContent(assetCore.getId(),qt.setJson("control.objMod", control), Asset.class);
+//            }
+//
+//            //查询用户  rolex
+////            Query rolexQ =  new Query(
+////                    new Criteria("_id").is(id_U));
+////            rolexQ.fields().include("rolex.objComp."+id_C);
+////
+////            User user = mongoTemplate.findOne(rolexQ, User.class);
+//            User user = qt.getMDContent(id_U,"rolex", User.class);
+//
+//            JSONObject indexMap = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
+//
+//
+//            JSONArray objMod = indexMap.getJSONArray("objMod");
+//
+//
+//            JSONObject module = new JSONObject(4);
+//            module.put("bcdState", 1);
+//            module.put("tfin", redisMap.getString("tfin"));
+//            module.put("bcdLevel", bcdLevel);
+//            module.put("ref", ref);
+//
+//            objMod.add(module);
+//
+//            //添加rolex
+////            mongoTemplate.updateFirst(rolexQ, new Update().set("rolex.objComp."+id_C,indexMap), User.class);
+//            qt.setMDContent(id_U,qt.setJson("rolex.objComp."+id_C,indexMap), User.class);
+//
+//
+//            //添加role.objAuth
+//            this.obtainObjAuth(ref, bcdLevel,id_C);
+//
+//            //获取init模块信息
+////            Query Qcn_java = new Query(new Criteria("_id").is("cn_java"));
+////            query.fields().include("newComp");
+////            InitJava init = mongoTemplate.findOne(Qcn_java, InitJava.class);
+//            InitJava init = qt.getMDContent("cn_java","newComp", InitJava.class);
+//
+//
+//            //a-xxx
+//            JSONObject object = init.getNewComp().getJSONObject(ref);
+//            object.getJSONObject("info").put("id_C",id_C);
+//
+//            //调用
+//            this.createAsset(id_C, qt.GetObjectId(), ref, object);
+//
+//
+//            //生成order订单  未做
+//
+//            return retResult.ok(CodeEnum.OK.getCode(),null);
+//
+//
+//        }
+//
+//        throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.NO_CHARGE_USER.getCode(), null);
+//
+//    }
 
 
 

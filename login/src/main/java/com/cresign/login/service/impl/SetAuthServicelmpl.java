@@ -17,14 +17,9 @@ import com.cresign.tools.pojo.es.lSUser;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.User;
-import com.cresign.tools.pojo.po.compCard.CompInfo;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -74,11 +69,14 @@ public class SetAuthServicelmpl implements SetAuthService {
 //        batchQ.fields().include("role.objData." + grpU + "." + listType);
 //
 //        Asset asset = mongoTemplate.findOne(batchQ, Asset.class);
-        Asset asset = qt.getConfig(id_C,"a-auth","role");
+//        Asset asset = qt.getConfig(id_C,"a-auth","role");
+        Asset asset = qt.getConfig(id_C, "a-auth", "role.objData." + grpU + "." + listType);
         //JSONObject roleJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(batchQ, Asset.class));
 
         // 没有设置职位权限
-        if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU)) {
+//        if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU))
+        if (!qt.isNotNull(asset.getRole(), qt.setArray("role.objData."+ grpU + "."+listType)))
+        {
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ROLE_NOT_SET.getCode(), null);
         }
         JSONArray batchArray = new JSONArray();

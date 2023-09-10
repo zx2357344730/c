@@ -46,7 +46,7 @@ public interface MenuService {
      * @createDate: 2021/7/8 15:04
      * @return: com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse getMenuGrp(String id_C,String ref, String grpType);
+//    ApiResponse getMenuGrp(String id_C,String ref, String grpType);
 
 
 

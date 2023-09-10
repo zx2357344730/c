@@ -25,17 +25,11 @@ import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.StringTokenizer;
 
 /**
  * 短信登录接口实现类
@@ -125,11 +119,11 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 //        }
         // 判断是否存在这个 key
 //        if (redisTemplate0.hasKey(SMSTypeEnum.LOGIN.getSmsType() + phone)) {
-        if (qt.getHasKey(SMSTypeEnum.LOGIN.getSmsType() + phone)) {
+        if (qt.hasRDKey(SMSTypeEnum.LOGIN.getSmsType(), phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
 //            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.LOGIN.getSmsType() + phone))) {
-            if (smsNum.equals(qt.getRDKeyStr(SMSTypeEnum.LOGIN.getSmsType() + phone))) {
+            if (smsNum.equals(qt.getRDSetStr(SMSTypeEnum.LOGIN.getSmsType(), phone))) {
 
                 String id_U = qt.getId_U(phone);
                 if (id_U.equals("")) {
@@ -184,11 +178,11 @@ public class SmsLoginServiceImpl implements SmsLoginService {
                                    String clientType, String id_APP, String pic, JSONObject wrdN) throws IOException {
         // 判断是否存在这个 key
 //        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
-        if (qt.getHasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (qt.hasRDKey(SMSTypeEnum.REGISTER.getSmsType(), phone)) {
 
                 // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
 //            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
-            if (smsNum.equals(qt.getRDKeyStr(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(qt.getRDSetStr(SMSTypeEnum.REGISTER.getSmsType(), phone))) {
 
 //                    JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn","exact",phone));
                     String id_U = qt.getId_U(phone);
@@ -350,7 +344,7 @@ public class SmsLoginServiceImpl implements SmsLoginService {
                     registerUserUtils.registerUser(info);
 
 //                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
-                    qt.setRDF(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
+                qt.setRDSet(SMSTypeEnum.LOGIN.getSmsType(), phone, smsNum, 180L);
 
                     return retResult.ok(CodeEnum.OK.getCode(), null);
 

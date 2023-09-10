@@ -17,15 +17,9 @@ import com.cresign.tools.enumeration.SMSTypeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.request.HttpRequest;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * ##description:
@@ -154,11 +147,11 @@ public class LinkedinLoginServiceImpl implements LinkedinLoginService {
 
         // 判断是否存在这个 key
 //        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
-        if (qt.getHasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (qt.hasRDKey(SMSTypeEnum.REGISTER.getSmsType(), phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
 //            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
-            if (smsNum.equals(qt.getRDKeyStr(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(qt.getRDSetStr(SMSTypeEnum.REGISTER.getSmsType(), phone))) {
 
 
                 String url = "https://www.linkedin.com/oauth/v2/accessToken";
@@ -213,7 +206,7 @@ public class LinkedinLoginServiceImpl implements LinkedinLoginService {
 //                    mongoTemplate.updateFirst(mbnQue, update, User.class);
 //
 ////                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
-//                    qt.setRDF(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
+//                    qt.setRDSet(SMSTypeEnum.LOGIN.getSmsType(), phone, smsNum);
 //
 //                    return retResult.ok(CodeEnum.OK.getCode(), null);
 //                }
@@ -232,7 +225,7 @@ public class LinkedinLoginServiceImpl implements LinkedinLoginService {
                                     ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())));
 
 //                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
-                    qt.setRDF(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
+                    qt.setRDSet(SMSTypeEnum.LOGIN.getSmsType(), phone, smsNum, 180L);
 
                     return retResult.ok(CodeEnum.OK.getCode(), null);
                 }
@@ -256,7 +249,7 @@ public class LinkedinLoginServiceImpl implements LinkedinLoginService {
                 registerUserUtils.registerUser(infoJson);
 
 //                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
-                qt.setRDF(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
+                qt.setRDSet(SMSTypeEnum.LOGIN.getSmsType(), phone, smsNum, 180L);
 
                 return retResult.ok(CodeEnum.OK.getCode(), null);
 

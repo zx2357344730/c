@@ -13,7 +13,6 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -120,24 +119,27 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 if (refreshTokenResult.equals(id_U)) {
 
                     // 通过id_U查询该用户
-                    User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp."+ id_C), User.class);
-                    String token = "";
-                    token = oauth.setToken(
-                            user,
-                            id_C,
-                            user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
-                            user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
-                            clientType);
+                    try {
+                        User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp." + id_C), User.class);
+                        String token = "";
+                        token = oauth.setToken(
+                                user,
+                                id_C,
+                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
+                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
+                                clientType);
 
-                    return retResult.ok(CodeEnum.OK.getCode(), token);
+                        return retResult.ok(CodeEnum.OK.getCode(), token);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
+                    }
 
-                } else {
-                    throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_VALIDATE_ERROR.getCode(), null);
                 }
             }
-            throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
         }
-        throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+        throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
     }
 
     @Override
@@ -155,7 +157,6 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 if (refreshTokenResult.equals(id_U)) {
 
                     JSONObject rdSet = qt.getRDSet(clientType + "Token", token);
-                    qt.errPrint("rdSet", null, rdSet, clientType, token);
                     if (rdSet == null)
                     {
                         // 通过id_U查询该用户
@@ -171,14 +172,10 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                         qt.setRDSet(clientType + "Token", token, rdSet, 500L);
                     }
                     return token;
-
-                } else {
-                    throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_VALIDATE_ERROR.getCode(), null);
                 }
             }
-            throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
         }
-        throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+        throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
 
     }
 

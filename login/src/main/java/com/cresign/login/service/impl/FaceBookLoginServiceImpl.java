@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.FaceBookLoginService;
-import com.cresign.login.utils.LoginResult;
 import com.cresign.login.utils.RegisterUserUtils;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
@@ -16,13 +15,7 @@ import com.cresign.tools.enumeration.SMSTypeEnum;
 import com.cresign.tools.enumeration.manavalue.ClientEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.User;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * ##description:
@@ -49,9 +41,6 @@ public class FaceBookLoginServiceImpl implements FaceBookLoginService {
 
     @Autowired
     private RegisterUserUtils registerUserUtils;
-
-    @Autowired
-    private LoginResult loginResult;
 
     @Autowired
     private RetResult retResult;
@@ -104,12 +93,10 @@ WX_NOT_BIND.getCode(), null);
     @Override
     public ApiResponse faceBookRegister(String id_fb, String wcnN, String email, String pic, String phone, String phoneType, String smsNum, String clientID, String clientType) throws IOException {
         // 判断是否存在这个 key
-//        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
-        if (qt.getHasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+        if (qt.hasRDKey(SMSTypeEnum.REGISTER.getSmsType(),phone)) {
 
             // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-//            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
-            if (smsNum.equals(qt.getRDKeyStr(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+            if (smsNum.equals(qt.getRDSetStr(SMSTypeEnum.REGISTER.getSmsType(), phone))) {
 
 //                Query id_WXQue = new Query(new Criteria("info.id_fb").is(id_fb));
 //
@@ -159,7 +146,7 @@ WX_NOT_BIND.getCode(), null);
                                     ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())), User.class);
 
 //                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
-                    qt.setRDF(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum);
+                    qt.setRDSet(SMSTypeEnum.LOGIN.getSmsType(), phone, smsNum, 180L);
 
                     return retResult.ok(CodeEnum.OK.getCode(), null);
                 }
@@ -192,7 +179,7 @@ WX_NOT_BIND.getCode(), null);
                 registerUserUtils.registerUser(infoJson);
 
 //                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
-                qt.setRDF(SMSTypeEnum.LOGIN.getSmsType() + phone,smsNum);
+                qt.setRDSet(SMSTypeEnum.LOGIN.getSmsType(), phone, smsNum, 180L);
 
                 return retResult.ok(CodeEnum.OK.getCode(), null);
 

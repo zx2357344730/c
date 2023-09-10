@@ -9,11 +9,10 @@ import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.request.HttpClientUtil;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import java.util.UUID;
 
 /**
@@ -48,13 +47,13 @@ public class Ws {
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
 
-    public void testConfig(){
-        System.out.println("输出测试:");
-        System.out.println(appId);
-        System.out.println(url);
-        System.out.println(appKey);
-        System.out.println(masterSecret);
-    }
+//    public void testConfig(){
+//        System.out.println("输出测试:");
+//        System.out.println(appId);
+//        System.out.println(url);
+//        System.out.println(appKey);
+//        System.out.println(masterSecret);
+//    }
 
     /**
      * 直接发送MQ信息方法
@@ -326,7 +325,8 @@ public class Ws {
         }
     }
 
-    public void sendUsageFlowNew(JSONObject wrdN, String msg, String subType, String type,String thisB) {
+    public void sendUsageFlowNew(JSONObject wrdN, String msg, String subType, String type,String thisB)
+    {
         // set sys log format:
         LogFlow log = new LogFlow();
         log.setSysLog("6141b6797e8ac90760913fd0", subType, msg, 3, wrdN);

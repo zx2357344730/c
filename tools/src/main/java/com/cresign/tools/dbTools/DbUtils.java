@@ -615,7 +615,6 @@ public class DbUtils {
     /**
      *
      * @param order
-     * @param listCol ES update list
      * @return JSONObject of update String
      */
 //    public JSONObject summOrder(Order order, JSONObject listCol, JSONArray cardList)
@@ -756,6 +755,32 @@ public class DbUtils {
 //        return result;
 //
 //    }
+
+    public void updateOrder(Order order)
+    {
+        try {
+        JSONObject listCol = new JSONObject();
+        this.summOrder(order, listCol);
+        qt.saveMD(order);
+        qt.setES("lSBOrder", qt.setESFilt("id_O", order.getId()), listCol);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+    public void addOrder(Order order, JSONObject listCol)
+    {
+        try {
+            this.summOrder(order, listCol);
+            qt.errPrint("new Order", null, order, listCol);
+            qt.addMD(order);
+            qt.addES("lSBOrder", listCol);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public JSONObject summOrder(Order order, JSONObject listCol, JSONArray cardList)
     {
