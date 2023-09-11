@@ -22,12 +22,6 @@ spring:
           - data-id: base_mongo_config.yaml
             group: base
             refresh: true
-          - data-id: base_log_config.yaml
-            group: base
-            refresh: true
-          - data-id: base_encyptKey.yaml
-            group: base
-            refresh: true
           - data-id: base_elasticsearch_config.yaml
             group: base
             refresh: true

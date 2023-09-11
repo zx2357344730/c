@@ -11,9 +11,6 @@ spring:
         file-extension: yaml # 拉取下来的配置文件后缀，配置格式
         group: action
         ext-config:
-          - data-id: base_nacos_sentinel_config.yaml
-            group: base
-            refresh: true
           - data-id: base_encyptKey.yaml
             group: base
             refresh: true
@@ -21,12 +18,6 @@ spring:
             group: base
             refresh: true
           - data-id: base_mongo_config.yaml
-            group: base
-            refresh: true
-          - data-id: base_log_config.yaml
-            group: base
-            refresh: true
-          - data-id: base_encyptKey.yaml
             group: base
             refresh: true
           - data-id: base_elasticsearch_config.yaml

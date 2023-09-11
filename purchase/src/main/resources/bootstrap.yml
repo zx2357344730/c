@@ -11,9 +11,6 @@ spring:
         file-extension: yaml
         group: purchase
         ext-config:
-#          - data-id: base_nacos_sentinel_config.yaml
-#            group: base
-#            refresh: true
           - data-id: base_encyptKey.yaml
             group: base
             refresh: true
@@ -23,12 +20,9 @@ spring:
           - data-id: base_mongo_config.yaml
             group: base
             refresh: true
-          - data-id: base_log_config.yaml
+          - data-id: base_elasticsearch_config.yaml
             group: base
             refresh: true
           - data-id: base_sms.yaml
-            group: base
-            refresh: true
-          - data-id: base_elasticsearch_config.yaml
             group: base
             refresh: true

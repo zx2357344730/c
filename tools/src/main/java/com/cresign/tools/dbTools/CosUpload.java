@@ -1,6 +1,8 @@
 package com.cresign.tools.dbTools;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.md5.MD5Util;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
@@ -20,9 +22,9 @@ import com.tencentcloudapi.common.profile.ClientProfile;
 import com.tencentcloudapi.common.profile.HttpProfile;
 import com.tencentcloudapi.cvm.v20170312.models.AssociateSecurityGroupsResponse;
 import com.tencentcloudapi.vpc.v20170312.VpcClient;
-import com.tencentcloudapi.vpc.v20170312.models.DescribeSecurityGroupPoliciesRequest;
-import com.tencentcloudapi.vpc.v20170312.models.DescribeSecurityGroupPoliciesResponse;
+import com.tencentcloudapi.vpc.v20170312.models.*;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,10 +43,10 @@ public class CosUpload {
     private static final String bucketName2 = "cfiles-1253919880";
 
 
-    //    @Value("${cosBrowser.appId}")
+    @Value("${cosBrowser.appId}")
     private static final String secretId = "AKIDCG7nGXPTGrFSSFPCTYRDm8II3d3Ij2Wk";
 
-    //    @Value("${cosBrowser.secretKey}")
+    @Value("${cosBrowser.secretKey}")
     private static final String secretKey = "7zc2DF2ZcR1QaVIvIPHtFLCoJqBWcT5V";
 
     // 1 初始化用户身份信息(secretId, secretKey，可在腾讯云后台中的API密钥管理中查看！
@@ -673,7 +675,7 @@ public class CosUpload {
         return size;
     }
 
-    public static Object getScurity() throws TencentCloudSDKException {
+    public static JSONObject getScurity() throws TencentCloudSDKException {
         Credential cred = new Credential(secretId, secretKey);
         // 实例化一个http选项，可选的，没有特殊需求可以跳过
         HttpProfile httpProfile = new HttpProfile();
@@ -685,11 +687,48 @@ public class CosUpload {
         VpcClient client = new VpcClient(cred, "ap-guangzhou", clientProfile);
         // 实例化一个请求对象,每个接口都会对应一个request对象
         DescribeSecurityGroupPoliciesRequest req = new DescribeSecurityGroupPoliciesRequest();
-        req.setSecurityGroupId("sg-h0tr6kcj");
+        req.setSecurityGroupId("sg-caueeii1");
         // 返回的resp是一个DescribeSecurityGroupPoliciesResponse的实例，与请求对象对应
         DescribeSecurityGroupPoliciesResponse resp = client.DescribeSecurityGroupPolicies(req);
         // 输出json格式的字符串回包
         System.out.println(DescribeSecurityGroupPoliciesResponse.toJsonString(resp));
-        return AssociateSecurityGroupsResponse.toJsonString(resp);
+        return JSON.parseObject(AssociateSecurityGroupsResponse.toJsonString(resp));
+    }
+
+    public static Object updateScurity(Long index, String ip, String key) throws TencentCloudSDKException {
+        Credential cred = new Credential(secretId, secretKey);
+        // 实例化一个http选项，可选的，没有特殊需求可以跳过
+        HttpProfile httpProfile = new HttpProfile();
+        httpProfile.setEndpoint("vpc.tencentcloudapi.com");
+        // 实例化一个client选项，可选的，没有特殊需求可以跳过
+        ClientProfile clientProfile = new ClientProfile();
+        clientProfile.setHttpProfile(httpProfile);
+        // 实例化要请求产品的client对象,clientProfile是可选的
+        VpcClient client = new VpcClient(cred, "ap-guangzhou", clientProfile);
+        // 实例化一个请求对象,每个接口都会对应一个request对象
+        ReplaceSecurityGroupPolicyRequest req = new ReplaceSecurityGroupPolicyRequest();
+        req.setSecurityGroupId("sg-caueeii1");
+        SecurityGroupPolicySet securityGroupPolicySet1 = new SecurityGroupPolicySet();
+
+        SecurityGroupPolicy[] securityGroupPolicys1 = new SecurityGroupPolicy[1];
+        SecurityGroupPolicy securityGroupPolicy1 = new SecurityGroupPolicy();
+        securityGroupPolicy1.setPolicyIndex(index);
+        securityGroupPolicy1.setProtocol("ALL");
+        securityGroupPolicy1.setPort("ALL");
+        securityGroupPolicy1.setCidrBlock(ip);
+        securityGroupPolicy1.setAction("ACCEPT");
+        securityGroupPolicy1.setPolicyDescription(key);
+        securityGroupPolicy1.setModifyTime(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        securityGroupPolicys1[0] = securityGroupPolicy1;
+
+        securityGroupPolicySet1.setIngress(securityGroupPolicys1);
+
+        req.setSecurityGroupPolicySet(securityGroupPolicySet1);
+
+        // 返回的resp是一个ReplaceSecurityGroupPolicyResponse的实例，与请求对象对应
+        ReplaceSecurityGroupPolicyResponse resp = client.ReplaceSecurityGroupPolicy(req);
+        // 输出json格式的字符串回包
+        System.out.println(ReplaceSecurityGroupPolicyResponse.toJsonString(resp));
+        return ReplaceSecurityGroupPolicyResponse.toJsonString(resp);
     }
 }

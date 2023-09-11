@@ -38,7 +38,7 @@ public class AssetAStock {
         this.spaceQty = array;
     }
 
-    public AssetAStock(Double wn4price, String locAddr, JSONArray locSpace, JSONArray spaceQty, JSONArray arrPP) {
+    public AssetAStock(Double wn4price, String locAddr, JSONArray locSpace, JSONArray spaceQty, JSONArray arrPP, JSONArray procQty) {
         JSONArray array = new JSONArray();
         this.wn2qty = 0.0;
         for (int i = 0; i< spaceQty.size(); i++)
@@ -52,6 +52,7 @@ public class AssetAStock {
         this.locSpace = locSpace == null ? array : locSpace;
         this.spaceQty = spaceQty == null ? array : spaceQty;
         this.arrPP = arrPP == null ? array : arrPP;
+        this.procQty = procQty == null ? array : procQty;
     }
 
     public AssetAStock(Double wn4price, String locAddr, JSONArray locSpace, JSONArray spaceQty, Double wn2qtyResv, JSONObject resvQty) {
@@ -82,6 +83,7 @@ public class AssetAStock {
     private Double wn2qtyResv = 0.0;
     private JSONObject resvQty;
     private JSONArray arrPP;
+    private JSONArray procQty;
     private Integer lUT;
     private Integer lCR;
 }

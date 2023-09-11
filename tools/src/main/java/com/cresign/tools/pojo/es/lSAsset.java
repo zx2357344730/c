@@ -84,6 +84,10 @@ public class lSAsset {
 
     private JSONArray spaceQty;//
 
+    private JSONArray arrPP;
+
+    private JSONArray procQty;
+
     private String tmd;
 
     private String tmk;
