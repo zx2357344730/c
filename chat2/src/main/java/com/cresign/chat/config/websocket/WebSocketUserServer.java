@@ -250,30 +250,31 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 // 发送到前端
                 this.sendMessage(stringMap,keyAes,false);
                 this.onClose(uId,client,appId);
-                return;
+            } else {
+                // 创建回应前端日志
+                LogFlow logContent = LogFlow.getInstance();
+                logContent.setId(null);
+                logContent.setZcndesc(null);
+                logContent.setTmd(null);
+                logContent.setId_C(null);
+                logContent.setId_U(uId);
+                logContent.setLogType("key");
+                logContent.setTzone(null);
+                JSONObject data = new JSONObject();
+                data.put("client",client);
+                // 携带后端公钥
+                data.put("publicKeyJava", WebSocketUserServer.keyJava.get(this.onlyId).getString("publicKeyJava"));
+                logContent.setData(data);
+                //每次响应之前随机获取AES的key，加密data数据
+                String keyAes = AesUtil.getKey();
+                // 根据AES加密数据
+                JSONObject stringMap = aes(logContent,keyAes);
+                stringMap.put("en",true);
+                stringMap.put("totalOnlineCount",getOnlineCount());
+                // 发送到前端
+                this.sendMessage(stringMap,keyAes,true);
             }
-            // 创建回应前端日志
-            LogFlow logContent = LogFlow.getInstance();
-            logContent.setId(null);
-            logContent.setZcndesc(null);
-            logContent.setTmd(null);
-            logContent.setId_C(null);
-            logContent.setId_U(uId);
-            logContent.setLogType("key");
-            logContent.setTzone(null);
-            JSONObject data = new JSONObject();
-            data.put("client",client);
-            // 携带后端公钥
-            data.put("publicKeyJava", WebSocketUserServer.keyJava.get(this.onlyId).getString("publicKeyJava"));
-            logContent.setData(data);
-            //每次响应之前随机获取AES的key，加密data数据
-            String keyAes = AesUtil.getKey();
-            // 根据AES加密数据
-            JSONObject stringMap = aes(logContent,keyAes);
-            stringMap.put("en",true);
-            stringMap.put("totalOnlineCount",getOnlineCount());
-            // 发送到前端
-            this.sendMessage(stringMap,keyAes,true);
+//            ws.testConfig();
         } catch (Exception e){
             System.out.println("出现异常:"+e.getMessage());
             e.printStackTrace();
@@ -325,7 +326,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             try {
                 // 使用前端公钥加密key
                 String aesKey = Base64.encodeBase64String(RsaUtil.encryptByPublicKey(key.getBytes()
-                        , WebSocketUserServer.loginPublicKeyList.get(this.onlyId)));
+                                , WebSocketUserServer.loginPublicKeyList.get(this.onlyId)));
                 // 添加加密数据到返回集合
                 stringMap.put("aesKey",aesKey);
             } catch (Exception e) {

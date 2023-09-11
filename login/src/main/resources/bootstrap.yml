@@ -12,13 +12,10 @@ spring:
         file-extension: yaml
         group: login
         ext-config:
-          - data-id: base_login_client.yaml
-            group: base
-            refresh: true
-          - data-id: base_sms.yaml
-            group: base
-            refresh: true
           - data-id: base_encyptKey.yaml
+            group: base
+            refresh: true
+          - data-id: base_login_client.yaml
             group: base
             refresh: true
           - data-id: base_redis_config.yaml

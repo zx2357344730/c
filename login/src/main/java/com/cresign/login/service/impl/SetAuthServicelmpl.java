@@ -74,8 +74,8 @@ public class SetAuthServicelmpl implements SetAuthService {
         //JSONObject roleJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(batchQ, Asset.class));
 
         // 没有设置职位权限
-//        if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU))
-        if (!qt.isNotNull(asset.getRole(), qt.setArray("role.objData."+ grpU + "."+listType)))
+        if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU))
+//        if (!qt.isNotNull(asset.getRole(), qt.setArray("role.objData."+ grpU + "."+listType)))
         {
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ROLE_NOT_SET.getCode(), null);
         }

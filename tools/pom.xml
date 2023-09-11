@@ -42,6 +42,13 @@
             <artifactId>cos_api</artifactId>
             <version>5.4.10</version>
         </dependency>
+        <!-- cos -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <version>3.0.0</version>
+            <scope>compile</scope>
+        </dependency>
 
 
         <dependency>
@@ -80,8 +87,8 @@
             <version>2.15.0</version>
         </dependency>
 
-<!--        &lt;!&ndash; 引入RocketMQ依赖 &ndash;&gt;-->
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-client &ndash;&gt;-->
+        <!-- 引入RocketMQ依赖 -->
+        <!-- https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-client -->
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-client</artifactId>
@@ -366,11 +373,10 @@
             <version>3.9</version>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java</artifactId>
+            <version>3.1.70</version>
             <scope>compile</scope>
         </dependency>
 <!--        <dependency>-->

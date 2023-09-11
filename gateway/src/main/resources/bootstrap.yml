@@ -11,15 +11,12 @@ spring:
         file-extension: yaml
         group: gateway
         ext-config:
-          - data-id: base_nacos_sentinel_config.yaml
-            group: base
-            refresh: true
           - data-id: base_redis_config.yaml
-            group: base
-            refresh: true
-          - data-id: base_log_config.yaml
             group: base
             refresh: true
           - data-id: gateway_auth_config.yaml
             group: gateway
+            refresh: true
+          - data-id: base_encyptKey.yaml
+            group: base
             refresh: true

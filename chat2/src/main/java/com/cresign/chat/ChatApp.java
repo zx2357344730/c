@@ -21,10 +21,10 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableFeignClients
 @ComponentScan({"com.cresign.tools", "com.cresign.chat"})
 @SpringBootApplication
-public class Chat2App {
+public class ChatApp {
 
     public static void main(String[] args) {
-        SpringApplication.run(Chat2App.class, args);
+        SpringApplication.run(ChatApp.class, args);
     }
 
 }

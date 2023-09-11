@@ -45,17 +45,17 @@ public class SMSTencent {
 
     private static String APPID;
 
-    @Value("${tencent.sms.secretId}")
+    @Value("${secret.id}")
     public  void setSECRETID(String SECRETID) {
         SMSTencent.SECRETID = SECRETID;
     }
 
-    @Value("${tencent.sms.secretKey}")
+    @Value("${secret.key}")
     public  void setSECRETKey(String SECRETKey) {
         SMSTencent.SECRETKey = SECRETKey;
     }
 
-    @Value("${tencent.sms.appId}")
+    @Value("${sms.appId}")
     public  void setAPPID(String APPID) {
         SMSTencent.APPID = APPID;
     }
