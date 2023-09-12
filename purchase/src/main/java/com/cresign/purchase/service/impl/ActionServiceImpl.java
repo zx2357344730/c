@@ -710,7 +710,7 @@ public class ActionServiceImpl implements ActionService {
                 // 判断属于什么操作
                 switch (status) {
                     case 0: // ready
-                        message = "[准备开始]" + msg;
+                        message = taskName + "[准备开始]" + msg;
                         orderAction.setBcdStatus(status);
                         isStateChg = true;
 
@@ -722,7 +722,7 @@ public class ActionServiceImpl implements ActionService {
                         }
                         // 设置备注信息
                         // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
-                        message = "[开始运行]" + msg;
+                        message = taskName + "[开始运行]" + msg;
 
                         //Adding myself to the id_Us of action to indicate
                         id_Us.add(tokData.getString("id_U"));
@@ -755,7 +755,7 @@ public class ActionServiceImpl implements ActionService {
                         mapKey.put("action.wn2progress", progress);
                         orderAction.setBcdStatus(status);
 
-                        message = "[已完成]" + msg;
+                        message = taskName + "[已完成]" + msg;
                         isStateChg = true;
                         duraType = "allEnd";
 
@@ -768,7 +768,7 @@ public class ActionServiceImpl implements ActionService {
                             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
                         }
 
-                        message = "[已恢复执行]" + msg;
+                        message = taskName + "[已恢复执行]" + msg;
                         orderAction.setBcdStatus(-8);
                         res.put("isJoin", 1);
                         res.put("id_Us", orderAction.getId_Us());
@@ -779,7 +779,7 @@ public class ActionServiceImpl implements ActionService {
                     case 5: // 加入
                         id_Us.add(tokData.getString("id_U"));
                         orderAction.setId_Us(id_Us);
-                        message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功]" + msg;
+                        message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功]" + taskName;
                         // set back status to original status
                         status = orderAction.getBcdStatus();
 
@@ -792,7 +792,7 @@ public class ActionServiceImpl implements ActionService {
                         id_Us.remove(tokData.getString("id_U"));
                         orderAction.setId_Us(id_Us);
 
-                        message = tokData.getJSONObject("wrdNU").getString("cn") + "[退出成功]" + msg;
+                        message = tokData.getJSONObject("wrdNU").getString("cn") + "[退出成功]" + taskName;
                         status = orderAction.getBcdStatus();
 
                         res.put("isJoin", 0);
@@ -814,7 +814,7 @@ public class ActionServiceImpl implements ActionService {
                                 && orderAction.getBcdStatus() != -8) {
                             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能");
                         }                    // 设置备注信息
-                        message = "[已暂停]" + msg;
+                        message = taskName + "[已暂停]" + msg;
                         orderAction.setBcdStatus(status);
                         isStateChg = true;
                         duraType = "pause";
@@ -835,7 +835,7 @@ public class ActionServiceImpl implements ActionService {
                         }
                         // 设置备注信息
                         orderAction.setBcdStatus(status);
-                        message = "[已取消]" + msg;
+                        message = taskName + "[已取消]" + msg;
                         isStateChg = true;
                         duraType = "allEnd";
                         break;

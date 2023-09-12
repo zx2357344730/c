@@ -1,6 +1,7 @@
 package com.cresign.login.utils.tencentcloudapi.sms;
 
 import com.cresign.tools.advice.RetResult;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
@@ -9,7 +10,7 @@ import com.tencentcloudapi.sms.v20190711.SmsClient;
 import com.tencentcloudapi.sms.v20190711.models.SendSmsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
+//import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +40,9 @@ public class SMSTencent {
 
     private static String SECRETKey;
 
+    @Autowired
+    private Qt qt;
+
     /**
      * appID
      */
@@ -60,12 +64,12 @@ public class SMSTencent {
         SMSTencent.APPID = APPID;
     }
 
-    @Autowired
-    public void setredisTemplate0(StringRedisTemplate redisTemplate0) {
-        SMSTencent.redisTemplate0 = redisTemplate0;
-    }
+//    @Autowired
+//    public void setredisTemplate0(StringRedisTemplate redisTemplate0) {
+//        SMSTencent.redisTemplate0 = redisTemplate0;
+//    }
 
-    private static StringRedisTemplate redisTemplate0;
+//    private static StringRedisTemplate redisTemplate0;
 
 
 
@@ -76,7 +80,7 @@ public class SMSTencent {
      *@author           JackSon
      *@updated             2020/3/16 14:36
      */
-    public static String sendSMS(String [] phones, int smsCodeSize, String templateId, String smsType)  {
+    public String sendSMS(String [] phones, int smsCodeSize, String templateId, String smsType)  {
 
 
         Random random = new Random();
@@ -114,7 +118,8 @@ public class SMSTencent {
 
             for (int i = 0; i < phones.length; i++) {
                 //原1分钟，先改为5
-                redisTemplate0.opsForValue().set(smsType + phones[i], smsNum, 5, TimeUnit.MINUTES);
+                qt.setRDSet(smsType, phones[i], smsNum, 300L);
+//                redisTemplate0.opsForValue().set(smsType + phones[i], smsNum, 5, TimeUnit.MINUTES);
             }
 
         } catch (TencentCloudSDKException e) {

@@ -12,11 +12,11 @@ import lombok.Getter;
 public enum SMSTypeEnum {
 
 
-    LOGIN("sms_login_"),
+    LOGIN("sms_login"),
 
-    PURCHASE("sms_purchase_"),
+    PURCHASE("sms_purchase"),
 
-    REGISTER("sms_register_");
+    REGISTER("sms_register");
 
     private String smsType;
 

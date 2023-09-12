@@ -27,6 +27,7 @@ import com.tencentcloudapi.tmt.v20180321.TmtClient;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchRequest;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateBatchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,15 +47,18 @@ public class ModuleServicelmpl implements ModuleService {
 //    @Autowired
 //    private StringRedisTemplate redisTemplate0;
 
+    @Value("${secret.id}")
+    private String secretId;
+
+    @Value("${secret.key}")
+    private String secretKey;
+
     @Autowired
     private Qt qt;
 
     @Autowired
     private RetResult retResult;
 
-
-    private static final String secretId = "AKIDwjMl15uUt53mFUVGk39zaw4ydAWfaS8a";
-    private static final String secretKey = "HLEsHSRChx1sTtELCpFXfZGk14tVw97w";
 
     /**
      * 更新a-auth内日志权限信息，更新全部

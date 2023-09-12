@@ -59,6 +59,8 @@ public class lSInfo implements Serializable {
 
     private String grp;
 
+    private String qrCode = "";
+
     private String grpU;
 
     private String ref;
