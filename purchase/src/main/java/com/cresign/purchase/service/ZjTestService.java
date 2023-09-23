@@ -16,4 +16,14 @@ public interface ZjTestService {
     ApiResponse sendLog(LogFlow logFlow);
     ApiResponse shareSave(JSONObject data);
     ApiResponse shareOpen(String shareId);
+    ApiResponse initFC(String id_C,String id_U);
+    ApiResponse getFCAuth(String id_C,String id);
+    ApiResponse setFCAuth(String id_C,String id,JSONObject users);
+    ApiResponse getFCAuthByUser(String id_C,String id_U);
+    ApiResponse getLSProdShareId(String id_P);
+    ApiResponse getLSInfoShareId(String id_I);
+    ApiResponse getLNUserShareId(String id_U);
+    ApiResponse getLNCompShareId(String id_C);
+    ApiResponse getLBProdShareId(String id_P);
+    ApiResponse getLBInfoShareId(String id_I);
 }

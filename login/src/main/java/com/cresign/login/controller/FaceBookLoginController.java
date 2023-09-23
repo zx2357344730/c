@@ -58,34 +58,34 @@ public class FaceBookLoginController {
     }
 
 
-    @SecurityParameter
-    @PostMapping("/v1/faceBookRegister")
-    public ApiResponse faceBookRegister(@RequestBody JSONObject reqJson) throws IOException {
-        try {
-            String clientID = "";
-            if (reqJson.containsKey(CLIENT_ID)) {
-                clientID = reqJson.getString(CLIENT_ID);
-            }
-
-            String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg";
-            if (reqJson.containsKey(USER_PIC)) {
-                pic = reqJson.getString(USER_PIC);
-            }
-
-            return faceBookLoginService.faceBookRegister(
-                    reqJson.getString("id_fb"),
-                    reqJson.getString("wcnN"),
-                    reqJson.getString("email"),
-                    pic,
-                    reqJson.getString("phone"),
-                    reqJson.getString("phoneType"),
-                    reqJson.getString("smsNum"),
-                    clientID,
-                    request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName())
-            );
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "FaceBookLoginController.faceBookRegister", e);
-        }
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/faceBookRegister")
+//    public ApiResponse faceBookRegister(@RequestBody JSONObject reqJson) throws IOException {
+//        try {
+//            String clientID = "";
+//            if (reqJson.containsKey(CLIENT_ID)) {
+//                clientID = reqJson.getString(CLIENT_ID);
+//            }
+//
+//            String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg";
+//            if (reqJson.containsKey(USER_PIC)) {
+//                pic = reqJson.getString(USER_PIC);
+//            }
+//
+//            return faceBookLoginService.faceBookRegister(
+//                    reqJson.getString("id_fb"),
+//                    reqJson.getString("wcnN"),
+//                    reqJson.getString("email"),
+//                    pic,
+//                    reqJson.getString("phone"),
+//                    reqJson.getString("phoneType"),
+//                    reqJson.getString("smsNum"),
+//                    clientID,
+//                    request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName())
+//            );
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "FaceBookLoginController.faceBookRegister", e);
+//        }
+//    }
 
 }

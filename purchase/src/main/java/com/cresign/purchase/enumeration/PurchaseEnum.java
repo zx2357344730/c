@@ -51,6 +51,18 @@ public enum PurchaseEnum {
     MODULE_ADDUSSER_ERROR("051008"),
     //模块添加人数超出，200人数为一次
     MODULE_ADDUSSER_GOBEYOND("051009"),
+    //lSProd不存在
+    LS_PROD_NOT_FOUND("051010"),
+    //lBProd不存在
+    LB_PROD_NOT_FOUND("051011"),
+    //lSInfo不存在
+    LS_INFO_NOT_FOUND("051012"),
+    //lBInfo不存在
+    LB_INFO_NOT_FOUND("051013"),
+    //lNUser不存在
+    LN_USER_NOT_FOUND("051014"),
+    //lNComp不存在
+    LN_COMP_NOT_FOUND("051015"),
 
     // 订单已过期 : tang
     ERR_ORDER_BE_OVERDUE("05001"),

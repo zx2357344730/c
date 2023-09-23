@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 /**
  * @author tang
  * @Description 作者很懒什么也没写
- * @ClassName Chkin
- * @Date 2023/8/15
+ * @ClassName ChKin
+ * @Date 2023/9/13
  * @ver 1.0.0
  */
 @Data
@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 //注解在类上，为类提供一个无参的构造方法
 @NoArgsConstructor
-public class Chkin {
+public class ChKin {
     /**
      * 打卡方式
      */

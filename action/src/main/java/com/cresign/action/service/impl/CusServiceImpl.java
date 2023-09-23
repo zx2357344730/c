@@ -157,6 +157,7 @@ public class CusServiceImpl implements CusService {
      */
     @Override
     public ApiResponse sendUserCusCustomer(LogFlow logFlow) {
+        // 获取日志信息
         String subType = logFlow.getSubType();
         JSONObject result = new JSONObject();
         String id_O = logFlow.getId_O();
@@ -165,172 +166,96 @@ public class CusServiceImpl implements CusService {
         JSONArray id_Us = new JSONArray();
         String id_uThis = logFlow.getId_U();
         id_Us.add(id_uThis);
-
+        // 获取订单数据
         Order order = qt.getMDContent(id_O, "cusmsg", Order.class);
+        // 获取订单状态
         int cusOrder = getCusOrder(order, null, 1);
+        // 判断为空
         if (cusOrder != 0) {
+            // 添加返回错误信息
             result.put("errType",1);
             result.put("type",cusOrder);
             result.put("desc","订单异常");
+            // 发送错误日志
             sendMsgNotice(id_CCus,"订单异常:异常码="+cusOrder, null,id_O,500,id_Us,-1);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         }
+        // 获取卡片内数据
         String id_UCus = order.getCusmsg().getJSONArray("objCusMsg").getJSONObject(index).getString("id_UCus");
+        // 判断子日志类型
         if ("msg".equals(subType)) {
+            // 发送日志
             sendMsgOneNew(id_UCus,logFlow);
             result.put("errType",0);
             result.put("type",4);
             result.put("desc","发送信息-操作成功");
             return retResult.ok(CodeEnum.OK.getCode(), "1");
         } else if ("score".equals(subType)) {
+            // 修改评分
             qt.setMDContent(id_O,qt.setJson("cusmsg.objCusMsg."+index+".score"
                     ,logFlow.getData().getInteger("score")), Order.class);
+            // 发送日志
             sendMsgOneNew(id_UCus,logFlow);
             result.put("errType",0);
             result.put("type",3);
             result.put("desc","评分-操作成功");
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } else {
-//            String id_UCus = data.getString("id_UCus");
+            // 获取用户信息
             User user = qt.getMDContent(id_uThis, "rolex", User.class);
+            // 获取用户客服信息状态
             int cusUser = getCusUser(user, id_O);
+            // 判断为空
             if (cusUser != 0) {
+                // 添加错误信息
                 result.put("errType",2);
                 result.put("type",cusUser);
                 result.put("desc","用户异常");
+                // 发送错误日志
                 sendMsgNotice(id_CCus,"用户异常:异常码="+cusUser, null,id_O,500,id_Us,-1);
                 return retResult.ok(CodeEnum.OK.getCode(), result);
             }
+            // 判断子日志类型
             if ("rejection".equals(subType)) {
-
+                // 修改用户客服状态为拒收状态
                 qt.setMDContent(id_uThis,qt.setJson("rolex.cus."+id_O+"."+(index+""),1), User.class);
-
+                // 更新订单客服状态为拒收
                 qt.setMDContent(id_O,qt.setJson("cusmsg.objCusMsg."+index+".bcdStatus",55), Order.class);
+                // 发送拒收日志
                 sendMsgOneNew(id_UCus,logFlow);
+                // 发送拒收通知
                 sendMsgNotice(id_CCus,"已拒收该消息",id_uThis,id_O,55,id_Us,index);
                 result.put("errType",0);
                 result.put("type",1);
                 result.put("desc","拒收该消息-操作成功");
                 return retResult.ok(CodeEnum.OK.getCode(), result);
-
-//            JSONObject cusUser = new JSONObject();
-//            cusUser.put("state",0);
-//            cusUser.put("id_UCus",null);
-//            cusUser.put("cusFoUp",0);
-//            cusUser.put("id_O",id_O);
-//            cusUser.put("index",null);
-//            qt.setMDContent(id_uThis,qt.setJson("rolex.cus."+id_CCus,cusUser), User.class);
-//            sendMsgOneNew(id_uThis,logFlow);
-//            sendMsgNotice(id_CCus,"已拒收该公司消息",id_uThis,id_O,55,id_Us);
-//            return retResult.ok(CodeEnum.OK.getCode(), result);
             } else if ("del".equals(subType)) {
-//                User user = qt.getMDContent(id_uThis, "rolex", User.class);
-//                if (null != user) {
-//                    JSONObject rolex = user.getRolex();
-//                    if (null != rolex) {
-//                        JSONObject cus = rolex.getJSONObject("cus");
-//                        if (null != cus) {
-//                            qt.setMDContent(id_uThis,qt.setJson("rolex.cus."+id_O+"."+index.toString(),2), User.class);
-//
-//                            qt.setMDContent(id_O,qt.setJson("cusmsg.objCusMsg."+index+".bcdStatus",54), Order.class);
-//
-//                            sendMsgOneNew(id_uThis,logFlow);
-//                            sendMsgNotice(id_CCus,"已删除该公司信息",id_uThis,id_O,54,id_Us);
-//                            return retResult.ok(CodeEnum.OK.getCode(), "1");
-//                        } else {
-//                            resultDesc = "用户客服信息为空";
-//                        }
-//                    } else {
-//                        resultDesc = "用户权限信息为空";
-//                    }
-//                } else {
-//                    resultDesc = "用户信息为空";
-//                }
-//                sendMsgNotice(id_CCus,resultDesc, null,id_O,500,id_Us);
-//                return retResult.ok(CodeEnum.OK.getCode(), "3");
-
+                // 修改用户客服状态为删除状态
                 qt.setMDContent(id_uThis,qt.setJson("rolex.cus."+id_O+"."+(index+""),2), User.class);
-
+                // 更新订单客服状态为删除
                 qt.setMDContent(id_O,qt.setJson("cusmsg.objCusMsg."+index+".bcdStatus",54), Order.class);
-
+                // 发送删除日志
                 sendMsgOneNew(id_UCus,logFlow);
+                // 发送删除通知
                 sendMsgNotice(id_CCus,"已删除该信息",id_uThis,id_O,54,id_Us,index);
                 result.put("errType",0);
                 result.put("type",2);
                 result.put("desc","删除该信息-操作成功");
                 return retResult.ok(CodeEnum.OK.getCode(), result);
             } else if ("normal".equals(subType)) {
+                // 修改用户客服状态为恢复状态
                 qt.setMDContent(id_uThis,qt.setJson("rolex.cus."+id_O+"."+(index+""),0), User.class);
-
+                // 更新订单客服状态为恢复
                 qt.setMDContent(id_O,qt.setJson("cusmsg.objCusMsg."+index+".bcdStatus",53), Order.class);
-
+                // 发送恢复日志
                 sendMsgOneNew(id_UCus,logFlow);
+                // 发送恢复通知
                 sendMsgNotice(id_CCus,"恢复正常",id_uThis,id_O,53,id_Us,index);
                 result.put("errType",0);
                 result.put("type",5);
                 result.put("desc","恢复正常-操作成功");
                 return retResult.ok(CodeEnum.OK.getCode(), result);
-            }
-//            else if ("score".equals(subType)) {
-////                User user = qt.getMDContent(id_uThis, "rolex", User.class);
-////                String id_uCusNew;
-////                String score;
-////                JSONObject cusUser;
-////                if (null != user) {
-////                    JSONObject rolex = user.getRolex();
-////                    if (null != rolex) {
-////                        JSONObject cus = rolex.getJSONObject("cus");
-////                        if (null != cus) {
-////                            cusUser = cus.getJSONObject(id_CCus);
-////                            id_uCusNew = cusUser.getString("id_UCus");
-////                            score = data.getString("score");
-////                        } else {
-////                            sendMsgNotice(id_CCus,"用户客服信息为空", null,id_O,500,id_Us);
-////                            return retResult.ok(CodeEnum.OK.getCode(), "0");
-////                        }
-////                    } else {
-////                        sendMsgNotice(id_CCus,"用户权限信息为空", null,id_O,500,id_Us);
-////                        return retResult.ok(CodeEnum.OK.getCode(), "0");
-////                    }
-////                } else {
-////                    sendMsgNotice(id_CCus,"用户信息为空", null,id_O,500,id_Us);
-////                    return retResult.ok(CodeEnum.OK.getCode(), "0");
-////                }
-////
-////                Asset asset = qt.getConfig(id_CCus,"a-auth","flowControl");
-////                if (null != asset) {
-////                    JSONObject flowControl = asset.getFlowControl();
-////                    if (null != flowControl) {
-////                        JSONObject cusAsset = flowControl.getJSONObject("cus");
-////                        JSONObject id_uCusInfo = cusAsset.getJSONObject(id_uCusNew);
-////                        int scoreCus = id_uCusInfo.getInteger(score);
-////                        scoreCus++;
-////                        qt.setMDContent(asset.getId(),qt.setJson("flowControl.cus."+id_uCusNew+".score."+score,scoreCus), Asset.class);
-////                        cusUser.put("id_UCus","");
-////                        cusUser.put("cusFoUp",cusUser.getInteger("cusFoUp"));
-////                        cusUser.put("state",cusUser.getInteger("state"));
-////                        qt.setMDContent(id_uThis,qt.setJson("rolex.cus."+id_CCus,cusUser), User.class);
-////                        sendMsgOneNew(id_uThis,logFlow);
-////                        sendMsgOneNew(id_uCusNew,logFlow);
-////                        return retResult.ok(CodeEnum.OK.getCode(), "1");
-////                    } else {
-////                        resultDesc = "资产消息信息为空";
-////                    }
-////                } else {
-////                    resultDesc = "资产信息为空";
-////                }
-////                sendMsgNotice(id_CCus,resultDesc, null,id_O,500,id_Us);
-////                return retResult.ok(CodeEnum.OK.getCode(), "4");
-//
-//                qt.setMDContent(id_O,qt.setJson("cusmsg.objCusMsg."+index+".score"
-//                        ,logFlow.getData().getInteger("score")), Order.class);
-//                sendMsgOneNew(id_UCus,logFlow);
-//                result.put("errType",0);
-//                result.put("type",3);
-//                result.put("desc","评分-操作成功");
-//                return retResult.ok(CodeEnum.OK.getCode(), result);
-//            }
-            else {
+            } else {
                 sendMsgNotice(id_CCus, "不识别子类型", id_uThis, id_O, 500, id_Us,-1);
                 result.put("errType", 3);
                 result.put("type", 0);
@@ -350,6 +275,7 @@ public class CusServiceImpl implements CusService {
      */
     @Override
     public ApiResponse sendUserCusService(LogFlow logFlow) {
+        // 获取日志信息
         JSONObject result = new JSONObject();
         String subType = logFlow.getSubType();
         String id_CCus = logFlow.getId_C();
@@ -358,170 +284,80 @@ public class CusServiceImpl implements CusService {
         Integer index = logFlow.getIndex();
         JSONArray id_Us = new JSONArray();
         id_Us.add(id_uThis);
-
+        // 获取订单数据
         Order order = qt.getMDContent(id_O, "cusmsg", Order.class);
+        // 获取订单状态
         int cusOrder = getCusOrder(order, null, 1);
+        // 判断订单为空
         if (cusOrder != 0) {
+            // 添加返回错误信息
             result.put("errType",1);
             result.put("type",cusOrder);
             result.put("desc","订单异常");
+            // 发送错误日志
             sendMsgNotice(id_CCus,"订单异常:异常码="+cusOrder, null,id_O,500,id_Us,-1);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         }
+        // 获取下标用户编号
         String id_U = order.getCusmsg().getJSONArray("objCusMsg").getJSONObject(index).getString("id_U");
+        // 判断子任务类型
         if ("score".equals(subType)) {
-//            Asset asset = qt.getConfig(id_CCus,"a-auth","flowControl");
-//            if (null != asset) {
-//                JSONObject flowControl = asset.getFlowControl();
-//                if (null != flowControl) {
-//                    JSONObject cusAsset = flowControl.getJSONObject("cus");
-//                    if (null != cusAsset) {
-//                        JSONObject id_uThisInfo = cusAsset.getJSONObject(id_uThis);
-//                        JSONObject userAll = id_uThisInfo.getJSONObject("userAll");
-//                        JSONObject id_uPo = userAll.getJSONObject(id_uPointTo);
-//                        id_uPo.put("type",2);
-//                        userAll.put(id_uPointTo,id_uPo);
-//                        id_uThisInfo.put("userAll",userAll);
-//                        qt.setMDContent(asset.getId(),qt.setJson("flowControl.cus."+id_uThis,id_uThisInfo), Asset.class);
-//                        JSONObject foUp = new JSONObject();
-//                        foUp.put("img","111.jpg");
-//                        foUp.put("type",1);
-//                        qt.setMDContent(asset.getId(),qt.setJson("flowControl.cusFoUp."+id_uPointTo,foUp), Asset.class);
-//                        sendMsgOneNew(id_uPointTo,logFlow);
-//                        sendMsgOneNew(id_uThis,logFlow);
-//                        return retResult.ok(CodeEnum.OK.getCode(), "2");
-//                    } else {
-//                        resultDesc = "资产客服信息为空";
-//                    }
-//                } else {
-//                    resultDesc = "资产消息信息为空";
-//                }
-//            } else {
-//                resultDesc = "资产信息为空";
-//            }
-//            sendMsgNotice(id_CCus,resultDesc, null,id_O,500,id_Us);
-//            return retResult.ok(CodeEnum.OK.getCode(), "0");
-
+            // 发送申请评分日志
             sendMsgOneNew(id_U,logFlow);
             result.put("errType",0);
             result.put("type",1);
             result.put("desc","申请评分");
-//            return retResult.ok(CodeEnum.OK.getCode(), result);
         } else {
+            // 获取客服下标对应信息
             JSONObject indexInfo = order.getCusmsg().getJSONArray("objCusMsg").getJSONObject(index);
+            // 获取客服状态
             Integer bcdStatus = indexInfo.getInteger("bcdStatus");
+            // 判断状态为删除
             if (bcdStatus == 54) {
                 result.put("errType",2);
                 result.put("type",1);
                 result.put("desc","foUp".equals(subType)?"无法回访该用户!":"消息发送失败!");
+                // 发送删除通知
                 sendMsgNotice(id_CCus,"foUp".equals(subType)?"无法回访该用户!":"消息发送失败!"
                         , null,id_O,500,id_Us,index);
                 return retResult.ok(CodeEnum.OK.getCode(), result);
+            // 判断状态为拒收
             } else if (bcdStatus == 55) {
                 result.put("errType",2);
                 result.put("type",2);
                 result.put("desc","用户已拒收!");
+                // 发送拒收通知
                 sendMsgNotice(id_CCus,"用户已拒收!", null,id_O,500,id_Us,index);
                 return retResult.ok(CodeEnum.OK.getCode(), result);
             }
+            // 判断日志为回访顾客
             if ("foUp".equals(subType)) {
-//                User user = qt.getMDContent(id_uPointTo, "rolex", User.class);
-//                if (null != user) {
-//                    JSONObject rolex = user.getRolex();
-//                    if (null != rolex) {
-//                        JSONObject cus = rolex.getJSONObject("cus");
-//                        if (null != cus) {
-//                            JSONObject cusUser = cus.getJSONObject(id_CCus);
-//                            if (null == cusUser) {
-//                                resultDesc = "无法回访该用户!";
-//                            } else {
-//                                int state = cusUser.getInteger("state");
-//                                if (state == 0) {
-//                                    resultDesc = "用户已拒收!";
-//                                } else {
-//                                    int cusFoUp = cusUser.getInteger("cusFoUp");
-//                                    if (cusFoUp > 0) {
-//                                        sendMsgOneNew(id_uThis,logFlow);
-//                                        sendMsgOneNew(id_uPointTo,logFlow);
-//                                        cusFoUp--;
-//                                        cusUser.put("cusFoUp",cusFoUp);
-//                                        qt.setMDContent(id_uPointTo,qt.setJson("rolex.cus."+id_CCus,cusUser), User.class);
-//                                        return retResult.ok(CodeEnum.OK.getCode(), "3");
-//                                    } else {
-//                                        resultDesc = "回访次数已达上限!";
-//                                    }
-//                                }
-//                            }
-//                        } else {
-//                            resultDesc = "用户客服信息为空";
-//                        }
-//                    } else {
-//                        resultDesc = "用户权限信息为空";
-//                    }
-//                } else {
-//                    resultDesc = "用户信息为空";
-//                }
-//                sendMsgNotice(id_CCus,resultDesc, null,id_O,500,id_Us);
-//                return retResult.ok(CodeEnum.OK.getCode(), "0");
-//
-//                User user = qt.getMDContent(id_U, "rolex", User.class);
-//                int cusUser = getCusUser(user, id_O);
-//                if (cusUser != 0) {
-//                    result.put("errType",2);
-//                    result.put("type",cusUser);
-//                    result.put("desc","用户异常");
-//                    sendMsgNotice(id_CCus,"用户异常:异常码="+cusUser, null,id_O,500,id_Us);
-//                    return retResult.ok(CodeEnum.OK.getCode(), result);
-//                }
-
-
+                // 获取回访余剩次数
                 Integer cusFoUp = indexInfo.getInteger("cusFoUp");
+                // 判断次数用完
                 if (cusFoUp <= 0) {
                     result.put("errType",2);
                     result.put("type",2);
                     result.put("desc","回访次数已达上限!");
+                    // 发送次数上限通知
                     sendMsgNotice(id_CCus,"回访次数已达上限!", null,id_O,500,id_Us,index);
                     return retResult.ok(CodeEnum.OK.getCode(), result);
                 }
+                // 回访次数减一
                 cusFoUp--;
+                // 更新数据库
                 qt.setMDContent(id_O,qt.setJson("cusmsg.objCusMsg."+index+".cusFoUp",cusFoUp), Order.class);
+                // 发送回访日志
                 sendMsgOneNew(id_U,logFlow);
-
                 result.put("type",2);
                 result.put("desc","回访客户");
             } else {
-//                User user = qt.getMDContent(id_uPointTo, "rolex", User.class);
-//                if (null != user && null != user.getRolex()) {
-//                    JSONObject rolex = user.getRolex();
-//                    JSONObject cus = rolex.getJSONObject("cus");
-//                    if (null != cus) {
-//                        JSONObject cusUser = cus.getJSONObject(id_CCus);
-//                        if (null != cusUser) {
-//                            int state = cusUser.getInteger("state");
-//                            if (state == 0) {
-//                                resultDesc = "用户已拒收!";
-//                            } else {
-//                                sendMsgOneNew(id_uThis,logFlow);
-//                                sendMsgOneNew(id_uPointTo,logFlow);
-//                                return retResult.ok(CodeEnum.OK.getCode(), "1");
-//                            }
-//                        } else {
-//                            resultDesc = "该用户客服信息无本公司!";
-//                        }
-//                    } else {
-//                        resultDesc = "该用户客服信息异常!";
-//                    }
-//                } else {
-//                    resultDesc = "该用户信息为空!";
-//                }
-//                sendMsgNotice(id_CCus,resultDesc,null, id_O,500,id_Us);
-
+                // 发送普通日志
                 sendMsgOneNew(id_U,logFlow);
                 result.put("type",3);
                 result.put("desc","发送消息");
             }
             result.put("errType",0);
-
         }
         return retResult.ok(CodeEnum.OK.getCode(), result);
     }
@@ -608,12 +444,19 @@ public class CusServiceImpl implements CusService {
      */
     @Override
     public ApiResponse getLogList(String id_C) {
+        // 创建返回结果存储
         JSONObject result = new JSONObject();
+        // 获取公司群信息
         Asset asset = qt.getConfig(id_C,"a-auth","flowControl");
+        // 判断公司群信息不为空
         if (null != asset && null != asset.getFlowControl()) {
+            // 获取群信息
             JSONObject flowControl = asset.getFlowControl();
+            // 获取群内data信息
             JSONArray objData = flowControl.getJSONArray("objData");
+            // 判断不为空
             if (null != objData) {
+                // 返回群内信息
                 result.put("isOk",1);
                 result.put("logList",objData);
                 return retResult.ok("200",result);
@@ -988,6 +831,16 @@ public class CusServiceImpl implements CusService {
         return logFlow;
     }
 
+    /**
+     * 获取订单信息状态
+     * @param order 订单信息
+     * @param id_U  用户编号
+     * @param type  判断类型
+     * @return 返回结果: {@link int}
+     * @author tang
+     * @date 创建时间: 2023/9/12
+     * @ver 版本号: 1.0.0
+     */
     private int getCusOrder(Order order,String id_U,int type){
         if (null != order) {
             JSONObject cusmsg = order.getCusmsg();
@@ -996,6 +849,7 @@ public class CusServiceImpl implements CusService {
                     return 0;
                 }
                 if (type == 1) {
+                    // 获取cusmsg卡片内objCusMsg信息
                     JSONArray objCusMsg = cusmsg.getJSONArray("objCusMsg");
                     if (null != objCusMsg) {
                         return 0;
@@ -1003,6 +857,7 @@ public class CusServiceImpl implements CusService {
                         return 3;
                     }
                 } else if (type == 2) {
+                    // 获取cusmsg卡片内cus信息
                     JSONObject cus = cusmsg.getJSONObject("cus");
                     if (null != cus) {
                         JSONObject id_UInfo = cus.getJSONObject(id_U);
@@ -1015,6 +870,7 @@ public class CusServiceImpl implements CusService {
                         return 5;
                     }
                 } else {
+                    // 获取cusmsg卡片内cusFoUp信息
                     JSONObject cusFoUp = cusmsg.getJSONObject("cusFoUp");
                     if (null != cusFoUp) {
                         return 0;
@@ -1030,10 +886,22 @@ public class CusServiceImpl implements CusService {
         }
     }
 
+    /**
+     * 获取用户客服信息状态
+     * @param user	用户信息
+     * @param id_O	订单编号
+     * @return 返回结果: {@link int}
+     * @author tang
+     * @date 创建时间: 2023/9/13
+     * @ver 版本号: 1.0.0
+     */
     private int getCusUser(User user,String id_O){
         if (null != user) {
+            // 获取用户权限信息
             JSONObject rolex = user.getRolex();
+            // 判断不为空
             if (null != rolex) {
+                // 获取用户客服信息
                 JSONObject cus = rolex.getJSONObject("cus");
                 if (null != cus) {
                     JSONObject id_OInfo = cus.getJSONObject(id_O);

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.websocket.server.PathParam;
 
 /**
  * @author tang
@@ -70,12 +71,125 @@ public class ZjTestController {
 //    @GetMapping("/v1/shareOpen")
     @SecurityParameter
     @PostMapping("/v1/shareOpen")
-    public ApiResponse shareOpen(@RequestParam("shareId") String shareId) {
+    public ApiResponse shareOpen(@RequestBody JSONObject data) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.shareOpen(data.getString("shareId"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.shareOpen", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/shareOpen/{shareId}")
+    public ApiResponse shareOpenPath(@PathParam("shareId") String shareId) {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
             return zjService.shareOpen(shareId);
         } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "ZjTestController.shareOpen", e);
+            return getUserToken.err(new JSONObject(), "ZjTestController.shareOpenPath", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/initFC")
+    public ApiResponse initFC(@RequestBody JSONObject data) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.initFC(data.getString("id_C"),tokData.getString("id_U"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.initFC", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getFCAuth")
+    public ApiResponse getFCAuth(@RequestBody JSONObject data) {
+        try {
+            return zjService.getFCAuth(data.getString("id_C"),data.getString("id"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getFCAuth", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/setFCAuth")
+    public ApiResponse setFCAuth(@RequestBody JSONObject data) {
+        try {
+            return zjService.setFCAuth(data.getString("id_C"),data.getString("id"),data.getJSONObject("users"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.setFCAuth", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getFCAuthByUser")
+    public ApiResponse getFCAuthByUser(@RequestBody JSONObject data) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.getFCAuthByUser(data.getString("id_C"),tokData.getString("id_U"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getFCAuthByUser", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getLSProdShareId")
+    public ApiResponse getLSProdShareId(@RequestBody JSONObject data) {
+        try {
+            return zjService.getLSProdShareId(data.getString("id_P"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getLSProdShareId", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getLSInfoShareId")
+    public ApiResponse getLSInfoShareId(@RequestBody JSONObject data) {
+        try {
+            return zjService.getLSInfoShareId(data.getString("id_I"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getLSInfoShareId", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getLNUserShareId")
+    public ApiResponse getLNUserShareId(@RequestBody JSONObject data) {
+        try {
+            return zjService.getLNUserShareId(data.getString("id_U"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getLNUserShareId", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getLNCompShareId")
+    public ApiResponse getLNCompShareId(@RequestBody JSONObject data) {
+        try {
+            return zjService.getLNCompShareId(data.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getLNCompShareId", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getLBProdShareId")
+    public ApiResponse getLBProdShareId(@RequestBody JSONObject data) {
+        try {
+            return zjService.getLBProdShareId(data.getString("id_P"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getLBProdShareId", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getLBInfoShareId")
+    public ApiResponse getLBInfoShareId(@RequestBody JSONObject data) {
+        try {
+            return zjService.getLBInfoShareId(data.getString("id_I"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getLBInfoShareId", e);
         }
     }
 }

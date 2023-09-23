@@ -11,6 +11,7 @@ import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.lNUser;
+import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -163,7 +165,7 @@ public class ZjTestServiceImpl implements ZjTestService {
                 return retResult.ok(CodeEnum.OK.getCode(), rdSet);
             }
 //            try {
-//                response.sendRedirect("https://www.cresign.cn");
+//                response.sendRedirect("https://www.cresign.cn/share?shareId="+shareId);
 //            } catch (IOException e) {
 //                System.out.println("转发异常");
 //            }
@@ -175,5 +177,189 @@ public class ZjTestServiceImpl implements ZjTestService {
         }
         throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
                 ERR_SHARE_NULL.getCode(),"");
+    }
+
+    @Override
+    public ApiResponse initFC(String id_C,String id_U) {
+        Asset asset = qt.getConfig(id_C, "a-auth", "flowControl");
+        if (null == asset || null == asset.getFlowControl() || null == asset.getFlowControl().getJSONArray("objData")) {
+            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                    ASSET_NOT_FOUND.getCode(),"");
+        }
+        JSONObject flowControl = asset.getFlowControl();
+        JSONArray objData = flowControl.getJSONArray("objData");
+        JSONObject objFC = new JSONObject();
+        for (int i = 0; i < objData.size(); i++) {
+            JSONObject data = objData.getJSONObject(i);
+            String id = data.getString("id");
+            JSONArray objUser = data.getJSONArray("objUser");
+            JSONObject userFc = new JSONObject();
+            for (int j = 0; j < objUser.size(); j++) {
+                JSONObject userData = objUser.getJSONObject(j);
+                String id_UNew = userData.getString("id_U");
+                JSONObject userFcData = new JSONObject();
+//                JSONArray array = new JSONArray();
+//                array.add("test");
+//                userFcData.put("role",array);
+//                userFcData.put("position",j==0?"main":"ordinary");
+//                userFcData.put("isProhibit",j==0?"false":"true");
+                userFcData.put("role",new JSONArray());
+                if (id_UNew.equals(id_U)) {
+                    userFcData.put("position","main");
+                } else {
+                    userFcData.put("position","ordinary");
+                }
+                userFcData.put("isProhibit","false");
+                userFcData.put("timeProhibit",0);
+                userFcData.put("startTimeProhibit","");
+                userFc.put(id_UNew,userFcData);
+            }
+            objFC.put(id,userFc);
+        }
+        qt.setMDContent(asset.getId(),qt.setJson("role.objFC",objFC), Asset.class);
+        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+    }
+
+    @Override
+    public ApiResponse getFCAuth(String id_C,String id) {
+        Asset asset = qt.getConfig(id_C, "a-auth", "role");
+        if (null == asset || null == asset.getRole() || null == asset.getRole().getJSONObject("objFC")) {
+            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                    ASSET_NOT_FOUND.getCode(),"");
+        }
+        JSONObject objFC = asset.getRole().getJSONObject("objFC");
+        JSONObject result = objFC.getJSONObject(id);
+        return retResult.ok(CodeEnum.OK.getCode(), result);
+    }
+
+    @Override
+    public ApiResponse setFCAuth(String id_C, String id, JSONObject users) {
+        Asset asset = qt.getConfig(id_C, "a-auth", "role");
+        if (null == asset || null == asset.getRole() || null == asset.getRole().getJSONObject("objFC")) {
+            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                    ASSET_NOT_FOUND.getCode(),"");
+        }
+        JSONObject objFC = asset.getRole().getJSONObject("objFC");
+        JSONObject objFCData = objFC.getJSONObject(id);
+        for (String s : users.keySet()) {
+            objFCData.put(s,users.getJSONObject(s));
+        }
+        qt.setMDContent(asset.getId(),qt.setJson("role.objFC."+id,objFCData), Asset.class);
+        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+    }
+
+    @Override
+    public ApiResponse getFCAuthByUser(String id_C, String id_U) {
+        Asset asset = qt.getConfig(id_C, "a-auth", "role");
+        if (null == asset || null == asset.getRole() || null == asset.getRole().getJSONObject("objFC")) {
+            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                    ASSET_NOT_FOUND.getCode(),"");
+        }
+        JSONObject objFC = asset.getRole().getJSONObject("objFC");
+        JSONObject result = new JSONObject();
+        for (String s : objFC.keySet()) {
+            JSONObject objFCData = objFC.getJSONObject(s);
+            if (objFCData.containsKey(id_U)) {
+                result.put(s,objFCData.getJSONObject(id_U));
+            }
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), result);
+    }
+
+    @Override
+    public ApiResponse getLSProdShareId(String id_P) {
+        JSONArray lSProd = qt.getES("lSProd", qt.setESFilt("id_P", id_P));
+        if (null != lSProd && lSProd.size() > 0) {
+            JSONObject object = lSProd.getJSONObject(0);
+            String shareId = object.getString("qr");
+            System.out.println("ES:"+object.getString("id_ES"));
+            if (null == shareId || "".equals(shareId)) {
+                shareId = UUID.randomUUID().toString().replace("-","");
+                qt.setES("lSProd",qt.setESFilt("_id",object.getString("id_ES")),qt.setJson("qr",shareId));
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), shareId);
+        }
+        throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                LS_PROD_NOT_FOUND.getCode(),"");
+    }
+
+    @Override
+    public ApiResponse getLSInfoShareId(String id_I) {
+        JSONArray lSInfo = qt.getES("lSInfo", qt.setESFilt("id_I", id_I));
+        if (null != lSInfo && lSInfo.size() > 0) {
+            JSONObject object = lSInfo.getJSONObject(0);
+            String shareId = object.getString("qr");
+            if (null == shareId || "".equals(shareId)) {
+                shareId = UUID.randomUUID().toString().replace("-","");
+                qt.setES("lSInfo",qt.setESFilt("_id",object.getString("id_ES")),qt.setJson("qr",shareId));
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), shareId);
+        }
+        throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                LS_INFO_NOT_FOUND.getCode(),"");
+    }
+
+    @Override
+    public ApiResponse getLNUserShareId(String id_U) {
+        JSONArray lNUser = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
+        if (null != lNUser && lNUser.size() > 0) {
+            JSONObject object = lNUser.getJSONObject(0);
+            String shareId = object.getString("qr");
+            if (null == shareId || "".equals(shareId)) {
+                shareId = UUID.randomUUID().toString().replace("-","");
+                qt.setES("lNUser",qt.setESFilt("_id",object.getString("id_ES")),qt.setJson("qr",shareId));
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), shareId);
+        }
+        throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                LN_USER_NOT_FOUND.getCode(),"");
+    }
+
+    @Override
+    public ApiResponse getLNCompShareId(String id_C) {
+        JSONArray lNComp = qt.getES("lNComp", qt.setESFilt("id_C", id_C));
+        if (null != lNComp && lNComp.size() > 0) {
+            JSONObject object = lNComp.getJSONObject(0);
+            String shareId = object.getString("qr");
+            if (null == shareId || "".equals(shareId)) {
+                shareId = UUID.randomUUID().toString().replace("-","");
+                qt.setES("lNComp",qt.setESFilt("_id",object.getString("id_ES")),qt.setJson("qr",shareId));
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), shareId);
+        }
+        throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                LN_COMP_NOT_FOUND.getCode(),"");
+    }
+
+    @Override
+    public ApiResponse getLBProdShareId(String id_P) {
+        JSONArray lBProd = qt.getES("lBProd", qt.setESFilt("id_P", id_P));
+        if (null != lBProd && lBProd.size() > 0) {
+            JSONObject object = lBProd.getJSONObject(0);
+            String shareId = object.getString("qr");
+            if (null == shareId || "".equals(shareId)) {
+                shareId = UUID.randomUUID().toString().replace("-","");
+                qt.setES("lBProd",qt.setESFilt("_id",object.getString("id_ES")),qt.setJson("qr",shareId));
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), shareId);
+        }
+        throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                LB_PROD_NOT_FOUND.getCode(),"");
+    }
+
+    @Override
+    public ApiResponse getLBInfoShareId(String id_I) {
+        JSONArray lBInfo = qt.getES("lBInfo", qt.setESFilt("id_I", id_I));
+        if (null != lBInfo && lBInfo.size() > 0) {
+            JSONObject object = lBInfo.getJSONObject(0);
+            String shareId = object.getString("qr");
+            if (null == shareId || "".equals(shareId)) {
+                shareId = UUID.randomUUID().toString().replace("-","");
+                qt.setES("lBInfo",qt.setESFilt("_id",object.getString("id_ES")),qt.setJson("qr",shareId));
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), shareId);
+        }
+        throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                LB_INFO_NOT_FOUND.getCode(),"");
     }
 }

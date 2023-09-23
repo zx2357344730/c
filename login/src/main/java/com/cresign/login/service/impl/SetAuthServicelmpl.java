@@ -292,7 +292,7 @@ public class SetAuthServicelmpl implements SetAuthService {
         JSONObject userRolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
         // if user actually exists in this company
         if (userRolex != null) {
-            oauth.setToken(user, id_C, userRolex.getString("grpU"),
+            String token = oauth.setToken(user, id_C, userRolex.getString("grpU"),
                     userRolex.getString("dep"), clientType);
             Comp comp = qt.getMDContent(id_C, "info", Comp.class);
             JSONObject updateData = new JSONObject();
@@ -320,7 +320,7 @@ public class SetAuthServicelmpl implements SetAuthService {
             result.put("wrdNC", comp.getInfo().getWrdN());
 //            result.put("wrdNU", comp.getInfo().getJSONObject("wrdN"));
             result.put("id_C", id_C);
-
+            result.put("token",token);
             return retResult.ok(CodeEnum.OK.getCode(), result);
         } else {
             JSONArray es = qt.getES("lSUser", qt.setESFilt("id_U", id_U, "id_C", id_C));

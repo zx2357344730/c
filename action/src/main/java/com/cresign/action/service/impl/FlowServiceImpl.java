@@ -2561,7 +2561,7 @@ public class FlowServiceImpl implements FlowService {
     }
 
     /**
-     * 时间处理方法
+     * 时间处理
      * @param id_O	订单编号
      * @param id_U	用户编号
      * @param id_C	公司编号
@@ -2574,14 +2574,24 @@ public class FlowServiceImpl implements FlowService {
     @Override
     public ApiResponse timeHandle(String id_O, String id_U, String id_C, Long teStart,Integer wn0TPrior) {
         System.out.println("初始-teStart:"+teStart+" , id_U:"+id_U);
-
+        // 调用时间处理方法
         timeZjService.getAtFirst(id_O,teStart,id_C,wn0TPrior);
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "时间处理成功!");
     }
 
+    /**
+     * 删除时间处理信息
+     * @param id_O 订单编号
+     * @param id_C 公司编号
+     * @return 返回结果: {@link ApiResponse}
+     * @author tang
+     * @date 创建时间: 2023/9/12
+     * @ver 版本号: 1.0.0
+     */
     @Override
     public ApiResponse removeTime(String id_O, String id_C) {
+        // 调用根据主订单和对应公司编号，删除时间处理信息方法
         timeZjService.removeTime(id_O,id_C);
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "时间删除处理成功!");

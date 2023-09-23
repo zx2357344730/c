@@ -77,27 +77,27 @@ public class CusController {
         }
     }
 
-    /**
-     * 客服操作api
-     * @param reqJson 请求参数
-     * @return 返回结果: {@link ApiResponse}
-     * @author tang
-     * @date 创建时间: 2023/4/24
-     * @ver 版本号: 1.0.0
-     */
-    @SecurityParameter
-    @PostMapping("/v1/cusOperate")
-    public ApiResponse cusOperate(@RequestBody JSONObject reqJson){
-        try {
-            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-            return cusService.cusOperate(tokData.getString("id_C")
-                    ,tokData.getString("id_U")
-                    ,reqJson.getString("id_O"),reqJson.getInteger("index")
-                    ,reqJson.getInteger("bcdStatus"));
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "CusController.cusOperate", e);
-        }
-    }
+//    /**
+//     * 客服操作api
+//     * @param reqJson 请求参数
+//     * @return 返回结果: {@link ApiResponse}
+//     * @author tang
+//     * @date 创建时间: 2023/4/24
+//     * @ver 版本号: 1.0.0
+//     */
+//    @SecurityParameter
+//    @PostMapping("/v1/cusOperate")
+//    public ApiResponse cusOperate(@RequestBody JSONObject reqJson){
+//        try {
+//            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//            return cusService.cusOperate(tokData.getString("id_C")
+//                    ,tokData.getString("id_U")
+//                    ,reqJson.getString("id_O"),reqJson.getInteger("index")
+//                    ,reqJson.getInteger("bcdStatus"));
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "CusController.cusOperate", e);
+//        }
+//    }
 
     /**
      * 根据id_C获取公司的聊天群信息
@@ -118,104 +118,112 @@ public class CusController {
         }
     }
 
-    /**
-     * 更新修改群关联信息
-     * @param reqJson 请求参数
-     * @return 返回结果: {@link ApiResponse}
-     * @author tang
-     * @date 创建时间: 2023/5/29
-     * @ver 版本号: 1.0.0
-     */
-    @SecurityParameter
-    @PostMapping("/v1/updateLogListGl")
-    public ApiResponse updateLogListGl(@RequestBody JSONObject reqJson){
-        try {
-            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-            return cusService.updateLogListGl(tokData.getString("id_C")
-                    , reqJson.getString("logId"), reqJson.getJSONArray("glId") );
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "CusController.updateLogListGl", e);
-        }
-    }
+//    /**
+//     * 更新修改群关联信息
+//     * @param reqJson 请求参数
+//     * @return 返回结果: {@link ApiResponse}
+//     * @author tang
+//     * @date 创建时间: 2023/5/29
+//     * @ver 版本号: 1.0.0
+//     */
+//    @SecurityParameter
+//    @PostMapping("/v1/updateLogListGl")
+//    public ApiResponse updateLogListGl(@RequestBody JSONObject reqJson){
+//        try {
+//            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//            return cusService.updateLogListGl(tokData.getString("id_C")
+//                    , reqJson.getString("logId"), reqJson.getJSONArray("glId") );
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "CusController.updateLogListGl", e);
+//        }
+//    }
 
-    /**
-     * 获取公司的日志权限信息
-     * @param reqJson 请求参数
-     * @return 返回结果: {@link ApiResponse}
-     * @author tang
-     * @date 创建时间: 2023/5/29
-     * @ver 版本号: 1.0.0
-     */
-    @SecurityParameter
-    @PostMapping("/v1/getLogAuth")
-    public ApiResponse getLogAuth(@RequestBody JSONObject reqJson){
-        try {
-            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-            return cusService.getLogAuth(tokData.getString("id_C")
-                    , reqJson.getString("grpUW"), reqJson.getString("grpUN"),reqJson.getString("type"));
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "CusController.getLogAuth", e);
-        }
-    }
+//    /**
+//     * 获取公司的日志权限信息
+//     * @param reqJson 请求参数
+//     * @return 返回结果: {@link ApiResponse}
+//     * @author tang
+//     * @date 创建时间: 2023/5/29
+//     * @ver 版本号: 1.0.0
+//     */
+//    @SecurityParameter
+//    @PostMapping("/v1/getLogAuth")
+//    public ApiResponse getLogAuth(@RequestBody JSONObject reqJson){
+//        try {
+//            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//            return cusService.getLogAuth(tokData.getString("id_C")
+//                    , reqJson.getString("grpUW"), reqJson.getString("grpUN"),reqJson.getString("type"));
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "CusController.getLogAuth", e);
+//        }
+//    }
 
-    @SecurityParameter
-    @PostMapping("/v1/createCus")
-    public ApiResponse createCus(@RequestBody JSONObject reqJson){
-        try {
-            return cusService.createCus(reqJson.getString("id_CCus")
-                    , getUserToken.getTokenOfUserId(request
-                            .getHeader("authorization"), request.getHeader("clientType"))
-                    , reqJson.getString("id_O"));
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "CusController.createCus", e);
-        }
-    }
+//    /**
+//     * 创建客服请求方法
+//     * @param reqJson 请求参数
+//     * @return 返回结果: {@link ApiResponse}
+//     * @author tang
+//     * @date 创建时间: 2023/9/12
+//     * @ver 版本号: 1.0.0
+//     */
+//    @SecurityParameter
+//    @PostMapping("/v1/createCus")
+//    public ApiResponse createCus(@RequestBody JSONObject reqJson){
+//        try {
+//            return cusService.createCus(reqJson.getString("id_CCus")
+//                    , getUserToken.getTokenOfUserId(request
+//                            .getHeader("authorization"), request.getHeader("clientType"))
+//                    , reqJson.getString("id_O"));
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "CusController.createCus", e);
+//        }
+//    }
 
-    @SecurityParameter
-    @PostMapping("/v1/getCusListByUser")
-    public ApiResponse getCusListByUser(@RequestBody JSONObject reqJson){
-        try {
-            return cusService.getCusListByUser(
-                    getUserToken.getTokenOfUserId(request
-                            .getHeader("authorization"), request.getHeader("clientType"))
-                    ,reqJson.getJSONArray("types"));
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "CusController.getCusListByUser", e);
-        }
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/getCusListByUser")
+//    public ApiResponse getCusListByUser(@RequestBody JSONObject reqJson){
+//        try {
+//            return cusService.getCusListByUser(
+//                    getUserToken.getTokenOfUserId(request
+//                            .getHeader("authorization"), request.getHeader("clientType"))
+//                    ,reqJson.getJSONArray("types"));
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "CusController.getCusListByUser", e);
+//        }
+//    }
 
-    @SecurityParameter
-    @PostMapping("/v1/getCusListByCusUser")
-    public ApiResponse getCusListByCusUser(@RequestBody JSONObject reqJson){
-        try {
-            return cusService.getCusListByCusUser(
-                    getUserToken.getTokenOfUserId(request
-                            .getHeader("authorization"), request.getHeader("clientType"))
-                    , reqJson.getString("id_O"),reqJson.getJSONArray("types"));
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "CusController.getCusListByCusUser", e);
-        }
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/getCusListByCusUser")
+//    public ApiResponse getCusListByCusUser(@RequestBody JSONObject reqJson){
+//        try {
+//            return cusService.getCusListByCusUser(
+//                    getUserToken.getTokenOfUserId(request
+//                            .getHeader("authorization"), request.getHeader("clientType"))
+//                    , reqJson.getString("id_O"),reqJson.getJSONArray("types"));
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "CusController.getCusListByCusUser", e);
+//        }
+//    }
 
-    @SecurityParameter
-    @PostMapping("/v1/renewCusUser")
-    public ApiResponse renewCusUser(@RequestBody JSONObject reqJson){
-        try {
-            return cusService.renewCusUser(reqJson.getString("id_C"),reqJson.getJSONArray("indexS")
-                    ,reqJson.getJSONArray("ids"),reqJson.getInteger("type"));
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "CusController.renewCusUser", e);
-        }
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/renewCusUser")
+//    public ApiResponse renewCusUser(@RequestBody JSONObject reqJson){
+//        try {
+//            return cusService.renewCusUser(reqJson.getString("id_C"),reqJson.getJSONArray("indexS")
+//                    ,reqJson.getJSONArray("ids"),reqJson.getInteger("type"));
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "CusController.renewCusUser", e);
+//        }
+//    }
 
-    @SecurityParameter
-    @PostMapping("/v1/restoreCusLog")
-    public ApiResponse restoreCusLog(@RequestBody JSONObject reqJson){
-        try {
-            return cusService.restoreCusLog(reqJson.getString("id_O"),reqJson.getString("id_CCus")
-                    ,reqJson.getInteger("index"));
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "CusController.restoreCusLog", e);
-        }
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/restoreCusLog")
+//    public ApiResponse restoreCusLog(@RequestBody JSONObject reqJson){
+//        try {
+//            return cusService.restoreCusLog(reqJson.getString("id_O"),reqJson.getString("id_CCus")
+//                    ,reqJson.getInteger("index"));
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "CusController.restoreCusLog", e);
+//        }
+//    }
 }

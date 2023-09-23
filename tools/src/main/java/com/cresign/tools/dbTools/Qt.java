@@ -239,6 +239,71 @@ public class Qt {
         }
     }
 
+    public <T> List<T> getMDContentMany2(Collection<?> setIds, List<String> fields, Class<T> classType) {
+        Query query = new Query(new Criteria("_id").in(setIds));
+        if (fields != null) {
+            for (Object field : fields)
+            {
+                query.fields().include(field.toString());
+            }
+        }
+        try {
+            return mongoTemplate.find(query, classType);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+        }
+    }
+
+//    public <T> List<T> getMDContentMany2(JSONArray setIds, List<String> fields, Class<T> classType) {
+//        System.out.println("t2:");
+//        System.out.println(JSON.toJSONString(setIds));
+//        Query query = new Query(new Criteria("_id").in(setIds));
+//        if (fields != null) {
+//            for (Object field : fields)
+//            {
+//                query.fields().include(field.toString());
+//            }
+//        }
+//        try {
+//            return mongoTemplate.find(query, classType);
+//        } catch (Exception e)
+//        {
+//            e.printStackTrace();
+//            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+//        }
+//    }
+
+//    public <T,T2> List<T> getMDContentMany2(T2 setIds, List<String> fields, Class<T> classType) {
+//        System.out.println("t2:");
+//        System.out.println(JSON.toJSONString(setIds));
+//        Query query = new Query(new Criteria("_id").in(setIds));
+//        if (setIds instanceof Collection) {
+//            System.out.println("1");
+//            query = new Query(new Criteria("_id").in((Collection<?>) setIds));
+//        } else if (setIds instanceof JSONArray) {
+//            System.out.println("2");
+//            query = new Query(new Criteria("_id").in((JSONArray) setIds));
+//        } else {
+//            System.out.println("3");
+//            return new ArrayList<>();
+//        }
+//        if (fields != null) {
+//            for (Object field : fields)
+//            {
+//                query.fields().include(field.toString());
+//            }
+//        }
+//        try {
+//            return mongoTemplate.find(query, classType);
+//        } catch (Exception e)
+//        {
+//            e.printStackTrace();
+//            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+//        }
+//    }
+
     public List<?> getMDContentMany(HashSet setIds, String field, Class<?> classType) {
 
         Query query = new Query(new Criteria("_id").in(setIds));

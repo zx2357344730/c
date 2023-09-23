@@ -41,6 +41,8 @@ public class Init {
 
     private JSONObject pdfInit;
 
+    private JSONObject log;
+
     private JSONArray seMethod;
 
 }

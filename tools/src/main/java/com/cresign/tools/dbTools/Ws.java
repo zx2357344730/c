@@ -146,8 +146,9 @@ public class Ws {
         options.put("HW",HW);
         map.put("options",options);
         JSONObject date = new JSONObject();
-        date.put("data1","1");
-        date.put("data2","2");
+        date.put("toPage","/user/info.js");
+        date.put("name","张三");
+        date.put("desc","这是一个推送data");
         map.put("date",date);
         map.put("request_id", UUID.randomUUID().toString().replace("-",""));
         String s = HttpClientUtil.sendPost(map,url);

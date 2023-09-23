@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DoubleUtils;
 import com.cresign.tools.enumeration.DateEnum;
-import com.cresign.tools.pojo.po.chkin.Chkin;
+import com.cresign.tools.pojo.po.chkin.ChKin;
 import com.cresign.tools.pojo.po.chkin.Hr;
 import com.cresign.tools.pojo.po.orderCard.OrderAction;
 import com.cresign.tools.pojo.po.orderCard.OrderOItem;
@@ -100,7 +100,7 @@ public class LogFlow {
         private static final LogFlow instance = new LogFlow();
     }
 
-    public void setLogData_Chkin(Chkin chKin){
+    public void setLogData_Chkin(ChKin chKin){
         JSONObject data = new JSONObject();
         data.put("type",chKin.getType());
         data.put("chkType",chKin.getChkType());

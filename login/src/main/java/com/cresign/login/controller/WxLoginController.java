@@ -138,23 +138,23 @@ public class WxLoginController {
         }
     }
 
-    @SecurityParameter
-    @PostMapping("/v1/wxRegisterUser")
-    public ApiResponse wxRegisterUser(@RequestBody JSONObject reqJson) throws IOException {
-        try {
-            return wxLoginService.wxRegisterUser(reqJson);
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "WxLoginController.wxRegisterUser", e);
-        }
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/wxRegisterUser")
+//    public ApiResponse wxRegisterUser(@RequestBody JSONObject reqJson) throws IOException {
+//        try {
+//            return wxLoginService.wxRegisterUser(reqJson);
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "WxLoginController.wxRegisterUser", e);
+//        }
+//    }
 
-    /**
-     * 验证appId，并且返回AUN—ID
-     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
-     * @author tang
-     * @version 1.0.0
-     * @date 2022/8/19
-     */
+//    /**
+//     * 验证appId，并且返回AUN—ID
+//     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+//     * @author tang
+//     * @version 1.0.0
+//     * @date 2022/8/19
+//     */
 //    @SecurityParameter
 //    @PostMapping("/v1/verificationAUN")
 //    public ApiResponse verificationAUN(@RequestBody JSONObject reqJson) {
@@ -164,34 +164,34 @@ public class WxLoginController {
 //    }
 //
 
-    @SecurityParameter
-    @PostMapping("/v1/wechatRegister")
-    public ApiResponse wechatRegister(@RequestBody JSONObject reqJson) throws IOException {
-        try {
-            String clientID = "";
-            if (reqJson.containsKey(CLIENT_ID)) {
-                clientID = reqJson.getString(CLIENT_ID);
-            }
-
-            String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg";
-            if (reqJson.containsKey(USER_PIC)) {
-                pic = reqJson.getString(USER_PIC);
-            }
-
-            return wxLoginService.wechatRegister(
-                    reqJson.getString("phone"),
-                    reqJson.getInteger("phoneType"),
-                    reqJson.getString("smsNum"),
-                    reqJson.getString("wcnN"),
-                    request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName()),
-                    clientID,
-                    pic,
-                    reqJson.getString("id_WX")
-            );
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "WxLoginController.wechatRegister", e);
-        }
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/wechatRegister")
+//    public ApiResponse wechatRegister(@RequestBody JSONObject reqJson) throws IOException {
+//        try {
+//            String clientID = "";
+//            if (reqJson.containsKey(CLIENT_ID)) {
+//                clientID = reqJson.getString(CLIENT_ID);
+//            }
+//
+//            String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg";
+//            if (reqJson.containsKey(USER_PIC)) {
+//                pic = reqJson.getString(USER_PIC);
+//            }
+//
+//            return wxLoginService.wechatRegister(
+//                    reqJson.getString("phone"),
+//                    reqJson.getInteger("phoneType"),
+//                    reqJson.getString("smsNum"),
+//                    reqJson.getString("wcnN"),
+//                    request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName()),
+//                    clientID,
+//                    pic,
+//                    reqJson.getString("id_WX")
+//            );
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "WxLoginController.wechatRegister", e);
+//        }
+//    }
 
 
     @SecurityParameter

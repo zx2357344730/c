@@ -66,14 +66,14 @@ public class InitController {
         }
     }
 
-    @GetMapping("/v1/getPhoneType")
-    public ApiResponse getPhoneType(@RequestParam("lang") String lang){
-        try {
-            return initService.getPhoneType(lang);
-        } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "InitController.getPhoneType", e);
-        }
-    }
+//    @GetMapping("/v1/getPhoneType")
+//    public ApiResponse getPhoneType(@RequestParam("lang") String lang){
+//        try {
+//            return initService.getPhoneType(lang);
+//        } catch (Exception e) {
+//            return getUserToken.err(new JSONObject(), "InitController.getPhoneType", e);
+//        }
+//    }
 
 
 //    @GetMapping("/v2/getInitInclude")
