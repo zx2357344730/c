@@ -23,7 +23,7 @@ public class Asset {
 
     private JSONObject file00s;
 
-    private JSONArray  view;
+    private JSONArray view;
 
     private JSONObject spec;
 

@@ -26,6 +26,9 @@ public class InitJava {
 
     private JSONObject newProd;
 
+    private JSONObject ipList;
+
+
     private JSONObject newProbOrder;
 
     private JSONObject newMsgOrder;

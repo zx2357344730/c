@@ -46,20 +46,20 @@ public class CosUpload {
 
 //    @Value("${cosBrowser.appId}")
 //    private static String secretId;
-    private static final String secretId = "AKIDCG7nGXPTGrFSSFPCTYRDm8II3d3Ij2Wk";
-//
-////    @Value("${cosBrowser.secretKey}")
-    private static final String secretKey = "7zc2DF2ZcR1QaVIvIPHtFLCoJqBWcT5V";
+//    private static final String secretId = "AKIDCG7nGXPTGrFSSFPCTYRDm8II3d3Ij2Wk";
+////
+//////    @Value("${cosBrowser.secretKey}")
+//    private static final String secretKey = "7zc2DF2ZcR1QaVIvIPHtFLCoJqBWcT5V";
 
-//
-//    @Value("${secret.id}")
-//    private String secretId;
-//
-//    @Value("${secret.key}")
-//    private String secretKey;
+
+    @Value("${secret.id}")
+    private String secretId;
+
+    @Value("${secret.key}")
+    private String secretKey;
 
     // 1 初始化用户身份信息(secretId, secretKey，可在腾讯云后台中的API密钥管理中查看！
-    public COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
+//    public COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
 
     // 2 设置bucket的区域, COS地域的简称请参照
     // https://cloud.tencent.com/document/product/436/6224，根据自己创建的存储桶选择地区
@@ -76,6 +76,7 @@ public class CosUpload {
      * @Card
      **/
     public String uploadCresignPic(File file, String path, String name) throws IOException {
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         COSClient cosClient = new COSClient(cred, clientConfig);
         String fileName = file.getName();
         String prefix = fileName.substring(fileName.lastIndexOf("."));
@@ -99,6 +100,7 @@ public class CosUpload {
     }
 
     public JSONObject uploadCresignStat(File file, String path, String name) {
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         COSClient cosClient = new COSClient(cred, clientConfig);
         String fileName = file.getName();
         String prefix = fileName.substring(fileName.lastIndexOf("."));
@@ -132,6 +134,7 @@ public class CosUpload {
     }
 
     public JSONObject uploadCFiles(File file, String path, String name) throws IOException {
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         COSClient cosClient = new COSClient(cred, clientConfig);
         String fileName = file.getName();
         String prefix = fileName.substring(fileName.lastIndexOf("."));
@@ -164,6 +167,7 @@ public class CosUpload {
         System.out.println("keyPath=" + keyPath);
         if (keyPath != null && !keyPath.equals("")) {
             // 3 生成cos客户端
+            COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
             COSClient cosclient = new COSClient(cred, clientConfig);
             boolean bool = cosclient.doesObjectExist(bucketName, keyPath);
             if (bool) {
@@ -179,6 +183,7 @@ public class CosUpload {
         System.out.println("keyPath=" + keyPath);
         if (keyPath != null && !keyPath.equals("")) {
             // 3 生成cos客户端
+            COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
             COSClient cosclient = new COSClient(cred, clientConfig);
             boolean bool = cosclient.doesObjectExist(bucketName2, keyPath);
             if (bool) {
@@ -192,6 +197,7 @@ public class CosUpload {
     }
 
     public String getCFiles(String keyPath) {
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         COSClient cosClient = new COSClient(cred, clientConfig);
         //1小时过期
         Date expirationTime = new Date(System.currentTimeMillis() + 1000 * 60 * 60);
@@ -200,6 +206,7 @@ public class CosUpload {
     }
 
     public long getCresignSize(String keyPath){
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         // 3 生成cos客户端
         COSClient cosclient = new COSClient(cred, clientConfig);
         // Object是否存在
@@ -213,6 +220,7 @@ public class CosUpload {
     }
 
     public long getCFilesSize(String keyPath){
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         // 3 生成cos客户端
         COSClient cosclient = new COSClient(cred, clientConfig);
         // Object是否存在
@@ -226,6 +234,7 @@ public class CosUpload {
     }
 
     public void copyCresign(String sourceObjectName,String destinationObjectName){
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         COSClient cosClient = new COSClient(cred, clientConfig);
         // 线程池大小，建议在客户端与 COS 网络充足（例如使用腾讯云的 CVM，同地域上传 COS）的情况下，设置成16或32即可，可较充分的利用网络资源
         // 对于使用公网传输且网络带宽质量不高的情况，建议减小该值，避免因网速过慢，造成请求超时。
@@ -257,6 +266,7 @@ public class CosUpload {
     }
 
     public void copyCFiles(String sourceObjectName,String destinationObjectName){
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         COSClient cosClient = new COSClient(cred, clientConfig);
         // 线程池大小，建议在客户端与 COS 网络充足（例如使用腾讯云的 CVM，同地域上传 COS）的情况下，设置成16或32即可，可较充分的利用网络资源
         // 对于使用公网传输且网络带宽质量不高的情况，建议减小该值，避免因网速过慢，造成请求超时。
@@ -301,6 +311,7 @@ public class CosUpload {
      */
     public String uploadPE(File localFile, String path, String name, int nameIS, Date expiration) throws CosClientException{
 
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         // 生成cos客户端
         COSClient cosclient = new COSClient(cred, clientConfig);
 
@@ -446,6 +457,7 @@ public class CosUpload {
      * ##Return: boolean
      */
     public boolean doesObjectExist (String keyPath){
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         // 3 生成cos客户端
         COSClient cosclient = new COSClient(cred, clientConfig);
 
@@ -460,6 +472,7 @@ public class CosUpload {
 
 
     public File downloadCresign(String path) throws Exception {
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         COSClient cosClient = new COSClient(cred, clientConfig);
         //创建 TransferManager
         TransferManager transferManager = new TransferManager(cosClient);
@@ -639,6 +652,7 @@ public class CosUpload {
 
 
     public long selectList(String path) {
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         // 生成cos客户端
         COSClient cosclient = new COSClient(cred, clientConfig);
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
@@ -684,7 +698,7 @@ public class CosUpload {
         return size;
     }
 
-    public JSONObject getScurity() throws TencentCloudSDKException {
+    public JSONObject getSecurity() throws TencentCloudSDKException {
         Credential cred = new Credential(secretId, secretKey);
         // 实例化一个http选项，可选的，没有特殊需求可以跳过
         HttpProfile httpProfile = new HttpProfile();
@@ -704,7 +718,7 @@ public class CosUpload {
         return JSON.parseObject(AssociateSecurityGroupsResponse.toJsonString(resp));
     }
 
-    public Object updateScurity(Long index, String ip, String key) throws TencentCloudSDKException {
+    public Object updateSecurity(Long index, String ip, String key) throws TencentCloudSDKException {
         Credential cred = new Credential(secretId, secretKey);
         // 实例化一个http选项，可选的，没有特殊需求可以跳过
         HttpProfile httpProfile = new HttpProfile();

@@ -66,6 +66,7 @@ public class lBProd {
 
     private String ref;
 
+
     private String refB;
 
     private String pic;

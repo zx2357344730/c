@@ -52,6 +52,9 @@ public class SmsLoginServiceImpl implements SmsLoginService {
     private LoginResult loginResult;
 
     @Autowired
+    private SMSTencent sms;
+
+    @Autowired
     private RegisterUserUtils registerUserUtils;
 
     @Autowired
@@ -59,9 +62,9 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 
     @Autowired
     private RetResult retResult;
-
-    @Autowired
-    private DbUtils dbUtils;
+//
+//    @Autowired
+//    private DbUtils dbUtils;
 
     @Override
     public ApiResponse getSmsLoginNum(String phone)  {
@@ -85,7 +88,7 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 ////            return false;
             String[] phones = {phone};
 
-            SMSTencent.sendSMS(phones, 6, SMSTemplateEnum.LOGIN.getTemplateId(), SMSTypeEnum.LOGIN.getSmsType());
+            sms.sendSMS(phones, 6, SMSTemplateEnum.LOGIN.getTemplateId(), SMSTypeEnum.LOGIN.getSmsType());
 
         } catch (RuntimeException  e) {
 
@@ -161,7 +164,7 @@ public class SmsLoginServiceImpl implements SmsLoginService {
             }
 
             String[] phones = {phone};
-            SMSTencent.sendSMS(phones, 6, SMSTemplateEnum.REGISTER.getTemplateId(), SMSTypeEnum.REGISTER.getSmsType());
+            sms.sendSMS(phones, 6, SMSTemplateEnum.REGISTER.getTemplateId(), SMSTypeEnum.REGISTER.getSmsType());
 
         } catch (RuntimeException  e) {
             throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, LoginEnum.SMS_SEND_CODE_ERROR.getCode(), null);
