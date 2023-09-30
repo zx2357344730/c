@@ -58,6 +58,46 @@ public class ZjTestController {
     }
 
     @SecurityParameter
+    @PostMapping("/v1/sendLogSp")
+    public ApiResponse sendLogSp(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.sendLogSp(tokData.getString("id_U"), tokData.getString("id_C"),reqJson.getString("id")
+                    , reqJson.getString("logType"), reqJson.getString("subType")
+                    , reqJson.getString("zcnDesc"), reqJson.getJSONObject("data"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.sendLogSp", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/sendLogXj")
+    public ApiResponse sendLogXj(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.sendLogXj(tokData.getString("id_U"), tokData.getString("id_C"),reqJson.getString("id")
+                    , reqJson.getString("logType"), reqJson.getString("subType")
+                    , reqJson.getString("zcnDesc"), reqJson.getJSONObject("data"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.sendLogXj", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getLog")
+    public ApiResponse getLog(@RequestBody JSONObject reqJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.getLog(reqJson.getString("id").equals("")?null:reqJson.getString("id")
+                    , reqJson.getString("logType").equals("")?null:reqJson.getString("logType")
+                    , reqJson.getString("subType").equals("")?null:reqJson.getString("subType")
+                    , reqJson.getString("id_SP").equals("")?null:reqJson.getString("id_SP"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.sendLog", e);
+        }
+    }
+
+    @SecurityParameter
     @PostMapping("/v1/shareSave")
     public ApiResponse shareSave(@RequestBody JSONObject data) {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));

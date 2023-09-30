@@ -131,6 +131,250 @@ public class ZjTestServiceImpl implements ZjTestService {
     }
 
     @Override
+    public ApiResponse sendLogSp(String id_U, String id_C, String id, String logType
+            , String subType, String zcnDesc, JSONObject data) {
+        LogFlow logFlow = new LogFlow();
+        logFlow.setId_U(id_U);
+        logFlow.setId_C(id_C);
+        logFlow.setId(id);
+        logFlow.setLogType(logType);
+        logFlow.setSubType(subType);
+        logFlow.setZcndesc(zcnDesc);
+        if (data.getInteger("res") == 0) {
+            data.put("id_SP",UUID.randomUUID().toString().replace("-",""));
+            data.put("id_UA",id_U);
+        } else {
+            data.put("id_UM",id_U);
+        }
+        logFlow.setData(data);
+        JSONArray id_Us = getUsersById_Q(id_C, id, id_U);
+        if (null != id_Us) {
+            logFlow.setId_Us(id_Us);
+            ws.sendWS(logFlow);
+            return retResult.ok(CodeEnum.OK.getCode(), "发送-审批-成功");
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), "发送-审批-失败");
+    }
+
+    @Override
+    public ApiResponse sendLogXj(String id_U, String id_C, String id, String logType
+            , String subType, String zcnDesc, JSONObject data) {
+        LogFlow logFlow = new LogFlow();
+        logFlow.setId_U(id_U);
+        logFlow.setId_C(id_C);
+        logFlow.setId(id);
+        logFlow.setLogType(logType);
+        logFlow.setSubType(subType);
+        logFlow.setZcndesc(zcnDesc);
+        if (data.getInteger("res") == 0) {
+            data.put("id_SP",UUID.randomUUID().toString().replace("-",""));
+            data.put("id_UA",id_U);
+            logFlow.setData(data);
+            Asset asset = qt.getConfig(logFlow.getId_C(), "a-auth", "role");
+            if (null == asset || null == asset.getRole() || null == asset.getRole().getJSONObject("objFC")) {
+                return retResult.ok(CodeEnum.OK.getCode(), "操作失败!");
+            }
+            JSONObject objFC = asset.getRole().getJSONObject("objFC");
+            JSONArray electData = data.getJSONArray("electData");
+            boolean isSendThis = false;
+            for (int i = 0; i < electData.size(); i++) {
+                JSONObject electSon = electData.getJSONObject(i);
+                String id_q = electSon.getString("id_Q");
+                JSONArray grp = electSon.getJSONArray("grp");
+                JSONArray sendIds = new JSONArray();
+                JSONObject objFCSon = objFC.getJSONObject(id_q);
+                if (grp.size() > 0) {
+                    for (String id_UNew : objFCSon.keySet()) {
+                        JSONObject id_UInfo = objFCSon.getJSONObject(id_UNew);
+                        String position = id_UInfo.getString("position");
+                        boolean isAdd = false;
+                        for (int j = 0; j < grp.size(); j++) {
+                            String string = grp.getString(j);
+                            if (string.equals(position)) {
+                                isAdd = true;
+                                break;
+                            }
+                        }
+                        if (!isAdd) {
+                            sendIds.add(id_UNew);
+                        }
+                    }
+                } else {
+                    sendIds.addAll(objFCSon.keySet());
+                }
+                if (id_q.equals(id)) {
+                    isSendThis = true;
+                    if (!objFCSon.containsKey(id_U)) {
+                        sendIds.add(id_U);
+                    }
+                }
+                logFlow.setId_Us(sendIds);
+                logFlow.setId(id_q);
+                System.out.println("logFlow.getId:"+logFlow.getId());
+                ws.sendWS(logFlow);
+            }
+            if (!isSendThis) {
+                logFlow.setId(id);
+                JSONObject objFCSon = objFC.getJSONObject(id);
+                JSONArray id_Us = new JSONArray();
+                id_Us.addAll(objFCSon.keySet());
+                logFlow.setId_Us(id_Us);
+                ws.sendWS(logFlow);
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), "发送-选举-成功");
+        } else {
+            logFlow.setData(data);
+            JSONArray id_Us = getUsersById_Q(id_C, id, id_U);
+            if (null != id_Us) {
+                logFlow.setId_Us(id_Us);
+                ws.sendWS(logFlow);
+                return retResult.ok(CodeEnum.OK.getCode(), "发送-选举-成功");
+            }
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), "发送-选举-失败");
+    }
+
+    public JSONArray getUsersById_Q(String id_C,String id,String id_U){
+        Asset asset = qt.getConfig(id_C, "a-auth", "role");
+        if (null != asset && null != asset.getRole() && null != asset.getRole().getJSONObject("objFC")) {
+            JSONObject role = asset.getRole();
+            JSONObject objFC = role.getJSONObject("objFC");
+            JSONObject users = objFC.getJSONObject(id);
+            JSONArray id_Us = new JSONArray();
+            id_Us.addAll(users.keySet());
+            if (!users.containsKey(id_U)) {
+                id_Us.add(id_U);
+            }
+            return id_Us;
+        }
+        return null;
+    }
+
+    @Override
+    public ApiResponse getLog(String id, String logType, String subType, String id_SP) {
+        boolean isAdd = false;
+        JSONArray filterArray = new JSONArray();
+        if (null != id) {
+            JSONArray array = qt.setESFilt("id", id);
+            filterArray.addAll(array);
+            isAdd = true;
+        }
+        boolean isXj = false;
+        if (null != subType) {
+            if (subType.equals("elect")) {
+                isXj = true;
+            }
+            if (null != logType) {
+                JSONArray array = qt.setESFilt("logType", logType,"subType",subType);
+                filterArray.addAll(array);
+                isAdd = true;
+            }
+        }
+        if (null != id_SP) {
+            JSONArray array = qt.setESFilt("data.id_SP", id_SP);
+            filterArray.addAll(array);
+            isAdd = true;
+        }
+        if (!isAdd) {
+            return retResult.ok(CodeEnum.OK.getCode(), new JSONArray());
+        }
+        JSONArray msg = qt.getES("msg", filterArray);
+        if (null != msg && msg.size() > 0) {
+            if (isXj) {
+                JSONObject result = new JSONObject();
+                result.put("msg",msg);
+                int z = 0;
+                int f = 0;
+                int zon = 0;
+                for (int i = 0; i < msg.size(); i++) {
+                    JSONObject json = msg.getJSONObject(i);
+                    JSONObject data = json.getJSONObject("data");
+                    Integer res = data.getInteger("res");
+                    if (res > 0) {
+                        z+=res;
+                    } else {
+                        f+=res;
+                    }
+                    zon+=res;
+                }
+                result.put("z",z);
+                result.put("f",f);
+                result.put("zon",zon);
+                return retResult.ok(CodeEnum.OK.getCode(), result);
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), msg);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), new JSONArray());
+    }
+
+    @Override
+    public ApiResponse getLogSp(String id, String id_SP) {
+        JSONArray filterArray = new JSONArray();
+        if (null != id) {
+            JSONArray array = qt.setESFilt("id", id);
+            filterArray.addAll(array);
+        }
+        if (null != id_SP) {
+            JSONArray array = qt.setESFilt("data.id_SP", id_SP);
+            filterArray.addAll(array);
+        }
+        JSONArray array = qt.setESFilt("logType", "msg","subType","confirm");
+        filterArray.addAll(array);
+        JSONArray msg = qt.getES("msg", filterArray);
+        if (null != msg && msg.size() > 0) {
+            return retResult.ok(CodeEnum.OK.getCode(), msg);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), new JSONArray());
+    }
+
+    @Override
+    public ApiResponse getLogXj(String id, String id_SP) {
+        JSONArray filterArray = new JSONArray();
+        if (null != id) {
+            JSONArray array = qt.setESFilt("id", id);
+            filterArray.addAll(array);
+        }
+        if (null != id_SP) {
+            JSONArray array = qt.setESFilt("data.id_SP", id_SP);
+            filterArray.addAll(array);
+        }
+        JSONArray array = qt.setESFilt("logType", "msg","subType","elect");
+        filterArray.addAll(array);
+        JSONArray msg = qt.getES("msg", filterArray);
+        if (null != msg && msg.size() > 0) {
+            JSONObject result = new JSONObject();
+            int z = 0;
+            int f = 0;
+            int zon = 0;
+            JSONObject statistics = new JSONObject();
+            for (int i = 0; i < msg.size(); i++) {
+                JSONObject json = msg.getJSONObject(i);
+                JSONObject data = json.getJSONObject("data");
+                Integer res = data.getInteger("res");
+                if (res > 0) {
+                    z+=res;
+                } else {
+                    f+=res;
+                }
+                zon+=res;
+                Integer integer = statistics.getInteger(res.toString());
+                if (null == integer) {
+                    statistics.put(res.toString(),1);
+                } else {
+                    integer++;
+                    statistics.put(res.toString(),integer);
+                }
+            }
+            result.put("statistics",statistics);
+            result.put("z",z);
+            result.put("f",f);
+            result.put("zon",zon);
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), new JSONArray());
+    }
+
+    @Override
     public ApiResponse shareSave(JSONObject data) {
         /*
         data:

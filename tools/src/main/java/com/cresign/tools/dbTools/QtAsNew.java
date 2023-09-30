@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.concurrent.Future;
  * @ver 1.0.0
  */
 @Component
-public class QtAs {
+public class QtAsNew {
     @Autowired
     private Qt qt;
 
@@ -220,11 +221,100 @@ public class QtAs {
         }
     }
 
-    public void mdManyUtil(JSONArray id_Ps,Map<String, Prod> dgProd){
-        List<Prod> mdContentMany = qt.getMDContentMany2(id_Ps , qt.strList("info", "part"), Prod.class);
-        for (Prod prod : mdContentMany) {
-            dgProd.put(prod.getId(), prod);
+    private <T> void mdManyUtilQuery(JSONArray id_Ps,List<T> list, Class<T> classType){
+        List<T> mdContentMany = qt.getMDContentMany2(id_Ps , qt.strList("info", "part"), classType);
+        list.addAll(mdContentMany);
+    }
+
+    public <T> List<T> mdManyUtil(JSONArray id_Ps, Class<T> classType){
+        int forProd = id_Ps.size() / 6;
+        List<T> list = new ArrayList<>();
+        JSONArray item5 = new JSONArray();
+        JSONArray item6 = new JSONArray();
+        if (forProd > 5) {
+            JSONArray item1 = new JSONArray();
+            JSONArray item2 = new JSONArray();
+            JSONArray item3 = new JSONArray();
+            JSONArray item4 = new JSONArray();
+            int lei = 0;
+            for (int i = 0; i < forProd; i++) {
+                item1.add(id_Ps.getString(lei));
+                item2.add(id_Ps.getString(lei+1));
+                item3.add(id_Ps.getString(lei+2));
+                item4.add(id_Ps.getString(lei+3));
+                item5.add(id_Ps.getString(lei+4));
+                item6.add(id_Ps.getString(lei+5));
+                lei+=6;
+            }
+            int jie = id_Ps.size()-(forProd*6);
+            if (jie > 0) {
+                if (jie == 1) {
+                    item1.add(id_Ps.getString((forProd*6)));
+                } else if (jie == 2) {
+                    item1.add(id_Ps.getString((forProd*6)));
+                    item2.add(id_Ps.getString((forProd*6)+1));
+                } else if (jie == 3) {
+                    item1.add(id_Ps.getString((forProd*6)));
+                    item2.add(id_Ps.getString((forProd*6)+1));
+                    item3.add(id_Ps.getString((forProd*6)+2));
+                } else if (jie == 4) {
+                    item1.add(id_Ps.getString((forProd*6)));
+                    item2.add(id_Ps.getString((forProd*6)+1));
+                    item3.add(id_Ps.getString((forProd*6)+2));
+                    item4.add(id_Ps.getString((forProd*6)+3));
+                } else {
+                    item1.add(id_Ps.getString((forProd*6)));
+                    item2.add(id_Ps.getString((forProd*6)+1));
+                    item3.add(id_Ps.getString((forProd*6)+2));
+                    item4.add(id_Ps.getString((forProd*6)+3));
+                    item5.add(id_Ps.getString((forProd*6)+4));
+                }
+            }
+            Future<String> future1 = testMdMany1(item1, list,classType);
+            Future<String> future2 = testMdMany2(item2, list,classType);
+            Future<String> future3 = testMdMany3(item3, list,classType);
+            Future<String> future4 = testMdMany4(item4, list,classType);
+            Future<String> future5 = testMdMany5(item5, list,classType);
+//        Future<String> future6 = qtAs.testMdMany6(item6, dgProd);
+            mdManyUtilQuery(item6, list,classType);
+            while (true) {
+                if (future1.isDone() && future2.isDone() &&
+                        future3.isDone() && future4.isDone() && future5.isDone()
+//                    && future6.isDone()
+                ) {
+                    break;
+                }
+            }
+            System.out.println("大小:");
+            System.out.println(list.size());
+        } else {
+            if (id_Ps.size() / 2 > 7) {
+                boolean isAdd = true;
+                for (int i = 0; i < id_Ps.size(); i++) {
+                    if (isAdd) {
+                        isAdd = false;
+                        item5.add(id_Ps.getJSONObject(i));
+                    } else {
+                        isAdd = true;
+                        item6.add(id_Ps.getJSONObject(i));
+                    }
+                }
+                Future<String> future5 = testMdMany5(item5, list,classType);
+                mdManyUtilQuery(item6, list,classType);
+                while (true) {
+                    if (future5.isDone()
+//                    && future6.isDone()
+                    ) {
+                        break;
+                    }
+                }
+                System.out.println("大小:");
+                System.out.println(list.size());
+            } else {
+                mdManyUtilQuery(id_Ps, list,classType);
+            }
         }
+        return list;
     }
 
     @Async
@@ -307,24 +397,24 @@ public class QtAs {
         return future;
     }
 
-    @Async
-    public Future<String> testResult7(HashSet<String> id_Ps,JSONArray item,String myCompId) {
-        Future<String> future;
-        try {
-            checkUtil(id_Ps,item,myCompId);
-            future = new AsyncResult<>("success:");
-        } catch(IllegalArgumentException e){
-            future = new AsyncResult<>("error-IllegalArgumentException");
-        }
-        System.out.println("--- 7 ---");
-        return future;
-    }
+//    @Async
+//    public Future<String> testResult7(HashSet<String> id_Ps,JSONArray item,String myCompId) {
+//        Future<String> future;
+//        try {
+//            checkUtil(id_Ps,item,myCompId);
+//            future = new AsyncResult<>("success:");
+//        } catch(IllegalArgumentException e){
+//            future = new AsyncResult<>("error-IllegalArgumentException");
+//        }
+//        System.out.println("--- 7 ---");
+//        return future;
+//    }
 
     @Async
-    public Future<String> testMdMany1(JSONArray id_Ps, Map<String, Prod> dgProd){
+    public <T> Future<String> testMdMany1(JSONArray id_Ps,List<T> list, Class<T> classType){
         Future<String> future;
         try {
-            mdManyUtil(id_Ps, dgProd);
+            mdManyUtilQuery(id_Ps, list,classType);
             future = new AsyncResult<>("success:");
         } catch(IllegalArgumentException e){
             future = new AsyncResult<>("error-IllegalArgumentException");
@@ -334,10 +424,10 @@ public class QtAs {
     }
 
     @Async
-    public Future<String> testMdMany2(JSONArray id_Ps,Map<String, Prod> dgProd){
+    public <T> Future<String> testMdMany2(JSONArray id_Ps,List<T> list, Class<T> classType){
         Future<String> future;
         try {
-            mdManyUtil(id_Ps, dgProd);
+            mdManyUtilQuery(id_Ps, list,classType);
             future = new AsyncResult<>("success:");
         } catch(IllegalArgumentException e){
             future = new AsyncResult<>("error-IllegalArgumentException");
@@ -347,10 +437,10 @@ public class QtAs {
     }
 
     @Async
-    public Future<String> testMdMany3(JSONArray id_Ps,Map<String, Prod> dgProd){
+    public <T> Future<String> testMdMany3(JSONArray id_Ps,List<T> list, Class<T> classType){
         Future<String> future;
         try {
-            mdManyUtil(id_Ps, dgProd);
+            mdManyUtilQuery(id_Ps, list,classType);
             future = new AsyncResult<>("success:");
         } catch(IllegalArgumentException e){
             future = new AsyncResult<>("error-IllegalArgumentException");
@@ -360,10 +450,10 @@ public class QtAs {
     }
 
     @Async
-    public Future<String> testMdMany4(JSONArray id_Ps,Map<String, Prod> dgProd){
+    public <T> Future<String> testMdMany4(JSONArray id_Ps,List<T> list, Class<T> classType){
         Future<String> future;
         try {
-            mdManyUtil(id_Ps, dgProd);
+            mdManyUtilQuery(id_Ps, list,classType);
             future = new AsyncResult<>("success:");
         } catch(IllegalArgumentException e){
             future = new AsyncResult<>("error-IllegalArgumentException");
@@ -373,10 +463,10 @@ public class QtAs {
     }
 
     @Async
-    public Future<String> testMdMany5(JSONArray id_Ps,Map<String, Prod> dgProd){
+    public <T> Future<String> testMdMany5(JSONArray id_Ps,List<T> list, Class<T> classType){
         Future<String> future;
         try {
-            mdManyUtil(id_Ps, dgProd);
+            mdManyUtilQuery(id_Ps, list,classType);
             future = new AsyncResult<>("success:");
         } catch(IllegalArgumentException e){
             future = new AsyncResult<>("error-IllegalArgumentException");
@@ -385,16 +475,16 @@ public class QtAs {
         return future;
     }
 
-    @Async
-    public Future<String> testMdMany6(JSONArray id_Ps,Map<String, Prod> dgProd){
-        Future<String> future;
-        try {
-            mdManyUtil(id_Ps, dgProd);
-            future = new AsyncResult<>("success:");
-        } catch(IllegalArgumentException e){
-            future = new AsyncResult<>("error-IllegalArgumentException");
-        }
-        System.out.println("--- 6 ---");
-        return future;
-    }
+//    @Async
+//    public Future<String> testMdMany6(JSONArray id_Ps,Map<String, Prod> dgProd){
+//        Future<String> future;
+//        try {
+//            mdManyUtil(id_Ps, dgProd);
+//            future = new AsyncResult<>("success:");
+//        } catch(IllegalArgumentException e){
+//            future = new AsyncResult<>("error-IllegalArgumentException");
+//        }
+//        System.out.println("--- 6 ---");
+//        return future;
+//    }
 }
