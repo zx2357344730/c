@@ -3,6 +3,7 @@ package com.cresign.tools.pojo.po.prodCard;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.uuid.UUID19;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -34,6 +35,8 @@ public class ProdInfo {
         this.lUT = lUT  == null ? 0: lUT;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.qr = UUID19.uuid();
+
     }
 
     private String id_C;
@@ -65,5 +68,7 @@ public class ProdInfo {
     private String tmd;
 
     private String tmk;
+
+    private String qr;
 
 }

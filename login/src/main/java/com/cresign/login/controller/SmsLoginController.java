@@ -112,28 +112,28 @@ public class SmsLoginController {
         }
     }
 
-//    @SecurityParameter
-//    @PostMapping("/v1/regOffUser")
-//    public ApiResponse regOffUser()  {
-//        try {
-//            return smsLoginService.regOffUser(
-//                    getUserToken.getTokenOfUserId(request.getHeader("authorization")
-//                            , request.getHeader("clientType"))
-//            );
-//        } catch (Exception e) {
-//            return getUserToken.err(new JSONObject(), "SmsLoginController.regOffUser", e);
-//        }
-//    }
+    @SecurityParameter
+    @PostMapping("/v1/regOffUser")
+    public ApiResponse regOffUser()  {
+        try {
+            return smsLoginService.regOffUser(
+                    getUserToken.getTokenOfUserId(request.getHeader("authorization")
+                            , request.getHeader("clientType"))
+            );
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "SmsLoginController.regOffUser", e);
+        }
+    }
 
-//    @SecurityParameter
-//    @PostMapping("/v1/regBackUser")
-//    public ApiResponse regBackUser(@RequestBody JSONObject reqJson)  {
-//        try {
-//            return smsLoginService.regBackUser(reqJson.getString("mbn"));
-//        } catch (Exception e) {
-//            return getUserToken.err(new JSONObject(), "SmsLoginController.regBackUser", e);
-//        }
-//    }
+    @SecurityParameter
+    @PostMapping("/v1/regBackUser")
+    public ApiResponse regBackUser(@RequestBody JSONObject reqJson)  {
+        try {
+            return smsLoginService.regBackUser(reqJson.getString("mbn"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "SmsLoginController.regBackUser", e);
+        }
+    }
 
     @SecurityParameter
     @PostMapping("/v1/setTestUser")

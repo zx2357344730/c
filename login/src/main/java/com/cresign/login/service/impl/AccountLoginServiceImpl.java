@@ -255,22 +255,14 @@ public class AccountLoginServiceImpl implements AccountLoginService {
      */
     @Override
     public ApiResponse unregLogin(String clientType) {
-
-        // 声明转换后结果存放
-        JSONObject result = new JSONObject();
         //创建查询对象
-//        Query query = new Query(Criteria.where("info.usn").is(usn));
-//        Query query = new Query(Criteria.where("_id").is("5f28bf314f65cc7dc2e60262"));
-//        // 创建Auth对象存放查询后的结果
-//        User user = mongoTemplate.findOne(query, User.class);
+
         User user = qt.getMDContent("5f28bf314f65cc7dc2e60262",qt.strList("rolex","info"), User.class);
 
-        // 初步判断用户名是否存在
+        // 返回json数据给前端
+        JSONObject result = loginResult.allResult(user, clientType, "number");
 
-                // 返回json数据给前端
-                result = loginResult.allResult(user, clientType, "number");
-
-                return retResult.ok(CodeEnum.OK.getCode(),result);
+        return retResult.ok(CodeEnum.OK.getCode(),result);
     }
 
     @Override

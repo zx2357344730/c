@@ -1,94 +1,69 @@
-package com.cresign.tools.pojo.es;
+package com.cresign.tools.pojo.po.infoCard;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.uuid.UUID19;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.io.Serializable;
-
-
-/**
- * ##class: lSProd
- * ##description: 产品类
- * @author jackson
- * @updated 2019-07-16 15:25
- **/
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Document(collection = "Info")
 @Data
-@AllArgsConstructor//全参构造
-@NoArgsConstructor//无参构造
-@Document("lSProd")
-public class lSProd implements Serializable {
+@AllArgsConstructor
+@NoArgsConstructor//注解在类上，为类提供一个无参的构造方法
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class InfoInfo {
 
-    public lSProd(String id_P, String id_C, String id_CP, JSONObject wrdN, JSONObject wrddesc, String grp,
-                  String ref, String pic, Integer lDC, Integer lUT) {
+    public InfoInfo(String id_C, String id_CP, String id_CB, JSONObject wrdN, JSONObject wrddesc, String grp,
+                    String ref, String pic, Integer lUT) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn","");
 
-        this.id_P = id_P;
         this.id_C = id_C;
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
+        this.id_CB = id_CB;
         this.wrdN = wrdN  == null ? (JSONObject) wrdEmpty.clone(): wrdN;
         this.wrddesc = wrddesc  == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
         this.grp = grp == null ? "1000": grp;
         this.ref = ref == null ? "": ref;
         this.pic = pic  == null ? "": pic;
-        this.lDC = lDC  == null ? 0: lDC;
-        this.lUT = lUT  == null ? 0: lUT;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.qr = UUID19.uuid();
 
     }
 
-    private String id_P;
-
     private String id_C;
 
     private String id_CP;
+
+    private String id_CB;
+
+    private String id_PP;
 
     private JSONObject wrdN;
 
     private JSONObject wrddesc;
 
-    private JSONArray arrP;
-
     private String grp;
-
-    private String grpU;
+    private String grpB;
 
     private String ref;
 
     private String pic;
 
-    private Integer lDC;//
-
-    private Integer lUT;
-
-    private Integer lCR;//
-
-//    private String picC;
-
-    private double wn4price;//
-
-//    private JSONObject wrdNC;
+//    @JsonProperty("lDC")
+//    private Integer lDC;
 
     private String tmd;
 
     private String tmk;
 
     private String qr;
-
-
-
-
 
 }

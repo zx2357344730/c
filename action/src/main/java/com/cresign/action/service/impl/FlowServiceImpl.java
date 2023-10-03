@@ -854,8 +854,8 @@ public class FlowServiceImpl implements FlowService {
             salesOrder_Action.put("grpGroup", grpGroup);
             salesOrder_Action.put("wn2progress", 0.0);
             //ZJ
-            salesOrder_Action.put("oDates",oDates);
-            salesOrder_Action.put("oTasks",oTasks);
+//            salesOrder_Action.put("oDates",oDates);
+//            salesOrder_Action.put("oTasks",oTasks);
             //ZJ
 
             JSONObject salesOrder_OItem;
@@ -1494,6 +1494,9 @@ public class FlowServiceImpl implements FlowService {
 
                         // 进下一层处理part递归
                         for (int item = 0; item < partArrayNext.size(); item++) {
+
+                            // getMDMany放这里 很多个part 所有都拿，做一个 JSONObject objProdCollection ： {id_P:{data}}
+                            // 那之前检查 id_P in objProdCollection, 就不用拿
 
                             this.dgProcess(
                                     dgType + 1, myCompId, id_OParent,
@@ -2561,7 +2564,7 @@ public class FlowServiceImpl implements FlowService {
     }
 
     /**
-     * 时间处理
+     * 时间处理方法
      * @param id_O	订单编号
      * @param id_U	用户编号
      * @param id_C	公司编号

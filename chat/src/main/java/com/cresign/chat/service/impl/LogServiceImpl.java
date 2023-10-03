@@ -147,8 +147,7 @@ public class LogServiceImpl  implements LogService {
 
     @Override
     public String getToken(){
-//        String appKey = "ShxgT3kg6s73NbuZeAe3I";
-//        String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
+
         long timestamp = System.currentTimeMillis();
 
         JSONObject tokenPost = new JSONObject();

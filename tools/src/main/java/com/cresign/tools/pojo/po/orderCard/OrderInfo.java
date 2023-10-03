@@ -3,6 +3,7 @@ package com.cresign.tools.pojo.po.orderCard;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.uuid.UUID19;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -49,6 +50,8 @@ public class OrderInfo implements Cloneable{
         this.lCR = lCR  == null? 0: lCR;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.qr = UUID19.uuid();
+
     }
 
 
@@ -82,6 +85,8 @@ public class OrderInfo implements Cloneable{
      */
     private String ref;
     private String refB;
+
+    private String qr;
 
     /**
      * 名称

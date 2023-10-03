@@ -88,23 +88,23 @@ public class ActionController {
         }
     }
 
-//    @SecurityParameter
-//    @PostMapping("/v1/taskToProd")
-//    public ApiResponse taskToProd(@RequestBody JSONObject reqJson) {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-//
-//        try {
-//
-//            return actionService.taskToProd(
-//                    tokData,
-//                    reqJson.getString("id_O"),
-//                    reqJson.getInteger("index"),
-//                    reqJson.getString("id_P"));
-//
-//        } catch (Exception e) {
-//            return getUserToken.err(reqJson, "actionService.task2Prod", e);
-//        }
-//    }
+    @SecurityParameter
+    @PostMapping("/v1/taskToProd")
+    public ApiResponse taskToProd(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+
+        try {
+
+            return actionService.taskToProd(
+                    tokData,
+                    reqJson.getString("id_O"),
+                    reqJson.getInteger("index"),
+                    reqJson.getString("id_P"));
+
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "actionService.task2Prod", e);
+        }
+    }
 
     @SecurityParameter
     @PostMapping("/v1/dgActivateSingle")
@@ -235,6 +235,7 @@ public class ActionController {
             return getUserToken.err(reqJson, "statusChg", e);
         }
     }
+
 
     /**
      * for a "component", batch change the status of all its subParts

@@ -23,9 +23,8 @@ import com.tencentcloudapi.common.profile.HttpProfile;
 import com.tencentcloudapi.cvm.v20170312.models.AssociateSecurityGroupsResponse;
 import com.tencentcloudapi.vpc.v20170312.VpcClient;
 import com.tencentcloudapi.vpc.v20170312.models.*;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;

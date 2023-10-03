@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.uuid.UUID19;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,6 +35,8 @@ public class CompInfo {
         this.pic = pic == null ? "": pic;
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.qr = UUID19.uuid();
+
     }
 
     private String id_C;
@@ -55,4 +58,6 @@ public class CompInfo {
     private String tmk;
 
     private String id_CM;
+
+    private String qr;
 }

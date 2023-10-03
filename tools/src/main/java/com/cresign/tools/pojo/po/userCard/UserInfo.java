@@ -3,6 +3,7 @@ package com.cresign.tools.pojo.po.userCard;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.uuid.UUID19;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -39,6 +40,8 @@ public class UserInfo {
         this.id_AUN = id_AUN == null ? "" : id_AUN;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.qr = UUID19.uuid();
+
     }
 
     // 小程序的 ID
@@ -67,6 +70,8 @@ public class UserInfo {
     private String pic;
 
     private String cnty;
+
+    private String qr;
 
     private String cem;
 

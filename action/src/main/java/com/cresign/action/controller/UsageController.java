@@ -35,15 +35,15 @@ public class UsageController {
     @Autowired
     private GetUserIdByToken getUserToken;
 
-//    @SecurityParameter
-//    @PostMapping("/v1/getNacosStatus")
-//    public ApiResponse getNacosStatus() {
-//        try {
-//            return usageService.getNacosStatus();
-//        } catch (Exception e) {
-//            return getUserToken.err(new JSONObject(), "UsageController.getNacosStatus", e);
-//        }
-//    }
+    @SecurityParameter
+    @PostMapping("/v1/getNacosStatus")
+    public ApiResponse getNacosStatus() {
+        try {
+            return usageService.getNacosStatus();
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "UsageController.getNacosStatus", e);
+        }
+    }
 
 
 //    @SecurityParameter
@@ -155,48 +155,48 @@ public class UsageController {
         }
     }
 
-//    @SecurityParameter
-//    @PostMapping("/v1/setPowerup")
-//    public ApiResponse setPowerup(@RequestBody JSONObject json) throws IOException {
-//        try {
-//            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-//            return usageService.setPowerup(
-//                    tokData.getString("id_C"),
-//                    json.getJSONObject("capacity")
-//            );
-//        } catch (Exception e) {
-//            return getUserToken.err(json, "UsageController.setPowerup", e);
-//        }
-//    }
+    @SecurityParameter
+    @PostMapping("/v1/setPowerup")
+    public ApiResponse setPowerup(@RequestBody JSONObject json) throws IOException {
+        try {
+            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+            return usageService.setPowerup(
+                    tokData.getString("id_C"),
+                    json.getJSONObject("capacity")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(json, "UsageController.setPowerup", e);
+        }
+    }
 
-//    @SecurityParameter
-//    @PostMapping("/v1/getPowerup")
-//    public ApiResponse getPowerup(@RequestBody JSONObject json) throws IOException {
-//        try {
-//            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-//            return usageService.getPowerup(
-//                    tokData.getString("id_C"),
-//                    json.getString("ref")
-//            );
-//        } catch (Exception e) {
-//            return getUserToken.err(json, "UsageController.getPowerup", e);
-//        }
-//    }
+    @SecurityParameter
+    @PostMapping("/v1/getPowerup")
+    public ApiResponse getPowerup(@RequestBody JSONObject json) throws IOException {
+        try {
+            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+            return usageService.getPowerup(
+                    tokData.getString("id_C"),
+                    json.getString("ref")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(json, "UsageController.getPowerup", e);
+        }
+    }
 
-//    @SecurityParameter
-//    @PostMapping("/v1/setRefAuto")
-//    public ApiResponse setRefAuto(@RequestBody JSONObject json) {
-//        try {
-//            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-//            return usageService.setRefAuto(
-//                    tokData.getString("id_C"),
-//                    json.getString("type"),
-//                    json.getJSONObject("jsonRefAuto")
-//            );
-//        } catch (Exception e) {
-//            return getUserToken.err(json, "UsageController.setRefAuto", e);
-//        }
-//    }
+    @SecurityParameter
+    @PostMapping("/v1/setRefAuto")
+    public ApiResponse setRefAuto(@RequestBody JSONObject json) {
+        try {
+            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+            return usageService.setRefAuto(
+                    tokData.getString("id_C"),
+                    json.getString("type"),
+                    json.getJSONObject("jsonRefAuto")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(json, "UsageController.setRefAuto", e);
+        }
+    }
 
     @SecurityParameter
     @PostMapping("/v1/getRefAuto")

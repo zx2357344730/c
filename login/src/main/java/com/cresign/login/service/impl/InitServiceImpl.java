@@ -11,6 +11,7 @@ import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Init;
+import com.cresign.tools.pojo.po.InitJava;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -54,6 +55,21 @@ public class InitServiceImpl implements InitService {
         }
 
     }
+
+    @Override
+    public ApiResponse isDeveloper(String id_U) {
+
+        InitJava init = qt.getInitData();
+        Boolean isDev = false;
+
+        if (init.getDevList().contains(id_U))
+        {
+            isDev = true;
+        }
+
+        return retResult.ok(CodeEnum.OK.getCode(), isDev);
+    }
+
 
     @Override
     public ApiResponse getPhoneType(String lang) {

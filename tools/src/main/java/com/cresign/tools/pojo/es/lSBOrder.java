@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.orderCard.OrderInfo;
+import com.cresign.tools.uuid.UUID19;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -53,6 +54,8 @@ public class lSBOrder {
         this.lCR = lCR  == null? 0: lCR;
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.qr = UUID19.uuid();
+
     }
     public lSBOrder(OrderInfo info, String id_O) {
         JSONObject wrdEmpty = new JSONObject();
@@ -77,6 +80,8 @@ public class lSBOrder {
         this.lCR = info.getLCR()  == null? 0: info.getLCR();
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.qr = UUID19.uuid();
+
     }
 
     public static lSBOrder getInstance(){
@@ -130,6 +135,8 @@ public class lSBOrder {
     private String teSt;
 
     private String teDur;
+
+    private String qr;
 
 //    private Integer mNow;
 //

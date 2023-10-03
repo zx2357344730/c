@@ -704,9 +704,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         qt.addMD(user);
 
         lNUser addLNUser = new lNUser(id_U,wrdNMap,null,wrdNReal,null,avatarUrl,null
-                ,unionId,null,"",phoneNumber,"China","cn",0
-                ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())
-                ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                ,unionId,"",phoneNumber,"China","cn",0);
         qt.addES("lNUser",addLNUser);
 
         // 3.插入ES lbuser索引中新增列表

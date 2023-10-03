@@ -94,48 +94,48 @@ public class ModuleController {
 //        return moduleService.singleTranslate(reqJson.getJSONObject("data"));
 //    }
 
-//    /**
-//     * 多翻译 - 按照指定格式请求，可以翻译所有的字段
-//     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
-//     * @author tang
-//     * @version 1.0.0
-//     * @date 2022/8/19
-//     */
-//    @PostMapping("/v1/manyTranslate")
-//    @SecurityParameter
-//    public ApiResponse manyTranslate(@RequestBody JSONObject reqJson){
-//        try {
-//            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-//            reqJson.put("id_U",tokData.getString("id_U"));
-//            return moduleService.manyTranslate(reqJson.getJSONObject("data"));
-//        } catch (Exception e) {
-//            return getUserToken.err(reqJson, "ModuleController.manyTranslate", e);
-//        }
-//    }
+    /**
+     * 多翻译 - 按照指定格式请求，可以翻译所有的字段
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
+    @PostMapping("/v1/manyTranslate")
+    @SecurityParameter
+    public ApiResponse manyTranslate(@RequestBody JSONObject reqJson){
+        try {
+            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+            reqJson.put("id_U",tokData.getString("id_U"));
+            return moduleService.manyTranslate(reqJson.getJSONObject("data"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.manyTranslate", e);
+        }
+    }
 
-//    /**
-//     * es的lsprod转lbprod
-//     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
-//     * @author tang
-//     * @version 1.0.0
-//     * @date 2022/8/19
-//     */
-//    @PostMapping("/v1/lSProdTurnLBProd")
-//    @SecurityParameter
-//    public ApiResponse lSProdTurnLBProd(@RequestBody JSONObject reqJson){
-////        JSONObject tokData = getTokenOfUserId.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-//
-//        try {
-//            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"t",1);
-//            reqJson.put("id_U",tokData.getString("id_U"));
-//            return moduleService.lSProdTurnLBProd(
-//                    reqJson.getString("id_P")
-//                    ,reqJson.getString("id_C")
-//                    ,reqJson.getBoolean("isMove"));
-//        } catch (Exception e) {
-//            return getUserToken.err(reqJson, "ModuleController.lSProdTurnLBProd", e);
-//        }
-//    }
+    /**
+     * es的lsprod转lbprod
+     * @return com.cresign.tools.apires.ApiResponse  返回结果: 结果
+     * @author tang
+     * @version 1.0.0
+     * @date 2022/8/19
+     */
+    @PostMapping("/v1/lSProdTurnLBProd")
+    @SecurityParameter
+    public ApiResponse lSProdTurnLBProd(@RequestBody JSONObject reqJson){
+//        JSONObject tokData = getTokenOfUserId.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
+
+        try {
+            JSONObject tokData = getTokenOfUserId.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"t",1);
+            reqJson.put("id_U",tokData.getString("id_U"));
+            return moduleService.lSProdTurnLBProd(
+                    reqJson.getString("id_P")
+                    ,reqJson.getString("id_C")
+                    ,reqJson.getBoolean("isMove"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.lSProdTurnLBProd", e);
+        }
+    }
 
     /**
      * 新增或删除用户的模块使用权

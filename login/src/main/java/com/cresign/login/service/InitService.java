@@ -31,6 +31,8 @@ public interface InitService {
      */
     ApiResponse getPhoneType(String lang);
 
+    ApiResponse isDeveloper(String id_U);
+
 //    ApiResponse getInitInclude(String lang, Integer ver,String include);
 
 }

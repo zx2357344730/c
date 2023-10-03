@@ -3,6 +3,7 @@ package com.cresign.tools.pojo.es;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.uuid.UUID19;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -45,6 +46,8 @@ public class lNUser implements Serializable {
         this.defCR = defCR;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        this.qr = UUID19.uuid();
+
     }
 
     private String id_U;
@@ -78,5 +81,7 @@ public class lNUser implements Serializable {
     private String tmd;
 
     private String tmk;
+
+    private String qr;
 
 }

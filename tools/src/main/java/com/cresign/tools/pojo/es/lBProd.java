@@ -42,6 +42,7 @@ public class lBProd {
         this.pic = pic  == null ? "": pic;
         this.lDC = lDC  == null ? 0: lDC;
         this.lUT = lUT  == null ? 0: lUT;
+        this.arrP = new JSONArray();
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
@@ -58,20 +59,20 @@ public class lBProd {
 
     private JSONObject wrddesc;
 
-    private JSONArray arrP;
+    private JSONArray arrP = new JSONArray();
 
     private String grp;
 
     private String grpB;
 
-    private String ref;
+    private String ref = "";
 
 
-    private String refB;
+    private String refB = "";
 
-    private String pic;
+    private String pic = "";
 
-    private Integer lDC;
+    private Integer lDC = 0;
 
     private Integer lUT;
 

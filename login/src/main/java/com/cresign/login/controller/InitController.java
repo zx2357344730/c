@@ -66,14 +66,26 @@ public class InitController {
         }
     }
 
-//    @GetMapping("/v1/getPhoneType")
-//    public ApiResponse getPhoneType(@RequestParam("lang") String lang){
-//        try {
-//            return initService.getPhoneType(lang);
-//        } catch (Exception e) {
-//            return getUserToken.err(new JSONObject(), "InitController.getPhoneType", e);
-//        }
-//    }
+    @GetMapping("/v1/isDeveloper")
+    public ApiResponse isDeveloper() {
+        try {
+            JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
+            return initService.isDeveloper(
+                    tokData.getString("id_U"));
+        } catch (Exception e) {
+            return getUserToken.err(null, "ActionController.getFlowList", e);
+        }
+    }
+
+
+    @GetMapping("/v1/getPhoneType")
+    public ApiResponse getPhoneType(@RequestParam("lang") String lang){
+        try {
+            return initService.getPhoneType(lang);
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "InitController.getPhoneType", e);
+        }
+    }
 
 
 //    @GetMapping("/v2/getInitInclude")
