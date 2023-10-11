@@ -232,4 +232,50 @@ public class ZjTestController {
             return getUserToken.err(new JSONObject(), "ZjTestController.getLBInfoShareId", e);
         }
     }
+
+    @SecurityParameter
+    @PostMapping("/v1/saveProdEncryption")
+    public ApiResponse saveProdEncryption(@RequestBody JSONObject data) {
+        try {
+            return zjService.saveProdEncryption(data.getJSONObject("en"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.saveProdEncryption", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getProdEncryption")
+    public ApiResponse getProdEncryption(@RequestBody JSONObject data) {
+        try {
+            return zjService.getProdEncryption(data.getString("id_P"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getProdEncryption", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/applyForView")
+    public ApiResponse applyForView(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.applyForView(tokData.getString("id_U"), tokData.getString("id_C"),reqJson.getString("id")
+                    , reqJson.getString("logType"), reqJson.getString("subType")
+                    , reqJson.getString("zcnDesc"), reqJson.getJSONObject("data"), reqJson.getInteger("imp"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.applyForView", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/applyForAgreeWith")
+    public ApiResponse applyForAgreeWith(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.applyForAgreeWith(tokData.getString("id_U"), tokData.getString("id_C"),reqJson.getString("id")
+                    , reqJson.getString("logType"), reqJson.getString("subType")
+                    , reqJson.getString("zcnDesc"), reqJson.getJSONObject("data"), reqJson.getInteger("imp"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.applyForAgreeWith", e);
+        }
+    }
 }

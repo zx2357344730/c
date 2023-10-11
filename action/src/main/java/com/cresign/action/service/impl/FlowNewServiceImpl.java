@@ -16,7 +16,6 @@ import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.es.lSBOrder;
-import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Order;
 import com.cresign.tools.pojo.po.Prod;
 import com.cresign.tools.pojo.po.chkin.Task;
@@ -26,15 +25,11 @@ import com.cresign.tools.pojo.po.orderCard.OrderODate;
 import com.cresign.tools.pojo.po.orderCard.OrderOItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 /**
@@ -90,97 +85,9 @@ public class FlowNewServiceImpl implements FlowNewService {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
         }
         Map<String, Prod> dgProd = new HashMap<>(16);
-//        JSONObject allProdId = salesOrderData.getOItem().getJSONObject("allProdId");
-//        JSONArray id_Ps = JSONArray.parseArray(JSON.toJSONString(allProdId.keySet()));
-        JSONArray id_Ps = salesOrderData.getOItem().getJSONArray("allProdId");
-        List<Prod> prods = qtAsNew.mdManyUtil(id_Ps, Prod.class);
+        List<Prod> prods = qt.getMDContentFast2(salesOrderData.getOItem().getJSONArray("allProdId")
+                , qt.strList("info", "part"), Prod.class);
         prods.forEach(prod -> dgProd.put(prod.getId(),prod));
-//        int forProd = id_Ps.size() / 6;
-//        JSONArray item5 = new JSONArray();
-//        JSONArray item6 = new JSONArray();
-//        if (forProd > 5) {
-//            JSONArray item1 = new JSONArray();
-//            JSONArray item2 = new JSONArray();
-//            JSONArray item3 = new JSONArray();
-//            JSONArray item4 = new JSONArray();
-//            int lei = 0;
-//            for (int i = 0; i < forProd; i++) {
-//                item1.add(id_Ps.getString(lei));
-//                item2.add(id_Ps.getString(lei+1));
-//                item3.add(id_Ps.getString(lei+2));
-//                item4.add(id_Ps.getString(lei+3));
-//                item5.add(id_Ps.getString(lei+4));
-//                item6.add(id_Ps.getString(lei+5));
-//                lei+=6;
-//            }
-//            int jie = id_Ps.size()-(forProd*6);
-//            if (jie > 0) {
-//                if (jie == 1) {
-//                    item1.add(id_Ps.getString((forProd*6)));
-//                } else if (jie == 2) {
-//                    item1.add(id_Ps.getString((forProd*6)));
-//                    item2.add(id_Ps.getString((forProd*6)+1));
-//                } else if (jie == 3) {
-//                    item1.add(id_Ps.getString((forProd*6)));
-//                    item2.add(id_Ps.getString((forProd*6)+1));
-//                    item3.add(id_Ps.getString((forProd*6)+2));
-//                } else if (jie == 4) {
-//                    item1.add(id_Ps.getString((forProd*6)));
-//                    item2.add(id_Ps.getString((forProd*6)+1));
-//                    item3.add(id_Ps.getString((forProd*6)+2));
-//                    item4.add(id_Ps.getString((forProd*6)+3));
-//                } else {
-//                    item1.add(id_Ps.getString((forProd*6)));
-//                    item2.add(id_Ps.getString((forProd*6)+1));
-//                    item3.add(id_Ps.getString((forProd*6)+2));
-//                    item4.add(id_Ps.getString((forProd*6)+3));
-//                    item5.add(id_Ps.getString((forProd*6)+4));
-//                }
-//            }
-//            Future<String> future1 = qtAs.testMdMany1(item1, dgProd);
-//            Future<String> future2 = qtAs.testMdMany2(item2, dgProd);
-//            Future<String> future3 = qtAs.testMdMany3(item3, dgProd);
-//            Future<String> future4 = qtAs.testMdMany4(item4, dgProd);
-//            Future<String> future5 = qtAs.testMdMany5(item5, dgProd);
-////        Future<String> future6 = qtAs.testMdMany6(item6, dgProd);
-//            qtAs.mdManyUtil(item6,dgProd);
-//            while (true) {
-//                if (future1.isDone() && future2.isDone() &&
-//                        future3.isDone() && future4.isDone() && future5.isDone()
-////                    && future6.isDone()
-//                ) {
-//                    break;
-//                }
-//            }
-//            System.out.println("大小:");
-//            System.out.println(dgProd.size());
-//        } else {
-//            if (id_Ps.size() / 2 > 7) {
-//                boolean isAdd = true;
-//                for (int i = 0; i < id_Ps.size(); i++) {
-//                    if (isAdd) {
-//                        isAdd = false;
-//                        item5.add(id_Ps.getJSONObject(i));
-//                    } else {
-//                        isAdd = true;
-//                        item6.add(id_Ps.getJSONObject(i));
-//                    }
-//                }
-//                Future<String> future5 = qtAs.testMdMany5(item5, dgProd);
-//                qtAs.mdManyUtil(item6,dgProd);
-//                while (true) {
-//                    if (future5.isDone()
-////                    && future6.isDone()
-//                    ) {
-//                        break;
-//                    }
-//                }
-//                System.out.println("大小:");
-//                System.out.println(dgProd.size());
-//            } else {
-//                qtAs.mdManyUtil(id_Ps,dgProd);
-//            }
-//        }
         System.out.println("中间时间:");
         System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         // 第一次把action卡创建出来
@@ -256,14 +163,14 @@ public class FlowNewServiceImpl implements FlowNewService {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
         }
         System.out.println(JSON.toJSONString(casItemData));
-        // 获取递归结果键
-        Set<String> actionCollection = objActionCollection.keySet();
-        System.out.println(JSON.toJSONString(actionCollection));
-        System.out.println();
-        for (String s : actionCollection) {
-            System.out.println("s:"+s+"  ,  size:"+objActionCollection.get(s).size());
-//            System.out.println(JSON.toJSONString(objActionCollection.get(s)));
-        }
+//        // 获取递归结果键
+//        Set<String> actionCollection = objActionCollection.keySet();
+//        System.out.println(JSON.toJSONString(actionCollection));
+//        System.out.println();
+//        for (String s : actionCollection) {
+//            System.out.println("s:"+s+"  ,  size:"+objActionCollection.get(s).size());
+////            System.out.println(JSON.toJSONString(objActionCollection.get(s)));
+//        }
 //        System.out.println(JSON.toJSONString(cun));
 //        System.out.println(cun.size());
 //        System.out.println(JSON.toJSONString(cun2));
@@ -277,6 +184,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 //        System.out.println(JSON.toJSONString(pidActionCollection));
 //        System.out.println(JSON.toJSONString(oParent_objItem));
 
+        System.out.println("save-start");
 //        /////////// setup Dep.objlBProd + objlSProd for grpP
 //
 //        //putting the Sales order as the last casItem... I donno why
@@ -295,7 +203,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 //        Set<String> actionCollection = objActionCollection.keySet();
 //        // before getting so many id_A, get myComp id_A first for future use
 //        Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
-//
+//        List<Order> saveOrder = new ArrayList<>();
 //        // 遍历键，并创建采购单
 //        for (String thisOrderId : actionCollection) {
 //
@@ -385,7 +293,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 //            if (id_OParent.equals(thisOrderId)) {
 //                // make sales order Action
 //                this.updateSalesOrder(casItemData, unitAction, unitOItem, salesOrderData, grpBGroup, grpGroup, prodCompId
-//                        , oDates, oTasks);
+//                        , oDates, oTasks,saveOrder);
 //            } else {
 //                // else make Purchase Order
 ////                // 创建订单
@@ -432,38 +340,38 @@ public class FlowNewServiceImpl implements FlowNewService {
 //                newPO_OItem.put("arrP", arrayId_P);
 //                newPO_OItem.put("wn4price", wn4price);
 //                newPO_OItem.put("objCard", objCard);
-//                if (divideOrder.equals("true")) {
-//                    Map<String,List<OrderOItem>> oItemMap = new HashMap<>();
-//                    Map<String,List<OrderAction>> actionMap = new HashMap<>();
-//                    for (int i = 0; i < unitOItem.size(); i++) {
-//                        OrderOItem orderOItem = unitOItem.get(i);
-//                        OrderAction orderAction = unitAction.get(i);
-//                        String grpB = orderOItem.getGrpB();
-//                        List<OrderOItem> orderOItems;
-//                        List<OrderAction> orderActions;
-//                        if (oItemMap.containsKey(grpB)) {
-//                            orderOItems = oItemMap.get(grpB);
-//                            orderOItems.add(orderOItem);
-//                            orderActions = actionMap.get(grpB);
-//                            orderActions.add(orderAction);
-//                        } else {
-//                            orderOItems = new ArrayList<>();
-//                            orderOItems.add(orderOItem);
-//                            orderActions = new ArrayList<>();
-//                            orderActions.add(orderAction);
-//                        }
-//                        oItemMap.put(grpB,orderOItems);
-//                        actionMap.put(grpB,orderActions);
-//                    }
-//                    JSONArray sonOrderId = new JSONArray();
-//                    for (String s : oItemMap.keySet()) {
-//                        List<OrderOItem> orderOItems = oItemMap.get(s);
-//                        List<OrderAction> orderActions = actionMap.get(s);
-//                        sonOrderId.add(addOrder(prodCompId,targetCompId, orderOItems, newPO.getId(),grpO, grpOB
-//                                ,oParent_prior,orderNameCas,orderActions,grpBGroup,grpGroup,s));
-//                    }
-//                    newPO_OItem.put("sonOrderId", sonOrderId);
-//                }
+////                if (divideOrder.equals("true")) {
+////                    Map<String,List<OrderOItem>> oItemMap = new HashMap<>();
+////                    Map<String,List<OrderAction>> actionMap = new HashMap<>();
+////                    for (int i = 0; i < unitOItem.size(); i++) {
+////                        OrderOItem orderOItem = unitOItem.get(i);
+////                        OrderAction orderAction = unitAction.get(i);
+////                        String grpB = orderOItem.getGrpB();
+////                        List<OrderOItem> orderOItems;
+////                        List<OrderAction> orderActions;
+////                        if (oItemMap.containsKey(grpB)) {
+////                            orderOItems = oItemMap.get(grpB);
+////                            orderOItems.add(orderOItem);
+////                            orderActions = actionMap.get(grpB);
+////                            orderActions.add(orderAction);
+////                        } else {
+////                            orderOItems = new ArrayList<>();
+////                            orderOItems.add(orderOItem);
+////                            orderActions = new ArrayList<>();
+////                            orderActions.add(orderAction);
+////                        }
+////                        oItemMap.put(grpB,orderOItems);
+////                        actionMap.put(grpB,orderActions);
+////                    }
+////                    JSONArray sonOrderId = new JSONArray();
+////                    for (String s : oItemMap.keySet()) {
+////                        List<OrderOItem> orderOItems = oItemMap.get(s);
+////                        List<OrderAction> orderActions = actionMap.get(s);
+////                        sonOrderId.add(addOrder(prodCompId,targetCompId, orderOItems, newPO.getId(),grpO, grpOB
+////                                ,oParent_prior,orderNameCas,orderActions,grpBGroup,grpGroup,s));
+////                    }
+////                    newPO_OItem.put("sonOrderId", sonOrderId);
+////                }
 //                newPO.setOItem(newPO_OItem);
 //                System.out.println("sales order");
 //
@@ -485,6 +393,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 ////                dbu.summOrder(newPO, listCol);
 //                // 新增订单
 ////                qt.addMD(newPO);
+//                saveOrder.add(newPO);
 ////                    qt.setES(....)
 //                System.out.println("sales order SAVED " + newPO.getInfo().getWrdN().getString("cn"));
 //
@@ -495,6 +404,8 @@ public class FlowNewServiceImpl implements FlowNewService {
 ////                qt.addES("lsborder", lsbOrder);
 //            }
 //        }
+////        qt.addAllMD(saveOrder);
+        System.out.println("save-end");
         System.out.println("all finished...");
         System.out.println("结束-时间:");
         System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
@@ -519,9 +430,19 @@ public class FlowNewServiceImpl implements FlowNewService {
         if (!salesOrderData.getInfo().getId_C().equals(myCompId)) {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
         }
-        HashSet<String> id_Ps = new HashSet<>();
-        JSONArray objItem = salesOrderData.getOItem().getJSONArray("objItem");
+        HashSet<String> id_Ps = getCheckOrderAllId_P2(salesOrderData.getOItem().getJSONArray("objItem"), myCompId);
+        System.out.println(JSON.toJSONString(id_Ps));
+        System.out.println("当前递归:"+id_Ps.size());
+//        qt.setMDContent(salesOrderData.getId(),qt.setJson("oItem.allProdId"
+//                ,id_Ps), Order.class);
+        System.out.println("结束时间:");
+        System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        // 抛出操作成功异常
+        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+    }
 
+    private HashSet<String> getCheckOrderAllId_P(JSONArray objItem,String myCompId){
+        HashSet<String> id_Ps = new HashSet<>();
         int forZon = objItem.size() / 7;
         JSONArray item6 = new JSONArray();
         JSONArray item7 = new JSONArray();
@@ -573,19 +494,17 @@ public class FlowNewServiceImpl implements FlowNewService {
                     item6.add(objItem.getJSONObject((forZon*7)+5));
                 }
             }
-            Future<String> future1 = qtAs.testResult1(id_Ps, item1, myCompId);
-            Future<String> future2 = qtAs.testResult2(id_Ps, item2, myCompId);
-            Future<String> future3 = qtAs.testResult3(id_Ps, item3, myCompId);
-            Future<String> future4 = qtAs.testResult4(id_Ps, item4, myCompId);
-            Future<String> future5 = qtAs.testResult5(id_Ps, item5, myCompId);
-            Future<String> future6 = qtAs.testResult6(id_Ps, item6, myCompId);
-//            Future<String> future7 = qtAs.testResult7(id_Ps, item7, myCompId);
+            Future<String> future1 = qtAs.testResult(id_Ps, item1, myCompId);
+            Future<String> future2 = qtAs.testResult(id_Ps, item2, myCompId);
+            Future<String> future3 = qtAs.testResult(id_Ps, item3, myCompId);
+            Future<String> future4 = qtAs.testResult(id_Ps, item4, myCompId);
+            Future<String> future5 = qtAs.testResult(id_Ps, item5, myCompId);
+            Future<String> future6 = qtAs.testResult(id_Ps, item6, myCompId);
             qtAs.checkUtil(id_Ps,item7,myCompId);
             while (true) {
                 if (future1.isDone()
                         && future2.isDone() && future3.isDone() && future4.isDone()
                         && future5.isDone() && future6.isDone()
-//                        && future7.isDone()
                 ) {
                     break;
                 }
@@ -602,34 +521,98 @@ public class FlowNewServiceImpl implements FlowNewService {
                         item6.add(objItem.getJSONObject(i));
                     }
                 }
-                Future<String> future6 = qtAs.testResult6(id_Ps, item6, myCompId);
-//                Future<String> future7 = qtAs.testResult7(id_Ps, item7, myCompId);
+                Future<String> future6 = qtAs.testResult(id_Ps, item6, myCompId);
                 qtAs.checkUtil(id_Ps,item7,myCompId);
                 while (true) {
-                    if ( future6.isDone()
-//                            && future7.isDone()
-                    ) {
+                    if ( future6.isDone()) {
                         break;
                     }
                 }
             } else {
-//                Future<String> future7 = qtAs.testResult7(id_Ps, objItem, myCompId);
                 qtAs.checkUtil(id_Ps,item7,myCompId);
-//                while (true) {
-//                    if (future7.isDone() ) {
-//                        break;
-//                    }
-//                }
             }
         }
-        System.out.println(JSON.toJSONString(id_Ps));
-        System.out.println("当前递归:"+id_Ps.size());
-        qt.setMDContent(salesOrderData.getId(),qt.setJson("oItem.allProdId"
-                ,id_Ps), Order.class);
-        System.out.println("结束时间:");
-        System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-        // 抛出操作成功异常
-        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+        return id_Ps;
+    }
+    private HashSet<String> getCheckOrderAllId_P2(JSONArray objItem,String myCompId){
+        HashSet<String> id_Ps = new HashSet<>();
+        int itemSize = objItem.size();
+        if (itemSize <= 6) {
+            qtAs.checkUtil(id_Ps,objItem,myCompId);
+        }
+        int deng;
+        if (itemSize <= 12) {
+            deng = 2;
+        } else if (itemSize <= 18) {
+            deng = 3;
+        } else if (itemSize <= 24) {
+            deng = 4;
+        } else if (itemSize <= 30) {
+            deng = 5;
+        } else if (itemSize <= 36) {
+            deng = 6;
+        } else {
+            deng = 7;
+        }
+        List<List<JSONObject>> subList = qt.getSubList(deng, objItem, true, JSONObject.class);
+        Future<String> future1 = qtAs.testResult(id_Ps, subList.get(1), myCompId);
+        if (deng == 2) {
+            getReturn(deng,future1,null,null,null,null,null,id_Ps,subList.get(0),myCompId);
+            return id_Ps;
+        }
+        Future<String> future2 = qtAs.testResult(id_Ps, subList.get(2), myCompId);
+        if (deng == 3) {
+            getReturn(deng,future1,future2,null,null,null,null,id_Ps,subList.get(0),myCompId);
+            return id_Ps;
+        }
+        Future<String> future3 = qtAs.testResult(id_Ps, subList.get(3), myCompId);
+        if (deng == 4) {
+            getReturn(deng,future1,future2,future3,null,null,null,id_Ps,subList.get(0),myCompId);
+            return id_Ps;
+        }
+        Future<String> future4 = qtAs.testResult(id_Ps, subList.get(4), myCompId);
+        if (deng == 5) {
+            getReturn(deng,future1,future2,future3,future4,null,null,id_Ps,subList.get(0),myCompId);
+            return id_Ps;
+        }
+        Future<String> future5 = qtAs.testResult(id_Ps, subList.get(5), myCompId);
+        if (deng == 6) {
+            getReturn(deng,future1,future2,future3,future4,future5,null,id_Ps,subList.get(0),myCompId);
+            return id_Ps;
+        }
+        Future<String> future6 = qtAs.testResult(id_Ps, subList.get(6), myCompId);
+        getReturn(deng,future1,future2,future3,future4,future5,future6,id_Ps,subList.get(0),myCompId);
+        return id_Ps;
+    }
+
+    public void getReturn(int deng,Future<String> future1
+            ,Future<String> future2,Future<String> future3
+            ,Future<String> future4,Future<String> future5,Future<String> future6
+            ,HashSet<String> id_Ps,List<JSONObject> subListSon, String myCompId){
+        System.out.println("主:"+qtAsNew.getThreadId());
+        System.out.println("?");
+        qtAs.checkUtil(id_Ps,subListSon,myCompId);
+        System.out.println("- ! -");
+        while (true) {
+            if (deng == 2 && future1.isDone()) {
+                break;
+            } else if (deng == 3 && future1.isDone() && future2.isDone()) {
+                break;
+            } else if (deng == 4 && future1.isDone() && future2.isDone() && future3.isDone()) {
+                break;
+            } else if (deng == 5 && future1.isDone() && future2.isDone()
+                    && future3.isDone() && future4.isDone()) {
+                break;
+            } else if (deng == 6 && future1.isDone() && future2.isDone() && future5.isDone()
+                    && future3.isDone() && future4.isDone()) {
+                break;
+            } else {
+                if (future1.isDone() && future2.isDone() && future5.isDone()
+                        && future3.isDone() && future4.isDone() && future6.isDone()) {
+                    break;
+                }
+            }
+        }
     }
 
     private String addOrder(String prodCompId, String targetCompId, List<OrderOItem> unitOItem
@@ -1214,7 +1197,7 @@ public class FlowNewServiceImpl implements FlowNewService {
     public void updateSalesOrder(JSONArray casItemData, List<OrderAction> salesAction
             , List<OrderOItem> salesOItem, Order orderParentData
             , JSONObject grpBGroup, JSONObject grpGroup, String myCompId
-            , List<OrderODate> oDates, List<Task> oTasks) {
+            , List<OrderODate> oDates, List<Task> oTasks,List<Order> saveOrder) {
         // 添加订单基础信息存储
         JSONObject casItemx = new JSONObject();
         JSONObject nowData = new JSONObject();
@@ -1273,6 +1256,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         // 新增订单
 
 //        qt.saveMD(orderParentData);
+        saveOrder.add(orderParentData);
         System.out.println("sales order SAVED Parent " + orderParentData.getInfo().getWrdN().getString("cn"));
     }
 

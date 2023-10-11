@@ -20,6 +20,8 @@ public class Prod {
 
     private String id;
 
+    private JSONObject en;
+
     private ProdInfo info;
 
     private JSONArray view;

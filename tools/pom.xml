@@ -334,8 +334,6 @@
             <artifactId>elasticsearch</artifactId>
             <version>7.9.0</version>
         </dependency>
-
-
         <!--   获取ip地址的依赖 geoip     -->
         <!--        <dependency>-->
         <!--            <groupId>com.maxmind.geoip2</groupId>-->

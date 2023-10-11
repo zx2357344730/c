@@ -51,10 +51,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class Qt {
+public class Qt{
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -239,8 +240,8 @@ public class Qt {
         }
     }
 
-    public <T> List<T> getMDContentMany2(Collection<?> setIds, List<String> fields, Class<T> classType) {
-        Query query = new Query(new Criteria("_id").in(setIds));
+    public <T> List<T> getMDContentMany2(Collection<?> queryIds, List<String> fields, Class<T> classType) {
+        Query query = new Query(new Criteria("_id").in(queryIds));
         if (fields != null) {
             for (Object field : fields)
             {
@@ -256,53 +257,261 @@ public class Qt {
         }
     }
 
-//    public <T> List<T> getMDContentMany2(JSONArray setIds, List<String> fields, Class<T> classType) {
-//        System.out.println("t2:");
-//        System.out.println(JSON.toJSONString(setIds));
-//        Query query = new Query(new Criteria("_id").in(setIds));
-//        if (fields != null) {
-//            for (Object field : fields)
-//            {
-//                query.fields().include(field.toString());
-//            }
-//        }
-//        try {
-//            return mongoTemplate.find(query, classType);
-//        } catch (Exception e)
-//        {
-//            e.printStackTrace();
-//            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
-//        }
-//    }
+    @Autowired
+    private QtAsNew qtAsNew;
 
-//    public <T,T2> List<T> getMDContentMany2(T2 setIds, List<String> fields, Class<T> classType) {
-//        System.out.println("t2:");
-//        System.out.println(JSON.toJSONString(setIds));
-//        Query query = new Query(new Criteria("_id").in(setIds));
-//        if (setIds instanceof Collection) {
-//            System.out.println("1");
-//            query = new Query(new Criteria("_id").in((Collection<?>) setIds));
-//        } else if (setIds instanceof JSONArray) {
-//            System.out.println("2");
-//            query = new Query(new Criteria("_id").in((JSONArray) setIds));
-//        } else {
-//            System.out.println("3");
-//            return new ArrayList<>();
-//        }
-//        if (fields != null) {
-//            for (Object field : fields)
-//            {
-//                query.fields().include(field.toString());
-//            }
-//        }
-//        try {
-//            return mongoTemplate.find(query, classType);
-//        } catch (Exception e)
-//        {
-//            e.printStackTrace();
-//            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
-//        }
-//    }
+    public <T> List<T> getMDContentFast(JSONArray id_Ps,List<String> strList, Class<T> classType){
+        int forProd = id_Ps.size() / 6;
+        List<T> list = new ArrayList<>();
+        JSONArray item5 = new JSONArray();
+        JSONArray item6 = new JSONArray();
+        if (forProd > 5) {
+            JSONArray item1 = new JSONArray();
+            JSONArray item2 = new JSONArray();
+            JSONArray item3 = new JSONArray();
+            JSONArray item4 = new JSONArray();
+            int lei = 0;
+            for (int i = 0; i < forProd; i++) {
+                item1.add(id_Ps.getString(lei));
+                item2.add(id_Ps.getString(lei+1));
+                item3.add(id_Ps.getString(lei+2));
+                item4.add(id_Ps.getString(lei+3));
+                item5.add(id_Ps.getString(lei+4));
+                item6.add(id_Ps.getString(lei+5));
+                lei+=6;
+            }
+            int jie = id_Ps.size()-(forProd*6);
+            if (jie > 0) {
+                if (jie == 1) {
+                    item1.add(id_Ps.getString((forProd*6)));
+                } else if (jie == 2) {
+                    item1.add(id_Ps.getString((forProd*6)));
+                    item2.add(id_Ps.getString((forProd*6)+1));
+                } else if (jie == 3) {
+                    item1.add(id_Ps.getString((forProd*6)));
+                    item2.add(id_Ps.getString((forProd*6)+1));
+                    item3.add(id_Ps.getString((forProd*6)+2));
+                } else if (jie == 4) {
+                    item1.add(id_Ps.getString((forProd*6)));
+                    item2.add(id_Ps.getString((forProd*6)+1));
+                    item3.add(id_Ps.getString((forProd*6)+2));
+                    item4.add(id_Ps.getString((forProd*6)+3));
+                } else {
+                    item1.add(id_Ps.getString((forProd*6)));
+                    item2.add(id_Ps.getString((forProd*6)+1));
+                    item3.add(id_Ps.getString((forProd*6)+2));
+                    item4.add(id_Ps.getString((forProd*6)+3));
+                    item5.add(id_Ps.getString((forProd*6)+4));
+                }
+            }
+            Future<String> future1 = qtAsNew.testMdMany(item1, list,strList,classType);
+            Future<String> future2 = qtAsNew.testMdMany(item2, list,strList,classType);
+            Future<String> future3 = qtAsNew.testMdMany(item3, list,strList,classType);
+            Future<String> future4 = qtAsNew.testMdMany(item4, list,strList,classType);
+            Future<String> future5 = qtAsNew.testMdMany(item5, list,strList,classType);
+            System.out.println("?");
+            System.out.println("start_thread-id:"+qtAsNew.getThreadId());
+            qtAsNew.mdManyUtilQuery(item6, list,strList,classType);
+            while (true) {
+                if (future1.isDone() && future2.isDone() &&
+                        future3.isDone() && future4.isDone() && future5.isDone()
+                ) {
+                    break;
+                }
+            }
+            System.out.println("大小:");
+            System.out.println(list.size());
+        } else {
+            if (id_Ps.size() / 2 > 7) {
+                boolean isAdd = true;
+                for (int i = 0; i < id_Ps.size(); i++) {
+                    if (isAdd) {
+                        isAdd = false;
+                        item5.add(id_Ps.getJSONObject(i));
+                    } else {
+                        isAdd = true;
+                        item6.add(id_Ps.getJSONObject(i));
+                    }
+                }
+                Future<String> future5 = qtAsNew.testMdMany(item5, list,strList,classType);
+                qtAsNew.mdManyUtilQuery(item6, list,strList,classType);
+                while (true) {
+                    if (future5.isDone()) {
+                        break;
+                    }
+                }
+                System.out.println("大小:");
+                System.out.println(list.size());
+            } else {
+                qtAsNew.mdManyUtilQuery(id_Ps, list,strList,classType);
+            }
+        }
+        return list;
+    }
+
+    public <T> List<List<T>> getSubList(int deng,JSONArray array,boolean isReversalOne, Class<T> classType){
+        int ji = 0;
+        List<List<T>> lists = new ArrayList<>();
+        int shu = (array.size() / deng)+1;
+        for (int i = 0; i < deng; i++) {
+            List<Object> objects;
+            if (i == deng - 1) {
+                objects = array.subList(ji, array.size());
+            } else {
+                objects = array.subList(ji, ji+shu);
+                ji += shu;
+            }
+            List<T> strings = new ArrayList<>();
+            for (Object object : objects) {
+                strings.add(JSON.parseObject(JSON.toJSONString(object),classType));
+            }
+            lists.add(strings);
+        }
+        if (isReversalOne) {
+            lists.add(0,lists.get(lists.size() - 1));
+            lists.remove(lists.size()-1);
+        }
+        return lists;
+    }
+    public <T> List<List<T>> getSubList(int deng,List<T> list,boolean isReversalOne){
+        int ji = 0;
+        List<List<T>> lists = new ArrayList<>();
+        int shu = (list.size() / deng)+1;
+        for (int i = 0; i < deng; i++) {
+            List<T> objects;
+            if (i == deng - 1) {
+                objects = list.subList(ji, list.size());
+            } else {
+                objects = list.subList(ji, ji+shu);
+                ji += shu;
+            }
+            lists.add(objects);
+        }
+        if (isReversalOne) {
+            lists.add(0,lists.get(lists.size() - 1));
+            lists.remove(lists.size()-1);
+        }
+        return lists;
+    }
+
+    public <T> List<T> getMDContentFast2(JSONArray queryIds,List<String> strList, Class<T> classType){
+        int queryIdSize = queryIds.size();
+        List<T> list = new ArrayList<>();
+        if (queryIdSize <= 10) {
+            qtAsNew.mdManyUtilQuery(queryIds, list,strList,classType);
+            return list;
+        }
+        int deng;
+        if (queryIdSize <= 20) {
+            deng = 2;
+        } else if (queryIdSize <= 30) {
+            deng = 3;
+        } else if (queryIdSize <= 40) {
+            deng = 4;
+        } else if (queryIdSize <= 50) {
+            deng = 5;
+        } else {
+            deng = 6;
+        }
+        List<List<String>> subList = getSubList(deng, queryIds, true, String.class);
+        System.out.println("start_thread-id:"+qtAsNew.getThreadId());
+        Future<String> future1 = qtAsNew.testMdMany(subList.get(1), list,strList,classType);
+        if (deng == 2) {
+            getReturn(deng,future1,null,null,null,null,list,subList.get(0),strList,classType);
+            return list;
+        }
+        Future<String> future2 = qtAsNew.testMdMany(subList.get(2), list,strList,classType);
+        if (deng == 3) {
+            getReturn(deng,future1,future2,null,null,null,list,subList.get(0),strList,classType);
+            return list;
+        }
+        Future<String> future3 = qtAsNew.testMdMany(subList.get(3), list,strList,classType);
+        if (deng == 4) {
+            getReturn(deng,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
+            return list;
+        }
+        Future<String> future4 = qtAsNew.testMdMany(subList.get(4), list,strList,classType);
+        if (deng == 5) {
+            getReturn(deng,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
+            return list;
+        }
+        Future<String> future5 = qtAsNew.testMdMany(subList.get(5), list,strList,classType);
+        getReturn(deng,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
+        return list;
+    }
+    public <T> List<T> getMDContentFast2(List<String> queryIds,List<String> strList, Class<T> classType){
+        int queryIdSize = queryIds.size();
+        List<T> list = new ArrayList<>();
+        if (queryIdSize <= 10) {
+            qtAsNew.mdManyUtilQuery(queryIds, list,strList,classType);
+            return list;
+        }
+        int deng;
+        if (queryIdSize <= 20) {
+            deng = 2;
+        } else if (queryIdSize <= 30) {
+            deng = 3;
+        } else if (queryIdSize <= 40) {
+            deng = 4;
+        } else if (queryIdSize <= 50) {
+            deng = 5;
+        } else {
+            deng = 6;
+        }
+        List<List<String>> subList = getSubList(deng,queryIds,true);
+        System.out.println("start_thread-id:"+qtAsNew.getThreadId());
+        Future<String> future1 = qtAsNew.testMdMany(subList.get(1), list,strList,classType);
+        if (deng == 2) {
+            getReturn(deng,future1,null,null,null,null,list,subList.get(0),strList,classType);
+            return list;
+        }
+        Future<String> future2 = qtAsNew.testMdMany(subList.get(2), list,strList,classType);
+        if (deng == 3) {
+            getReturn(deng,future1,future2,null,null,null,list,subList.get(0),strList,classType);
+            return list;
+        }
+        Future<String> future3 = qtAsNew.testMdMany(subList.get(3), list,strList,classType);
+        if (deng == 4) {
+            getReturn(deng,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
+            return list;
+        }
+        Future<String> future4 = qtAsNew.testMdMany(subList.get(4), list,strList,classType);
+        if (deng == 5) {
+            getReturn(deng,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
+            return list;
+        }
+        Future<String> future5 = qtAsNew.testMdMany(subList.get(5), list,strList,classType);
+        getReturn(deng,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
+        return list;
+    }
+
+    public <T> void getReturn(int deng,Future<String> future1
+            ,Future<String> future2,Future<String> future3
+            ,Future<String> future4,Future<String> future5,List<T> list
+            ,List<String> subListSon,List<String> strList, Class<T> classType){
+        System.out.println("?");
+        qtAsNew.mdManyUtilQuery(subListSon, list,strList,classType);
+        System.out.println("- ! -");
+        while (true) {
+            if (deng == 2 && future1.isDone()) {
+                break;
+            } else if (deng == 3 && future1.isDone() && future2.isDone()) {
+                break;
+            } else if (deng == 4 && future1.isDone() && future2.isDone() && future3.isDone()) {
+                break;
+            } else if (deng == 5 && future1.isDone() && future2.isDone()
+                    && future3.isDone() && future4.isDone()) {
+                break;
+            } else {
+                if (future1.isDone() && future2.isDone() && future5.isDone()
+                        && future3.isDone() && future4.isDone()) {
+                    break;
+                }
+            }
+        }
+        System.out.println("大小:");
+        System.out.println(list.size());
+    }
 
     public List<?> getMDContentMany(HashSet setIds, String field, Class<?> classType) {
 
@@ -670,6 +879,16 @@ public class Qt {
 
     }
 
+    public void addAllMD(Collection<?> collection) {
+        // 新增order信息
+        try {
+            mongoTemplate.insertAll(collection);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
+        }
+    }
+
     public void saveMD( Object obj) {
         // 新增order信息
         try {
@@ -951,7 +1170,6 @@ public class Qt {
             data.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
             request.source(data, XContentType.JSON);
-
             client.index(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
             e.printStackTrace();

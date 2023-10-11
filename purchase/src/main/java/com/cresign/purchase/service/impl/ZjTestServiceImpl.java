@@ -13,6 +13,7 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.lNUser;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
+import com.cresign.tools.pojo.po.Prod;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -605,5 +606,64 @@ public class ZjTestServiceImpl implements ZjTestService {
         }
         throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
                 LB_INFO_NOT_FOUND.getCode(),"");
+    }
+
+    @Override
+    public ApiResponse saveProdEncryption(JSONObject en) {
+        Prod prod = new Prod();
+        prod.setId(qt.GetObjectId());
+        prod.setEn(en);
+        prod.setView(new JSONArray());
+//        qt.setMDContent(id_P,qt.setJson("en",en), Prod.class);
+        qt.addMD(prod);
+        return retResult.ok(CodeEnum.OK.getCode(), prod.getId());
+    }
+
+    @Override
+    public ApiResponse getProdEncryption(String id_P) {
+        Prod en = qt.getMDContent(id_P, "en", Prod.class);
+        return retResult.ok(CodeEnum.OK.getCode(), en);
+    }
+
+    @Override
+    public ApiResponse applyForView(String id_U, String id_C, String id, String logType
+            , String subType, String zcnDesc, JSONObject data,int imp) {
+        LogFlow logFlow = new LogFlow();
+        logFlow.setId_U(id_U);
+        logFlow.setId_C(id_C);
+        logFlow.setId(id);
+        logFlow.setLogType(logType);
+        logFlow.setSubType(subType);
+        logFlow.setZcndesc(zcnDesc);
+        logFlow.setData(data);
+        logFlow.setImp(imp);
+        JSONArray id_Us = getUsersById_Q(id_C, id, id_U);
+        if (null != id_Us) {
+            logFlow.setId_Us(id_Us);
+            ws.sendWS(logFlow);
+            return retResult.ok(CodeEnum.OK.getCode(), "发送-查看-成功");
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), "发送-查看-失败");
+    }
+
+    @Override
+    public ApiResponse applyForAgreeWith(String id_U, String id_C, String id, String logType
+            , String subType, String zcnDesc, JSONObject data,int imp) {
+        LogFlow logFlow = new LogFlow();
+        logFlow.setId_U(id_U);
+        logFlow.setId_C(id_C);
+        logFlow.setId(id);
+        logFlow.setLogType(logType);
+        logFlow.setSubType(subType);
+        logFlow.setZcndesc(zcnDesc);
+        logFlow.setData(data);
+        logFlow.setImp(imp);
+        JSONArray id_Us = getUsersById_Q(id_C, id, id_U);
+        if (null != id_Us) {
+            logFlow.setId_Us(id_Us);
+            ws.sendWS(logFlow);
+            return retResult.ok(CodeEnum.OK.getCode(), "发送-同意查看-成功");
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), "发送-同意查看-失败");
     }
 }
