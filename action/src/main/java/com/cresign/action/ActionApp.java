@@ -22,6 +22,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @ComponentScan({"com.cresign.tools", "com.cresign.action"})
 @SpringBootApplication
 @EnableAsync
+
 public class ActionApp {
 
     public static void main(String[] args) {

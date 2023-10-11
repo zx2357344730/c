@@ -611,7 +611,7 @@ public class FlowServiceImpl implements FlowService {
                objOItem.getId_P(), oDates, oTasks, mergeJ, 0, null, isJsLj);
 
         //dg only 1 index
-        qt.errPrint("checkx", null, objOItemCollection, objActionCollection, pidActionCollection, casItemData2);
+        qt.errPrint("checkx", objOItemCollection, objActionCollection, pidActionCollection, casItemData2);
 
         // 判断递归结果是否为空
         if (objActionCollection.size() == 0){
@@ -745,7 +745,7 @@ public class FlowServiceImpl implements FlowService {
 
                     this.updateSalesOrderSingle(index, casItemData, unitAction, unitOItem, salesOrderData, grpBGroup, grpGroup, prodCompId
                             , oDates, oTasks);
-                    qt.errPrint("3... unitAction", null, unitAction);
+                    qt.errPrint("3... unitAction", unitAction);
             } else
             {
                 // else make Purchase Order

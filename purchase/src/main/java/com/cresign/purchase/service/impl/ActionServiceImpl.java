@@ -95,7 +95,7 @@ public class ActionServiceImpl implements ActionService {
         JSONArray objAction = order.getAction().getJSONArray("objAction");
         //3. Loop check grpB==oItem(i).grpB and objAction(i).isPUshed == 1
         for (int i = 0; i < objItem.size(); i++) {
-            qt.errPrint("check", null, objAction.getJSONObject(i).getInteger("bisPush"), objAction.getJSONObject(i).getInteger("bcdStatus"),objItem.getJSONObject(i).getString("grpB"));
+            qt.errPrint("check", objAction.getJSONObject(i).getInteger("bisPush"), objAction.getJSONObject(i).getInteger("bcdStatus"),objItem.getJSONObject(i).getString("grpB"));
             if (grpB.equals(objItem.getJSONObject(i).getString("grpB")) &&
             objAction.getJSONObject(i).getInteger("bisPush") == 1 &&
             objAction.getJSONObject(i).getInteger("bcdStatus") != 2){

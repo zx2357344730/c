@@ -436,29 +436,29 @@ public class DbUtils {
         return result;
     }
 
-    /**
-     * 新增assetflow日志
-     * @author Jevon
-     * @param infoObject
-     * @ver 1.0
-     * @updated 2020/10/26 8:30
-     * @return void
-     */
+//    /**
+//     * 新增assetflow日志
+//     * @author Jevon
+//     * @param infoObject
+//     * @ver 1.0
+//     * @updated 2020/10/26 8:30
+//     * @return void
+//     */
 
 
-
-    public void addES(JSONObject infoObject , String indexes ) throws IOException {
-
-        //8-1 indexes = indexes + "-write";
-        infoObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-        //指定ES索引 "assetflow" / "assetflow-write / assetflow-read
-        IndexRequest request = new IndexRequest(indexes);
-        //ES列表
-        request.source(infoObject, XContentType.JSON);
-
-        client.index(request, RequestOptions.DEFAULT);
-
-    }
+//
+//    public void addES(JSONObject infoObject , String indexes ) throws IOException {
+//
+//        //8-1 indexes = indexes + "-write";
+//        infoObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//        //指定ES索引 "assetflow" / "assetflow-write / assetflow-read
+//        IndexRequest request = new IndexRequest(indexes);
+//        //ES列表
+//        request.source(infoObject, XContentType.JSON);
+//
+//        client.index(request, RequestOptions.DEFAULT);
+//
+//    }
 
 
 
@@ -1191,7 +1191,7 @@ public class DbUtils {
                 System.out.println("method=" + method);
 
                 //just break down params
-                JSONArray arrayParams = (JSONArray) jsonExec.getJSONObject("params").clone();
+                JSONArray arrayParams = qt.cloneArr(jsonExec.getJSONArray("params"));
 //                JSONObject jsonParams = (JSONObject) jsonObjExec.getJSONObject("params").clone();
                 JSONObject jsonParams = new JSONObject();
                 for (int j = 0; j < arrayParams.size(); j++) {
@@ -1203,11 +1203,20 @@ public class DbUtils {
                         if (val.startsWith("##OP")) {
                             String[] valSplit = val.split("\\.");
                             System.out.println("paramSplit.length=" + valSplit.length);
-                            Object var = scriptEngineVar(jsonVars.getJSONObject(valSplit[1]).get("val"), jsonVars);
-                            if (valSplit.length == 2) {
+                            JSONObject jsonVar = jsonVars.getJSONObject(valSplit[1]);
+                            String retType = jsonVar.getString("retType");
+                            if (retType.equals("String")) {
+                                String var = jsonVar.getString("val");
+                                System.out.println("var=" + var);
                                 jsonParam.put("val", var);
-                            } else if (valSplit.length > 2) {
-                                jsonParams.put("val", ((JSONObject) JSON.toJSON(var)).get(valSplit[2]));
+                            } else if (retType.equals("json")) {
+                                JSONObject var = jsonVar.getJSONObject("val");
+                                System.out.println("var=" + var);
+                                if (valSplit.length == 2) {
+                                    jsonParam.put("val", var);
+                                } else if (valSplit.length > 2) {
+                                    jsonParams.put("val", var.getJSONObject(valSplit[2]));
+                                }
                             }
                         }
                     }
@@ -1225,7 +1234,7 @@ public class DbUtils {
                         }
                     }
                 }
-
+                System.out.println("jsonParams=" + jsonParams);
                 if (method.startsWith("com.cresign")) {
                     //调用方法
                     String[] methodSplit = method.split("##");
@@ -1241,7 +1250,7 @@ public class DbUtils {
                     //发日志
                     //Else, send log in "method" logFlow
                     jsonParams.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-                    this.addES(jsonParams, method);
+                    qt.addES(method, jsonParams);
 //                logUtil.sendLogByFilebeat(method, jsonParams);
 //                LogFlow log = JSONObject.parseObject(JSON.toJSONString(jsonParams),LogFlow.class);
 //                wsClient.sendLogWS(log);
@@ -1249,7 +1258,7 @@ public class DbUtils {
             }
         } catch (Exception e)
         {
-
+            e.printStackTrace();
         }
     }
 

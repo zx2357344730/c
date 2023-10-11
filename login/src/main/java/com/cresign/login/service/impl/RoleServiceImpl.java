@@ -189,7 +189,7 @@ public class RoleServiceImpl implements RoleService {
                 }
             }
 
-            qt.errPrint("newestRole init", null, resultJson.getJSONObject("card"));
+            qt.errPrint("newestRole init", resultJson.getJSONObject("card"));
 
             //check Batch:
             for (String key : initGrpJson.getJSONObject("batch").keySet()) {
@@ -307,7 +307,7 @@ public class RoleServiceImpl implements RoleService {
     public ApiResponse copyGrpU(String id_U, String id_C, String to_grpU, String grpU)
     {
 
-        Asset asset = qt.getConfig(id_C, "a-auth", qt.strList("role.objData." + grpU,"menu.mainMenus." + grpU));
+        Asset asset = qt.getConfig(id_C, "a-auth", qt.strList("role.objData." + grpU,"menu.mainMenus." + grpU, "menu.subMenus"));
         System.out.println("asset"+asset);
         // 没有设置职位权限
         if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU)) {
@@ -319,20 +319,43 @@ public class RoleServiceImpl implements RoleService {
         JSONArray copyMenu = asset.getMenu().getJSONObject("mainMenus").getJSONArray(grpU);
 
 
-        System.out.println("role"+copyRole);
-        System.out.println("menu"+copyMenu);
+//        System.out.println("role"+copyRole);
+//        System.out.println("menu"+copyMenu);
 
         qt.setMDContent(asset.getId(), qt.setJson("role.objData." + to_grpU, copyRole, "menu.mainMenus."+ to_grpU, copyMenu),Asset.class);
 
         qt.delRD("login:get_read_auth", "compId-"+id_C);
         qt.delRD("login:get_readwrite_auth", "compId-" + id_C);
 
+//        JSONArray subMenus = asset.getMenu().getJSONArray("subMenus");
+//
+//        // 存储修改的返回信息
+//        JSONArray result = new JSONArray();
+//        // 遍历当前修改的菜单
+//        for (Object mainMenusDatum : copyMenu) {
+//            JSONObject mainMenuJson = qt.cloneObj(qt.toJson(mainMenusDatum));
+//            // 该主菜单下的子菜单
+//            JSONArray mainSubMenus = mainMenuJson.getJSONArray("subMenus");
+//            // 用来包含子菜单数组
+//            JSONArray subMenusArray = new JSONArray();
+//            for (int j = 0; j < mainSubMenus.size(); j++) {
+//                String subMenuRef = mainSubMenus.getString(j);
+//                for (int z = 0; z < subMenus.size(); z++) {
+//                    JSONObject subMenuJson = subMenus.getJSONObject(z);
+//                    // 判断ref一样，并添加对应的ref信息
+//                    if (subMenuRef.equals(subMenuJson.getString("ref"))) {
+//                        subMenusArray.add(subMenuJson);
+//                    }
+//                }
+//            }
+//            mainMenuJson.put("subMenus", subMenusArray);
+//            result.add(mainMenuJson);
+//        }
+//        JSONObject data = qt.setJson("type", "chgUserGrp");
         LogFlow log = new LogFlow();
-        log.setSysLog(id_C, "setMenuAuth", "更新菜单", 3, qt.setJson("cn", "系统权限更新"));
-        //TODO ZEJIN 加menu 的data， 要在asset 内mainMenus/subMenus 处理后放进 data
-        JSONObject data = new JSONObject();
-        log.setData(data);
+        log.setSysLog(id_C, "mutMenu", "更新菜单", 3, qt.setJson("cn", "系统权限更新"));
         ws.setUserListByGrpU(log, id_C, grpU);
+        log.setData(qt.setJson("type", "chgUserGrp"));
         ws.sendWS(log);
 
         return retResult.ok(CodeEnum.OK.getCode(), "");

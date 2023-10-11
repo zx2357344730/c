@@ -55,7 +55,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class Qt{
+public class Qt {
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -574,6 +574,11 @@ public class Qt{
 
         if (e != null)
             e.printStackTrace();
+    }
+
+    public void errPrint(String title, Object... vars)
+    {
+        this.errPrint(title, null, vars);
     }
 
 

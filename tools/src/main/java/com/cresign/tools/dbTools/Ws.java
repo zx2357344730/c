@@ -155,17 +155,6 @@ public class Ws {
         System.out.println("请求结果:");
         System.out.println(s);
     }
-    /**
-     * pad发送推送方法
-     * @param pushAppIds	推送编号列表
-     * @author tang
-     * @date 创建时间: 2023/9/4
-     * @ver 版本号: 1.0.0
-     */
-    private void padPush(JSONArray pushAppIds){
-        System.out.println("进入pad推送:");
-        System.out.println(JSON.toJSONString(pushAppIds));
-    }
 
     /**
      * 获取es用户id列表和appId列表
@@ -177,8 +166,13 @@ public class Ws {
      * @ver 版本号: 1.0.0
      */
     public void setUserListByGrpU(LogFlow log, String id_C, String grpU) {
-        JSONArray userList = qt.getES("lBUser", qt.setESFilt("id_CB", id_C, "grpU", grpU));
-
+        JSONArray userList = new JSONArray();
+        if (grpU.equals("all"))
+        {
+            userList = qt.getES("lBUser", qt.setESFilt("id_CB", id_C));
+        } else {
+            userList = qt.getES("lBUser", qt.setESFilt("id_CB", id_C, "grpU", grpU));
+        }
         JSONArray userIds = new JSONArray();
         JSONArray userPushIds = new JSONArray();
 
@@ -304,30 +298,6 @@ public class Ws {
 //
 
     public void sendUsageFlow(JSONObject wrdN, String msg, String subType, String type) {
-        // set sys log format:
-        LogFlow log = new LogFlow();
-        log.setSysLog("6141b6797e8ac90760913fd0", subType, msg, 3, wrdN);
-
-        // find all users in the "system usageflow group
-        this.setUserListByFlowId("6141b6797e8ac90760913fd0", log);
-        if (type.equals("ALL"))
-        {   //send WS, write ES, send push
-            this.sendWS(log);
-        } else if (type.equals("WSES"))
-        {  // no Push
-            this.sendESOnly(log);
-            this.sendWSOnlyNew(log);
-        } else if (type.equals("ES"))
-        {
-            this.sendESOnly(log);
-        } else if (type.equals("WS"))
-        {
-            this.sendWSOnlyNew(log);
-        }
-    }
-
-    public void sendUsageFlowNew(JSONObject wrdN, String msg, String subType, String type,String thisB)
-    {
         // set sys log format:
         LogFlow log = new LogFlow();
         log.setSysLog("6141b6797e8ac90760913fd0", subType, msg, 3, wrdN);
@@ -538,6 +508,7 @@ public class Ws {
         // if id_Us is listed, i should not change that
         if (logContent.getId_Us().size() > 0) {
             if (logContent.getId_APPs().size() == 0) {
+
                 // 遍历用户列表
                 for (int i = 0; i < logContent.getId_Us().size(); i++) {
                     // 获取用户ID
