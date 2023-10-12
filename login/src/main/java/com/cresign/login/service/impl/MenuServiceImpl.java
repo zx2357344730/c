@@ -103,11 +103,6 @@ public class MenuServiceImpl implements MenuService {
         // 最终返回数据
         JSONArray result = new JSONArray();
 
-        // redis cache 先查redis缓存有没有改公司菜单
-//        if (qt.hasRDHashItem("details:get_menus", "compId-"+ id_C, grpU)) {
-//            String val = qt.getRDHashStr("details:get_menus","compId-" + id_C, grpU);
-//                return retResult.ok(CodeEnum.OK.getCode(), JSONArray.parse(val));
-//        }
         // 查询该公司的菜单
 
         Asset asset = qt.getConfig(id_C, "a-auth","menu");
@@ -197,53 +192,46 @@ public class MenuServiceImpl implements MenuService {
         Asset asset = qt.getConfig(id_C, "a-auth",qt.strList("menu","flowControl.objData"));
 
         qt.setMDContent(asset.getId(),qt.setJson("menu.mainMenus." + grpU, mainMenusData), Asset.class);
-
-//        qt.delRD("details:get_menus", "compId-" + id_C);
-
-//        System.out.println("mainMenusData:");
-//        System.out.println(JSON.toJSONString(mainMenusData));
-        // 定义data
-        JSONObject data = new JSONObject();
-//        // 当前职位的主菜单数组
-//        JSONArray grpUMainMenus = asset.getMenu().getJSONObject("mainMenus").getJSONArray(grpU);
-        // 子菜单数组
-        JSONArray subMenus = asset.getMenu().getJSONArray("subMenus");
-        // 存储修改的返回信息
-        JSONArray result = new JSONArray();
-        // 遍历当前修改的菜单
-        for (MainMenuBO mainMenusDatum : mainMenusData) {
-            JSONObject mainMenuJson = qt.cloneObj(qt.toJson(mainMenusDatum));
-//            String s = JSON.toJSONString(mainMenusDatum, SerializerFeature.DisableCircularReferenceDetect);
-//            JSONObject mainMenuJson = JSONObject.parseObject(s);
-            // 该主菜单下的子菜单
-            JSONArray mainSubMenus = mainMenuJson.getJSONArray("subMenus");
-            // 用来包含子菜单数组
-            JSONArray subMenusArray = new JSONArray();
-            for (int j = 0; j < mainSubMenus.size(); j++) {
-                String subMenuRef = mainSubMenus.getString(j);
-                for (int z = 0; z < subMenus.size(); z++) {
-                    JSONObject subMenuJson = subMenus.getJSONObject(z);
-                    // 判断ref一样，并添加对应的ref信息
-                    if (subMenuRef.equals(subMenuJson.getString("ref"))) {
-                        subMenusArray.add(subMenuJson);
-                    }
-                }
-            }
-            mainMenuJson.put("subMenus", subMenusArray);
-            result.add(mainMenuJson);
-        }
-
-        data.put("mainMenusData",JSON.toJSONString(result, SerializerFeature.DisableCircularReferenceDetect));
-        data.put("type", "ud_grpU_mainMenu");
+//
+//        // 子菜单数组
+//        JSONArray subMenus = asset.getMenu().getJSONArray("subMenus");
+//        // 存储修改的返回信息
+//        JSONArray result = new JSONArray();
+//        // 遍历当前修改的菜单
+//        for (MainMenuBO mainMenusDatum : mainMenusData) {
+//            JSONObject mainMenuJson = qt.cloneObj(qt.toJson(mainMenusDatum));
+////            String s = JSON.toJSONString(mainMenusDatum, SerializerFeature.DisableCircularReferenceDetect);
+////            JSONObject mainMenuJson = JSONObject.parseObject(s);
+//            // 该主菜单下的子菜单
+//            JSONArray mainSubMenus = mainMenuJson.getJSONArray("subMenus");
+//            // 用来包含子菜单数组
+//            JSONArray subMenusArray = new JSONArray();
+//            for (int j = 0; j < mainSubMenus.size(); j++) {
+//                String subMenuRef = mainSubMenus.getString(j);
+//                for (int z = 0; z < subMenus.size(); z++) {
+//                    JSONObject subMenuJson = subMenus.getJSONObject(z);
+//                    // 判断ref一样，并添加对应的ref信息
+//                    if (subMenuRef.equals(subMenuJson.getString("ref"))) {
+//                        subMenusArray.add(subMenuJson);
+//                    }
+//                }
+//            }
+//            mainMenuJson.put("subMenus", subMenusArray);
+//            result.add(mainMenuJson);
+//        }
+//        JSONObject data = new JSONObject();
+//
+//        data.put("data",qt.toString(result));
+//        data.put("type", "ud_grpU_mainMenu");
 
         // 发送日志
         LogFlow log = new LogFlow();
-        log.setSysLog(id_C, "setMenuAuth", "更新菜单", 3, qt.setJson("cn", "系统权限更新"));// logtype = usageflow
-        log.setData(data); // set log data
+        log.setSysLog(id_C, "mutMenu", "更新菜单", 3, qt.setJson("cn", "系统权限更新"));// logtype = usageflow
+        log.setData(qt.setJson("type", "updatedMenu")); // set log data
         ws.setUserListByGrpU(log, id_C, grpU); // set log id_Us id_APPs
         ws.sendWS(log);
 
-        return retResult.ok(CodeEnum.OK.getCode(), null);
+        return retResult.ok(CodeEnum.OK.getCode(), "");
 
     }
 

@@ -20,8 +20,6 @@ public class Prod {
 
     private String id;
 
-    private JSONObject en;
-
     private ProdInfo info;
 
     private JSONArray view;
@@ -64,6 +62,8 @@ public class Prod {
     private JSONObject qrShareCode;
 
     private JSONObject summx;
+
+    private JSONObject en;
 
     private JSONObject tempa;
 

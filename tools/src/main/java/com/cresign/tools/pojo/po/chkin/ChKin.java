@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 //注解在类上，为类提供一个无参的构造方法
 @NoArgsConstructor
-public class ChKin {
+public class Chkin {
     /**
      * 打卡方式
      */

@@ -53,6 +53,10 @@ public class Info {
 
     private JSONObject tag;
 
+    private JSONObject jsonInfo;
+
+    private JSONObject en;
+
     private Integer tvs = 1;
 
 
