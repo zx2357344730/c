@@ -16,6 +16,7 @@ import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.es.lSBOrder;
+import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Order;
 import com.cresign.tools.pojo.po.Prod;
 import com.cresign.tools.pojo.po.chkin.Task;
@@ -185,226 +186,226 @@ public class FlowNewServiceImpl implements FlowNewService {
 //        System.out.println(JSON.toJSONString(oParent_objItem));
 
         System.out.println("save-start");
-//        /////////// setup Dep.objlBProd + objlSProd for grpP
-//
-//        //putting the Sales order as the last casItem... I donno why
-//        JSONObject thisOrderData = new JSONObject();
-//        thisOrderData.put("id_C", myCompId);
-//        thisOrderData.put("id_O", id_OParent);
-//        thisOrderData.put("lST", 4);
-//        thisOrderData.put("type", 1);
-//        thisOrderData.put("priority", salesOrderData.getInfo().getPriority());
-//        thisOrderData.put("size", oParent_objItem.size());
-//        thisOrderData.put("wrdN", salesOrderData.getInfo().getWrdN());
-//        casItemData.add(thisOrderData);
-//
-//
-//        // 获取递归结果键
-//        Set<String> actionCollection = objActionCollection.keySet();
-//        // before getting so many id_A, get myComp id_A first for future use
-//        Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
-//        List<Order> saveOrder = new ArrayList<>();
-//        // 遍历键，并创建采购单
-//        for (String thisOrderId : actionCollection) {
-//
-//            // 获取对应订单id的零件递归信息
-//            List<OrderAction> unitAction = objActionCollection.get(thisOrderId);
-//            // 获取对应订单id的零件信息
-//            List<OrderOItem> unitOItem = objOItemCollection.get(thisOrderId);
-//
-//            // 创建订单info
-//            String prodCompId = "";
-//            JSONObject orderNameCas = new JSONObject();
-//            String targetCompId;
-//            if (id_OParent.equals(thisOrderId)) {
-//                targetCompId = salesOrderData.getInfo().getId_CB();
-//            } else {
-//                targetCompId = myCompId;
-//            }
-//            for (int j = 0; j < casItemData.size(); j++) {
-//                if (casItemData.getJSONObject(j).getString("id_O").equals(thisOrderId)) {
-//                    prodCompId = casItemData.getJSONObject(j).getString("id_C");
-//                    orderNameCas = casItemData.getJSONObject(j).getJSONObject("wrdN");
-//                    break;
+        /////////// setup Dep.objlBProd + objlSProd for grpP
+
+        //putting the Sales order as the last casItem... I donno why
+        JSONObject thisOrderData = new JSONObject();
+        thisOrderData.put("id_C", myCompId);
+        thisOrderData.put("id_O", id_OParent);
+        thisOrderData.put("lST", 4);
+        thisOrderData.put("type", 1);
+        thisOrderData.put("priority", salesOrderData.getInfo().getPriority());
+        thisOrderData.put("size", oParent_objItem.size());
+        thisOrderData.put("wrdN", salesOrderData.getInfo().getWrdN());
+        casItemData.add(thisOrderData);
+
+
+        // 获取递归结果键
+        Set<String> actionCollection = objActionCollection.keySet();
+        // before getting so many id_A, get myComp id_A first for future use
+        Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
+        List<Order> addOrder = new ArrayList<>();
+        // 遍历键，并创建采购单
+        for (String thisOrderId : actionCollection) {
+
+            // 获取对应订单id的零件递归信息
+            List<OrderAction> unitAction = objActionCollection.get(thisOrderId);
+            // 获取对应订单id的零件信息
+            List<OrderOItem> unitOItem = objOItemCollection.get(thisOrderId);
+
+            // 创建订单info
+            String prodCompId = "";
+            JSONObject orderNameCas = new JSONObject();
+            String targetCompId;
+            if (id_OParent.equals(thisOrderId)) {
+                targetCompId = salesOrderData.getInfo().getId_CB();
+            } else {
+                targetCompId = myCompId;
+            }
+            for (int j = 0; j < casItemData.size(); j++) {
+                if (casItemData.getJSONObject(j).getString("id_O").equals(thisOrderId)) {
+                    prodCompId = casItemData.getJSONObject(j).getString("id_C");
+                    orderNameCas = casItemData.getJSONObject(j).getJSONObject("wrdN");
+                    break;
+                }
+            }
+
+            JSONObject grpBGroup = new JSONObject();
+            JSONObject grpGroup = new JSONObject();
+            String grpO = "";
+            String grpOB = "1000";
+//                String aId;
+            Asset asset = null;
+
+            if (!targetCompId.equals(myCompId)) {
+
+                asset = qt.getConfig(targetCompId, "a-auth", "def");
+
+                if (asset.getId().equals("none")) {
+                    asset = myDef;
+                }
+            } else {
+//                    aId = myDef.getId();
+                asset = myDef;
+            }
+            System.out.println("otherDeff" + targetCompId);
+
+
+            // if it is a real Company get grpB setting from objlBProd by ref, else do nothing now, later can do extra
+            JSONObject defResultBP = asset.getDef().getJSONObject("objlBP");
+            JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
+
+            for (OrderOItem orderOItem : unitOItem) {
+//                System.out.println(orderOItem.getGrpB());
+                String grpB = orderOItem.getGrpB();
+                if (grpBGroup.getJSONObject(grpB) == null) {
+                    grpBGroup.put(grpB, defResultBP.getJSONObject(grpB));
+                }
+            }
+            Asset asset2 = null;
+            if (!prodCompId.equals(myCompId)) {
+                asset2 = qt.getConfig(prodCompId, "a-auth", "def");
+                if (asset2.getId().equals("none")) {
+
+                    asset2 = myDef;
+                }
+
+            } else {
+                asset2 = myDef;
+            }
+
+            JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
+
+            JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
+
+            for (OrderOItem orderOItem : unitOItem) {
+                String grp = orderOItem.getGrp();
+
+                if (grpGroup.getJSONObject(grp) == null) {
+
+                    grpGroup.put(grp, defResultSP.getJSONObject(grp));
+                }
+            }
+
+            grpO = "1000";
+            grpOB = "1000";
+            System.out.print("got all ok");
+
+            if (id_OParent.equals(thisOrderId)) {
+                // make sales order Action
+                this.updateSalesOrder(casItemData, unitAction, unitOItem, salesOrderData, grpBGroup, grpGroup, prodCompId
+                        , oDates, oTasks);
+            } else {
+                // else make Purchase Order
+//                // 创建订单
+                Order newPO = new Order();
+
+                // 根据键设置订单id
+                newPO.setId(thisOrderId);
+                System.out.print("got1" + thisOrderId);
+
+                // priority is BY order, get from info and write into ALL oItem
+                OrderInfo newPO_Info = new OrderInfo(prodCompId, targetCompId, unitOItem.get(0).getId_CP(), "", id_OParent, "", "",
+                        grpO, grpOB, oParent_prior, unitOItem.get(0).getPic(), 4, 0, orderNameCas, null);
+
+                // 设置订单info信息
+                newPO.setInfo(newPO_Info);
+
+                // 添加View信息
+                JSONArray view = new JSONArray();
+                view.add("info");
+                view.add("action");
+                view.add("oItem");
+                view.add("oStock");
+                newPO.setView(view);
+
+                JSONArray objCard = new JSONArray();
+                objCard.add("action");
+                objCard.add("oStock");
+
+                Double wn2qty = 0.0;
+                Double wn4price = 0.0;
+                JSONArray arrayId_P = new JSONArray();
+
+                for (OrderOItem orderOItem : unitOItem) {
+                    wn2qty += orderOItem.getWn2qtyneed();
+                    wn4price += orderOItem.getWn4price();
+//                    System.out.println("u " + orderOItem);
+                    arrayId_P.add(orderOItem.getId_P());
+                }
+
+                // 添加OItem信息
+                JSONObject newPO_OItem = new JSONObject();
+                newPO_OItem.put("objItem", unitOItem);
+                newPO_OItem.put("wn2qty", wn2qty);
+                newPO_OItem.put("arrP", arrayId_P);
+                newPO_OItem.put("wn4price", wn4price);
+                newPO_OItem.put("objCard", objCard);
+//                if (divideOrder.equals("true")) {
+//                    Map<String,List<OrderOItem>> oItemMap = new HashMap<>();
+//                    Map<String,List<OrderAction>> actionMap = new HashMap<>();
+//                    for (int i = 0; i < unitOItem.size(); i++) {
+//                        OrderOItem orderOItem = unitOItem.get(i);
+//                        OrderAction orderAction = unitAction.get(i);
+//                        String grpB = orderOItem.getGrpB();
+//                        List<OrderOItem> orderOItems;
+//                        List<OrderAction> orderActions;
+//                        if (oItemMap.containsKey(grpB)) {
+//                            orderOItems = oItemMap.get(grpB);
+//                            orderOItems.add(orderOItem);
+//                            orderActions = actionMap.get(grpB);
+//                            orderActions.add(orderAction);
+//                        } else {
+//                            orderOItems = new ArrayList<>();
+//                            orderOItems.add(orderOItem);
+//                            orderActions = new ArrayList<>();
+//                            orderActions.add(orderAction);
+//                        }
+//                        oItemMap.put(grpB,orderOItems);
+//                        actionMap.put(grpB,orderActions);
+//                    }
+//                    JSONArray sonOrderId = new JSONArray();
+//                    for (String s : oItemMap.keySet()) {
+//                        List<OrderOItem> orderOItems = oItemMap.get(s);
+//                        List<OrderAction> orderActions = actionMap.get(s);
+//                        sonOrderId.add(addOrder(prodCompId,targetCompId, orderOItems, newPO.getId(),grpO, grpOB
+//                                ,oParent_prior,orderNameCas,orderActions,grpBGroup,grpGroup,s));
+//                    }
+//                    newPO_OItem.put("sonOrderId", sonOrderId);
 //                }
-//            }
-//
-//            JSONObject grpBGroup = new JSONObject();
-//            JSONObject grpGroup = new JSONObject();
-//            String grpO = "";
-//            String grpOB = "1000";
-////                String aId;
-//            Asset asset = null;
-//
-//            if (!targetCompId.equals(myCompId)) {
-//
-//                asset = qt.getConfig(targetCompId, "a-auth", "def");
-//
-//                if (asset.getId().equals("none")) {
-//                    asset = myDef;
-//                }
-//            } else {
-////                    aId = myDef.getId();
-//                asset = myDef;
-//            }
-//            System.out.println("otherDeff" + targetCompId);
-//
-//
-//            // if it is a real Company get grpB setting from objlBProd by ref, else do nothing now, later can do extra
-//            JSONObject defResultBP = asset.getDef().getJSONObject("objlBP");
-//            JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
-//
-//            for (OrderOItem orderOItem : unitOItem) {
-////                System.out.println(orderOItem.getGrpB());
-//                String grpB = orderOItem.getGrpB();
-//                if (grpBGroup.getJSONObject(grpB) == null) {
-//                    grpBGroup.put(grpB, defResultBP.getJSONObject(grpB));
-//                }
-//            }
-//            Asset asset2 = null;
-//            if (!prodCompId.equals(myCompId)) {
-//                asset2 = qt.getConfig(prodCompId, "a-auth", "def");
-//                if (asset2.getId().equals("none")) {
-//
-//                    asset2 = myDef;
-//                }
-//
-//            } else {
-//                asset2 = myDef;
-//            }
-//
-//            JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
-//
-//            JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
-//
-//            for (OrderOItem orderOItem : unitOItem) {
-//                String grp = orderOItem.getGrp();
-//
-//                if (grpGroup.getJSONObject(grp) == null) {
-//
-//                    grpGroup.put(grp, defResultSP.getJSONObject(grp));
-//                }
-//            }
-//
-//            grpO = "1000";
-//            grpOB = "1000";
-//            System.out.print("got all ok");
-//
-//            if (id_OParent.equals(thisOrderId)) {
-//                // make sales order Action
-//                this.updateSalesOrder(casItemData, unitAction, unitOItem, salesOrderData, grpBGroup, grpGroup, prodCompId
-//                        , oDates, oTasks,saveOrder);
-//            } else {
-//                // else make Purchase Order
-////                // 创建订单
-//                Order newPO = new Order();
-//
-//                // 根据键设置订单id
-//                newPO.setId(thisOrderId);
-//                System.out.print("got1" + thisOrderId);
-//
-//                // priority is BY order, get from info and write into ALL oItem
-//                OrderInfo newPO_Info = new OrderInfo(prodCompId, targetCompId, unitOItem.get(0).getId_CP(), "", id_OParent, "", "",
-//                        grpO, grpOB, oParent_prior, unitOItem.get(0).getPic(), 4, 0, orderNameCas, null);
-//
-//                // 设置订单info信息
-//                newPO.setInfo(newPO_Info);
-//
-//                // 添加View信息
-//                JSONArray view = new JSONArray();
-//                view.add("info");
-//                view.add("action");
-//                view.add("oItem");
-//                view.add("oStock");
-//                newPO.setView(view);
-//
-//                JSONArray objCard = new JSONArray();
-//                objCard.add("action");
-//                objCard.add("oStock");
-//
-//                Double wn2qty = 0.0;
-//                Double wn4price = 0.0;
-//                JSONArray arrayId_P = new JSONArray();
-//
-//                for (OrderOItem orderOItem : unitOItem) {
-//                    wn2qty += orderOItem.getWn2qtyneed();
-//                    wn4price += orderOItem.getWn4price();
-////                    System.out.println("u " + orderOItem);
-//                    arrayId_P.add(orderOItem.getId_P());
-//                }
-//
-//                // 添加OItem信息
-//                JSONObject newPO_OItem = new JSONObject();
-//                newPO_OItem.put("objItem", unitOItem);
-//                newPO_OItem.put("wn2qty", wn2qty);
-//                newPO_OItem.put("arrP", arrayId_P);
-//                newPO_OItem.put("wn4price", wn4price);
-//                newPO_OItem.put("objCard", objCard);
-////                if (divideOrder.equals("true")) {
-////                    Map<String,List<OrderOItem>> oItemMap = new HashMap<>();
-////                    Map<String,List<OrderAction>> actionMap = new HashMap<>();
-////                    for (int i = 0; i < unitOItem.size(); i++) {
-////                        OrderOItem orderOItem = unitOItem.get(i);
-////                        OrderAction orderAction = unitAction.get(i);
-////                        String grpB = orderOItem.getGrpB();
-////                        List<OrderOItem> orderOItems;
-////                        List<OrderAction> orderActions;
-////                        if (oItemMap.containsKey(grpB)) {
-////                            orderOItems = oItemMap.get(grpB);
-////                            orderOItems.add(orderOItem);
-////                            orderActions = actionMap.get(grpB);
-////                            orderActions.add(orderAction);
-////                        } else {
-////                            orderOItems = new ArrayList<>();
-////                            orderOItems.add(orderOItem);
-////                            orderActions = new ArrayList<>();
-////                            orderActions.add(orderAction);
-////                        }
-////                        oItemMap.put(grpB,orderOItems);
-////                        actionMap.put(grpB,orderActions);
-////                    }
-////                    JSONArray sonOrderId = new JSONArray();
-////                    for (String s : oItemMap.keySet()) {
-////                        List<OrderOItem> orderOItems = oItemMap.get(s);
-////                        List<OrderAction> orderActions = actionMap.get(s);
-////                        sonOrderId.add(addOrder(prodCompId,targetCompId, orderOItems, newPO.getId(),grpO, grpOB
-////                                ,oParent_prior,orderNameCas,orderActions,grpBGroup,grpGroup,s));
-////                    }
-////                    newPO_OItem.put("sonOrderId", sonOrderId);
-////                }
-//                newPO.setOItem(newPO_OItem);
-//                System.out.println("sales order");
-//
-//                // 创建采购单的Action
-//                JSONObject newPO_Action = new JSONObject();
-//                newPO_Action.put("objAction", unitAction);
-//                newPO_Action.put("grpBGroup", grpBGroup);
-//                newPO_Action.put("grpGroup", grpGroup);
-//                newPO_Action.put("wn2progress", 0.0);
-//
-//                //Create oStock
-//                JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(unitOItem));
-//                newPO.setOStock(newPO_oStock);
-//
-//                newPO.setAction(newPO_Action);
-//
-//                JSONObject listCol = new JSONObject();
-//
-////                dbu.summOrder(newPO, listCol);
-//                // 新增订单
-////                qt.addMD(newPO);
-//                saveOrder.add(newPO);
-////                    qt.setES(....)
-//                System.out.println("sales order SAVED " + newPO.getInfo().getWrdN().getString("cn"));
-//
-////              // 创建lSBOrder订单
-//                lSBOrder lsbOrder = new lSBOrder(prodCompId, targetCompId, "", "", id_OParent, thisOrderId, arrayId_P,
-//                        "", "", null, "1000", unitOItem.get(0).getPic(), 4, 0, orderNameCas, null, null);
-//                // 新增lsbOrder信息
-////                qt.addES("lsborder", lsbOrder);
-//            }
-//        }
-////        qt.addAllMD(saveOrder);
+                newPO.setOItem(newPO_OItem);
+                System.out.println("sales order");
+
+                // 创建采购单的Action
+                JSONObject newPO_Action = new JSONObject();
+                newPO_Action.put("objAction", unitAction);
+                newPO_Action.put("grpBGroup", grpBGroup);
+                newPO_Action.put("grpGroup", grpGroup);
+                newPO_Action.put("wn2progress", 0.0);
+
+                //Create oStock
+                JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(unitOItem));
+                newPO.setOStock(newPO_oStock);
+
+                newPO.setAction(newPO_Action);
+
+                JSONObject listCol = new JSONObject();
+
+                dbu.summOrder(newPO, listCol);
+                // 新增订单
+//                qt.addMD(newPO);
+                addOrder.add(newPO);
+//                    qt.setES(....)
+                System.out.println("sales order SAVED " + newPO.getInfo().getWrdN().getString("cn"));
+
+//              // 创建lSBOrder订单
+                lSBOrder lsbOrder = new lSBOrder(prodCompId, targetCompId, "", "", id_OParent, thisOrderId, arrayId_P,
+                        "", "", null, "1000", unitOItem.get(0).getPic(), 4, 0, orderNameCas, null, null);
+                // 新增lsbOrder信息
+                qt.addES("lsborder", lsbOrder);
+            }
+        }
+        qt.addAllMD(addOrder);
         System.out.println("save-end");
         System.out.println("all finished...");
         System.out.println("结束-时间:");
@@ -1197,7 +1198,7 @@ public class FlowNewServiceImpl implements FlowNewService {
     public void updateSalesOrder(JSONArray casItemData, List<OrderAction> salesAction
             , List<OrderOItem> salesOItem, Order orderParentData
             , JSONObject grpBGroup, JSONObject grpGroup, String myCompId
-            , List<OrderODate> oDates, List<Task> oTasks,List<Order> saveOrder) {
+            , List<OrderODate> oDates, List<Task> oTasks) {
         // 添加订单基础信息存储
         JSONObject casItemx = new JSONObject();
         JSONObject nowData = new JSONObject();
@@ -1255,8 +1256,8 @@ public class FlowNewServiceImpl implements FlowNewService {
 
         // 新增订单
 
-//        qt.saveMD(orderParentData);
-        saveOrder.add(orderParentData);
+        qt.saveMD(orderParentData);
+//        saveOrder.add(orderParentData);
         System.out.println("sales order SAVED Parent " + orderParentData.getInfo().getWrdN().getString("cn"));
     }
 
