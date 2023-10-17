@@ -964,6 +964,11 @@ public class ActionServiceImpl implements ActionService {
                     Order oStockCheck = qt.getMDContent(id_O, Arrays.asList("info","oStock", "action", "oItem", "view"), Order.class);
                     if (oStockCheck.getOStock() != null)
                     {
+                        if (oStockCheck.getOStock().getJSONArray("objData") == null || oStockCheck.getOStock().getJSONArray("objData").size() < index + 1)
+                        {
+                            oStockCheck.getOStock().put ("objData", dbu.initOStock(qt.toJson(orderOItem), oStockCheck.getOStock().getJSONArray("objData"), index));
+                        }
+
                         Double qty = oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).getDouble("wn2qtynow");
                         Double qtyAdding = 1 - qty;
 
@@ -1926,7 +1931,6 @@ public class ActionServiceImpl implements ActionService {
 //        Order order = coupaUtil.getOrderByListKey(oid, Arrays.asList("info", "oItem", "action"));
         Order order = qt.getMDContent(oid, Arrays.asList("info", "oItem", "action"), Order.class);
 
-        qt.errPrint("order@getActionData", null, order);
         // 判断订单为空
         if (null == order || order.getOItem() == null || order.getAction() == null) {
 

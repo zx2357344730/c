@@ -3,7 +3,6 @@ package com.cresign.login.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.cresign.login.service.MenuService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
@@ -226,7 +225,7 @@ public class MenuServiceImpl implements MenuService {
 
         // 发送日志
         LogFlow log = new LogFlow();
-        log.setSysLog(id_C, "mutMenu", "更新菜单", 3, qt.setJson("cn", "系统权限更新"));// logtype = usageflow
+        log.setSysLog(id_C, "mut_menu", "更新菜单", 3, qt.setJson("cn", "系统权限更新"));// logtype = usageflow
         log.setData(qt.setJson("type", "updatedMenu")); // set log data
         ws.setUserListByGrpU(log, id_C, grpU); // set log id_Us id_APPs
         ws.sendWS(log);

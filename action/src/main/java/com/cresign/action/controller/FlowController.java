@@ -7,7 +7,6 @@ import com.cresign.action.service.FlowService;
 import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.GetUserIdByToken;
-import com.cresign.tools.common.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -98,12 +97,33 @@ public class FlowController {
             try {
                 JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
                 String id_P = reqJson.getString("id_P");
-                String id_C = tokData.getString(Constants.GET_ID_C);
+                String id_C = tokData.getString("id_C");
                 return flowService.dgUpdatePartInfo(id_P, id_C);
             } catch (Exception e) {
                 return getUserToken.err(reqJson, "FlowController.dgUpdatePartInfo", e);
             }
         }
+
+    /**
+     * 根据请求参数，获取更新后的订单oitem
+     * @param reqJson	请求参数
+     * @return java.lang.String  返回结果: 日志结果
+     * @author tang
+     * @ver 1.0.0
+     * ##Updated: 2020/8/6 9:08
+     */
+    @SecurityParameter
+    @PostMapping("/v1/setDgSubInfo")
+    public ApiResponse setDgSubInfo(@RequestBody JSONObject reqJson){
+        try {
+            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+            String id_I = reqJson.getString("id_I");
+            String id_C = tokData.getString("id_C");
+            return flowService.dgUpdateSubInfo(id_I, id_C);
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "flow.setDgSubInfo", e);
+        }
+    }
 
         @SecurityParameter
         @PostMapping("/v1/prodPart")
@@ -254,9 +274,10 @@ public class FlowController {
             return flowNewService.getDgResult(
                     reqJson.getString("id_O"),
                     tokData.getString("id_U"),
-//                    tokData.getString("id_C"),
-                    reqJson.getString("id_C"),
-                    reqJson.getLong("teStart"),reqJson.getString("divideOrder"));
+                    tokData.getString("id_C"),
+//                    reqJson.getString("id_C"),
+                    reqJson.getLong("teStart"),
+                    reqJson.getString("isSplit"));
         } catch (Exception e) {
             return getUserToken.err(reqJson, "flowService.getDgResult", e);
         }
@@ -277,11 +298,33 @@ public class FlowController {
             JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
             // 获取产品id
             String id_O = map.getString("id_O");
-//            String id_C = tokData.getString("id_C");
-            String id_C = map.getString("id_C");
+            String id_C = tokData.getString("id_C");
+//            String id_C = map.getString("id_C");
             return flowNewService.dgCheckOrder(id_C,id_O);
         } catch (Exception e) {
             return getUserToken.err(map, "FlowController.dgCheck", e);
+        }
+    }
+
+    /**
+     * 递归验证
+     * @param map	请求参数
+     * @return java.lang.String  返回结果: 递归结果
+     * @author tang
+     * @ver 1.0.0
+     * ##Updated: 2020/8/6 9:03
+     */
+    @SecurityParameter
+    @PostMapping("/v1/dgCheckInfo")
+    public ApiResponse dgCheckInfo(@RequestBody JSONObject map) {
+        try {
+            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+            // 获取产品id
+            String id_I = map.getString("id_I");
+            String id_C = tokData.getString("id_C");
+            return flowService.dgCheckInfo(id_I, id_C);
+        } catch (Exception e) {
+            return getUserToken.err(map, "flow/dgCheckInfo", e);
         }
     }
 }

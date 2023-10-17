@@ -127,7 +127,7 @@ public class UsageServiceImpl implements UsageService {
         String id_O = content.getString("id_O");
         Integer index = content.getInteger("index");
 
-        Order order = qt.getMDContent(id_O, "action.objAction." + index + ".arrUA", Order.class);
+        Order order = qt.getMDContent(id_O, qt.strList("action.objAction." + index + ".arrUA", "oItem.objItem."+index), Order.class);
         JSONArray arrUA = order.getAction().getJSONArray("objAction").getJSONObject(index).getJSONArray("arrUA");
         JSONObject oItem = order.getOItem().getJSONArray("objItem").getJSONObject(index);
         if (arrUA == null)

@@ -2,7 +2,7 @@ package com.cresign.tools.pojo.po;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.pojo.po.prodCard.ProdInfo;
+import com.cresign.tools.pojo.po.infoCard.InfoInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -20,7 +20,7 @@ public class Info {
 
     private String id;
 
-    private ProdInfo info;
+    private InfoInfo info;
 
     private JSONArray view;
 

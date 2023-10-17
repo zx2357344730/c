@@ -58,22 +58,19 @@ public class RefreshTokenController {
 
     @GetMapping("/v1/refreshToken")
     public ApiResponse refreshToken(@RequestParam("id_U") String id_U, @RequestParam("id_C") String id_C) {
-//        try {
         return refreshTokenService.refreshToken(
                 request.getHeader("refreshToken"),
                 id_C,
                 request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName()),
                 id_U);
-//        } catch (Exception e) {
-//            return getUserToken.err(new JSONObject(), "RefreshTokenController.refreshToken", e);
-//        }
-    }
 
-    @GetMapping("/v1/refreshToken2")
-    public String refreshToken2(@RequestParam("id_U") String id_U, @RequestParam("id_C") String id_C
-            ,@RequestParam("refreshToken") String refreshToken,@RequestParam("web") String web
-            ,@RequestParam("token") String token) {
-        return refreshTokenService.refreshToken2(refreshToken, id_C, web,id_U,token);
     }
+//
+//    @GetMapping("/v1/refreshToken2")
+//    public String refreshToken2(@RequestParam("id_U") String id_U, @RequestParam("id_C") String id_C
+//            ,@RequestParam("refreshToken") String refreshToken,@RequestParam("web") String web
+//            ,@RequestParam("token") String token) {
+//        return refreshTokenService.refreshToken2(refreshToken, id_C, web,id_U,token);
+//    }
 
 }

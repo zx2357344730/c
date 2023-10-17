@@ -889,13 +889,13 @@ public class FlowServiceImpl implements FlowService {
 //            }
             orderParentData.setOStock(newPO_oStock);
 
-            if(!view.contains("action")) {
+            if(!view.contains("action") && !view.contains("Vaction")) {
                 view.add("action");
             }
-            if(!view.contains("casItemx")) {
+            if(!view.contains("casItemx")&& !view.contains("VcasItemx")) {
                 view.add("casItemx");
             }
-            if(!view.contains("oStock")) {
+            if(!view.contains("oStock") && !view.contains("VoStock")) {
                 view.add("oStock");
             }
             // 设置view值
@@ -2599,5 +2599,249 @@ public class FlowServiceImpl implements FlowService {
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "时间删除处理成功!");
     }
+
+    /////////////// auto update all subInfo
+    /**
+     * 根据请求参数，获取更新后的订单oitem
+     * @param id_C 公司编号
+     * @return java.lang.String  返回结果: 日志结果
+     * @author tang
+     * @ver 1.0.0
+     * @date 2020/8/6 9:08
+     * KEV Checked
+     */
+    @Override
+    public ApiResponse dgUpdateSubInfo(String id_I,String id_C) {
+
+        Info info = qt.getMDContent(id_I, qt.strList("info","subInfo"), Info.class);
+        if (null == info) {
+            // 返回错误信息
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
+        }
+
+        JSONObject subInfo = info.getSubInfo();
+        if (null == subInfo) {
+            // 返回错误信息
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NO_PART.getCode(), "产品无零件");
+        }
+
+        // 获取prod的part信息
+        JSONArray infoItem = info.getSubInfo().getJSONArray("objItem");
+        if (null == infoItem || infoItem.size() == 0) {
+            // 返回错误信息
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NO_PART.getCode(), "产品无零件");
+        }
+        JSONObject stat = new JSONObject();
+        stat.put("count", 1);
+        stat.put("allCount", info.getSubInfo().getInteger("wn0Count") == null ?
+                300 : info.getSubInfo().getInteger("wn0Count"));
+
+        this.updateSubInfo(id_C,infoItem, id_I, stat);
+
+        if (stat.getInteger("count") < stat.getInteger("allCount"))
+        {
+            System.out.println("it's less than that"+ stat.getInteger("count"));
+            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+        }
+
+        return retResult.ok(CodeEnum.OK.getCode(), infoItem);
+    }
+
+    /**
+     * 根据id_C，判断prod是什么类型
+     * @param id_C	公司编号
+     * @return int  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
+     * @date 2020/9/17 16:52
+     * DONE Check Kev
+     */
+    private void updateSubInfo(String id_C,JSONArray infoItem,String id_I, JSONObject stat){
+        for (int item = 0; item < infoItem.size(); item++)
+        {
+            JSONObject thisItem = infoItem.getJSONObject(item);
+            if (stat.getInteger("count") > stat.getInteger("allCount")) {
+
+                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+            }
+            stat.put("count", stat.getInteger("count") + 1);
+
+            JSONArray infoDataES = qt.getES("lBInfo", qt.setESFilt("id_I", thisItem.getString("id_I"), "id_CB", id_C));
+
+            System.out.println(infoDataES);
+            //if this is my own info, I dig into it to check further
+            if (infoDataES.getJSONObject(0).getString("id_C").equals(id_C)) {
+
+                Info thisInfo = qt.getMDContent(thisItem.getString("id_I"), qt.strList("info", "subInfo"), Info.class);
+
+                JSONObject subInfo = thisInfo.getSubInfo();
+
+                if (null != subInfo && subInfo.getJSONArray("objItem").size() != 0) {
+                    this.updateSubInfo(id_C, subInfo.getJSONArray("objItem"), thisItem.getString("id_I"), stat);
+                }
+            }
+
+
+
+
+            // saving updated Key info into part
+
+            thisItem.put("grp", infoDataES.getJSONObject(0).getString("grp"));
+            thisItem.put("grpB", infoDataES.getJSONObject(0).getString("grpB"));
+//                thisItem.put("tmd", partDataES.getJSONObject(0).getString("tmd"));
+            thisItem.put("pic", infoDataES.getJSONObject(0).getString("pic"));
+            thisItem.put("wrdN", infoDataES.getJSONObject(0).getJSONObject("wrdN"));
+            thisItem.put("wrddesc", infoDataES.getJSONObject(0).getJSONObject("wrddesc"));
+            thisItem.put("ref", infoDataES.getJSONObject(0).getString("refB"));
+            thisItem.put("grpB", infoDataES.getJSONObject(0).getString("grpB"));
+            infoItem.set(item, thisItem);
+
+        }
+        qt.setMDContent(id_I, qt.setJson("subInfo.objItem", infoItem),Info.class);
+    }
+
+    /**
+     * 递归验证 - 注释完成
+     * @param id_I info id
+     * @return java.lang.String  返回结果: 递归结果
+     * @author tang
+     * @ver 1.0.0
+     * @date 2020/8/6 9:03
+     * DONE Check Kev
+     */
+    @Override
+    public ApiResponse dgCheckInfo(String id_I, String id_C){
+
+
+        // 创建异常信息存储
+        JSONArray isRecurred = new JSONArray();
+        // 创建产品信息存储
+        JSONArray isEmpty = new JSONArray();
+        // 创建返回结果
+        JSONObject result = new JSONObject();
+        // 创建零件id集合
+        JSONArray pidList = new JSONArray();
+        JSONObject nextPart = new JSONObject();
+
+        JSONObject stat = new JSONObject();
+        stat.put("layer", 0);
+        stat.put("count", 0);
+
+
+        // ******调用验证方法******
+        this.dgCheckInfoUtil(pidList,id_I, id_C, nextPart, isRecurred,isEmpty, stat);
+
+        System.out.println("layer "+ stat.get("layer"));
+        System.out.println("count "+ stat.get("count"));
+
+
+        // 添加到返回结果
+        result.put("recurred",isRecurred);
+        result.put("isNull",isEmpty);
+        result.put("wn0Count", stat.getInteger("count"));
+
+        // save the "allCount" into id.P .part.wn0Count if this is a correct product
+        if (isRecurred.size() == 0 && isEmpty.size() == 0) {
+            JSONObject probKey = new JSONObject();
+            probKey.put("subInfo.wn0Count", stat.getInteger("count"));
+            qt.setMDContent(id_I,probKey,Info.class);
+        }
+
+        // 抛出操作成功异常
+        return retResult.ok(CodeEnum.OK.getCode(), result);
+    }
+
+    /**
+     * 递归验证工具 - 注释完成
+     * @param pidList	产品编号集合
+     * @param id_I	产品编号
+     * @param objectMap	零件信息
+     * @param isRecurred	产品状态存储map
+     * @param isEmpty	异常信息存储集合
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
+     * @date 2020/11/16 9:25
+     * DONE Check Kev
+
+     */
+    private void dgCheckInfoUtil(JSONArray pidList,String id_I,String id_C, JSONObject objectMap
+            ,JSONArray isRecurred,JSONArray isEmpty, JSONObject stat){
+
+        // 根据父编号获取父产品信息
+        Info thisItem = qt.getMDContent(id_I, qt.strList("info", "subInfo"), Info.class);
+
+        // 层级加一
+        stat.put("layer", stat.getInteger("layer") + 1 );
+
+        boolean isConflict = false;
+        JSONArray checkList = new JSONArray();
+
+        // 判断父产品不为空，部件父产品零件不为空
+        if (null != thisItem) {
+
+            for (int i = 0; i < pidList.size(); i++) {
+                System.out.println("冲突Check"+id_I);
+                // 判断编号与当前的有冲突
+                if (pidList.getString(i).equals(id_I)) {
+                    // 创建零件信息
+                    JSONObject conflictProd = new JSONObject();
+                    // 添加零件信息
+                    conflictProd.put("id_I",id_I);
+                    conflictProd.put("layer",(stat.getInteger("layer")+1));
+                    conflictProd.put("index",i);
+                    // 添加到结果存储
+                    isRecurred.add(conflictProd);
+                    // 设置为有冲突
+                    isConflict = true;
+                    // 结束
+                    break;
+                }
+            }
+
+            if (!isConflict)
+            {
+                checkList = (JSONArray) pidList.clone();
+                checkList.add(id_I);
+            }
+
+            // 获取prod的part信息
+            if(!isConflict &&
+                    null != thisItem.getSubInfo() &&
+                    thisItem.getInfo().getId_C().equals(id_C) &&
+                    null != thisItem.getSubInfo().get("objItem")) {
+                JSONArray nextItem = thisItem.getSubInfo().getJSONArray("objItem");
+                // 遍历零件信息1
+                for (int j = 0; j < nextItem.size(); j++) {
+                    // 判断零件不为空并且零件编号不为空
+                    stat.put("count", stat.getInteger("count") + 1 );
+                    System.out.println("count "+ stat.getInteger("count"));
+                    if (null != nextItem.get(j) && null != nextItem.getJSONObject(j).get("id_I")) {
+
+                        // 继续调用验证方法
+                        System.out.println("判断无冲突"+isConflict);
+
+                        this.dgCheckInfoUtil(checkList, nextItem.getJSONObject(j).getString("id_I"), id_C, nextItem.getJSONObject(j)
+                                    , isRecurred, isEmpty, stat);
+
+                    } else {
+                        if (null != objectMap) {
+                            objectMap.put("errDesc", "资料不存在！");
+                            isEmpty.add(objectMap);
+                        }
+                    }
+                }
+            }
+        }
+
+        else if (!id_I.equals(""))
+        {
+            objectMap.put("errDesc","产品不存在！");
+            isEmpty.add(objectMap);
+        }
+    }
+
+
+
 
 }

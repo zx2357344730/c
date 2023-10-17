@@ -1,6 +1,5 @@
 package com.cresign.action.utils;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.common.ActionEnum;
@@ -640,7 +639,7 @@ public class TestAsync {
     public Future<String> testMdMany1(JSONArray id_Ps,Map<String, Prod> dgProd){
         Future<String> future;
         try {
-            List<Prod> mdContentMany = qtTest.getMDContentMany2(id_Ps , qtTest.strList("info", "part"), Prod.class);
+            List<Prod> mdContentMany = qtTest.getMDContentMany(id_Ps , qtTest.strList("info", "part"), Prod.class);
             for (Prod prod : mdContentMany) {
                 dgProd.put(prod.getId(), prod);
             }
@@ -656,7 +655,7 @@ public class TestAsync {
     public Future<String> testMdMany2(JSONArray id_Ps,Map<String, Prod> dgProd){
         Future<String> future;
         try {
-            List<Prod> mdContentMany = qtTest.getMDContentMany2(id_Ps , qtTest.strList("info", "part"), Prod.class);
+            List<Prod> mdContentMany = qtTest.getMDContentMany(id_Ps , qtTest.strList("info", "part"), Prod.class);
             for (Prod prod : mdContentMany) {
                 dgProd.put(prod.getId(), prod);
             }
@@ -672,7 +671,7 @@ public class TestAsync {
     public Future<String> testMdMany3(JSONArray id_Ps,Map<String, Prod> dgProd){
         Future<String> future;
         try {
-            List<Prod> mdContentMany = qtTest.getMDContentMany2(id_Ps , qtTest.strList("info", "part"), Prod.class);
+            List<Prod> mdContentMany = qtTest.getMDContentMany(id_Ps , qtTest.strList("info", "part"), Prod.class);
             for (Prod prod : mdContentMany) {
                 dgProd.put(prod.getId(), prod);
             }
@@ -688,7 +687,7 @@ public class TestAsync {
     public Future<String> testMdMany4(JSONArray id_Ps,Map<String, Prod> dgProd){
         Future<String> future;
         try {
-            List<Prod> mdContentMany = qtTest.getMDContentMany2(id_Ps , qtTest.strList("info", "part"), Prod.class);
+            List<Prod> mdContentMany = qtTest.getMDContentMany(id_Ps , qtTest.strList("info", "part"), Prod.class);
             for (Prod prod : mdContentMany) {
                 dgProd.put(prod.getId(), prod);
             }
@@ -704,7 +703,7 @@ public class TestAsync {
     public Future<String> testMdMany5(JSONArray id_Ps,Map<String, Prod> dgProd){
         Future<String> future;
         try {
-            List<Prod> mdContentMany = qtTest.getMDContentMany2(id_Ps , qtTest.strList("info", "part"), Prod.class);
+            List<Prod> mdContentMany = qtTest.getMDContentMany(id_Ps , qtTest.strList("info", "part"), Prod.class);
             for (Prod prod : mdContentMany) {
                 dgProd.put(prod.getId(), prod);
             }
@@ -720,7 +719,7 @@ public class TestAsync {
     public Future<String> testMdMany6(JSONArray id_Ps,Map<String, Prod> dgProd){
         Future<String> future;
         try {
-            List<Prod> mdContentMany = qtTest.getMDContentMany2(id_Ps , qtTest.strList("info", "part"), Prod.class);
+            List<Prod> mdContentMany = qtTest.getMDContentMany(id_Ps , qtTest.strList("info", "part"), Prod.class);
             for (Prod prod : mdContentMany) {
                 dgProd.put(prod.getId(), prod);
             }

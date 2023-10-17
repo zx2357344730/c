@@ -15,7 +15,6 @@ import com.cresign.tools.pojo.po.assetCard.AssetInfo;
 import com.cresign.tools.reflectTools.ApplicationContextTools;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -572,7 +571,7 @@ public class DbUtils {
                             if (order.getOStock().getJSONArray("objData").getJSONObject(i) == null)
                             {
                                 // just init 1 oitem
-                                this.initOStock(arrayOItem.getJSONObject(i), order.getOStock().getJSONArray("objData"),i);
+                                order.getOStock().put("objData", this.initOStock(arrayOItem.getJSONObject(i), order.getOStock().getJSONArray("objData"),i));
                             }
                         }
                         arrayData = order.getOStock().getJSONArray("objData");
@@ -822,6 +821,10 @@ public class DbUtils {
         for (int i = 0; i < oItem.size(); i++)
         {
             wn2qty = DoubleUtils.add(oItem.getJSONObject(i).getDouble("wn2qtyneed"), wn2qty);
+
+            if (oItem.getJSONObject(i).getDouble("wn4price") == null)
+                oItem.getJSONObject(i).put("wn4price", 0.0);
+
             wn4price = DoubleUtils.add(wn4price, DoubleUtils.multiply(oItem.getJSONObject(i).getDouble("wn2qtyneed"),oItem.getJSONObject(i).getDouble("wn4price")));
             arrP.add(oItem.getJSONObject(i).getString("id_P"));
 
@@ -841,7 +844,7 @@ public class DbUtils {
             {
                 if (oStock.size() <= i || oStock.getJSONObject(i) == null)
                 {
-                    this.initOStock(oItem.getJSONObject(i),oStock, i);
+                    oStock = this.initOStock(oItem.getJSONObject(i),oStock, i);
                 }
 
                 Double madePercent = DoubleUtils.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"),oItem.getJSONObject(i).getDouble("wn2qtyneed"));
@@ -908,7 +911,6 @@ public class DbUtils {
             }
         }
         wn2fin = DoubleUtils.divide(wn2made, oItem.size());
-        qt.errPrint("div", null, count, oItem.size());
         wn2progress = DoubleUtils.divide(count, oItem.size());
         qt.upJson(listCol, "wn2fin", wn2fin, "wn2progress", wn2progress, "wn2qty", wn2qty, "wn4price", wn4price, "arrP", arrP);
 
@@ -1704,7 +1706,7 @@ public class DbUtils {
         return oQc;
     }
 
-    public void initOStock(JSONObject orderOItem, JSONArray oStock, Integer index)
+    public JSONArray initOStock(JSONObject orderOItem, JSONArray oStock, Integer index)
     {
 
             JSONObject oStockData = qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
@@ -1715,8 +1717,9 @@ public class DbUtils {
             oStockData.put("objShip", qt.setArray(
                     qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
                             "wn2qtyneed", orderOItem.getDouble("wn2qtyneed"))));
-
             oStock.set(index, oStockData);
+
+            return oStock;
     }
 
     /***
