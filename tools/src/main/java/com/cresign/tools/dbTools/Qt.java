@@ -1,13 +1,5 @@
 package com.cresign.tools.dbTools;
 
-/**
- * @author kevin
- * @ClassName Qt
- * @Description
- * @updated 2022/9/11 10:05 AM
- * @ver 1.0.0
- **/
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -54,6 +46,13 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author kevin
+ * @ClassName Qt
+ * @Description
+ * @updated 2022/9/11 10:05 AM
+ * @ver 1.0.0
+ **/
 @Service
 public class Qt {
 
@@ -65,6 +64,9 @@ public class Qt {
 
     @Autowired
     private StringRedisTemplate redisTemplate0;
+
+    @Autowired
+    private QtAsNew qtAsNew;
 
     public JSONObject initData = new JSONObject();
 
@@ -222,7 +224,6 @@ public class Qt {
      * @Return java.util.List<?>
      * @Card
      **/
-
     public List<?> getMDContentMany(HashSet setIds, List<String> fields, Class<?> classType) {
         Query query = new Query(new Criteria("_id").in(setIds));
         if (fields != null) {
@@ -256,9 +257,6 @@ public class Qt {
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
         }
     }
-
-    @Autowired
-    private QtAsNew qtAsNew;
 
     public <T> List<T> getMDContentFast(JSONArray id_Ps,List<String> strList, Class<T> classType){
         int forProd = id_Ps.size() / 6;
@@ -349,44 +347,89 @@ public class Qt {
         return list;
     }
 
-    public <T> List<List<T>> getSubList(int deng,JSONArray array,boolean isReversalOne, Class<T> classType){
-        int ji = 0;
+    /**
+     * 拆分JSONArray数组方法
+     * @param splitNum  拆分数量
+     * @param array 需要拆分的JSONArray数组
+     * @param isReversalOne 是否调换数组0和数组最后一个
+     * @param classType 拆分后集合类型
+     * @return  拆分结果
+     * @param <T>   集合类型
+     */
+    public <T> List<List<T>> getSubList(int splitNum,JSONArray array,boolean isReversalOne, Class<T> classType){
+        // 记录累加数
+        int count = 0;
+        // 拆分结果存储
         List<List<T>> lists = new ArrayList<>();
-        int shu = (array.size() / deng)+1;
-        for (int i = 0; i < deng; i++) {
+        // 获取拆分后集合长度
+        int splitLength = (array.size() / splitNum)+1;
+        // 遍历拆分数量
+        for (int i = 0; i < splitNum; i++) {
+            // 定义存储当前循环拆分结果
             List<Object> objects;
-            if (i == deng - 1) {
-                objects = array.subList(ji, array.size());
+            // 判断为循环的最后一次拆分
+            if (i == splitNum - 1) {
+                // 直接拆分累加数到最后长度
+                objects = array.subList(count, array.size());
+            // 否则为循环的平均拆分
             } else {
-                objects = array.subList(ji, ji+shu);
-                ji += shu;
+                // 拆分累加数到拆分后集合长度
+                objects = array.subList(count, count+splitLength);
+                // 数量累加到下次循环使用
+                count += splitLength;
             }
+            // 创建集合存储需要的返回类型集合
             List<T> strings = new ArrayList<>();
+            // 遍历拆分结果
             for (Object object : objects) {
+                // 将拆分结果转换成需要的返回类型，并且添加到集合
                 strings.add(JSON.parseObject(JSON.toJSONString(object),classType));
             }
+            // 将需要的返回类型集合添加到返回最终结果集合
             lists.add(strings);
         }
+        // 判断需要调换数组第0位集合和最后一位集合
         if (isReversalOne) {
             lists.add(0,lists.get(lists.size() - 1));
             lists.remove(lists.size()-1);
         }
+        // 返回结果
         return lists;
     }
-    public <T> List<List<T>> getSubList(int deng,List<T> list,boolean isReversalOne){
-        int ji = 0;
+    /**
+     * 拆分List数组方法
+     * @param splitNum  拆分数量
+     * @param list 需要拆分的List数组
+     * @param isReversalOne 是否调换数组0和数组最后一个
+     * @return  拆分结果
+     * @param <T>   集合类型
+     */
+    public <T> List<List<T>> getSubList(int splitNum,List<T> list,boolean isReversalOne){
+        // 记录累加数
+        int count = 0;
+        // 拆分结果存储
         List<List<T>> lists = new ArrayList<>();
-        int shu = (list.size() / deng)+1;
-        for (int i = 0; i < deng; i++) {
+        // 获取拆分后集合长度
+        int splitLength = (list.size() / splitNum)+1;
+        // 遍历拆分数量
+        for (int i = 0; i < splitNum; i++) {
+            // 定义存储当前循环拆分结果
             List<T> objects;
-            if (i == deng - 1) {
-                objects = list.subList(ji, list.size());
+            // 判断为循环的最后一次拆分
+            if (i == splitNum - 1) {
+                // 直接拆分累加数到最后长度
+                objects = list.subList(count, list.size());
+            // 否则为循环的平均拆分
             } else {
-                objects = list.subList(ji, ji+shu);
-                ji += shu;
+                // 拆分累加数到拆分后集合长度
+                objects = list.subList(count, count+splitLength);
+                // 数量累加到下次循环使用
+                count += splitLength;
             }
+            // 将拆分结果添加到最终结果集合
             lists.add(objects);
         }
+        // 判断需要调换数组第0位集合和最后一位集合
         if (isReversalOne) {
             lists.add(0,lists.get(lists.size() - 1));
             lists.remove(lists.size()-1);
@@ -394,123 +437,236 @@ public class Qt {
         return lists;
     }
 
+    /**
+     * 根据JSONArray集合id列表查询多个对象方法
+     * @param queryIds  需要查询的id，JSONArray集合
+     * @param strList   查询后需要的字段
+     * @param classType 查询的对象信息
+     * @return  查询后对象信息集合
+     * @param <T>   查询的对象信息
+     */
     public <T> List<T> getMDContentFast2(JSONArray queryIds,List<String> strList, Class<T> classType){
+        // 获取查询id集合长度
         int queryIdSize = queryIds.size();
+        // 创建存储返回结果集合
         List<T> list = new ArrayList<>();
+        // 判断id集合长度小于等于10
         if (queryIdSize <= 10) {
+            // 直接主线程查询
             qtAsNew.mdManyUtilQuery(queryIds, list,strList,classType);
+            // 返回结果
             return list;
         }
-        int deng;
+        // 定义存储id集合需要拆分的数量
+        int splitNum;
+        // 判断id集合长度小于等于20
         if (queryIdSize <= 20) {
-            deng = 2;
+            // 拆分两次，也就是分配两个线程
+            splitNum = 2;
+        // 判断id集合长度小于等于30
         } else if (queryIdSize <= 30) {
-            deng = 3;
+            // 拆分三次，也就是分配三个线程
+            splitNum = 3;
+        // 判断id集合长度小于等于40
         } else if (queryIdSize <= 40) {
-            deng = 4;
+            // 拆分四次，也就是分配四个线程
+            splitNum = 4;
+        // 判断id集合长度小于等于50
         } else if (queryIdSize <= 50) {
-            deng = 5;
+            // 拆分五次，也就是分配五个线程
+            splitNum = 5;
+        // 否则id集合长度大于50
         } else {
-            deng = 6;
+            // 拆分六次，也就是分配六个线程
+            splitNum = 6;
         }
-        List<List<String>> subList = getSubList(deng, queryIds, true, String.class);
-        System.out.println("start_thread-id:"+qtAsNew.getThreadId());
+        // 调用拆分JSONArray数组方法，并且获取拆分结果
+        List<List<String>> subList = getSubList(splitNum, queryIds, true, String.class);
+        // 输出主线程编号
+//        System.out.println("start_thread-id:"+qtAsNew.getThreadId());
+        errPrint("start_thread-id:",null,qtAsNew.getThreadId());
+        // 开启一线程
         Future<String> future1 = qtAsNew.testMdMany(subList.get(1), list,strList,classType);
-        if (deng == 2) {
-            getReturn(deng,future1,null,null,null,null,list,subList.get(0),strList,classType);
+        // 判断拆分数量为2
+        if (splitNum == 2) {
+            // 获取线程处理结果
+            getReturn(splitNum,future1,null,null,null,null,list,subList.get(0),strList,classType);
+            // 返回结果集合
             return list;
         }
+        // 开启二线程
         Future<String> future2 = qtAsNew.testMdMany(subList.get(2), list,strList,classType);
-        if (deng == 3) {
-            getReturn(deng,future1,future2,null,null,null,list,subList.get(0),strList,classType);
+        // 判断拆分数量为3
+        if (splitNum == 3) {
+            // 获取线程处理结果
+            getReturn(splitNum,future1,future2,null,null,null,list,subList.get(0),strList,classType);
             return list;
         }
+        // 开启三线程
         Future<String> future3 = qtAsNew.testMdMany(subList.get(3), list,strList,classType);
-        if (deng == 4) {
-            getReturn(deng,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
+        // 判断拆分数量为4
+        if (splitNum == 4) {
+            // 获取线程处理结果
+            getReturn(splitNum,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
             return list;
         }
+        // 开启四线程
         Future<String> future4 = qtAsNew.testMdMany(subList.get(4), list,strList,classType);
-        if (deng == 5) {
-            getReturn(deng,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
+        // 判断拆分数量为5
+        if (splitNum == 5) {
+            // 获取线程处理结果
+            getReturn(splitNum,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
             return list;
         }
+        // 开启五线程
         Future<String> future5 = qtAsNew.testMdMany(subList.get(5), list,strList,classType);
-        getReturn(deng,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
+        // 获取线程处理结果
+        getReturn(splitNum,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
         return list;
     }
+    /**
+     * 根据List集合id列表查询多个对象方法
+     * @param queryIds  需要查询的id，List集合
+     * @param strList   查询后需要的字段
+     * @param classType 查询的对象信息
+     * @return  查询后对象信息集合
+     * @param <T>   查询的对象信息
+     */
     public <T> List<T> getMDContentFast2(List<String> queryIds,List<String> strList, Class<T> classType){
+        // 获取查询id集合长度
         int queryIdSize = queryIds.size();
+        // 创建存储返回结果集合
         List<T> list = new ArrayList<>();
+        // 判断id集合长度小于等于10
         if (queryIdSize <= 10) {
+            // 直接主线程查询
             qtAsNew.mdManyUtilQuery(queryIds, list,strList,classType);
+            // 返回结果
             return list;
         }
-        int deng;
+        // 定义存储id集合需要拆分的数量
+        int splitNum;
+        // 判断id集合长度小于等于20
         if (queryIdSize <= 20) {
-            deng = 2;
+            // 拆分2次，也就是分配2个线程
+            splitNum = 2;
+        // 判断id集合长度小于等于30
         } else if (queryIdSize <= 30) {
-            deng = 3;
+            // 拆分3次，也就是分配3个线程
+            splitNum = 3;
+        // 判断id集合长度小于等于40
         } else if (queryIdSize <= 40) {
-            deng = 4;
+            // 拆分4次，也就是分配4个线程
+            splitNum = 4;
+        // 判断id集合长度小于等于50
         } else if (queryIdSize <= 50) {
-            deng = 5;
+            // 拆分5次，也就是分配5个线程
+            splitNum = 5;
+        // 否则id集合长度大于50
         } else {
-            deng = 6;
+            // 拆分6次，也就是分配6个线程
+            splitNum = 6;
         }
-        List<List<String>> subList = getSubList(deng,queryIds,true);
-        System.out.println("start_thread-id:"+qtAsNew.getThreadId());
+        // 调用拆分JSONArray数组方法，并且获取拆分结果
+        List<List<String>> subList = getSubList(splitNum,queryIds,true);
+//        System.out.println("start_thread-id:"+qtAsNew.getThreadId());
+        errPrint("start_thread-id:",null,qtAsNew.getThreadId());
+        // 开启1线程
         Future<String> future1 = qtAsNew.testMdMany(subList.get(1), list,strList,classType);
-        if (deng == 2) {
-            getReturn(deng,future1,null,null,null,null,list,subList.get(0),strList,classType);
+        // 判断拆分数量为2
+        if (splitNum == 2) {
+            // 获取线程处理结果
+            getReturn(splitNum,future1,null,null,null,null,list,subList.get(0),strList,classType);
+            // 返回结果集合
             return list;
         }
+        // 开启2线程
         Future<String> future2 = qtAsNew.testMdMany(subList.get(2), list,strList,classType);
-        if (deng == 3) {
-            getReturn(deng,future1,future2,null,null,null,list,subList.get(0),strList,classType);
+        // 判断拆分数量为3
+        if (splitNum == 3) {
+            // 获取线程处理结果
+            getReturn(splitNum,future1,future2,null,null,null,list,subList.get(0),strList,classType);
             return list;
         }
+        // 开启3线程
         Future<String> future3 = qtAsNew.testMdMany(subList.get(3), list,strList,classType);
-        if (deng == 4) {
-            getReturn(deng,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
+        // 判断拆分数量为4
+        if (splitNum == 4) {
+            // 获取线程处理结果
+            getReturn(splitNum,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
             return list;
         }
+        // 开启4线程
         Future<String> future4 = qtAsNew.testMdMany(subList.get(4), list,strList,classType);
-        if (deng == 5) {
-            getReturn(deng,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
+        // 判断拆分数量为5
+        if (splitNum == 5) {
+            // 获取线程处理结果
+            getReturn(splitNum,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
             return list;
         }
+        // 开启5线程
         Future<String> future5 = qtAsNew.testMdMany(subList.get(5), list,strList,classType);
-        getReturn(deng,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
+        // 获取线程处理结果
+        getReturn(splitNum,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
         return list;
     }
 
-    public <T> void getReturn(int deng,Future<String> future1
+    /**
+     * 获取多线程结果方法
+     * @param splitNum  拆分数量
+     * @param future1   线程1结果
+     * @param future2   线程2结果
+     * @param future3   线程3结果
+     * @param future4   线程4结果
+     * @param future5   线程5结果
+     * @param list  查询结果集合
+     * @param subListSon    查询的id集合
+     * @param strList   查询后需要的字段
+     * @param classType 需要的类型
+     * @param <T>   需要的类型
+     */
+    public <T> void getReturn(int splitNum,Future<String> future1
             ,Future<String> future2,Future<String> future3
             ,Future<String> future4,Future<String> future5,List<T> list
             ,List<String> subListSon,List<String> strList, Class<T> classType){
-        System.out.println("?");
+//        System.out.println("?");
+        errPrint("?",null,null);
+        // 最后主线程查询
         qtAsNew.mdManyUtilQuery(subListSon, list,strList,classType);
-        System.out.println("- ! -");
+//        System.out.println("- ! -");
+        errPrint("- ! -",null,null);
+        // 死循环获取线程结果
         while (true) {
-            if (deng == 2 && future1.isDone()) {
+            // 判断拆分数量为2，并且线程1完成
+            if (splitNum == 2 && future1.isDone()) {
+                // 结束死循环
                 break;
-            } else if (deng == 3 && future1.isDone() && future2.isDone()) {
+            // 判断拆分数量为3，并且线程1，线程2完成
+            } else if (splitNum == 3 && future1.isDone() && future2.isDone()) {
+                // 结束死循环
                 break;
-            } else if (deng == 4 && future1.isDone() && future2.isDone() && future3.isDone()) {
+            // 判断拆分数量为4，并且线程1，线程2，线程3完成
+            } else if (splitNum == 4 && future1.isDone() && future2.isDone() && future3.isDone()) {
+                // 结束死循环
                 break;
-            } else if (deng == 5 && future1.isDone() && future2.isDone()
+            // 判断拆分数量为5，并且线程1，线程2，线程3，线程4完成
+            } else if (splitNum == 5 && future1.isDone() && future2.isDone()
                     && future3.isDone() && future4.isDone()) {
+                // 结束死循环
                 break;
+            // 否则拆分数量为6，
             } else {
+                // 判断线程1，线程2，线程3，线程4，线程5完成
                 if (future1.isDone() && future2.isDone() && future5.isDone()
                         && future3.isDone() && future4.isDone()) {
+                    // 结束死循环
                     break;
                 }
             }
         }
-        System.out.println("大小:");
-        System.out.println(list.size());
+//        System.out.println("大小:");
+//        System.out.println(list.size());
+        errPrint("结果集合大小:",null,list.size());
     }
 
     public List<?> getMDContentMany(HashSet setIds, String field, Class<?> classType) {

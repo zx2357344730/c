@@ -5,9 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="128c9a26-d44c-4e41-b0e6-dabc284dd13b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/utils/FlowAsyncUtil.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowNewServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowNewServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/chkin/ChKin.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/chkin/Chkin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ActionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ActionController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ZjTestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ZjTestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/PurchaseEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/PurchaseEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/ZjTestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/ZjTestService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ZjTestServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ZjTestServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Qt.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Qt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/QtAs.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/QtAs.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/QtAsNew.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/QtAsNew.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/Asset.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/Asset.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,13 +69,14 @@
       <recent name="D:\KaiFaShuJu\GitHubDesktop\tang\G_x_Java\5\ccpl" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.cresign.action.utils" />
       <recent name="com.cresign.tools.dbTools" />
       <recent name="com.cresign.tools.config.async" />
       <recent name="com.cresign.chat.utils" />
       <recent name="com.cresign.login.utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.ChatApp">
+  <component name="RunManager" selected="Application.PurchaseApp">
     <configuration name="ActionApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.cresign.action.ActionApp" />
       <module name="action" />
@@ -162,8 +172,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Application.PurchaseApp" />
-        <item itemvalue="Application.ActionApp" />
         <item itemvalue="Application.GatewayApp" />
+        <item itemvalue="Application.ActionApp" />
         <item itemvalue="Application.LoginApp" />
         <item itemvalue="Application.Chat2App" />
       </list>

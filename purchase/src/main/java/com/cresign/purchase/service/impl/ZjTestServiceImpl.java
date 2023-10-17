@@ -1,14 +1,18 @@
 package com.cresign.purchase.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.purchase.enumeration.PurchaseEnum;
 import com.cresign.purchase.service.ZjTestService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.common.Constants;
+import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.lNUser;
 import com.cresign.tools.pojo.po.Asset;
@@ -25,8 +29,9 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author tang
@@ -127,6 +132,7 @@ public class ZjTestServiceImpl implements ZjTestService {
 //            ws.sendWSEs(logFlow);
 ////            ws.push2(logFlow,id_u);
 //        }
+        logFlow.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         ws.sendWS(logFlow);
         return retResult.ok(CodeEnum.OK.getCode(), "发送成功");
     }
@@ -141,6 +147,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         logFlow.setLogType(logType);
         logFlow.setSubType(subType);
         logFlow.setZcndesc(zcnDesc);
+        logFlow.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         if (data.getInteger("res") == 0) {
             data.put("id_SP",UUID.randomUUID().toString().replace("-",""));
             data.put("id_UA",id_U);
@@ -167,6 +174,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         logFlow.setLogType(logType);
         logFlow.setSubType(subType);
         logFlow.setZcndesc(zcnDesc);
+        logFlow.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         if (data.getInteger("res") == 0) {
             data.put("id_SP",UUID.randomUUID().toString().replace("-",""));
             data.put("id_UA",id_U);
@@ -626,6 +634,17 @@ public class ZjTestServiceImpl implements ZjTestService {
     }
 
     @Override
+    public ApiResponse getShareId(String shareId, String type) {
+        JSONArray typeArr = qt.getES(type, qt.setESFilt("qr", shareId));
+        if (null != typeArr && typeArr.size() > 0) {
+            JSONObject object = typeArr.getJSONObject(0);
+            return retResult.ok(CodeEnum.OK.getCode(), object);
+        }
+        throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                TYPE_NOT_FOUND.getCode(),"");
+    }
+
+    @Override
     public ApiResponse applyForView(String id_U, String id_C, String id, String logType
             , String subType, String zcnDesc, JSONObject data,int imp) {
         LogFlow logFlow = new LogFlow();
@@ -637,6 +656,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         logFlow.setZcndesc(zcnDesc);
         logFlow.setData(data);
         logFlow.setImp(imp);
+        logFlow.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         JSONArray id_Us = getUsersById_Q(id_C, id, id_U);
         if (null != id_Us) {
             logFlow.setId_Us(id_Us);
@@ -658,6 +678,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         logFlow.setZcndesc(zcnDesc);
         logFlow.setData(data);
         logFlow.setImp(imp);
+        logFlow.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         JSONArray id_Us = getUsersById_Q(id_C, id, id_U);
         if (null != id_Us) {
             logFlow.setId_Us(id_Us);
@@ -665,5 +686,55 @@ public class ZjTestServiceImpl implements ZjTestService {
             return retResult.ok(CodeEnum.OK.getCode(), "发送-同意查看-成功");
         }
         return retResult.ok(CodeEnum.OK.getCode(), "发送-同意查看-失败");
+    }
+
+    @Override
+    public ApiResponse statisticsChKin(String id_C) {
+//        String date = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+//        Asset asset = qt.getConfig(id_C, "a-chkin", "chkin");
+//        if (null == asset || null == asset.getChkin()) {
+//            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+//                    ASSET_NOT_FOUND.getCode(),"");
+//        }
+//        JSONObject chkin = asset.getChkin();
+//        JSONObject objChkin = chkin.getJSONObject("objChkin");
+//        JSONObject bm1 = objChkin.getJSONObject("bm1");
+//        JSONObject zb1 = bm1.getJSONObject("zb1");
+//        // 获取上下班时间
+//        JSONArray arrTime = zb1.getJSONArray("arrTime");
+//        // 获取上班前打卡时间范围
+//        int tPre = zb1.getInteger("tPre");
+//        // 获取下班后打卡时间范围
+//        int tPost = zb1.getInteger("tPost");
+//        // 获取严重迟到时间
+//        int tLate = zb1.getInteger("tLate");
+//        // 获取矿工迟到时间
+//        int tAbsent = zb1.getInteger("tAbsent");
+//        // 获取正常上班总时间
+//        int teDur = zb1.getInteger("teDur");
+//        // 获取考勤类型（0 = 固定班、1 = 自由时间）
+//        String chkType = zb1.getString("chkType");
+//        // 获取默认班日( 0（1到5），1(1到6)，2（大小周），3（按月放假天）)
+//        String dayType = zb1.getString("dayType");
+//        // 按月放假天数
+//        int dayOff = zb1.getInteger("dayOff");
+//        // 必须打卡日期
+//        JSONArray dayMust = zb1.getJSONArray("dayMust");
+//        // 无须打卡日期
+//        JSONArray dayMiss = zb1.getJSONArray("dayMiss");
+//        JSONArray chkinEs = qt.getES("chkin", qt.setESFilt("id_U", "6256789ae1908c03460f906f"));
+//        if (null == chkinEs || chkinEs.size() == 0) {
+//            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+//                    CHK_IN_NOT_FOUND.getCode(),"");
+//        }
+//        qt.errPrint("chkinEs:",null,chkinEs);
+//        List<LogFlow> logFlows = new ArrayList<>();
+//        for (int i = 0; i < chkinEs.size(); i++) {
+//            logFlows.add(JSONObject.parseObject(JSON.toJSONString(chkinEs.getJSONObject(i)), LogFlow.class));
+//        }
+//        //lambda表达式实现List接口sort方法排序
+//        logFlows.sort(Comparator.comparing(num -> num.getData().getString("date")));
+//        qt.errPrint("logFlows.sort:",null,logFlows);
+        return retResult.ok(CodeEnum.OK.getCode(), "-成功-");
     }
 }

@@ -254,6 +254,16 @@ public class ZjTestController {
     }
 
     @SecurityParameter
+    @PostMapping("/v1/getShareId")
+    public ApiResponse getShareId(@RequestBody JSONObject data) {
+        try {
+            return zjService.getShareId(data.getString("shareId"), data.getString("type"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getShareId", e);
+        }
+    }
+
+    @SecurityParameter
     @PostMapping("/v1/applyForView")
     public ApiResponse applyForView(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
@@ -276,6 +286,17 @@ public class ZjTestController {
                     , reqJson.getString("zcnDesc"), reqJson.getJSONObject("data"), reqJson.getInteger("imp"));
         } catch (Exception e) {
             return getUserToken.err(new JSONObject(), "ZjTestController.applyForAgreeWith", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/statisticsChKin")
+    public ApiResponse statisticsChKin(@RequestBody JSONObject reqJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.statisticsChKin(reqJson.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.statisticsChKin", e);
         }
     }
 }

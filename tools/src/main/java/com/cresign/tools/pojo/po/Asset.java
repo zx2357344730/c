@@ -92,4 +92,6 @@ public class Asset {
 
     private Integer tvs = 1;
 
+    private JSONObject chkin;
+
 }

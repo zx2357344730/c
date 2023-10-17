@@ -63,6 +63,10 @@ public enum PurchaseEnum {
     LN_USER_NOT_FOUND("051014"),
     //lNComp不存在
     LN_COMP_NOT_FOUND("051015"),
+    // 类型不存在
+    TYPE_NOT_FOUND("051016"),
+    //chkin不存在
+    CHK_IN_NOT_FOUND("051017"),
 
     // 订单已过期 : tang
     ERR_ORDER_BE_OVERDUE("05001"),

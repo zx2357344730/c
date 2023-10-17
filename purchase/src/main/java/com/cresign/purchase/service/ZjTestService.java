@@ -36,8 +36,11 @@ public interface ZjTestService {
     ApiResponse getLBInfoShareId(String id_I);
     ApiResponse saveProdEncryption(JSONObject en);
     ApiResponse getProdEncryption(String id_P);
+
+    ApiResponse getShareId(String shareId,String type);
     ApiResponse applyForView(String id_U, String id_C, String id, String logType
             , String subType, String zcnDesc, JSONObject data,int imp);
     ApiResponse applyForAgreeWith(String id_U, String id_C, String id, String logType
             , String subType, String zcnDesc, JSONObject data,int imp);
+    ApiResponse statisticsChKin(String id_C);
 }
