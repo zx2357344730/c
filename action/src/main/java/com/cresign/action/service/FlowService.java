@@ -35,6 +35,8 @@ public interface FlowService {
          */
     ApiResponse dgCheck(String id_P, String id_C); // 1 month, all lSProd - grp, id_P[123, 222,3332] SE - objVar - log, excel
 
+    ApiResponse dgCheckInfo(String id_I, String id_C); // 1 month, all lSProd - grp, id_P[123, 222,3332] SE - objVar - log, excel
+
     /**
      * 根据请求参数，获取更新后的订单oitem
      *
@@ -46,6 +48,8 @@ public interface FlowService {
      * @date 2020/8/6 9:08
      */
     ApiResponse dgUpdatePartInfo(String id_P, String id_C);
+
+    ApiResponse dgUpdateSubInfo(String id_P, String id_C);
 
 
     /**

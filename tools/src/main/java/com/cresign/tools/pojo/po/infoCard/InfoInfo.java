@@ -57,8 +57,8 @@ public class InfoInfo {
 
     private String pic;
 
-//    @JsonProperty("lDC")
-//    private Integer lDC;
+    @JsonProperty("lDC")
+    private Integer lDC;
 
     private String tmd;
 

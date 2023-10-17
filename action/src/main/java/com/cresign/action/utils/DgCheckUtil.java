@@ -1,8 +1,9 @@
-package com.cresign.tools.dbTools;
+package com.cresign.action.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.config.async.ActionEnum;
+import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Prod;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
 
 /**
@@ -24,7 +24,7 @@ import java.util.concurrent.Future;
  * @ver 1.0.0
  */
 @Component
-public class QtAs {
+public class DgCheckUtil {
     @Autowired
     private Qt qt;
 

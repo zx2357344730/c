@@ -1,18 +1,12 @@
 package com.cresign.tools.dbTools;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.config.async.ActionEnum;
-import com.cresign.tools.exception.ErrorResponseException;
-import com.cresign.tools.pojo.po.Prod;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Future;
 
 /**
@@ -23,23 +17,9 @@ import java.util.concurrent.Future;
  * @ver 1.0.0
  */
 @Component
-public class QtAsNew {
+public class QtThread {
     @Autowired
     private Qt qt;
-
-    /**
-     * 根据《queryIds》Id列表获取《strList》指定的字段的数据库信息，并且添加到《list》
-     * @param queryIds  查询的id列表
-     * @param list  所有查询结果存储集合
-     * @param strList   需要的字段
-     * @param classType 需要转换的类型
-     * @param <T> 需要的类型
-     */
-    public <T> void mdManyUtilQuery(Collection<?> queryIds,List<T> list,List<String> strList, Class<T> classType){
-        List<T> mdContentMany = qt.getMDContentMany2(queryIds , strList, classType);
-        // 添加查询结果到list
-        list.addAll(mdContentMany);
-    }
 
     /**
      * 获取当前线程id
@@ -60,13 +40,16 @@ public class QtAsNew {
      * @param <T>   查询类型
      */
     @Async
-    public <T> Future<String> testMdMany(Collection<?> queryIds,List<T> list,List<String> strList
+    public <T> Future<String> threadMD(Collection<?> queryIds, List<T> list, List<String> strList
             , Class<T> classType){
         System.out.println("开始:"+getThreadId());
         Future<String> future;
         try {
             // 调用查询方法
-            mdManyUtilQuery(queryIds, list,strList,classType);
+//            mdManyUtilQuery(queryIds, list,strList,classType);
+            List<T> thisList =  qt.getMDContentMany(queryIds , strList, classType);
+            // 添加查询结果到list
+            list.addAll(thisList);
             future = new AsyncResult<>("success:");
         } catch(IllegalArgumentException e){
             future = new AsyncResult<>("error-IllegalArgumentException");

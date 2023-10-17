@@ -47,14 +47,6 @@ public class Ws {
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
 
-//    public void testConfig(){
-//        System.out.println("输出测试:");
-//        System.out.println(appId);
-//        System.out.println(url);
-//        System.out.println(appKey);
-//        System.out.println(masterSecret);
-//    }
-
     /**
      * 直接发送MQ信息方法
      * 1。 receive logFlow only
@@ -66,7 +58,6 @@ public class Ws {
      */
     public void sendWSOnly(String mqKey,LogFlow log){
         rocketMQTemplate.convertAndSend(mqKey, JSON.toJSONString(log));
-        System.out.println("发送WS完成:"+mqKey);
     }
 
     /**
@@ -80,10 +71,6 @@ public class Ws {
         // 调用发送日志核心方法
         sendWSCore(log);
     }
-//    public void sendWSOnlyXin(String mqKey,LogFlow log){
-//        rocketMQTemplate.convertAndSend(mqKey, JSON.toJSONString(log));
-//        System.out.println("发送WS-Xin完成:"+mqKey);
-//    }
 
     /**
      * 写入es方法，写入并且清空发送用户列表和appId列表
@@ -96,7 +83,6 @@ public class Ws {
         log.setId_Us(null);
         log.setId_APPs(null);
         rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
-        System.out.println("发送ES完成");
     }
 
     /**
@@ -110,16 +96,12 @@ public class Ws {
      *  logContrent.getJSONArray("id_Us") / id_APPs[]
      */
     public void sendWS(LogFlow logContent){
-        System.out.println("logContent:");
-        System.out.println(JSON.toJSONString(logContent));
 
         // the log's id_Us may have users
         // if so, getES and get id_APP to push
         // else set id_Us + cidArray as usual
         getUserIdsOrAppIds(logContent);
-        qt.errPrint("what is going", null, logContent);
-        System.out.println("sendWS:");
-        System.out.println(JSON.toJSONString(logContent));
+
         sendWSCore(logContent);
         this.sendESOnly(logContent);
     }
@@ -134,8 +116,7 @@ public class Ws {
      * @ver 版本号: 1.0.0
      */
     public void push2(String title,String content,JSONArray pushAppIds){
-        System.out.println("推送用户:");
-        System.out.println(JSON.toJSONString(pushAppIds));
+
         JSONObject map = new JSONObject();
         map.put("cids",pushAppIds);
         map.put("title",title);
@@ -152,8 +133,7 @@ public class Ws {
         map.put("date",date);
         map.put("request_id", UUID.randomUUID().toString().replace("-",""));
         String s = HttpClientUtil.sendPost(map,url);
-        System.out.println("请求结果:");
-        System.out.println(s);
+
     }
 
     /**
@@ -218,10 +198,8 @@ public class Ws {
             }
             // 判断群id一样
             if (roomId.equals(logFlowId)) {
-//                System.out.println("进入各FC 的loop: id=" + logContent.getId());
                 // 获取群用户id列表
                 JSONArray objUser = roomSetting.getJSONArray("objUser");
-//                System.out.println("objUser:" + JSON.toJSONString(objUser));
                 // 创建存储推送用户信息
                 // 遍历群用户id列表
                 for (int j = 0; j < objUser.size(); j++) {
@@ -235,67 +213,6 @@ public class Ws {
         }
     }
 
-//    public void prepareUserByGrpU(String id_C,String grpU,LogFlow logContent){
-////
-//        JSONArray userList = qt.getES("lBUser", qt.setESFilt("id_CB", id_C, "grpU", grpU));
-//
-//        JSONArray id_Us = new JSONArray();
-//        JSONArray id_APPs = new JSONArray();
-//
-//        for (int i = 0; i < userList.size(); i++) {
-//            id_Us.add(userList.getJSONObject(i).getString("id_U"));
-//            id_APPs.add(userList.getJSONObject(i).getString("id_APPs"));
-//        }
-//        logContent.setId_Us(id_Us);
-//        logContent.setId_APPs(id_APPs);
-//    }
-//
-//    public void sendWS_grpU(String id_C,String id_U,String noticeType){
-//
-//            LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "setAuth",id_U,"1001","", "1000", "1000",
-//                    "","",0,id_C,"","https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg","", "更新菜单", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
-//            log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//            JSONArray id_Us = new JSONArray();
-//            JSONArray id_APPs = new JSONArray();
-////            this.setUserListByFlowId(id_C, log, id_Us, id_APPs );
-//            // this is wrong, need to getES lBUser
-//            log.getData().put("type", noticeType);
-//            log.setId_Us(id_Us);
-//            log.setId_APPs(id_APPs);
-//            sendWS(log);
-//        }
-//
-//    public void sendWS_SetAuth(String id_C,String id_U,JSONObject data,JSONArray id_Us,JSONArray id_APPs){
-//
-//        LogFlow log = new LogFlow("usageflow", "BNyYCj2P4j3zBCzSafJz6aei", "", "setMenuAuth",id_U,"1001","", "1000", "1000",
-//                "","",0,id_C,"","https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/avatar/cresignbot.jpg","", "更新菜单", 3, qt.setJson("cn", "小银【系统】"), qt.setJson("cn", "小银【系统】"));
-//        log.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-////        JSONArray id_Us = new JSONArray();
-////        JSONArray id_APPs = new JSONArray();
-//        log.setId_Us(id_Us);
-//        log.setId_APPs(id_APPs);
-//        log.setData(data);
-//        try {
-//            rocketMQTemplate.convertAndSend("chatTopic:chatTap", JSON.toJSONString(log));
-//            System.out.println("发送WS完成");
-//
-//            System.out.println("sendWS:");
-//            System.out.println(JSON.toJSONString(log));
-//
-//            log.setId_Us(null);
-//            log.setId_APPs(null);
-//            System.out.println("发送ES"+log);
-//            rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
-//            System.out.println("发送ES完成");
-//        } catch (Exception e){
-//            System.out.println("出现错误:"+e.getMessage());
-//            e.printStackTrace();
-//        }
-////        sendWSNew(log);
-//        this.sendWSOnly(log);
-//    }
-//
-//
 
     public void sendUsageFlow(JSONObject wrdN, String msg, String subType, String type) {
         // set sys log format:
@@ -406,8 +323,7 @@ public class Ws {
      */
     public void sendMqOrPush(JSONObject mqGroupId,JSONObject pushUserObj,LogFlow logContent){
         if (logContent.getImp() >= 3 && pushUserObj.size() > 0) {
-            System.out.println("推送用户列表:");
-            System.out.println(JSON.toJSONString(pushUserObj.keySet()));
+
             // 创建存储appId列表
             JSONArray pushApps = new JSONArray();
             // 创建存储padId列表
@@ -452,10 +368,7 @@ public class Ws {
                     }
                 }
             }
-            System.out.println("推送app:");
-            System.out.println(JSON.toJSONString(pushApps));
-            System.out.println("推送pad:");
-            System.out.println(JSON.toJSONString(pushPads));
+
             if (pushApps.size() > 0) {
                 String wrdNUC = "小银【系统】";
                 JSONObject wrdNU = logContent.getWrdNU();

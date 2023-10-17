@@ -129,54 +129,64 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                                 user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
                                 clientType);
 
+
+                        qt.setRDExpire(clientType+"RefreshToken",refreshToken,
+                                clientType.equals("web")? 604800L : 3888000L);
+
                         return retResult.ok(CodeEnum.OK.getCode(), token);
                     }
                     catch (Exception e)
                     {
-                        throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
+                        return retResult.ok( LoginEnum.JWT_USER_OVERDUE.getCode(), "");
+//                        throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
                     }
 
                 }
             }
         }
-        throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
+        return retResult.ok( LoginEnum.JWT_USER_OVERDUE.getCode(), "");
+
+//        throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
     }
 
-    @Override
-    public String refreshToken2(String refreshToken, String id_C, String clientType, String id_U,String token) {
-        // 判断 传过来的参数是否为空
-        if (StringUtils.isNotEmpty(refreshToken)) {
-
-//            // 从redis 中查询出该用户的 refreshToken
-            String refreshTokenResult = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
-
-            // 判断 refreshToken 是否为空
-            if (StringUtils.isNotEmpty(refreshTokenResult)) {
-
-                // 不为空则判断 传过来的 refreshToken 是否与 redis中的 refreshToken一致
-                if (refreshTokenResult.equals(id_U)) {
-
-                    JSONObject rdSet = qt.getRDSet(clientType + "Token", token);
-                    if (rdSet == null)
-                    {
-                        // 通过id_U查询该用户
-                        User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp."+ id_C), User.class);
-                        token = oauth.setToken(
-                                user,
-                                id_C,
-                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
-                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
-                                clientType);
-                    }
-                    else {
-                        qt.setRDSet(clientType + "Token", token, rdSet, 500L);
-                    }
-                    return token;
-                }
-            }
-        }
-        throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
-
-    }
+//    @Override
+//    public String refreshToken2(String refreshToken, String id_C, String clientType, String id_U,String token) {
+//        // 判断 传过来的参数是否为空
+//        if (StringUtils.isNotEmpty(refreshToken)) {
+//
+////            // 从redis 中查询出该用户的 refreshToken
+//            String refreshTokenResult = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
+//
+//            // 判断 refreshToken 是否为空
+//            if (StringUtils.isNotEmpty(refreshTokenResult)) {
+//
+//                // 不为空则判断 传过来的 refreshToken 是否与 redis中的 refreshToken一致
+//                if (refreshTokenResult.equals(id_U)) {
+//
+//                    JSONObject rdSet = qt.getRDSet(clientType + "Token", token);
+//                    if (rdSet == null)
+//                    {
+//                        // 通过id_U查询该用户
+//                        User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp."+ id_C), User.class);
+//                        token = oauth.setToken(
+//                                user,
+//                                id_C,
+//                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
+//                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
+//                                clientType);
+//                        qt.setRDExpire(clientType+"RefreshToken",refreshToken,
+//                                clientType.equals("web")? 604800L : 3888000L);
+//                    }
+//                    else {
+//                        qt.setRDSet(clientType + "Token", token, rdSet, 500L);
+//                    }
+//                    return token;
+//                }
+//            }
+//        }
+//        return null;
+////        throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
+//
+//    }
 
 }

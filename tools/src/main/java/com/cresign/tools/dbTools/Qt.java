@@ -66,6 +66,9 @@ public class Qt {
     @Autowired
     private StringRedisTemplate redisTemplate0;
 
+    @Autowired
+    private QtThread qtThread;
+
     public JSONObject initData = new JSONObject();
 
     public static final String appId = "KVB0qQq0fRArupojoL4WM9";
@@ -223,24 +226,24 @@ public class Qt {
      * @Card
      **/
 
-    public List<?> getMDContentMany(HashSet setIds, List<String> fields, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").in(setIds));
-        if (fields != null) {
-            for (Object field : fields)
-            {
-                query.fields().include(field.toString());
-            }
-        }
-        try {
-            return mongoTemplate.find(query, classType);
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
-        }
-    }
+//    public List<?> getMDContentMany(HashSet setIds, List<String> fields, Class<?> classType) {
+//        Query query = new Query(new Criteria("_id").in(setIds));
+//        if (fields != null) {
+//            for (Object field : fields)
+//            {
+//                query.fields().include(field.toString());
+//            }
+//        }
+//        try {
+//            return mongoTemplate.find(query, classType);
+//        } catch (Exception e)
+//        {
+//            e.printStackTrace();
+//            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+//        }
+//    }
 
-    public <T> List<T> getMDContentMany2(Collection<?> queryIds, List<String> fields, Class<T> classType) {
+    public <T> List<T> getMDContentMany(Collection<?> queryIds, List<String> fields, Class<T> classType) {
         Query query = new Query(new Criteria("_id").in(queryIds));
         if (fields != null) {
             for (Object field : fields)
@@ -256,98 +259,94 @@ public class Qt {
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
         }
     }
-
-    @Autowired
-    private QtAsNew qtAsNew;
-
-    public <T> List<T> getMDContentFast(JSONArray id_Ps,List<String> strList, Class<T> classType){
-        int forProd = id_Ps.size() / 6;
-        List<T> list = new ArrayList<>();
-        JSONArray item5 = new JSONArray();
-        JSONArray item6 = new JSONArray();
-        if (forProd > 5) {
-            JSONArray item1 = new JSONArray();
-            JSONArray item2 = new JSONArray();
-            JSONArray item3 = new JSONArray();
-            JSONArray item4 = new JSONArray();
-            int lei = 0;
-            for (int i = 0; i < forProd; i++) {
-                item1.add(id_Ps.getString(lei));
-                item2.add(id_Ps.getString(lei+1));
-                item3.add(id_Ps.getString(lei+2));
-                item4.add(id_Ps.getString(lei+3));
-                item5.add(id_Ps.getString(lei+4));
-                item6.add(id_Ps.getString(lei+5));
-                lei+=6;
-            }
-            int jie = id_Ps.size()-(forProd*6);
-            if (jie > 0) {
-                if (jie == 1) {
-                    item1.add(id_Ps.getString((forProd*6)));
-                } else if (jie == 2) {
-                    item1.add(id_Ps.getString((forProd*6)));
-                    item2.add(id_Ps.getString((forProd*6)+1));
-                } else if (jie == 3) {
-                    item1.add(id_Ps.getString((forProd*6)));
-                    item2.add(id_Ps.getString((forProd*6)+1));
-                    item3.add(id_Ps.getString((forProd*6)+2));
-                } else if (jie == 4) {
-                    item1.add(id_Ps.getString((forProd*6)));
-                    item2.add(id_Ps.getString((forProd*6)+1));
-                    item3.add(id_Ps.getString((forProd*6)+2));
-                    item4.add(id_Ps.getString((forProd*6)+3));
-                } else {
-                    item1.add(id_Ps.getString((forProd*6)));
-                    item2.add(id_Ps.getString((forProd*6)+1));
-                    item3.add(id_Ps.getString((forProd*6)+2));
-                    item4.add(id_Ps.getString((forProd*6)+3));
-                    item5.add(id_Ps.getString((forProd*6)+4));
-                }
-            }
-            Future<String> future1 = qtAsNew.testMdMany(item1, list,strList,classType);
-            Future<String> future2 = qtAsNew.testMdMany(item2, list,strList,classType);
-            Future<String> future3 = qtAsNew.testMdMany(item3, list,strList,classType);
-            Future<String> future4 = qtAsNew.testMdMany(item4, list,strList,classType);
-            Future<String> future5 = qtAsNew.testMdMany(item5, list,strList,classType);
-            System.out.println("?");
-            System.out.println("start_thread-id:"+qtAsNew.getThreadId());
-            qtAsNew.mdManyUtilQuery(item6, list,strList,classType);
-            while (true) {
-                if (future1.isDone() && future2.isDone() &&
-                        future3.isDone() && future4.isDone() && future5.isDone()
-                ) {
-                    break;
-                }
-            }
-            System.out.println("大小:");
-            System.out.println(list.size());
-        } else {
-            if (id_Ps.size() / 2 > 7) {
-                boolean isAdd = true;
-                for (int i = 0; i < id_Ps.size(); i++) {
-                    if (isAdd) {
-                        isAdd = false;
-                        item5.add(id_Ps.getJSONObject(i));
-                    } else {
-                        isAdd = true;
-                        item6.add(id_Ps.getJSONObject(i));
-                    }
-                }
-                Future<String> future5 = qtAsNew.testMdMany(item5, list,strList,classType);
-                qtAsNew.mdManyUtilQuery(item6, list,strList,classType);
-                while (true) {
-                    if (future5.isDone()) {
-                        break;
-                    }
-                }
-                System.out.println("大小:");
-                System.out.println(list.size());
-            } else {
-                qtAsNew.mdManyUtilQuery(id_Ps, list,strList,classType);
-            }
-        }
-        return list;
-    }
+//    public <T> List<T> getMDContentFast(JSONArray id_Ps,List<String> strList, Class<T> classType){
+//        int forProd = id_Ps.size() / 6;
+//        List<T> list = new ArrayList<>();
+//        JSONArray item5 = new JSONArray();
+//        JSONArray item6 = new JSONArray();
+//        if (forProd > 5) {
+//            JSONArray item1 = new JSONArray();
+//            JSONArray item2 = new JSONArray();
+//            JSONArray item3 = new JSONArray();
+//            JSONArray item4 = new JSONArray();
+//            int lei = 0;
+//            for (int i = 0; i < forProd; i++) {
+//                item1.add(id_Ps.getString(lei));
+//                item2.add(id_Ps.getString(lei+1));
+//                item3.add(id_Ps.getString(lei+2));
+//                item4.add(id_Ps.getString(lei+3));
+//                item5.add(id_Ps.getString(lei+4));
+//                item6.add(id_Ps.getString(lei+5));
+//                lei+=6;
+//            }
+//            int jie = id_Ps.size()-(forProd*6);
+//            if (jie > 0) {
+//                if (jie == 1) {
+//                    item1.add(id_Ps.getString((forProd*6)));
+//                } else if (jie == 2) {
+//                    item1.add(id_Ps.getString((forProd*6)));
+//                    item2.add(id_Ps.getString((forProd*6)+1));
+//                } else if (jie == 3) {
+//                    item1.add(id_Ps.getString((forProd*6)));
+//                    item2.add(id_Ps.getString((forProd*6)+1));
+//                    item3.add(id_Ps.getString((forProd*6)+2));
+//                } else if (jie == 4) {
+//                    item1.add(id_Ps.getString((forProd*6)));
+//                    item2.add(id_Ps.getString((forProd*6)+1));
+//                    item3.add(id_Ps.getString((forProd*6)+2));
+//                    item4.add(id_Ps.getString((forProd*6)+3));
+//                } else {
+//                    item1.add(id_Ps.getString((forProd*6)));
+//                    item2.add(id_Ps.getString((forProd*6)+1));
+//                    item3.add(id_Ps.getString((forProd*6)+2));
+//                    item4.add(id_Ps.getString((forProd*6)+3));
+//                    item5.add(id_Ps.getString((forProd*6)+4));
+//                }
+//            }
+//            Future<String> future1 = qtThread.testMdMany(item1, list,strList,classType);
+//            Future<String> future2 = qtThread.testMdMany(item2, list,strList,classType);
+//            Future<String> future3 = qtThread.testMdMany(item3, list,strList,classType);
+//            Future<String> future4 = qtThread.testMdMany(item4, list,strList,classType);
+//            Future<String> future5 = qtThread.testMdMany(item5, list,strList,classType);
+//            System.out.println("?");
+//            System.out.println("start_thread-id:"+ qtThread.getThreadId());
+//            qtThread.mdManyUtilQuery(item6, list,strList,classType);
+//            while (true) {
+//                if (future1.isDone() && future2.isDone() &&
+//                        future3.isDone() && future4.isDone() && future5.isDone()
+//                ) {
+//                    break;
+//                }
+//            }
+//            System.out.println("大小:");
+//            System.out.println(list.size());
+//        } else {
+//            if (id_Ps.size() / 2 > 7) {
+//                boolean isAdd = true;
+//                for (int i = 0; i < id_Ps.size(); i++) {
+//                    if (isAdd) {
+//                        isAdd = false;
+//                        item5.add(id_Ps.getJSONObject(i));
+//                    } else {
+//                        isAdd = true;
+//                        item6.add(id_Ps.getJSONObject(i));
+//                    }
+//                }
+//                Future<String> future5 = qtThread.testMdMany(item5, list,strList,classType);
+//                qtThread.mdManyUtilQuery(item6, list,strList,classType);
+//                while (true) {
+//                    if (future5.isDone()) {
+//                        break;
+//                    }
+//                }
+//                System.out.println("大小:");
+//                System.out.println(list.size());
+//            } else {
+//                qtThread.mdManyUtilQuery(id_Ps, list,strList,classType);
+//            }
+//        }
+//        return list;
+//    }
 
     public <T> List<List<T>> getSubList(int deng,JSONArray array,boolean isReversalOne, Class<T> classType){
         int ji = 0;
@@ -394,11 +393,13 @@ public class Qt {
         return lists;
     }
 
-    public <T> List<T> getMDContentFast2(JSONArray queryIds,List<String> strList, Class<T> classType){
+
+    public <T> List<T> getMDContentFast(JSONArray queryIds,List<String> strList, Class<T> classType){
         int queryIdSize = queryIds.size();
         List<T> list = new ArrayList<>();
         if (queryIdSize <= 10) {
-            qtAsNew.mdManyUtilQuery(queryIds, list,strList,classType);
+//            this.mdManyUtilQuery(queryIds, list,strList,classType);
+            list = this.getMDContentMany(queryIds , strList, classType);
             return list;
         }
         int deng;
@@ -414,84 +415,43 @@ public class Qt {
             deng = 6;
         }
         List<List<String>> subList = getSubList(deng, queryIds, true, String.class);
-        System.out.println("start_thread-id:"+qtAsNew.getThreadId());
-        Future<String> future1 = qtAsNew.testMdMany(subList.get(1), list,strList,classType);
+        System.out.println("start_thread-id:"+ qtThread.getThreadId());
+        Future<String> future1 = qtThread.threadMD(subList.get(1), list,strList,classType);
         if (deng == 2) {
             getReturn(deng,future1,null,null,null,null,list,subList.get(0),strList,classType);
             return list;
         }
-        Future<String> future2 = qtAsNew.testMdMany(subList.get(2), list,strList,classType);
+        Future<String> future2 = qtThread.threadMD(subList.get(2), list,strList,classType);
         if (deng == 3) {
             getReturn(deng,future1,future2,null,null,null,list,subList.get(0),strList,classType);
             return list;
         }
-        Future<String> future3 = qtAsNew.testMdMany(subList.get(3), list,strList,classType);
+        Future<String> future3 = qtThread.threadMD(subList.get(3), list,strList,classType);
         if (deng == 4) {
             getReturn(deng,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
             return list;
         }
-        Future<String> future4 = qtAsNew.testMdMany(subList.get(4), list,strList,classType);
+        Future<String> future4 = qtThread.threadMD(subList.get(4), list,strList,classType);
         if (deng == 5) {
             getReturn(deng,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
             return list;
         }
-        Future<String> future5 = qtAsNew.testMdMany(subList.get(5), list,strList,classType);
+        Future<String> future5 = qtThread.threadMD(subList.get(5), list,strList,classType);
         getReturn(deng,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
         return list;
     }
-    public <T> List<T> getMDContentFast2(List<String> queryIds,List<String> strList, Class<T> classType){
-        int queryIdSize = queryIds.size();
-        List<T> list = new ArrayList<>();
-        if (queryIdSize <= 10) {
-            qtAsNew.mdManyUtilQuery(queryIds, list,strList,classType);
-            return list;
-        }
-        int deng;
-        if (queryIdSize <= 20) {
-            deng = 2;
-        } else if (queryIdSize <= 30) {
-            deng = 3;
-        } else if (queryIdSize <= 40) {
-            deng = 4;
-        } else if (queryIdSize <= 50) {
-            deng = 5;
-        } else {
-            deng = 6;
-        }
-        List<List<String>> subList = getSubList(deng,queryIds,true);
-        System.out.println("start_thread-id:"+qtAsNew.getThreadId());
-        Future<String> future1 = qtAsNew.testMdMany(subList.get(1), list,strList,classType);
-        if (deng == 2) {
-            getReturn(deng,future1,null,null,null,null,list,subList.get(0),strList,classType);
-            return list;
-        }
-        Future<String> future2 = qtAsNew.testMdMany(subList.get(2), list,strList,classType);
-        if (deng == 3) {
-            getReturn(deng,future1,future2,null,null,null,list,subList.get(0),strList,classType);
-            return list;
-        }
-        Future<String> future3 = qtAsNew.testMdMany(subList.get(3), list,strList,classType);
-        if (deng == 4) {
-            getReturn(deng,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
-            return list;
-        }
-        Future<String> future4 = qtAsNew.testMdMany(subList.get(4), list,strList,classType);
-        if (deng == 5) {
-            getReturn(deng,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
-            return list;
-        }
-        Future<String> future5 = qtAsNew.testMdMany(subList.get(5), list,strList,classType);
-        getReturn(deng,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
-        return list;
-    }
+
 
     public <T> void getReturn(int deng,Future<String> future1
             ,Future<String> future2,Future<String> future3
             ,Future<String> future4,Future<String> future5,List<T> list
             ,List<String> subListSon,List<String> strList, Class<T> classType){
-        System.out.println("?");
-        qtAsNew.mdManyUtilQuery(subListSon, list,strList,classType);
-        System.out.println("- ! -");
+//        System.out.println("?");
+//        qtThread.mdManyUtilQuery(subListSon, list,strList,classType);
+        List<T> getResult = this.getMDContentMany(subListSon , strList, classType);
+        // 添加查询结果到list
+        list.addAll(getResult);
+//        System.out.println("- ! -");
         while (true) {
             if (deng == 2 && future1.isDone()) {
                 break;

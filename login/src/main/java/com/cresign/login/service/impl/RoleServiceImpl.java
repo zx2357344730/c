@@ -353,7 +353,7 @@ public class RoleServiceImpl implements RoleService {
 //        }
 //        JSONObject data = qt.setJson("type", "chgUserGrp");
         LogFlow log = new LogFlow();
-        log.setSysLog(id_C, "mutMenu", "更新菜单", 3, qt.setJson("cn", "系统权限更新"));
+        log.setSysLog(id_C, "mut_menu", "更新菜单", 3, qt.setJson("cn", "系统权限更新"));
         ws.setUserListByGrpU(log, id_C, grpU);
         log.setData(qt.setJson("type", "chgUserGrp"));
         ws.sendWS(log);
