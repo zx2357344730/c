@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -690,7 +691,7 @@ public class ZjTestServiceImpl implements ZjTestService {
 
     @Override
     public ApiResponse statisticsChKin(String id_C) {
-//        String date = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        //        String date = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
 //        Asset asset = qt.getConfig(id_C, "a-chkin", "chkin");
 //        if (null == asset || null == asset.getChkin()) {
 //            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
@@ -735,6 +736,5 @@ public class ZjTestServiceImpl implements ZjTestService {
 //        //lambda表达式实现List接口sort方法排序
 //        logFlows.sort(Comparator.comparing(num -> num.getData().getString("date")));
 //        qt.errPrint("logFlows.sort:",null,logFlows);
-        return retResult.ok(CodeEnum.OK.getCode(), "-成功-");
     }
 }

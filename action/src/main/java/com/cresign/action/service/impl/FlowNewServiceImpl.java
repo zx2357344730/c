@@ -66,7 +66,7 @@ public class FlowNewServiceImpl implements FlowNewService {
     private FlowAsyncUtil flowAsyncUtil;
 
     @Autowired
-    private QtAsNew qtAsNew;
+//    private QtAsNew qtAsNew;
     private DgCheckUtil checkUtil;
 
     @Override
@@ -549,7 +549,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             ,Future<String> future2,Future<String> future3
             ,Future<String> future4,Future<String> future5,Future<String> future6
             ,HashSet<String> id_Ps,List<JSONObject> subListSon, String myCompId){
-        System.out.println("主:"+qtAsNew.getThreadId());
+        System.out.println("主:"+checkUtil.getThreadId());
         System.out.println("?");
         checkUtil(id_Ps,subListSon,myCompId);
         System.out.println("- ! -");
