@@ -144,7 +144,7 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
                 if(StringUtils.isEmpty(data) || StringUtils.isEmpty(encrypted)){
                     throw new RuntimeException("参数【requestData】缺失异常！");
                 }else{
-                    System.out.println(JSON.toJSONString(requestMap));
+//                    System.out.println(JSON.toJSONString(requestMap));
                     String content ;
                     String aesKey;
                     JSONObject re = JSONObject.parseObject(redisTemplate0.opsForValue().get(RED_KEY+uuId));

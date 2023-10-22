@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.common.ActionEnum;
 import com.cresign.action.service.FlowNewService;
-import com.cresign.action.utils.FlowAsyncUtil;
+//import com.cresign.action.utils.FlowAsyncUtil;
 import com.cresign.action.utils.DgCheckUtil;
 import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.advice.RetResult;
@@ -60,13 +60,9 @@ public class FlowNewServiceImpl implements FlowNewService {
     private RetResult retResult;
 
 //    @Autowired
-//    private TestAsync testAsync;
+//    private FlowAsyncUtil flowAsyncUtil;
 
     @Autowired
-    private FlowAsyncUtil flowAsyncUtil;
-
-    @Autowired
-//    private QtAsNew qtAsNew;
     private DgCheckUtil checkUtil;
 
     @Override
@@ -170,16 +166,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
         }
         System.out.println(JSON.toJSONString(casItemData));
-//        // 获取递归结果键
-//        Set<String> actionCollection = objActionCollection.keySet();
-//        System.out.println(JSON.toJSONString(actionCollection));
-//        System.out.println();
-//        for (String s : actionCollection) {
-//            System.out.println("s:"+s+"  ,  size:"+objActionCollection.get(s).size());
-////            System.out.println(JSON.toJSONString(objActionCollection.get(s)));
-//        }
 
-//        System.out.println("save-start");
         /////////// setup Dep.objlBProd + objlSProd for grpP
 
         //putting the Sales order as the last casItem... I donno why
@@ -242,12 +229,11 @@ public class FlowNewServiceImpl implements FlowNewService {
 //                    aId = myDef.getId();
                 asset = myDef;
             }
-            System.out.println("otherDeff" + targetCompId);
 
 
             // if it is a real Company get grpB setting from objlBProd by ref, else do nothing now, later can do extra
             JSONObject defResultBP = asset.getDef().getJSONObject("objlBP");
-            JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
+//            JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
 
             for (OrderOItem orderOItem : unitOItem) {
 //                System.out.println(orderOItem.getGrpB());
@@ -270,7 +256,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 
             JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
 
-            JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
+//            JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
 
             for (OrderOItem orderOItem : unitOItem) {
                 String grp = orderOItem.getGrp();
@@ -281,8 +267,8 @@ public class FlowNewServiceImpl implements FlowNewService {
                 }
             }
 
-            grpO = "1000";
-            grpOB = "1000";
+//            grpO = "1000";
+//            grpOB = "1000";
             System.out.print("got all ok");
 
             if (id_OParent.equals(thisOrderId)) {
@@ -300,7 +286,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 
                 // priority is BY order, get from info and write into ALL oItem
                 OrderInfo newPO_Info = new OrderInfo(prodCompId, targetCompId, unitOItem.get(0).getId_CP(), "", id_OParent, "", "",
-                        grpO, grpOB, oParent_prior, unitOItem.get(0).getPic(), 4, 0, orderNameCas, null);
+                        "", "1000", oParent_prior, unitOItem.get(0).getPic(), 4, 0, orderNameCas, null);
 
                 // 设置订单info信息
                 newPO.setInfo(newPO_Info);
@@ -324,7 +310,6 @@ public class FlowNewServiceImpl implements FlowNewService {
                 for (OrderOItem orderOItem : unitOItem) {
                     wn2qty += orderOItem.getWn2qtyneed();
                     wn4price += orderOItem.getWn4price();
-//                    System.out.println("u " + orderOItem);
                     arrayId_P.add(orderOItem.getId_P());
                 }
 
@@ -357,11 +342,11 @@ public class FlowNewServiceImpl implements FlowNewService {
 //                qt.addMD(newPO);
                 addOrder.add(newPO);
 //                    qt.setES(....)
-                System.out.println("sales order SAVED " + newPO.getInfo().getWrdN().getString("cn"));
+//                System.out.println("sales order SAVED " + newPO.getInfo().getWrdN().getString("cn"));
 
 //              // 创建lSBOrder订单
                 lSBOrder lsbOrder = new lSBOrder(prodCompId, targetCompId, "", "", id_OParent, thisOrderId, arrayId_P,
-                        "", "", null, "1000", unitOItem.get(0).getPic(), 4, 0, orderNameCas, null, null);
+                        "", "", "", "1000", unitOItem.get(0).getPic(), 4, 0, orderNameCas, null, null);
                 // 新增lsbOrder信息
                 qt.addES("lsborder", lsbOrder);
             }
@@ -393,7 +378,6 @@ public class FlowNewServiceImpl implements FlowNewService {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
         }
         HashSet<String> id_Ps = getCheckOrderAllId_P2(salesOrderData.getOItem().getJSONArray("objItem"), myCompId);
-        qt.errPrint("当前递归:",null,id_Ps.size());
         qt.setMDContent(salesOrderData.getId(),qt.setJson("oItem.allProdId"
                 ,id_Ps), Order.class);
         qt.errPrint("结束时间:",null,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
@@ -549,7 +533,6 @@ public class FlowNewServiceImpl implements FlowNewService {
             ,Future<String> future2,Future<String> future3
             ,Future<String> future4,Future<String> future5,Future<String> future6
             ,HashSet<String> id_Ps,List<JSONObject> subListSon, String myCompId){
-        System.out.println("主:"+checkUtil.getThreadId());
         System.out.println("?");
         checkUtil(id_Ps,subListSon,myCompId);
         System.out.println("- ! -");
@@ -785,12 +768,17 @@ public class FlowNewServiceImpl implements FlowNewService {
             objOItem = upperOItem;
             objAction = upperAction;
         } else {
+            // 1. grpB = real, i am both buy and sell (self-P)
+            // 2. grp = real, id_C = other and it is a real company
+            // 3. I am seller id_C, then it must be upperOItem take care of
+
             objOItem = new OrderOItem(id_P, upperOItem.getId_OP(),
                     partInfo.getString("id_CP") == null ? prodCompId : partInfo.getString("id_CP"),
                     prodCompId, myCompId,
                     newOrderId, newOrderIndex,
                     partInfo.getString("ref"), partInfo.getString("refB"),
-                    partInfo.getString("grp"), partInfo.getString("grpB"), 0, partInfo.getString("pic"),
+                    prodCompId.equals(myCompId) ? "": partInfo.getString("grp"),
+                    partInfo.getString("grpB"), 0, partInfo.getString("pic"),
                     partInfo.getInteger("lUT"), partInfo.getInteger("lCR"),
                     0.0,
                     partInfo.getDouble("wn4price"), upperOItem.getWrdN(), partInfo.getJSONObject("wrdN"),

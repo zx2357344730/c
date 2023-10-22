@@ -1698,7 +1698,14 @@ public class Qt {
                         BoolQueryBuilder shouldQueryBuilder = new BoolQueryBuilder();
                         JSONArray arrayFiltKey = conditionMap.getJSONArray("filtKey");
                         for (int j = 0; j < arrayFiltKey.size(); j++) {
-                            shouldQueryBuilder.should(QueryBuilders.matchPhraseQuery(arrayFiltKey.getString(j), conditionMap.get("filtVal")));
+                            if (arrayFiltKey.getString(j).startsWith("ref"))
+                            {
+                                shouldQueryBuilder.should(QueryBuilders.prefixQuery(arrayFiltKey.getString(j), conditionMap.get("filtVal").toString()));
+
+                            } else {
+                                shouldQueryBuilder.should(QueryBuilders.matchPhraseQuery(arrayFiltKey.getString(j), conditionMap.get("filtVal")));
+                            }
+
                         }
                         queryBuilder.must(shouldQueryBuilder);
                         break;

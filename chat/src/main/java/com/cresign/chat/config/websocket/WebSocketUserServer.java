@@ -472,13 +472,14 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                                 return;
                             }
                             if (null != newToken) {
-                                data.put("token",newToken);
-                                System.out.println("newToken:");
-                                System.out.println(newToken);
+
+                                data.put("tokenThis",newToken);
                                 logData.setData(data);
                                 logData.getData().remove("refreshTokenJiu");
                                 logData.setId_Us(qt.setArray(logData.getId_U()));
+                                logData.setSubType("mut_token");
                                 logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+
                             } else {
                                 logData = new LogFlow();
                                 logData.setId_U(logData.getId_U());
@@ -639,6 +640,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             JSONObject mqGroupId = new JSONObject();
             // 存储需要推送的用户列表
             JSONObject pushUserObj = new JSONObject();
+            JSONArray pushId_Us = new JSONArray();
             for (int i = 0; i < id_Us.size(); i++) {
                 String id_UNew = id_Us.getString(i);
                 // 获取redis信息
@@ -647,7 +649,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 if (null == rdInfo) {
                     // 添加推送
 //                    pushUserObj.put(id_UNew,0);
-                    addPushUser(pushUserObj,pushUserOld,id_UNew);
+//                    addPushUser(pushUserObj,pushUserOld,id_UNew);
+                    if (!pushId_Us.contains(id_UNew)) {
+                        pushId_Us.add(id_UNew);
+                    }
                     continue;
                 }
                 // 判断用户存在
@@ -675,7 +680,11 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                             if (isApp) {
                                 // 添加到推送列表
 //                                pushUserObj.put(id_UNew,0);
-                                addPushUser(pushUserObj,pushUserOld,id_UNew);
+//                                addPushUser(pushUserObj,pushUserOld,id_UNew);
+                                if (!pushId_Us.contains(id_UNew)) {
+                                    pushId_Us.add(id_UNew);
+                                }
+
                             }
                             // 调用清理ws方法
                             closeWS(id_UNew,client,rdInfoData.getString("appId"));
@@ -697,7 +706,9 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                                     // 判断为app端
                                     if (isApp) {
                                         // 添加到推送列表
-                                        pushUserObj.put(id_UNew,0);
+//                                        pushUserObj.put(id_UNew,0);
+                                        pushId_Us.add(id_UNew);
+
                                     }
                                     // 调用清理ws方法
                                     closeWS(id_UNew,client,rdInfoData.getString("appId"));
@@ -730,7 +741,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                         }
                         // 添加到推送列表
 //                        pushUserObj.put(id_UNew,0);
-                        addPushUser(pushUserObj,pushUserOld,id_UNew);
+//                        addPushUser(pushUserObj,pushUserOld,id_UNew);
+                        if (!pushId_Us.contains(id_UNew)) {
+                            pushId_Us.add(id_UNew);
+                        }
                     } else {
                         // 存储判断不为当前mq，默认为当前mq
                         boolean isSendMq = false;
@@ -764,7 +778,9 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                         // 判断不为当前mq，或者是app
                         if (!isSendMq || isApp) {
                             // 添加到推送列表
-                            pushUserObj.put(id_UNew,0);
+//                            pushUserObj.put(id_UNew,0);
+                            pushId_Us.add(id_UNew);
+
                         }
                     }
                 }
@@ -777,7 +793,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                     ws.sendESOnly(logContent);
                 }
                 // 调用发送推送和mq消息方法
-                sendMqOrPush(mqGroupId,pushUserObj,logContent);
+                ws.sendMqOrPush(mqGroupId,pushId_Us,logContent);
             }
         }
     }
@@ -840,101 +856,103 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         return null;
     }
 
-    /**
-     * 发送推送和mq消息方法
-     * @param mqGroupId	mq信息
-     * @param pushUserObj	推送用户列表
-     * @param logContent	日志信息
-     * @author tang
-     * @date 创建时间: 2023/9/4
-     * @ver 版本号: 1.0.0
-     */
-    public static void sendMqOrPush(JSONObject mqGroupId,JSONObject pushUserObj,LogFlow logContent){
-        if (logContent.getImp() >= 3 && pushUserObj.size() > 0) {
-            System.out.println("推送用户列表:");
-            System.out.println(JSON.toJSONString(pushUserObj.keySet()));
-            // 创建存储appId列表
-            JSONArray pushApps = new JSONArray();
-            // 创建存储padId列表
-            JSONArray pushPads = new JSONArray();
-            for (String id_U : pushUserObj.keySet()) {
-                // 获取redis信息
-                JSONObject mqKey = ws.getMqKey(id_U);
-                // 存储判断redis有appId
-                boolean isApp = false;
-                // 存储判断redis有padId
-                boolean isPad = false;
-                if (null != mqKey) {
-                    JSONObject app = mqKey.getJSONObject("app");
-                    if (null != app) {
-                        pushApps.add(app.getString("appId"));
-                        // 设置有
-                        isApp = true;
-                    }
-                    JSONObject pad = mqKey.getJSONObject("pad");
-                    if (null != pad) {
-                        pushPads.add(pad.getString("appId"));
-                        // 设置有
-                        isPad = true;
-                    }
-                    if (isApp && isPad) {
-                        continue;
-                    }
-                }
-                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
-                if (null != es && es.size() > 0 && null != es.getJSONObject(0)) {
-                    JSONObject esObj = es.getJSONObject(0);
-                    if (!isApp) {
-                        if (null != esObj.getString("id_APP") && !"".equals(esObj.getString("id_APP"))) {
-                            pushApps.add(esObj.getString("id_APP"));
-                        }
-                    }
-                    if (!isPad) {
-                        if (null != esObj.getString("id_Pad") && !"".equals(esObj.getString("id_Pad"))) {
-                            pushPads.add(esObj.getString("id_Pad"));
-                        }
-                    }
-                }
-            }
-            System.out.println("推送app:");
-            System.out.println(JSON.toJSONString(pushApps));
-            System.out.println("推送pad:");
-            System.out.println(JSON.toJSONString(pushPads));
-            if (pushApps.size() > 0) {
-                String wrdNUC = "小银【系统】";
-                JSONObject wrdNU = logContent.getWrdNU();
-                if (null != wrdNU && null != wrdNU.getString("cn")) {
-                    wrdNUC = wrdNU.getString("cn");
-                }
-                // 调用app发送推送方法
-                ws.push2(wrdNUC,logContent.getZcndesc(),pushApps);
-            }
-        }
-        if (mqGroupId.size() > 0) {
-            for (String mqKey : mqGroupId.keySet()) {
-                JSONObject mqIdArr = mqGroupId.getJSONObject(mqKey);
-                // 获取用户列表
-                logContent.setId_Us(JSONArray.parseArray(JSON.toJSONString(mqIdArr.keySet())));
-                JSONObject data = logContent.getData();
-                if (null == data) {
-                    data = new JSONObject();
-                }
-                data.put("pushUsers",pushUserObj);
-                logContent.setData(data);
-                // 发送mq信息
-                ws.sendWSOnly(mqKey,logContent);
-            }
-        }
-    }
+//    /**
+//     * 发送推送和mq消息方法
+//     * @param mqGroupId	mq信息
+//     * @param pushUserObj	推送用户列表
+//     * @param logContent	日志信息
+//     * @author tang
+//     * @date 创建时间: 2023/9/4
+//     * @ver 版本号: 1.0.0
+//     */
+//    public static void sendMqOrPush(JSONObject mqGroupId,JSONObject pushUserObj,LogFlow logContent){
+//        if (logContent.getImp() >= 3 && pushUserObj.size() > 0) {
+//            System.out.println("推送用户列表:");
+//            System.out.println(JSON.toJSONString(pushUserObj.keySet()));
+//            // 创建存储appId列表
+//            JSONArray pushApps = new JSONArray();
+//            // 创建存储padId列表
+//            JSONArray pushPads = new JSONArray();
+//            for (String id_U : pushUserObj.keySet()) {
+//                // 获取redis信息
+//                JSONObject mqKey = ws.getMqKey(id_U);
+//                // 存储判断redis有appId
+//                boolean isApp = false;
+//                // 存储判断redis有padId
+//                boolean isPad = false;
+//                if (null != mqKey) {
+//                    JSONObject app = mqKey.getJSONObject("app");
+//                    if (null != app) {
+//                        pushApps.add(app.getString("appId"));
+//                        // 设置有
+//                        isApp = true;
+//                    }
+//                    JSONObject pad = mqKey.getJSONObject("pad");
+//                    if (null != pad) {
+//                        pushPads.add(pad.getString("appId"));
+//                        // 设置有
+//                        isPad = true;
+//                    }
+//                    if (isApp && isPad) {
+//                        continue;
+//                    }
+//                }
+//                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
+//                if (null != es && es.size() > 0 && null != es.getJSONObject(0)) {
+//                    JSONObject esObj = es.getJSONObject(0);
+//                    if (!isApp) {
+//                        if (null != esObj.getString("id_APP") && !"".equals(esObj.getString("id_APP"))) {
+//                            pushApps.add(esObj.getString("id_APP"));
+//                        }
+//                    }
+//                    if (!isPad) {
+//                        if (null != esObj.getString("id_Pad") && !"".equals(esObj.getString("id_Pad"))) {
+//                            pushPads.add(esObj.getString("id_Pad"));
+//                        }
+//                    }
+//                }
+//            }
+//            System.out.println("推送app:");
+//            System.out.println(JSON.toJSONString(pushApps));
+//            System.out.println("推送pad:");
+//            System.out.println(JSON.toJSONString(pushPads));
+//            if (pushApps.size() > 0) {
+//                String wrdNUC = "小银【系统】";
+//                JSONObject wrdNU = logContent.getWrdNU();
+//                if (null != wrdNU && null != wrdNU.getString("cn")) {
+//                    wrdNUC = wrdNU.getString("cn");
+//                }
+//                // 调用app发送推送方法
+//                ws.push2(wrdNUC,logContent.getZcndesc(),pushApps);
+//            }
+//        }
+//        if (mqGroupId.size() > 0) {
+//            for (String mqKey : mqGroupId.keySet()) {
+//                JSONObject mqIdArr = mqGroupId.getJSONObject(mqKey);
+//                // 获取用户列表
+//                logContent.setId_Us(JSONArray.parseArray(JSON.toJSONString(mqIdArr.keySet())));
+//                JSONObject data = logContent.getData();
+//                if (null == data) {
+//                    data = new JSONObject();
+//                }
+//                data.put("pushUsers",pushUserObj);
+//                logContent.setData(data);
+//                // 发送mq信息
+//                ws.sendWSOnly(mqKey,logContent);
+//            }
+//        }
+//    }
 
-    public static void addPushUser(JSONObject pushUserObj,JSONObject pushUserOld,String id_U){
-        if (null != pushUserOld) {
-            boolean b = pushUserOld.containsKey(id_U);
-            if (!b) {
-                pushUserObj.put(id_U,0);
-            }
-        } else {
-            pushUserObj.put(id_U,0);
-        }
-    }
+//    public static void addPushUser(JSONObject pushUserObj,JSONObject pushUserOld,String id_U){
+//
+//
+//        if (null != pushUserOld) {
+//            boolean b = pushUserOld.containsKey(id_U);
+//            if (!b) {
+//                pushUserObj.put(id_U,0);
+//            }
+//        } else {
+//            pushUserObj.put(id_U,0);
+//        }
+//    }
 }

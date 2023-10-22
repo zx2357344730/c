@@ -26,14 +26,6 @@ import java.util.Map;
 @Component
 public class RetResult {
 
-//    @Autowired
-//    private HttpServletRequest request;
-//    /**
-//     * 注入redis数据库下标1模板
-//     */
-//    @Resource
-//    private StringRedisTemplate redisTemplate0;
-
     public static HttpServletRequest request;
 
     public static StringRedisTemplate redisTemplate0;
@@ -44,60 +36,9 @@ public class RetResult {
         RetResult.redisTemplate0 = redisTemplate0;
     }
 
-//    @Value("${encyptKey.public_key}")
-//    public void setClient_Public_Key(String client_Public_Key) {
-//       RetResult.client_Public_Key = client_Public_Key;
-//    }
-//
-//    // 加密的key
-//    private static String client_Public_Key;
-
-    // 加密的key
-//    private static final String client_Public_Key = RsaUtilF.getPublicKey();
-
-//    private static final String client_Public_Key = RSAUtils.getPublicKey();
-
-//    private static String client_Public_Key;
-//    public synchronized static String getSetPublicKey(String key,boolean isG){
-//        System.out.println("client_Public_Key:"+isG);
-//        System.out.println(client_Public_Key);
-//        if (isG) {
-//            client_Public_Key = key;
-//            System.out.println("set_client_Public_Key:");
-//            System.out.println(client_Public_Key);
-//            return null;
-//        } else {
-//            System.out.println("get_client_Public_Key:");
-//            System.out.println(client_Public_Key);
-//            return client_Public_Key;
-//        }
-//    }
-//    public static void setClient_Public_Key(String key){
-//        log.info("赋值");
-//        System.out.println("赋值");
-//        client_Public_Key = key;
-//        System.out.println("赋值成功");
-//        log.info("赋值成功");
-//    }
-//    public static String getClient_Public_Key(){
-//        log.info("获取赋值");
-//        System.out.println("获取赋值");
-//        return client_Public_Key;
-//    }
 
     @Autowired
     private LocalMessage localMessage;
-
-//    private static String QD_Key = "\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCmZ22+NactiEwYmw06yU/Tiy1L\npenHWgbPtcjdSGIqCzZdZF9pP7X/q1XLknm6yt3lh0KQTka7MoHlK/5rauZ4Y6Jw\ny6bqXwdjRO+EmvFY/UN/fj2bczWf4XJ2WtvBZTnOzk5buk4Gp3sTkbRLpOPwvNAz\n4DrAFD1biUZF62/vyQIDAQAB\n";
-//
-//    static {
-//        // 字符串转换
-//        String s = QD_Key.replaceAll(",", "/");
-//        s = s.replaceAll("%0A","\n");
-//        s = s.replaceAll("%2C","/");
-//        s = s.replaceAll("%2B","+");
-//        QD_Key = s.replaceAll("%3D","=");
-//    }
 
     public static final String RED_KEY = "key:k_";
 
@@ -280,60 +221,4 @@ public class RetResult {
 //        return body;
     }
 
-    /**
-     * 创建指定位数的随机字符串
-     * @param length 表示生成字符串的长度
-     * @return 字符串
-     */
-//    private static String getRandomString(int length) {
-//        String base = "abcdefghijklmnopqrstuvwxyz0123456789";
-//        Random random = new Random();
-//        StringBuffer sb = new StringBuffer();
-//        for (int i = 0; i < length; i++) {
-//            int number = random.nextInt(base.length());
-//            sb.append(base.charAt(number));
-//        }
-//        return sb.toString();
-//    }
-
-    // 以后可能会用到
-//    /**
-//     * 用来新增日志，与抛出异常信息
-//     * @param id_C  公司id
-//     * @param id_U  用户id
-//     * @param logType   日志类型
-//     * @param zcndesc 日志描述
-//     * @param data  具体数据
-//     * @param my    异常信息
-//     * @param message   异常具体信息
-//     * @param logService    新增日志接口
-//     * @return  异常结果
-//     */
-//    public static String exBZ2ByDesc(String id_C, String id_U, String logType
-//            , String zcndesc
-//            , Map<String,Object> data
-//            , MyExEnum my, String message
-//            , LogService logService
-//            , LogEnum logEnum){
-//
-//        if (logEnum.getType().equals("1")) {
-//
-//            // 获取日志对象
-//            Log log = TY.setLogRZ(id_C,id_U,logType,data,my);
-//
-//            // 判断日志内容不为空
-//            if (TY.StringISnull(zcndesc)) {
-//
-//                // 设置日志内容
-//                log.setZcndesc(zcndesc);
-//            }
-//
-//            // 新增日志信息
-//            logService.addLog2(log,TY.getDateNow(DateEnum.DATE_ONLY.getDate()));
-//
-//        }
-//
-//        // 根据异常信息抛出信息
-//        throw new MyException(my.getCode(), message, my.getMethod(), null);
-//    }
 }

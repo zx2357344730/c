@@ -736,5 +736,7 @@ public class ZjTestServiceImpl implements ZjTestService {
 //        //lambda表达式实现List接口sort方法排序
 //        logFlows.sort(Comparator.comparing(num -> num.getData().getString("date")));
 //        qt.errPrint("logFlows.sort:",null,logFlows);
+        return retResult.ok(CodeEnum.OK.getCode(), "发送-同意查看-失败");
+
     }
 }

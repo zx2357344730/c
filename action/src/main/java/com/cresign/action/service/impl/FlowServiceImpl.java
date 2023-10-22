@@ -249,7 +249,6 @@ public class FlowServiceImpl implements FlowService {
 //                    aId = myDef.getId();
                     asset = myDef;
                 }
-                System.out.println("otherDeff"+targetCompId);
 
 
                 // if it is a real Company get grpB setting from objlBProd by ref, else do nothing now, later can do extra
@@ -573,8 +572,8 @@ public class FlowServiceImpl implements FlowService {
         //orderAction存储map
         Map<String, OrderAction> pidActionCollection = new HashMap<>(Constants.HASH_MAP_DEFAULT_LENGTH);
 
-        String refOP = salesOrderData.getInfo().getId_C().equals(salesOrderData.getInfo().getId_CB()) ?
-                salesOrderData.getInfo().getRefB() : salesOrderData.getInfo().getRef();
+//        String refOP = salesOrderData.getInfo().getId_C().equals(salesOrderData.getInfo().getId_CB()) ?
+//                salesOrderData.getInfo().getRefB() : salesOrderData.getInfo().getRef();
 
         // 创建递归存储的时间处理信息
         List<OrderODate> oDates = new ArrayList<>();
@@ -2502,7 +2501,7 @@ public class FlowServiceImpl implements FlowService {
     public ApiResponse dgRemove(String id_O,String id_C,String id_U) {
 
 //        Order orderParent = coupaUtil.getOrderByListKey(id_O, Arrays.asList());
-        Order orderParent = qt.getMDContent(id_O, Arrays.asList("action", "oItem", "casItemx", "view"),Order.class);
+        Order orderParent = qt.getMDContent(id_O, Arrays.asList("info","action", "oItem", "casItemx", "view"),Order.class);
 
         if (orderParent == null)
         {
@@ -2558,6 +2557,18 @@ public class FlowServiceImpl implements FlowService {
 //        coupaUtil.updateOrderByListKeyVal(id_O,orderData);
         qt.setMDContent(id_O,orderData, Order.class);
         qt.delES("assetflow", qt.setESFilt("id_O", id_O));
+
+        //loop thru my flowControl, find the refOP, and remove it
+        String refOP = orderParent.getInfo().getRef();
+        Asset asset = qt.getConfig(id_C, "a-auth", "flowControl.objData");
+        for (int i = 0; i < asset.getFlowControl().getJSONArray("objData").size(); i++)
+        {
+            JSONObject flowInfo = asset.getFlowControl().getJSONArray("objData").getJSONObject(i).getJSONObject("refOP");
+            if (flowInfo != null && flowInfo.getJSONObject(refOP) != null) {
+                flowInfo.remove(refOP);
+            }
+        }
+        qt.setMDContent(asset.getId(), qt.setJson("flowControl.objData", asset.getFlowControl().getJSONArray("objData")), Asset.class);
 
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "删除成功！！!!!");
