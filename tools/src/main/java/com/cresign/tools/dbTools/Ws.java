@@ -11,8 +11,10 @@ import com.cresign.tools.request.HttpClientUtil;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.UUID;
 
 /**
@@ -27,14 +29,11 @@ public class Ws {
 
     @Autowired
     private Qt qt;
-//    public static final String appId = "KVB0qQq0fRArupojoL4WM9";
     @Value("${thisConfig.appId}")
     private String appId;
-//    static String url = "https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/push";
+
     @Value("${thisConfig.url}")
     private String url;
-//    private String appKey = "ShxgT3kg6s73NbuZeAe3I";
-//    private String masterSecret = "0sLuGUOFPG6Hyq0IcN2JR";
     @Value("${thisConfig.appKey}")
     private String appKey;
     @Value("${thisConfig.masterSecret}")
@@ -46,6 +45,9 @@ public class Ws {
      */
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
+
+    @Autowired
+    private QtThread qtThread;
 
     /**
      * 直接发送MQ信息方法
@@ -95,6 +97,7 @@ public class Ws {
      *  1. id / id_FS || 2. id_Us[], getES(lBUser), id_APP[]
      *  logContrent.getJSONArray("id_Us") / id_APPs[]
      */
+    @Async
     public void sendWS(LogFlow logContent){
 
         // the log's id_Us may have users
@@ -133,7 +136,6 @@ public class Ws {
         map.put("date",date);
         map.put("request_id", UUID.randomUUID().toString().replace("-",""));
         String s = HttpClientUtil.sendPost(map,url);
-
     }
 
     /**
@@ -321,14 +323,23 @@ public class Ws {
      * @date 创建时间: 2023/9/4
      * @ver 版本号: 1.0.0
      */
-    public void sendMqOrPush(JSONObject mqGroupId,JSONObject pushUserObj,LogFlow logContent){
+    public void sendMqOrPush(JSONObject mqGroupId,JSONArray pushUserObj,LogFlow logContent){
         if (logContent.getImp() >= 3 && pushUserObj.size() > 0) {
 
             // 创建存储appId列表
             JSONArray pushApps = new JSONArray();
             // 创建存储padId列表
             JSONArray pushPads = new JSONArray();
-            for (String id_U : pushUserObj.keySet()) {
+
+            JSONArray arraylnuser = qt.getES("lNUser", qt.setESFilt("id_U", "contain", pushUserObj));
+
+            JSONObject esAll = qt.arr2Obj(arraylnuser,"id_U");
+//            for (int i = 0; i < arraylnuser.size(); i++) {
+//                esAll.put(arraylnuser.getJSONObject(i).getString("id_U"), arraylnuser.getJSONObject(i));
+//            }
+
+            for (int i = 0; i < pushUserObj.size(); i++) {
+                String id_U = pushUserObj.getString(i);
                 // 获取redis信息
                 JSONObject mqKey = getMqKey(id_U);
                 // 存储判断redis有appId
@@ -353,9 +364,10 @@ public class Ws {
                         continue;
                     }
                 }
-                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
-                if (null != es && es.size() > 0 && null != es.getJSONObject(0)) {
-                    JSONObject esObj = es.getJSONObject(0);
+                JSONObject esObj = esAll.getJSONObject(id_U);
+//                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
+                if (null != esObj) {
+//                    JSONObject esObj = es.getJSONObject(0);
                     if (!isApp) {
                         if (null != esObj.getString("id_APP") && !"".equals(esObj.getString("id_APP"))) {
                             pushApps.add(esObj.getString("id_APP"));
@@ -376,7 +388,7 @@ public class Ws {
                     wrdNUC = wrdNU.getString("cn");
                 }
                 // 调用app发送推送方法
-                push2(wrdNUC,logContent.getZcndesc(),pushApps);
+                qtThread.push2(wrdNUC,logContent.getZcndesc(),pushApps);
             }
         }
         if (mqGroupId.size() > 0) {
@@ -506,7 +518,7 @@ public class Ws {
             }
         }
         // 调用发送推送和mq消息方法
-        sendMqOrPush(mqGroupId,pushUserObj,logContent);
+        sendMqOrPush(mqGroupId,id_Us,logContent);
     }
 
 }

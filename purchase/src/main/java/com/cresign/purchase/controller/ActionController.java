@@ -1,5 +1,6 @@
 package com.cresign.purchase.controller;
 
+
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.purchase.service.ActionService;
 import com.cresign.tools.advice.RetResult;
@@ -217,7 +218,7 @@ public class ActionController {
 
     @SecurityParameter
     @PostMapping("/v1/changeActionStatusNew")
-    public ApiResponse changeActionStatusNew(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse changeActionStatusNew(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
         try {
             return actionService.changeActionStatusNew(

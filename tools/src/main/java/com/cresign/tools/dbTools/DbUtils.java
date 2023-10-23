@@ -1717,6 +1717,11 @@ public class DbUtils {
             oStockData.put("objShip", qt.setArray(
                     qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
                             "wn2qtyneed", orderOItem.getDouble("wn2qtyneed"))));
+            if (!orderOItem.getString("id_C").equals(orderOItem.getString("id_CB")))
+            {
+                qt.setJson("wn2qtyship", 0.0, "wn2qtyshipnow", 0.0,
+                        "wn2qtynowS", 0.0);
+            }
             oStock.set(index, oStockData);
 
             return oStock;

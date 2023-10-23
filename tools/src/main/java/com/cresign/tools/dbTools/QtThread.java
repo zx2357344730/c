@@ -1,12 +1,17 @@
 package com.cresign.tools.dbTools;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.request.HttpClientUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Future;
 
 /**
@@ -20,6 +25,9 @@ import java.util.concurrent.Future;
 public class QtThread {
     @Autowired
     private Qt qt;
+
+    @Value("${thisConfig.url}")
+    private String url;
 
     /**
      * 获取当前线程id
@@ -56,5 +64,27 @@ public class QtThread {
         }
         System.out.println("--- "+getThreadId()+" ---");
         return future;
+    }
+
+    @Async
+    public void push2(String title, String content, JSONArray pushAppIds){
+        System.out.println("开始:"+getThreadId());
+
+        JSONObject map = new JSONObject();
+        map.put("cids",pushAppIds);
+        map.put("title",title);
+        map.put("content",content);
+        JSONObject options = new JSONObject();
+        JSONObject HW = new JSONObject();
+        HW.put("/message/android/category","WORK");
+        options.put("HW",HW);
+        map.put("options",options);
+        JSONObject date = new JSONObject();
+        date.put("toPage","/user/info.js");
+        date.put("name","张三");
+        date.put("desc","这是一个推送data");
+        map.put("date",date);
+        map.put("request_id", UUID.randomUUID().toString().replace("-",""));
+        String s = HttpClientUtil.sendPost(map,url);
     }
 }
