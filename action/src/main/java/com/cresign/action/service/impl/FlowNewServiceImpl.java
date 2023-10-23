@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.common.ActionEnum;
 import com.cresign.action.service.FlowNewService;
-import com.cresign.action.utils.FlowAsyncUtil;
 import com.cresign.action.utils.DgCheckUtil;
 import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.advice.RetResult;
@@ -62,8 +61,8 @@ public class FlowNewServiceImpl implements FlowNewService {
 //    @Autowired
 //    private TestAsync testAsync;
 
-    @Autowired
-    private FlowAsyncUtil flowAsyncUtil;
+//    @Autowired
+//    private FlowAsyncUtil flowAsyncUtil;
 
     @Autowired
 //    private QtAsNew qtAsNew;
@@ -460,7 +459,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             Future<String> future4 = checkUtil.testResult(id_Ps, item4, myCompId);
             Future<String> future5 = checkUtil.testResult(id_Ps, item5, myCompId);
             Future<String> future6 = checkUtil.testResult(id_Ps, item6, myCompId);
-            checkUtil.checkUtil(id_Ps,item7,myCompId);
+            checkUtil.testResult(id_Ps,item7,myCompId);
             while (true) {
                 if (future1.isDone()
                         && future2.isDone() && future3.isDone() && future4.isDone()
@@ -482,14 +481,14 @@ public class FlowNewServiceImpl implements FlowNewService {
                     }
                 }
                 Future<String> future6 = checkUtil.testResult(id_Ps, item6, myCompId);
-                checkUtil.checkUtil(id_Ps,item7,myCompId);
+                checkUtil.testResult(id_Ps,item7,myCompId);
                 while (true) {
                     if ( future6.isDone()) {
                         break;
                     }
                 }
             } else {
-                checkUtil.checkUtil(id_Ps,item7,myCompId);
+                checkUtil.testResult(id_Ps,item7,myCompId);
             }
         }
         return id_Ps;
@@ -498,7 +497,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         HashSet<String> id_Ps = new HashSet<>();
         int itemSize = objItem.size();
         if (itemSize <= 6) {
-            checkUtil.checkUtil(id_Ps,objItem,myCompId);
+            checkUtil.testResult(id_Ps,objItem,myCompId);
         }
         int deng;
         if (itemSize <= 12) {
