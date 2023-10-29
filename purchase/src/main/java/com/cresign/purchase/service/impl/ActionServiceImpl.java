@@ -976,7 +976,9 @@ public class ActionServiceImpl implements ActionService {
                         oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).put("wn2qtynow", 1.0);
                         JSONObject listCol2 = new JSONObject();
                         dbu.summOrder(oStockCheck, listCol2, qt.setArray("oStock"));
-                        qt.saveMD(oStockCheck);
+//                        qt.saveMD(oStockCheck);
+                        qt.setMDContent(id_O, qt.setJson("oStock", oStockCheck.getOStock()), Order.class);
+
                         qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
 
                         LogFlow log = new LogFlow(tokData, oStockCheck.getOItem(), oStockCheck.getAction(), "", id_O, index,
@@ -1377,7 +1379,9 @@ public class ActionServiceImpl implements ActionService {
                 oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).put("wn2qtynow", 1.0);
                 JSONObject listCol2 = new JSONObject();
                 dbu.summOrder(oStockCheck, listCol2, qt.setArray("oStock"));
-                qt.saveMD(oStockCheck);
+//                qt.saveMD(oStockCheck);
+                qt.setMDContent(id_O, qt.setJson("oStock", oStockCheck.getOStock()), Order.class);
+
                 qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
 
                 LogFlow log = new LogFlow(tokData, oStockCheck.getOItem(), oStockCheck.getAction(), "", id_O, index,

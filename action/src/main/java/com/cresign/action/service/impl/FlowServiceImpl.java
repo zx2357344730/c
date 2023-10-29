@@ -432,20 +432,6 @@ public class FlowServiceImpl implements FlowService {
 
                 //Create oStock
                 JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(unitOItem));
-//                newPO_oStock.put("objData", new JSONArray());
-//
-//                    for (OrderOItem orderOItem : unitOItem) {
-//
-//                        JSONObject initStock = qt.setJson("wn2qtynow", 0.0,"wn2qtymade", 0.0,
-//                                "id_P", orderOItem.getId_P(),
-//                                "resvQty", new JSONObject(),
-//                                "rKey", orderOItem.getRKey());
-//
-//                        initStock.put("objShip", qt.setArray("wn2qtynow", 0.0, "wn2qtymade", 0.0, "wn2qtyneed", orderOItem.getWn2qtyneed()));
-//
-//                        newPO_oStock.getJSONArray("objData").add(initStock);
-//                    }
-//
 
                 newPO.setOStock(newPO_oStock);
 
@@ -2529,7 +2515,9 @@ public class FlowServiceImpl implements FlowService {
             String subOrderId = casList.getJSONObject(i).getString("id_O");
 
             qt.delES("action", qt.setESFilt("id_O", "exact",subOrderId));
-            qt.delES("assetflow", qt.setESFilt("data.id_O", "exact",subOrderId));
+            qt.delES("assetflow", qt.setESFilt("data.id_OP", "exact",subOrderId));
+            qt.delES("assetflow", qt.setESFilt("id_O", "exact",subOrderId));
+
             qt.delES("msg", qt.setESFilt("id_O", "exact",subOrderId));
 
                 // delete that order        // 删除订单
@@ -2557,6 +2545,9 @@ public class FlowServiceImpl implements FlowService {
 //        coupaUtil.updateOrderByListKeyVal(id_O,orderData);
         qt.setMDContent(id_O,orderData, Order.class);
         qt.delES("assetflow", qt.setESFilt("id_O", id_O));
+        qt.delES("assetflow", qt.setESFilt("data.id_OP", id_O));
+        qt.delES("msg", qt.setESFilt("id_O", id_O));
+        qt.delES("action", qt.setESFilt("id_O", id_O));
 
         //loop thru my flowControl, find the refOP, and remove it
         String refOP = orderParent.getInfo().getRef();

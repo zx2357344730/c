@@ -690,10 +690,53 @@ public class ZjTestServiceImpl implements ZjTestService {
     }
 
     @Override
-    public ApiResponse statisticsChKin(String id_C,JSONArray sumDates) {
+    public ApiResponse statisticsChKin(String id_C) {
+        //        String date = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+//        Asset asset = qt.getConfig(id_C, "a-chkin", "chkin");
+//        if (null == asset || null == asset.getChkin()) {
+//            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+//                    ASSET_NOT_FOUND.getCode(),"");
+//        }
+//        JSONObject chkin = asset.getChkin();
+//        JSONObject objChkin = chkin.getJSONObject("objChkin");
+//        JSONObject bm1 = objChkin.getJSONObject("bm1");
+//        JSONObject zb1 = bm1.getJSONObject("zb1");
+//        // 获取上下班时间
+//        JSONArray arrTime = zb1.getJSONArray("arrTime");
+//        // 获取上班前打卡时间范围
+//        int tPre = zb1.getInteger("tPre");
+//        // 获取下班后打卡时间范围
+//        int tPost = zb1.getInteger("tPost");
+//        // 获取严重迟到时间
+//        int tLate = zb1.getInteger("tLate");
+//        // 获取矿工迟到时间
+//        int tAbsent = zb1.getInteger("tAbsent");
+//        // 获取正常上班总时间
+//        int teDur = zb1.getInteger("teDur");
+//        // 获取考勤类型（0 = 固定班、1 = 自由时间）
+//        String chkType = zb1.getString("chkType");
+//        // 获取默认班日( 0（1到5），1(1到6)，2（大小周），3（按月放假天）)
+//        String dayType = zb1.getString("dayType");
+//        // 按月放假天数
+//        int dayOff = zb1.getInteger("dayOff");
+//        // 必须打卡日期
+//        JSONArray dayMust = zb1.getJSONArray("dayMust");
+//        // 无须打卡日期
+//        JSONArray dayMiss = zb1.getJSONArray("dayMiss");
+//        JSONArray chkinEs = qt.getES("chkin", qt.setESFilt("id_U", "6256789ae1908c03460f906f"));
+//        if (null == chkinEs || chkinEs.size() == 0) {
+//            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+//                    CHK_IN_NOT_FOUND.getCode(),"");
+//        }
+//        qt.errPrint("chkinEs:",null,chkinEs);
+//        List<LogFlow> logFlows = new ArrayList<>();
+//        for (int i = 0; i < chkinEs.size(); i++) {
+//            logFlows.add(JSONObject.parseObject(JSON.toJSONString(chkinEs.getJSONObject(i)), LogFlow.class));
+//        }
+//        //lambda表达式实现List接口sort方法排序
+//        logFlows.sort(Comparator.comparing(num -> num.getData().getString("date")));
+//        qt.errPrint("logFlows.sort:",null,logFlows);
+        return retResult.ok(CodeEnum.OK.getCode(), "发送-同意查看-失败");
 
-        return retResult.ok(CodeEnum.OK.getCode(), "-成功-");
     }
-
-    
 }
