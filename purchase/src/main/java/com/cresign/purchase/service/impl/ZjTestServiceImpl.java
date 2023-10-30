@@ -691,9 +691,553 @@ public class ZjTestServiceImpl implements ZjTestService {
 
     @Override
     public ApiResponse statisticsChKin(String id_C,JSONArray sumDates) {
+        String date = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+        Asset asset = qt.getConfig(id_C, "a-chkin", "chkin");
+        if (null == asset || null == asset.getChkin()) {
+            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                    ASSET_NOT_FOUND.getCode(),"");
+        }
+        JSONObject chkin = asset.getChkin();
+        JSONObject objChkin = chkin.getJSONObject("objChkin");
+        JSONObject bm1 = objChkin.getJSONObject("bm1");
+        JSONObject zb1 = bm1.getJSONObject("zb1");
+        String theSameDay = sumDates.getString(0);
+        // 获取上下班时间
+        JSONArray arrTime = zb1.getJSONArray("arrTime");
+        // 获取上班前打卡时间范围
+        long tPre = zb1.getInteger("tPre") * 60;
+        // 获取下班后打卡时间范围
+        long tPost = zb1.getInteger("tPost") * 60;
+        // 获取严重迟到时间
+        long tLate = zb1.getInteger("tLate") * 60;
+        // 获取矿工迟到时间
+        long tAbsent = zb1.getInteger("tAbsent") * 60;
+        // 获取正常上班总时间
+        long teDur = zb1.getInteger("teDur") * 60 *60;
+        // 获取考勤类型（0 = 固定班、1 = 自由时间）
+        String chkType = zb1.getString("chkType");
+        // 获取默认班日( 0（1到5），1(1到6)，2（大小周），3（按月放假天）)
+        String dayType = zb1.getString("dayType");
+        // 记录加班时间，自己加一获取
+        JSONArray ovt = zb1.getJSONArray("ovt");
+        // 按月放假天数
+        int dayOff = zb1.getInteger("dayOff");
+        // 必须打卡日期
+        JSONArray dayMust = zb1.getJSONArray("dayMust");
+        // 无须打卡日期
+        JSONArray dayMiss = zb1.getJSONArray("dayMiss");
+        JSONArray chkInEs = qt.getES("chkin", qt.setESFilt("id_U", "6256789ae1908c03460f906f"));
+        if (null == chkInEs || chkInEs.size() == 0) {
+            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                    CHK_IN_NOT_FOUND.getCode(),"");
+        }
+        testChkInSum(chkInEs,arrTime,theSameDay,"6256789ae1908c03460f906f",teDur);
+
+        JSONArray chkInEs2 = qt.getES("chkin", qt.setESFilt("id_U", "test"));
+        if (null == chkInEs2 || chkInEs2.size() == 0) {
+            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                    CHK_IN_NOT_FOUND.getCode(),"");
+        }
+        testChkInSum(chkInEs2,arrTime,theSameDay,"test",teDur);
 
         return retResult.ok(CodeEnum.OK.getCode(), "-成功-");
     }
 
-    
+    public void testChkInSum(JSONArray chkInEs,JSONArray arrTime,String theSameDay,String id_U,long teDur){
+        List<LogFlow> logFlows = new ArrayList<>();
+        for (int i = 0; i < chkInEs.size(); i++) {
+            logFlows.add(JSONObject.parseObject(JSON.toJSONString(chkInEs.getJSONObject(i)), LogFlow.class));
+        }
+        //lambda表达式实现List接口sort方法排序
+        logFlows.sort(Comparator.comparing(num -> num.getData().getString("date")));
+        List<Long> dates = new ArrayList<>();
+        for (LogFlow logFlow : logFlows) {
+            JSONObject data = logFlow.getData();
+            String date1 = data.getString("date");
+            dates.add(getDeLong(date1));
+        }
+        // 加班时间
+        List<Long> workOvertime = new ArrayList<>();
+        // 正常时间
+//        List<Long> regularClass = new ArrayList<>();
+        // 确认上班时间点
+//        int [] queRenTime = new int[dates.size()];
+//        long [] errTime = new long[dates.size()];
+        List<Long> arrTimeLong = new ArrayList<>();
+        for (int i = 0; i < arrTime.size(); i++) {
+            arrTimeLong.add(getDeLong(theSameDay+" "+arrTime.getString(i)));
+        }
+        List<List<Long>> originTimeList = new ArrayList<>();
+        List<List<Long>> arrTimeList = new ArrayList<>();
+        List<Long> originListNew = new ArrayList<>();
+        List<Long> centreListNew = new ArrayList<>();
+        long chi = 0;
+        long zao = 0;
+        for (int i = 0; i < arrTimeLong.size(); i+=2) {
+            Long upper = arrTimeLong.get(i);
+            Long below = arrTimeLong.get(i + 1);
+            List<Long> centreList = new ArrayList<>();
+            centreList.add(upper);
+            centreList.add(below);
+            arrTimeList.add(centreList);
+
+            List<Long> originList = new ArrayList<>();
+            List<Long> upperBelowBetween = getUpperBelowBetween(upper, below, dates, 60, 60);
+            if (upperBelowBetween.size() == 0) {
+                originTimeList.add(originList);
+                continue;
+            }
+            if (upperBelowBetween.size() > 4) {
+                int reduce = upperBelowBetween.size() - 4;
+                for (int j = 0; j < reduce; j++) {
+                    upperBelowBetween.remove(upperBelowBetween.size()-1);
+                }
+            }
+            if (upperBelowBetween.size() % 2 == 0) {
+                originListNew.addAll(upperBelowBetween);
+                originList.addAll(upperBelowBetween);
+                if (upperBelowBetween.get(0) <= upper) {
+                    centreListNew.add(upper);
+                } else {
+                    chi += upperBelowBetween.get(0) - upper;
+                    centreListNew.add(upperBelowBetween.get(0));
+                }
+                if (upperBelowBetween.size() == 4) {
+                    centreListNew.add(upperBelowBetween.get(1));
+                    centreListNew.add(upperBelowBetween.get(2));
+                }
+                if (upperBelowBetween.get(upperBelowBetween.size() - 1) >= below) {
+                    centreListNew.add(below);
+                } else {
+                    zao += below - upperBelowBetween.get(upperBelowBetween.size() - 1);
+                    centreListNew.add(upperBelowBetween.get(upperBelowBetween.size() - 1));
+                }
+            } else {
+                long original;
+                if (upperBelowBetween.size() == 3) {
+                    original = upperBelowBetween.get(upperBelowBetween.size() - 1);
+                } else {
+                    original = upperBelowBetween.get(0);
+                }
+                int originIndex = getContrastChkInTimeNew(original, arrTimeLong);
+                int newIndex;
+                boolean isUpper = true;
+                if(originIndex % 2 == 0){
+                    newIndex = originIndex+1;
+                    isUpper = false;
+                } else {
+                    newIndex = originIndex-1;
+                }
+                Long originTime = arrTimeLong.get(originIndex);
+                if (original < originTime) {
+                    originListNew.add(original);
+                    originListNew.add(0L);
+                    centreListNew.add(original);
+                    centreListNew.add(originTime);
+                    originList.add(original);
+                    originList.add(originTime);
+                } else {
+                    originListNew.add(0L);
+                    originListNew.add(original);
+                    centreListNew.add(originTime);
+                    centreListNew.add(original);
+                    originList.add(originTime);
+                    originList.add(original);
+                }
+                Long newTime = arrTimeLong.get(newIndex);
+                if (isUpper) {
+                    chi += (original - newTime);
+                } else {
+                    zao += (newTime - original);
+                }
+            }
+            originTimeList.add(originList);
+        }
+        long start = arrTimeLong.get(0);
+        long end = arrTimeLong.get(arrTime.size()-1);
+        // 开始或小于开始时间
+        List<Long> startList = new ArrayList<>();
+        // 结束或大于结束时间
+        List<Long> endList = new ArrayList<>();
+//        // 中间正常时间
+//        List<Long> centreList = new ArrayList<>();
+//        // 中间补卡时间
+//        List<Long> centreRepairList = new ArrayList<>();
+//        // 原本上班时间
+//        List<Long> originList = new ArrayList<>();
+        for (int i = 0; i < dates.size(); i++) {
+            Long da = dates.get(i);
+            if (da <= start) {
+                startList.add(da);
+//                queRenTime[i] = 2;
+            } else if (da >= end) {
+                endList.add(da);
+//                queRenTime[i] = 2;
+            } else {
+//                System.out.println("for:");
+                long contrastChkInTimeSt = getContrastChkInTime(da, arrTimeLong.get(0));
+                if (0 != contrastChkInTimeSt) {
+                    startList.add(contrastChkInTimeSt);
+//                    errTime[0] = da;
+//                    queRenTime[i] = 3;
+                    continue;
+                }
+                long contrastChkInTimeEn = getContrastChkInTime(da, arrTimeLong.get(arrTime.size()-1));
+                if (0 != contrastChkInTimeEn) {
+                    endList.add(contrastChkInTimeEn);
+//                    errTime[dates.size()-1] = da;
+//                    queRenTime[i] = 3;
+//                    continue;
+                }
+//                List<Long> contrastChkInTime = getContrastChkInTime(da, arrTimeLong);
+//                if (contrastChkInTime.get(0) != 0) {
+//                    centreList.add(contrastChkInTime.get(0));
+//                    centreRepairList.add(contrastChkInTime.get(0));
+//                    queRenTime[i] = 1;
+//                } else {
+//                    centreList.add(da);
+//                    Long systemTime = contrastChkInTime.get(1);
+//                    if (systemTime < da) {
+//                        centreRepairList.add(systemTime);
+//                        centreRepairList.add(da);
+//                    } else {
+//                        centreRepairList.add(da);
+//                        centreRepairList.add(systemTime);
+//                    }
+//                    queRenTime[i] = 0;
+//                }
+//                originList.add(da);
+            }
+        }
+        System.out.println("-----------------------------------");
+//        if (startList.size() > 0 && startList.size() % 2 != 0) {
+//            Long st = startList.get(startList.size() - 1);
+//            List<Long> contrastChkInTimeSt = getContrastChkInTimeNew(st, arrTimeLong.get(0));
+//            if (contrastChkInTimeSt.get(0) != 0) {
+//                centreList.add(0,contrastChkInTimeSt.get(0));
+//                centreRepairList.add(0,contrastChkInTimeSt.get(0));
+//                queRenTime[0] = 1;
+//            } else {
+//                centreList.add(0,st);
+//                centreRepairList.add(0,st);
+//                queRenTime[0] = 0;
+//            }
+//            if (errTime[0] != 0) {
+//                originList.add(0,errTime[0]);
+//            } else {
+//                originList.add(0,st);
+//            }
+//            startList.remove(startList.size()-1);
+//        }
+//        if (endList.size() > 0 && endList.size() % 2 != 0) {
+//            Long en = endList.get(0);
+//            long contrastChkInTimeEn = getContrastChkInTime(en, arrTimeLong.get(arrTimeLong.size()-1));
+//            if (contrastChkInTimeEn != 0) {
+//                centreList.add(contrastChkInTimeEn);
+//                centreRepairList.add(contrastChkInTimeEn);
+//                queRenTime[dates.size()-1] = 1;
+//            } else {
+//                centreList.add(en);
+//                centreRepairList.add(en);
+//                queRenTime[dates.size()-1] = 0;
+//            }
+//            if (errTime[errTime.length-1] != 0) {
+//                originList.add(errTime[errTime.length-1]);
+//            } else {
+//                originList.add(en);
+//            }
+//            endList.remove(0);
+//        }
+        if (startList.size() > 0 && startList.size() % 2 != 0) {
+//            Long st = startList.get(startList.size() - 1);
+//            List<Long> contrastChkInTimeSt = getContrastChkInTimeNew(st, arrTimeLong.get(0));
+//            if (contrastChkInTimeSt.get(0) != 0) {
+//                centreList.add(0,contrastChkInTimeSt.get(0));
+//                centreRepairList.add(0,contrastChkInTimeSt.get(0));
+//                queRenTime[0] = 1;
+//            } else {
+//                centreList.add(0,st);
+//                centreRepairList.add(0,st);
+//                queRenTime[0] = 0;
+//            }
+//            if (errTime[0] != 0) {
+//                originList.add(0,errTime[0]);
+//            } else {
+//                originList.add(0,st);
+//            }
+            startList.remove(startList.size()-1);
+//            queRenTime[0] = 1;
+        }
+        if (endList.size() > 0 && endList.size() % 2 != 0) {
+//            Long en = endList.get(0);
+//            long contrastChkInTimeEn = getContrastChkInTime(en, arrTimeLong.get(arrTimeLong.size()-1));
+//            if (contrastChkInTimeEn != 0) {
+//                centreList.add(contrastChkInTimeEn);
+//                centreRepairList.add(contrastChkInTimeEn);
+//                queRenTime[dates.size()-1] = 1;
+//            } else {
+//                centreList.add(en);
+//                centreRepairList.add(en);
+//                queRenTime[dates.size()-1] = 0;
+//            }
+//            if (errTime[errTime.length-1] != 0) {
+//                originList.add(errTime[errTime.length-1]);
+//            } else {
+//                originList.add(en);
+//            }
+            endList.remove(0);
+//            queRenTime[dates.size()-1] = 1;
+        }
+        if (startList.size() >= 2) {
+            workOvertime.addAll(startList);
+        }
+        if (endList.size() >= 2) {
+            workOvertime.addAll(endList);
+        }
+        System.out.println();
+        System.out.println("-------------------- "+id_U+" --------------------");
+        System.out.println("正常时间纠正New - centreListNew:");
+        System.out.println(JSON.toJSONString(centreListNew));
+        System.out.println(JSON.toJSONString(getTimeToStr(centreListNew)));
+        System.out.println("正常时间New - originListNew:");
+        System.out.println(JSON.toJSONString(originListNew));
+        System.out.println(JSON.toJSONString(getTimeToStr(originListNew)));
+//        System.out.println("正常时间纠正 - centreList:");
+//        System.out.println(JSON.toJSONString(centreList));
+//        System.out.println(JSON.toJSONString(getTimeToStr(centreList)));
+//        System.out.println("正常时间 - originList:");
+//        System.out.println(JSON.toJSONString(originList));
+//        System.out.println(JSON.toJSONString(getTimeToStr(originList)));
+//        System.out.println("正常补卡时间 - centreRepairList:");
+//        System.out.println(JSON.toJSONString(centreRepairList));
+//        System.out.println(JSON.toJSONString(getTimeToStr(centreRepairList)));
+        System.out.println("加班 - workOvertime:");
+        System.out.println(JSON.toJSONString(workOvertime));
+        System.out.println(JSON.toJSONString(getTimeToStr(workOvertime)));
+        long zon = 0;
+        long jia = 0;
+        long que = 0;
+//        System.out.println("确认正常时间 - queRenTime:");
+//        System.out.println(JSON.toJSONString(queRenTime));
+        for (int i = 0; i < centreListNew.size(); i+=2) {
+            long ownUpper = centreListNew.get(i);
+            long ownBelow = centreListNew.get(i+1);
+            zon += ownBelow - ownUpper;
+        }
+        for (int i = 0; i < arrTimeList.size(); i++) {
+//            List<Long> arrList = arrTimeList.get(i);
+//            long arrZon = 0;
+//            for (int j = 0; j < arrList.size(); j+=2) {
+//                Long ownUpper = arrList.get(j);
+//                Long ownBelow = arrList.get(j + 1);
+//                arrZon += ownBelow - ownUpper;
+//            }
+//            long xinZon = 0;
+//            List<Long> originList = originTimeList.get(i);
+//            for (int j = 0; j < originList.size(); j+=2) {
+//                Long ownUpper = arrList.get(j);
+//                Long ownBelow = arrList.get(j + 1);
+//                zon += ownBelow - ownUpper;
+//                xinZon += ownBelow - ownUpper;
+//            }
+            List<Long> arrList = arrTimeList.get(i);
+            List<Long> originList = originTimeList.get(i);
+            if (originList.size() == 0) {
+                for (int j = 0; j < arrList.size(); j+=2) {
+                    Long ownUpper = arrList.get(j);
+                    Long ownBelow = arrList.get(j + 1);
+                    que += ownBelow - ownUpper;
+                }
+            }
+//            System.out.println("第-{ "+(i+1)+" }-段时间,余剩时间:"+(arrZon-xinZon));
+        }
+//        for (int i = 0; i < centreList.size(); i+=2) {
+//            Long arrUpper = arrTimeLong.get(i);
+//            long ownUpper = centreList.get(i);
+//            Long origUpper = originList.get(i);
+//            int queUpper = queRenTime[i+startList.size()];
+//            long upperTime;
+//            long upper;
+//            if (queUpper == 0) {
+//                upperTime = arrUpper;
+//                upper = (arrUpper - ownUpper);
+////                System.out.println("arrUpper:"+arrUpper+" , ownUpper:"+ownUpper);
+////                System.out.println("upper:"+upper);
+//            } else {
+//                upperTime = ownUpper;
+//                upper = ownUpper - origUpper;
+//            }
+//            if (upper < 0) {
+//                chi -= upper;
+//                queRenTime[i+startList.size()] = 0;
+//            }
+//            Long arrBelow = arrTimeLong.get(i+1);
+//            long ownBelow = centreList.get(i+1);
+//            Long origBelow = originList.get(i+1);
+//            int queBelow = queRenTime[i+startList.size()+1];
+//            long belowTime;
+//            long below;
+//            if (queBelow == 0) {
+//                belowTime = arrBelow;
+//                below = arrBelow - ownBelow;
+////                System.out.println("arrBelow:"+arrBelow+" , ownBelow"+ ownBelow);
+////                System.out.println("below:"+below);
+//            } else {
+//                belowTime = ownBelow;
+//                below = ownBelow - origBelow;
+//            }
+//            if (below > 0) {
+//                zao += below;
+//                queRenTime[i+startList.size()+1] = 0;
+//            }
+//            zon += belowTime - upperTime;
+//        }
+        for (int i = 0; i < workOvertime.size(); i+=2) {
+            Long ownUpper = workOvertime.get(i);
+            Long ownBelow = workOvertime.get(i + 1);
+            jia += ownBelow - ownUpper;
+        }
+//        zon -= chi + zao;
+        if (zon > teDur) {
+            zon = teDur;
+        }
+//        System.out.println("确认正常时间 - queRenTime:");
+//        System.out.println(JSON.toJSONString(queRenTime));
+//        System.out.println("异常时间 - errTime:");
+//        System.out.println(JSON.toJSONString(errTime));
+        System.out.println("总时间 - zon:"+zon);
+        System.out.println("迟到时间 - chi:"+chi);
+        System.out.println("早退时间 - zao:"+zao);
+        System.out.println("加班时间 - jia:"+jia);
+        System.out.println("缺勤时间 - que:"+que);
+    }
+
+    public List<String> getTimeToStr(List<Long> timeList){
+        List<String> correctWorkDateStr = new ArrayList<>();
+        for (Long aLong : timeList) {
+            correctWorkDateStr.add(getDeDate(aLong));
+        }
+        return correctWorkDateStr;
+    }
+
+    public long getDeLong(String date){
+//        String timeString = "2021-01-01 08:33:00";
+//        String pattern = "yyyy-MM-dd HH:mm:ss";
+
+        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate());
+        try {
+            Date dateNew = sdf.parse(date);
+            long timestamp = dateNew.getTime();
+//            System.out.println("时间戳：" + (timestamp/1000));
+            return (timestamp/1000);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public String getDeDate(long date){
+        if (date == 0) {
+            return "0";
+        }
+        Date dateNew = new Date(date*1000);
+        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate());
+        return sdf.format(dateNew);
+    }
+
+    public List<Long> getContrastChkInTime(long original,List<Long> arrTimeLong){
+        System.out.println("duo:");
+        System.out.println(original);
+        List<Long> countList = new ArrayList<>();
+        List<Long> resultList = new ArrayList<>();
+//        for (int i = 1; i < arrTimeLong.size()-1; i++) {
+//            Long ti = arrTimeLong.get(i);
+//            long re = original - ti;
+//            countList.add((re < 0) ? -re : re);
+//        }
+        for (Long ti : arrTimeLong) {
+            long re = original - ti;
+            countList.add((re < 0) ? -re : re);
+        }
+        int index = 0;
+        long mix = countList.get(0);
+        for (int i = 1; i < countList.size(); i++) {
+            if (countList.get(i) < mix) {
+                mix = countList.get(i);
+                index = i;
+            }
+        }
+//        index+=1;
+        System.out.println("resultList:");
+        System.out.println(JSON.toJSONString(countList));
+        System.out.println("re:"+arrTimeLong.get(index)+" , index:"+(index));
+        if (mix < 3600) {
+            resultList.add(arrTimeLong.get(index));
+//            return arrTimeLong.get(index);
+            return resultList;
+        }
+        resultList.add(0L);
+        resultList.add(arrTimeLong.get(index));
+//        return 0;
+        return resultList;
+    }
+    public int getContrastChkInTimeNew(long original,List<Long> arrTimeLong){
+        List<Long> countList = new ArrayList<>();
+        for (Long ti : arrTimeLong) {
+            long re = original - ti;
+            countList.add((re < 0) ? -re : re);
+        }
+        int index = 0;
+        long mix = countList.get(0);
+        for (int i = 1; i < countList.size(); i++) {
+            if (countList.get(i) < mix) {
+                mix = countList.get(i);
+                index = i;
+            }
+        }
+//        System.out.println("resultList:");
+//        System.out.println(JSON.toJSONString(countList));
+//        System.out.println("re:"+arrTimeLong.get(index)+" , index:"+(index));
+        return index;
+    }
+
+    public long getContrastChkInTime(long original,long timeLong){
+//        System.out.println("dang:"+original+" , timeLong:"+timeLong);
+        long l = original - timeLong;
+//        System.out.println("l:"+l);
+        long re = (l < 0) ? -l : l;
+//        System.out.println("re:"+re);
+        if (re < 3600) {
+            return timeLong;
+        }
+        return 0;
+    }
+    public List<Long> getContrastChkInTimeNew(long original,long timeLong){
+        List<Long> result = new ArrayList<>();
+//        System.out.println("dang:"+original+" , timeLong:"+timeLong);
+        long l = original - timeLong;
+//        System.out.println("l:"+l);
+        long re = (l < 0) ? -l : l;
+//        System.out.println("re:"+re);
+        if (re < 3600) {
+            result.add(timeLong);
+            return result;
+        }
+        result.add(0L);
+        result.add(timeLong);
+        return result;
+    }
+    public List<Long> getUpperBelowBetween(long upper,long below,List<Long> originList,long upperRange,long belowRange){
+        List<Long> resultList = new ArrayList<>();
+        upperRange *= 60;
+        belowRange *= 60;
+        upper -= upperRange;
+        below += belowRange;
+        for (Long origin : originList) {
+            if (origin >= upper && origin <= below) {
+                resultList.add(origin);
+            }
+        }
+        return resultList;
+    }
 }
