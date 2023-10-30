@@ -35,6 +35,8 @@ public class Asset {
 
     private JSONObject grid;
 
+    private JSONObject tempa;
+
     private JSONObject link00s;
 
     private JSONObject chkin00s;

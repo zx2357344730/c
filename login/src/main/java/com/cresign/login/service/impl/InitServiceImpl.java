@@ -42,7 +42,7 @@ public class InitServiceImpl implements InitService {
         re.put("privateKey",stringMap.get("privateKey"));
         re.put("publicKey",stringMap.get("publicKey"));
 
-        qt.setRDSet("key", "k_"+ uuId, JSON.toJSONString(re),259200L);
+        qt.setRDSet("key", "k_"+ uuId, JSON.toJSONString(re),2592000L);
 
         if (ver.equals(init.getVer()))
         {

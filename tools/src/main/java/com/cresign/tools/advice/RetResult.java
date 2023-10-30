@@ -207,7 +207,9 @@ public class RetResult {
                 Map<String, String> map = new HashMap<>();
                 map.put("err","1");
                 map.put("desc","id对应秘钥信息为空");
-                return map;
+                return new ApiResponse("043004", "", "");
+
+//                return map;
             }
         } catch (Exception e) {
 //            log.error("对方法method :【" +"】返回数据进行解密出现异常：" + e.getMessage());

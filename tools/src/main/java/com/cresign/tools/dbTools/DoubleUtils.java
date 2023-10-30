@@ -68,7 +68,7 @@ public class DoubleUtils {
         {
             return 0.0;
         }
-        return decimal1.divide(decimal2, 6, BigDecimal.ROUND_DOWN).doubleValue();
+        return decimal1.divide(decimal2, 6, BigDecimal.ROUND_UP).doubleValue();
     }
     /**
      * 除
