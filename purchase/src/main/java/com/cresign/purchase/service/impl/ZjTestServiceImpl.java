@@ -739,7 +739,7 @@ public class ZjTestServiceImpl implements ZjTestService {
                     CHK_IN_NOT_FOUND.getCode(),"");
         }
         testChkInSum(chkInEs2,arrTime,theSameDay,"test",teDur);
-
+        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
     }
 
     public void testChkInSum(JSONArray chkInEs,JSONArray arrTime,String theSameDay,String id_U,long teDur){

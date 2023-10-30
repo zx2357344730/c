@@ -1,5 +1,6 @@
 package com.cresign.purchase.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.pojo.po.LogFlow;
@@ -41,5 +42,5 @@ public interface ZjTestService {
             , String subType, String zcnDesc, JSONObject data,int imp);
     ApiResponse applyForAgreeWith(String id_U, String id_C, String id, String logType
             , String subType, String zcnDesc, JSONObject data,int imp);
-    ApiResponse statisticsChKin(String id_C);
+    ApiResponse statisticsChKin(String id_C, JSONArray sumDates);
 }
