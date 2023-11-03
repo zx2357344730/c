@@ -188,10 +188,10 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 
 //                    JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn","exact",phone));
                     String id_U = qt.getId_U(phone);
-                    if (id_U.equals("")) {
-                        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-                                LOGIN_NOTFOUND_USER.getCode(),null);
-                    }
+                    boolean isId_U = !id_U.equals("");
+                //                        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                //                                LOGIN_NOTFOUND_USER.getCode(),null);
+                if (isId_U) {
                     User user = qt.getMDContent(id_U,qt.strList("info","rolex"),User.class);
 
                     //存在则不是注册，返回个人信息
@@ -319,6 +319,12 @@ public class SmsLoginServiceImpl implements SmsLoginService {
                         }
 
                     }
+                } else {
+                    JSONObject result = new JSONObject();
+                    if(isRegOff(phone,result)){
+                        return retResult.ok(CodeEnum.OK.getCode(), result);
+                    }
+                }
 
 
                     // 设置info信息
