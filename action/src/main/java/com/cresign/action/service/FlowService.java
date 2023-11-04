@@ -19,7 +19,7 @@ public interface FlowService {
 
     ApiResponse getDgSingle(String id_OParent, Integer index, String id_U, String id_C, Long teStart);
 
-    ApiResponse dgTaskOrder(String id_O);
+//    ApiResponse dgTaskOrder(String id_O);
 
     ApiResponse prodPart(String id_P);
 
@@ -60,7 +60,7 @@ public interface FlowService {
      * @ver 1.0.0
      * @date 2021/1/19 10:05
      */
-    ApiResponse getPartIsNull(String id_P);
+//    ApiResponse getPartIsNull(String id_P);
 
     /**
      * 时间处理方法

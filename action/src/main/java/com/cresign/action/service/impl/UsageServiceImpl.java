@@ -33,31 +33,18 @@ public class UsageServiceImpl implements UsageService {
 
     // Fav, Cookiex, refAuto, powerUp, nacos
 
-//    @Autowired
-//    private StringRedisTemplate redisTemplate0;
-
-
     @Autowired
     private Qt qt;
 
     @Autowired
     private Ws ws;
 
-
     @Autowired
     private RetResult retResult;
 
 
+    //TODO KEV:  save oItem into fav by: id_O, index to ALL arrUA, content is from FE, need to check and fix
 
-    //    @Override
-//    public ApiResponse setFav(String id_U, String id_C, String id_O, Integer index, String id, String id_FS,
-//                              JSONObject wrdN, String pic, Integer type) {
-//        JSONObject jsonFav = qt.setJson("id_C", id_C, "id_O", id_O, "index", index, "id", id, "id_FS", id_FS,
-//                "wrdN", wrdN, "pic", pic, "type", type);
-//        qt.pushMDContent(id_U, "fav.objFav", jsonFav, User.class);
-//        qt.pushMDContent(id_O, "action.arrUA", id_U, Order.class);
-//        return retResult.ok(CodeEnum.OK.getCode(), null);
-//    }
     @Override
     public ApiResponse setFav(String id_U, String id_C, JSONObject content) {
         qt.pushMDContent(id_U, "fav.objFav", content, User.class);
@@ -67,6 +54,8 @@ public class UsageServiceImpl implements UsageService {
         return retResult.ok(CodeEnum.OK.getCode(), null);
     }
 
+
+    // save id_X into fav by: id_C, id, listType, grp, + wrdN, pic
     @Override
     public ApiResponse setFavInfo(String id_U, String id_C, String id, String listType, String grp, String pic, JSONObject wrdN) {
         JSONObject content = qt.setJson("id", id, "id_C", id_C, "listType", listType,
@@ -82,25 +71,29 @@ public class UsageServiceImpl implements UsageService {
         //All new user must have fav and cookiex card, but it may not exists for old users
         if (user.getFav() == null)
         {
+            // init if null
             JSONObject initFav = qt.setJson("objFav", new JSONArray(), "objInfo", new JSONArray());
             qt.setMDContent(id_U, qt.setJson("fav", initFav), User.class);
             user.setFav(initFav);
         }
         if (user.getFav().getJSONArray("objInfo") == null)
         {
+            // init if null
             JSONObject initFav = qt.setJson("objInfo", new JSONArray());
             qt.setMDContent(id_U, qt.setJson("fav.objInfo", initFav), User.class);
             user.getFav().put("objInfo", initFav);
         }
         if (user.getFav().getJSONArray("objFav") == null)
-        {
+        {  // init if null
             JSONObject initFav = qt.setJson("objFav", new JSONArray());
             qt.setMDContent(id_U, qt.setJson("fav.objFav", initFav), User.class);
             user.getFav().put("objFav", initFav);
         }
+        // return all those I init or already in user.getFav
         return retResult.ok(CodeEnum.OK.getCode(), user.getFav());
     }
 
+    // del Fav from oItem objFav
     @Override
     public ApiResponse delFav(String id_U, String id_O, Integer index, String id, String id_FS) {
         JSONObject jsonFav = qt.setJson("id_O", id_O, "index", index, "id", id, "id_FS", id_FS);
@@ -112,6 +105,8 @@ public class UsageServiceImpl implements UsageService {
         }
         return retResult.ok(CodeEnum.OK.getCode(), "");
     }
+
+    // del Fav from id_X objFav
 
     @Override
     public ApiResponse delFavInfo(String id_U, String id) {
@@ -147,11 +142,11 @@ public class UsageServiceImpl implements UsageService {
         }
         qt.setMDContent(id_O, qt.setJson("action.objAction." + index + ".arrUA", arrUA), Order.class);
 
-
-
         return retResult.ok(CodeEnum.OK.getCode(), null);
     }
 
+
+    //powerUp need to set "key value" and really need to check auth and check WHY it can change (cresign ONLY API)
 
     @Override
     public ApiResponse setPowerup(String id_C, JSONObject capacity) {
@@ -160,6 +155,8 @@ public class UsageServiceImpl implements UsageService {
         qt.setMDContent(id_A, jsonUpdate, Asset.class);
         return retResult.ok(CodeEnum.OK.getCode(), null);
     }
+
+    //powerUp need to set "key value" and really need to check auth and check WHY it can change (cresign ONLY API)
 
     @Override
     public ApiResponse getPowerup(String id_C, String ref) {
@@ -171,13 +168,7 @@ public class UsageServiceImpl implements UsageService {
 
     @Override
     public ApiResponse setRefAuto(String id_C, String type, JSONObject jsonRefAuto) {
-//        String id_A = qt.getId_A(id_C, "a-core");
-//        Update update = new Update();
-//        update.set("refAuto." + type, jsonRefAuto);
-//        UpdateResult updateResult = dbUtils.updateMongoValues(id_A, update, Asset.class);
-//        if (updateResult.getModifiedCount() == 0) {
-//            throw new ErrorResponseException(HttpStatus.OK, DetailsEnum.COOKIEX_ERROR.getCode(), null);
-//        }
+
         String id_A = qt.getId_A(id_C, "a-core");
         qt.setMDContent(id_A, qt.setJson("refAuto." + type, jsonRefAuto), Asset.class);
         return retResult.ok(CodeEnum.OK.getCode(), null);
@@ -197,15 +188,12 @@ public class UsageServiceImpl implements UsageService {
 
     @Override
     public ApiResponse setCookiex(String id_U, String id_C, String type, JSONArray arrayCookiex) {
-//        Update update = new Update();
-//        update.set("cookiex." + id_C + "." + type, arrayCookiex);
-//        UpdateResult updateResult = dbUtils.updateMongoValues(id_U, update, User.class);
-//        if (updateResult.getModifiedCount() == 0) {
-//            throw new ErrorResponseException(HttpStatus.OK, DetailsEnum.COOKIEX_ERROR.getCode(), null);
-//        }
+
         qt.setMDContent(id_U, qt.setJson("cookiex." + id_C + "." + type, arrayCookiex), User.class);
         return retResult.ok(CodeEnum.OK.getCode(), null);
     }
+
+
 
     @Override
     public ApiResponse getCookiex(String id_U, String id_C, String type) {
@@ -218,6 +206,7 @@ public class UsageServiceImpl implements UsageService {
         initCookie.put(id_C, objType);
 
 
+        //TODO KEV  checknull and init mechanism
         if (user.getCookiex() == null)
         {
             qt.setMDContent(id_U, qt.setJson("cookiex", initCookie), User.class);
@@ -239,7 +228,7 @@ public class UsageServiceImpl implements UsageService {
         List<Object> serviceNames = Arrays.asList("DEFAULT_GROUP@@api-gateway", "DEFAULT_GROUP@@cresign-login",
                 "DEFAULT_GROUP@@cresign-details", "DEFAULT_GROUP@@cresign-timer", "DEFAULT_GROUP@@cresign-action","DEFAULT_GROUP@@cresign-file",
                 "DEFAULT_GROUP@@cresign-search", "DEFAULT_GROUP@@cresign-chat", "DEFAULT_GROUP@@cresign-purchase",
-                "DEFAULT_GROUP@@cresign-testCode", "DEFAULT_GROUP@@cresign-listener");
+                "DEFAULT_GROUP@@cresign-testCode");
 
         return retResult.ok(CodeEnum.OK.getCode(), qt.getRDHashMulti("nacosListener", serviceNames));
     }
@@ -255,10 +244,11 @@ public class UsageServiceImpl implements UsageService {
                 "tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         for (int i = 0; i < arrayFlow.size(); i++) {
             JSONObject jsonFlow = arrayFlow.getJSONObject(i);
+            // find out the id_flow that wants to notify
             if (jsonFlow.getString("id").equals(id)) {
                 JSONArray arrayNotify = jsonFlow.getJSONArray("notify");
                 if (arrayNotify != null) {
-                    if (arrayNotify.size() == 5) {
+                    if (arrayNotify.size() == 8) {
                         for (int j = 0; j < arrayNotify.size() - 1; j++) {
                             arrayNotify.set(j, arrayNotify.getJSONObject(j + 1));
                         }
@@ -267,6 +257,7 @@ public class UsageServiceImpl implements UsageService {
                         arrayNotify.add(jsonNotify);
                     }
                 } else {
+                    // if null, init
                     arrayNotify = new JSONArray();
                     arrayNotify.add(jsonNotify);
                     jsonFlow.put("notify", arrayNotify);
@@ -279,73 +270,5 @@ public class UsageServiceImpl implements UsageService {
         return retResult.ok(CodeEnum.OK.getCode(), null);
     }
 
-//    @Override
-//    public ApiResponse connectionComp(String id_C, String id_CB, Boolean isCB) throws IOException {
-//
-//        HashSet setId_C = new HashSet();
-//        setId_C.add(id_C);
-//        setId_C.add(id_CB);
-//        Map<String, Comp> mapComp = (Map<String, Comp>) dbUtils.getMongoMapField(setId_C, "info", Comp.class);
-//
-//        String id_CS = null;
-//        if (isCB) {
-//            id_CS = id_C;
-//        } else {
-//            id_CS = id_CB;
-//            id_CB = id_C;
-//        }
-//        Comp comp = mapComp.get(id_CS);
-//        Comp compB = mapComp.get(id_CB);
-//        //假公司不能连接
-//        if (comp.getBcdNet() == 0 || compB.getBcdNet() == 0) {
-//            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_COMP_NO_CUSTOMER_SERVICE.getCode(), null);
-//        }
-//        CompInfo compInfo = comp.getInfo();
-//        CompInfo compInfoB = compB.getInfo();
-//
-//        BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
-//        queryBuilder.must(QueryBuilders.termQuery("id_C", id_CS))
-//                .must(QueryBuilders.termQuery("id_CB", id_CB));
-//        SearchResponse searchResponse = dbUtils.getEsQuery(queryBuilder, "lSBComp");
-//        //公司已连接
-//        if (searchResponse.getHits().getHits().length > 0) {
-//            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_COMP_NO_CUSTOMER_SERVICE.getCode(), null);
-//        }
-//
-//        lSBComp lsbcomp = new lSBComp(id_CS, compInfo.getId_CP(), id_CB, compInfoB.getId_CP(), compInfo.getWrdN(),
-//                compInfo.getWrddesc(), compInfoB.getWrdN(), compInfoB.getWrddesc(), "1000", "1000",
-//                compInfo.getRef(), compInfoB.getRef(), compInfo.getPic(), compInfoB.getPic());
-//        qt.addES("lsbcomp", lsbcomp);
-//        return retResult.ok(CodeEnum.OK.getCode(), null);
-//    }
-//
-//    @Override
-//    public ApiResponse connectionProd(String id_C, String id_P) throws IOException {
-////        Prod prod = (Prod) dbUtils.getMongoOneField(id_P, "info", Prod.class);
-//        Prod prod = qt.getMDContent(id_P, "info", Prod.class);
-//        ProdInfo prodInfo = prod.getInfo();
-//        String id_CB = prodInfo.getId_C();
-//        Comp comp = (Comp) dbUtils.getMongoOneField(id_CB, "bcdNet", Comp.class);
-//        Comp comp = qt.getMDContent()
-//        //假公司不能连接
-//        if (comp.getBcdNet() == 0) {
-//            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_COMP_NO_CUSTOMER_SERVICE.getCode(), null);
-//        }
-//
-//        BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
-//        queryBuilder.must(QueryBuilders.termQuery("id_P", id_P))
-//                .must(QueryBuilders.termQuery("id_C", id_CB))
-//                .must(QueryBuilders.termQuery("id_CB", id_C));
-//        SearchResponse searchResponse = dbUtils.getEsQuery(queryBuilder, "lBProd");
-//        //产品已连接
-//        if (searchResponse.getHits().getHits().length > 0) {
-//            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_COMP_NO_CUSTOMER_SERVICE.getCode(), null);
-//        }
-//
-//        lBProd lbprod = new lBProd(id_P, id_CB, prodInfo.getId_CP(), id_C, prodInfo.getWrdN(),
-//                prodInfo.getWrddesc(),"1000","1000","","", prodInfo.getPic(), prodInfo.getLDC(),prodInfo.getLUT());
-//        qt.addES("lBProd", lbprod);
-//        return retResult.ok(CodeEnum.OK.getCode(), null);
-//    }
 
 }

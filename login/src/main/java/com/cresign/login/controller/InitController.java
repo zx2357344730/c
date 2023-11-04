@@ -3,13 +3,11 @@ package com.cresign.login.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.service.InitService;
+import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.authFilt.GetUserIdByToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -65,8 +63,8 @@ public class InitController {
             return getUserToken.err(new JSONObject(), "InitController.getInit", e);
         }
     }
-
-    @GetMapping("/v1/isDeveloper")
+    @SecurityParameter
+    @PostMapping("/v1/isDeveloper")
     public ApiResponse isDeveloper() {
         try {
             JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);

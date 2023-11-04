@@ -62,10 +62,11 @@ public class LogController {
      * @ver 1.0.0
      * @date 2021/6/30 16:13
      */
-    @PostMapping("/v1/sendWS")
-    public void sendLogWS(@RequestBody LogFlow logData) {
-        ws.sendWS(logData);
-    }
+//
+//    @PostMapping("/v1/sendWS")
+//    public void sendLogWS(@RequestBody LogFlow logData) {
+//        ws.sendWS(logData);
+//    }
 
     /**
      * 发送

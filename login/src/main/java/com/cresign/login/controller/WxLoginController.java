@@ -58,7 +58,7 @@ public class WxLoginController {
      */
     @SecurityParameter
     @PostMapping("/v1/wxWebLogin")
-    public ApiResponse wxWebLogin(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse wxWebLogin(@RequestBody JSONObject reqJson) {
         try {
             return wxLoginService.wxWebLogin(reqJson.getString("code"));
         } catch (Exception e) {

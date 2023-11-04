@@ -145,17 +145,18 @@ public class FlowController {
             }
         }
 
-        @SecurityParameter
-        @PostMapping("/v1/dgTaskOrder")
-        public ApiResponse dgTaskOrder(@RequestBody JSONObject reqJson){
-            try {
-                return flowService.dgTaskOrder(
-                        reqJson.getString("id_O")
-                );
-            } catch (Exception e) {
-                return getUserToken.err(reqJson, "FlowController.dgTaskOrder", e);
-            }
-        }
+        // NOT USED ANYMORE Nov2 2023
+//        @SecurityParameter
+//        @PostMapping("/v1/dgTaskOrder")
+//        public ApiResponse dgTaskOrder(@RequestBody JSONObject reqJson){
+//            try {
+//                return flowService.dgTaskOrder(
+//                        reqJson.getString("id_O")
+//                );
+//            } catch (Exception e) {
+//                return getUserToken.err(reqJson, "FlowController.dgTaskOrder", e);
+//            }
+//        }
 
         /**
          * 根据prodID进行递归,Es数据库2

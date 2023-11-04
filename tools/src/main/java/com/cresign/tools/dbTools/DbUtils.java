@@ -105,8 +105,6 @@ public class DbUtils {
      * 根据id查询mongo
      * @author Rachel
      * @Date 2022/01/14
-     * @param id
-     * @param listField 多个返回字段
      * @param classType 表对应的实体类
      * @Return java.lang.Object
      * @Card
@@ -1872,7 +1870,7 @@ public class DbUtils {
         List<?> prods = qt.getMDContentMany(setId_P, "info", Prod.class);
         JSONObject allProdObj = qt.list2Obj(prods, "id");
 
-        List<Asset> auths = (List<Asset>) qt.getMDContentMany(setAuthId, Arrays.asList("info", "def"), Asset.class);
+        List<Asset> auths = qt.getMDContentMany(setAuthId, Arrays.asList("info", "def"), Asset.class);
         System.out.println("auths=" + auths);
         JSONObject allAuthObj = new JSONObject();
         for (Asset auth : auths) {
@@ -1899,17 +1897,18 @@ public class DbUtils {
             } else {
                 defKey = "objlBP";
             }
-            String grpP = allProdObj.getJSONObject(id_P).getJSONObject("info").getString("grp");
-            JSONObject jsonDef = allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
-            if (grpP == null || grpP.equals("")) {
-                jsonLsasset.put("grp", "1000");
-            } else {
-                if (jsonDef.getJSONObject(grpP) == null) {
-                    jsonLsasset.put("grp", "1000");
-                } else {
-                    jsonLsasset.put("grp", jsonDef.getJSONObject(grpP).getString("grpA"));
-                }
-            }
+//            String grpP = allProdObj.getJSONObject(id_P).getJSONObject("info").getString("grp");
+            jsonLsasset.put("grp", "1000");
+//            JSONObject jsonDef = allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
+//            if (grpP == null || grpP.equals("")) {
+//                jsonLsasset.put("grp", "1000");
+//            } else {
+//                if (jsonDef.getJSONObject(grpP) == null) {
+//                    jsonLsasset.put("grp", "1000");
+//                } else {
+//                    jsonLsasset.put("grp", jsonDef.getJSONObject(grpP).getString("grpA"));
+//                }
+//            }
         }
         for (int i = 0; i < arrayLbasset.size(); i++) {
             JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
@@ -1934,17 +1933,18 @@ public class DbUtils {
             } else {
                 defKey = "objlBP";
             }
-            String grpP = allProdObj.getJSONObject(id_P).getJSONObject("info").getString("grp");
-            JSONObject jsonDef = allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
-            if (grpP == null || grpP.equals("")) {
-                jsonLbasset.put("grp", "1000");
-            } else {
-                if (jsonDef.getJSONObject(grpP) == null) {
-                    jsonLbasset.put("grp", "1000");
-                } else {
-                    jsonLbasset.put("grp", jsonDef.getJSONObject(grpP).getString("grpA"));
-                }
-            }
+//            String grpP = allProdObj.getJSONObject(id_P).getJSONObject("info").getString("grp");
+//            JSONObject jsonDef = allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
+            jsonLbasset.put("grp", "1000");
+//            if (grpP == null || grpP.equals("")) {
+//                jsonLbasset.put("grp", "1000");
+//            } else {
+//                if (jsonDef.getJSONObject(grpP) == null) {
+//                    jsonLbasset.put("grp", "1000");
+//                } else {
+//                    jsonLbasset.put("grp", jsonDef.getJSONObject(grpP).getString("grpA"));
+//                }
+//            }
         }
 
         System.out.println("arraylsasset=" + arrayLsasset);

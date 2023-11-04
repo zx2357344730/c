@@ -2,7 +2,6 @@ package com.cresign.chat.config.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.chat.common.ChatConstants;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.OnClose;
@@ -42,12 +41,12 @@ public class WebSocketLoginServer {
     /**
      * 用来存储所有产品的连接
      */
-    private static final Map<String,CopyOnWriteArraySet<WebSocketLoginServer>> map = new HashMap<>(ChatConstants.HASH_MAP_DEFAULT_LENGTH);
+    private static final Map<String,CopyOnWriteArraySet<WebSocketLoginServer>> map = new HashMap<>(16);
 
     /**
      * 用来存储所有产品连接的在线人数
      */
-    private static final Map<String,Integer> onlineCount = new HashMap<>(ChatConstants.HASH_MAP_DEFAULT_LENGTH);
+    private static final Map<String,Integer> onlineCount = new HashMap<>(16);
 
 //    /**
 //     * 用来存储支付状态
@@ -90,11 +89,11 @@ public class WebSocketLoginServer {
         // 添加一个prodID连接
         map.put(id,writeArraySet);
 
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(5000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
 
         // 加密logContent数据
@@ -125,10 +124,10 @@ public class WebSocketLoginServer {
         subOnlineCount(id);
 
         // 获取当前在线人数
-        int ren = getOnlineCount(id);
+        int pplCount = getOnlineCount(id);
 
         // 如果在线人数为0，则删除产品连接
-        if (ren==0){
+        if (pplCount==0){
 
             // 删除连接
             map.remove(id);

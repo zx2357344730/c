@@ -10,7 +10,7 @@ import lombok.Getter;
  * @ver 1.0.0
  */
 @Getter
-public enum ChatEnum {
+public enum ChatEnum { // to Tools.ErrEnum
 
     /**
      * 不识别请求

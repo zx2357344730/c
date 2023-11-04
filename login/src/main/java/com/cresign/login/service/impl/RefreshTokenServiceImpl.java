@@ -106,17 +106,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         // 判断 传过来的参数是否为空
         if (StringUtils.isNotEmpty(refreshToken)) {
 
-//            // 从redis 中查询出该用户的 refreshToken
-//            String refreshTokenResult = null;
-
             String refreshTokenResult = qt.getRDSetStr(clientType+"RefreshToken", refreshToken);
 
-
             // 判断 refreshToken 是否为空
-            if (StringUtils.isNotEmpty(refreshTokenResult)) {
+            if (StringUtils.isNotEmpty(refreshTokenResult) && refreshTokenResult.equals(id_U)) {
 
                 // 不为空则判断 传过来的 refreshToken 是否与 redis中的 refreshToken一致
-                if (refreshTokenResult.equals(id_U)) {
+//                if (refreshTokenResult.equals(id_U)) {
 
                     // 通过id_U查询该用户
                     try {
@@ -131,22 +127,19 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
 
                         qt.setRDExpire(clientType+"RefreshToken",refreshToken,
-                                clientType.equals("web")? 604800L : 3888000L);
+                                clientType.equals("web") || id_U.equals("5f28bf314f65cc7dc2e60262")? 604800L : 3888000L);
 
                         return retResult.ok(CodeEnum.OK.getCode(), token);
                     }
                     catch (Exception e)
                     {
                         return retResult.ok( LoginEnum.JWT_USER_OVERDUE.getCode(), "");
-//                        throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
                     }
 
-                }
             }
+//            }
         }
         return retResult.ok( LoginEnum.JWT_USER_OVERDUE.getCode(), "");
-
-//        throw new ErrorResponseException(HttpStatus.UNAUTHORIZED, LoginEnum.JWT_USER_OVERDUE.getCode(), null);
     }
 
 //    @Override

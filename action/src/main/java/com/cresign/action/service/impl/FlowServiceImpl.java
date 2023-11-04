@@ -50,6 +50,10 @@ public class FlowServiceImpl implements FlowService {
     @Autowired
     private TimeZjServiceImplX timeZjService;
 
+    //New dgCheck, dgProcess, getDgResult,
+
+    // Here important is CheckInfo, TaskLoop, PartInfo/SubInfo, infoPart?, timeHandle
+
 
     @Override
     @Transactional(noRollbackFor = ResponseException.class)
@@ -265,7 +269,7 @@ public class FlowServiceImpl implements FlowService {
                     JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
 
                     for (OrderOItem orderOItem : unitOItem) {
-                        System.out.println(orderOItem.getGrpB());
+                        //System.out.println(orderOItem.getGrpB());
                         String grpB = orderOItem.getGrpB();
                         if (grpBGroup.getJSONObject(grpB) == null) {
                             grpBGroup.put(grpB, defResultBP.getJSONObject(grpB));
@@ -364,7 +368,7 @@ public class FlowServiceImpl implements FlowService {
 //                  }
                 grpO = "1000";
                 grpOB = "1000";
-                System.out.print("got all ok");
+                //System.out.print("got all ok");
 
                 if (id_OParent.equals(thisOrderId)) {
                     // make sales order Action
@@ -381,7 +385,7 @@ public class FlowServiceImpl implements FlowService {
 
                     // 根据键设置订单id
                 newPO.setId(thisOrderId);
-                    System.out.print("got1"+thisOrderId);
+                    //System.out.print("got1"+thisOrderId);
 
                 // priority is BY order, get from info and write into ALL oItem
                 OrderInfo newPO_Info = new OrderInfo(prodCompId,targetCompId,unitOItem.get(0).getId_CP(),"", id_OParent,"","",
@@ -409,7 +413,7 @@ public class FlowServiceImpl implements FlowService {
                 for (OrderOItem orderOItem : unitOItem) {
                     wn2qty += orderOItem.getWn2qtyneed();
                     wn4price += orderOItem.getWn4price();
-                    System.out.println("u " + orderOItem);
+                    //System.out.println("u " + orderOItem);
                     arrayId_P.add(orderOItem.getId_P());
                 }
 
@@ -421,7 +425,7 @@ public class FlowServiceImpl implements FlowService {
                 newPO_OItem.put("wn4price", wn4price);
                 newPO_OItem.put("objCard", objCard);
                 newPO.setOItem(newPO_OItem);
-                    System.out.println("sales order");
+                    //System.out.println("sales order");
 
                 // 创建采购单的Action
                 JSONObject newPO_Action = new JSONObject();
@@ -443,7 +447,7 @@ public class FlowServiceImpl implements FlowService {
                 // 新增订单
                     qt.addMD(newPO);
 //                    qt.setES(....)
-                    System.out.println("sales order SAVED "+ newPO.getInfo().getWrdN().getString("cn"));
+                    //System.out.println("sales order SAVED "+ newPO.getInfo().getWrdN().getString("cn"));
 
 
 //              // 创建lSBOrder订单
@@ -455,7 +459,7 @@ public class FlowServiceImpl implements FlowService {
 
                 }
         }
-            System.out.println("all finished...");
+            //System.out.println("all finished...");
             // END FOR
 
 
@@ -474,6 +478,15 @@ public class FlowServiceImpl implements FlowService {
             return retResult.ok(CodeEnum.OK.getCode(), "");
         }
 
+    /**
+     * getDgSingle 自己的oItem+id_P 就可以只展开这个, 是protocol 的操作, 有用
+     * @param id_OParent
+     * @param index
+     * @param id_U
+     * @param myCompId
+     * @param teStart
+     * @return
+     */
     @Override
     @Transactional(noRollbackFor = ResponseException.class)
     public ApiResponse getDgSingle(String id_OParent, Integer index, String id_U,String myCompId,Long teStart) {
@@ -518,15 +531,10 @@ public class FlowServiceImpl implements FlowService {
         }
 
 
-
-
         // 第一次把action卡创建出来
         if (null == salesOrderData.getAction()) {
-//            JSONObject newEmptyAction = new JSONObject();
-//            salesOrderData.setAction(newEmptyAction);
             dbu.initAction(salesOrderData.getOItem().getJSONArray("objItem"));
         }
-
         if (null == salesOrderData.getCasItemx()) {
             JSONObject newCa = new JSONObject();
             newCa.put("objOrder", new JSONArray());
@@ -534,7 +542,6 @@ public class FlowServiceImpl implements FlowService {
             newCas.put(myCompId, newCa);
             salesOrderData.setCasItemx(newCas);
         }
-
 
         // 转换oItem为list
         JSONArray oParent_objItem = salesOrderData.getOItem().getJSONArray("objItem");
@@ -558,9 +565,6 @@ public class FlowServiceImpl implements FlowService {
         //orderAction存储map
         Map<String, OrderAction> pidActionCollection = new HashMap<>(Constants.HASH_MAP_DEFAULT_LENGTH);
 
-//        String refOP = salesOrderData.getInfo().getId_C().equals(salesOrderData.getInfo().getId_CB()) ?
-//                salesOrderData.getInfo().getRefB() : salesOrderData.getInfo().getRef();
-
         // 创建递归存储的时间处理信息
         List<OrderODate> oDates = new ArrayList<>();
         // 创建递归存储的时间任务信息
@@ -572,10 +576,6 @@ public class FlowServiceImpl implements FlowService {
         //dg only 1 index
         OrderOItem objOItem = qt.cloneThis(oParent_objItem.getJSONObject(index), OrderOItem.class);
         objOItem.setPriority(oParent_prior);
-//        OrderAction objAction = new OrderAction(100,0,1,1,salesOrderData.getId(),
-//                refOP, objOItem.getId_P(),id_OParent,index,objOItem.getRKey(),0,0,
-//                new JSONArray(),new JSONArray(), new JSONArray(), new JSONArray(), salesOrderData.getInfo().getWrdN(), objOItem.getWrdN());
-
         OrderAction objAction = qt.cloneThis(oParent_objAction.getJSONObject(index), OrderAction.class);
 
         ////////////////actually dg ///////////////////////
@@ -584,7 +584,6 @@ public class FlowServiceImpl implements FlowService {
 
         JSONArray casItemData2 = new JSONArray();
         //dgType: 1 = firstLayer (sales Items), 2 = regular/subTask or subProd, 3 = depSplit regular
-        // T/P - T/P -T/P.... problem is id_P == ""?
 
        this.dgProcess(
                1, myCompId, id_OParent,
@@ -595,15 +594,12 @@ public class FlowServiceImpl implements FlowService {
                pidActionCollection,
                objOItem.getId_P(), oDates, oTasks, mergeJ, 0, null, isJsLj);
 
-        //dg only 1 index
-        qt.errPrint("checkx", objOItemCollection, objActionCollection, pidActionCollection, casItemData2);
-
         // 判断递归结果是否为空
         if (objActionCollection.size() == 0){
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
         }
 
-        /////////// setup Dep.objlBProd + objlSProd for grpP
+        ///TODO KEV setup Dep.objlBProd + objlSProd for grpP, grpO, grpA, logType, logRef for B not S
 
         //putting the Sales order as the last casItem... I donno why
 
@@ -631,8 +627,7 @@ public class FlowServiceImpl implements FlowService {
         // 获取递归结果键
         Set<String> actionCollection = objActionCollection.keySet();
 //        //before getting so many id_A, get myComp id_A first for future use
-//        String myId_A = qt.getId_A(myCompId, "a-auth");
-//        Asset myDef = dbUtils.getAssetById(myId_A, Collections.singletonList("def"));
+
         Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
 
         // 遍历键，并创建采购单
@@ -687,7 +682,7 @@ public class FlowServiceImpl implements FlowService {
 //            JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
 
             for (OrderOItem orderOItem : unitOItem) {
-                System.out.println(orderOItem.getGrpB());
+                //System.out.println(orderOItem.getGrpB());
                 String grpB = orderOItem.getGrpB();
                 if (grpBGroup.getJSONObject(grpB) == null) {
                     grpBGroup.put(grpB, defResultBP.getJSONObject(grpB));
@@ -709,8 +704,6 @@ public class FlowServiceImpl implements FlowService {
             }
 
             JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
-
-//            JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
 
             for (OrderOItem orderOItem : unitOItem) {
                 String grp = orderOItem.getGrp();
@@ -770,6 +763,8 @@ public class FlowServiceImpl implements FlowService {
                     wn4price += orderOItem.getWn4price();
                     arrayId_P.add(orderOItem.getId_P());
                 }
+
+                //TODO KEV use checkCard to init and then put in oItem, then use summOrder to fix all + lSBOrder
 
                 // 添加OItem信息
                 JSONObject newPO_OItem = new JSONObject();
@@ -859,7 +854,7 @@ public class FlowServiceImpl implements FlowService {
             orderParentData.setOItem(salesOrder_OItem);
 
             JSONArray view = orderParentData.getView();
-            System.out.println("got all ok Sales");
+            //System.out.println("got all ok Sales");
 
             //Create oStock
             JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(salesOItem));
@@ -890,7 +885,7 @@ public class FlowServiceImpl implements FlowService {
             // 新增订单
 
             qt.saveMD(orderParentData);
-            System.out.println("sales order SAVED Parent "+ orderParentData.getInfo().getWrdN().getString("cn"));
+            //System.out.println("sales order SAVED Parent "+ orderParentData.getInfo().getWrdN().getString("cn"));
 
         }
 
@@ -1055,7 +1050,7 @@ public class FlowServiceImpl implements FlowService {
 ////            // Here we check the product list if it is repeated
 ////            // if it is repeat
 ////                // can I use the mergePart to just increase the qty of the subs
-////            System.out.println("I merged2////");
+////            //System.out.println("I merged2////");
 ////            partInfo.put("fin_O", pidActionCollection.get(id_P).getId_O());
 ////            partInfo.put("fin_Ind", pidActionCollection.get(id_P).getIndex());
 ////
@@ -1099,7 +1094,7 @@ public class FlowServiceImpl implements FlowService {
         {
             //Now, it is prod not task， Must Merge if id_P is in pidActionCollection
             // as long as you have it in pidArray, you MUST merge
-            System.out.println("I merged2////"+ upperAction);
+            //System.out.println("I merged2////"+ upperAction);
 
 
             //ZJ
@@ -1150,9 +1145,9 @@ public class FlowServiceImpl implements FlowService {
             );
 
 
-            System.out.println("salesOrder@now");
-            System.out.println(objActionCollection.get(fin_O));
-            System.out.println(objActionCollection.get(id_OParent));
+            //System.out.println("salesOrder@now");
+            //System.out.println(objActionCollection.get(fin_O));
+            //System.out.println(objActionCollection.get(id_OParent));
             return;
         }
         else if (dgType.equals(1)) {
@@ -1165,7 +1160,7 @@ public class FlowServiceImpl implements FlowService {
             boolean isNew = true;
 
             for (int k = 0; k < casItemData.size(); k++) {
-                System.out.println("casItem"+casItemData.getJSONObject(k));
+                //System.out.println("casItem"+casItemData.getJSONObject(k));
                 // 2 cases: prod is mine, check only if casItemx Type =2 and not 4
                 if(prodCompId.equals(myCompId)&&
                         prodCompId.equals(casItemData.getJSONObject(k).getString("id_C")) &&
@@ -1236,9 +1231,9 @@ public class FlowServiceImpl implements FlowService {
         }
 //        else if(id_P.equals("")) //IF i am process
 //        {
-//            System.out.println("Upp"+newOrderId);
-//            System.out.println("upp"+partArray.size()+partArray.getJSONObject(0).getJSONObject("wrdN"));
-//            System.out.println("upp"+partIndex);
+//            //System.out.println("Upp"+newOrderId);
+//            //System.out.println("upp"+partArray.size()+partArray.getJSONObject(0).getJSONObject("wrdN"));
+//            //System.out.println("upp"+partIndex);
 //            JSONObject unitTask = partArray.getJSONObject(partIndex);
 ////            JSONObject partInfo = partArray.getJSONObject(partIndex);
 //
@@ -1255,7 +1250,7 @@ public class FlowServiceImpl implements FlowService {
 //                    objOItem.getRKey(), 0,0,null, null,null, null,
 //                    upperOItem.getWrdN(),partInfo.getJSONObject("wrdN"));
 //
-//            System.out.println("oItem"+objOItem);
+//            //System.out.println("oItem"+objOItem);
 //
 //
 ////            JSONObject upPrntsData = new JSONObject();
@@ -1380,7 +1375,7 @@ public class FlowServiceImpl implements FlowService {
                             idAndIndex.put("id_O", partArray.getJSONObject(checkPrev).getString("fin_O"));
                             idAndIndex.put("index", partArray.getJSONObject(checkPrev).getInteger("fin_Ind"));
                             if (unitAction.getPrtPrev().contains(idAndIndex)){
-                                System.out.println("repeated");
+                                //System.out.println("repeated");
 
                             } else if (myPrior != partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
                                 if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
@@ -1455,7 +1450,7 @@ public class FlowServiceImpl implements FlowService {
 //        Prod thisProd = coupaUtil.getProdByListKey(id_P, Arrays.asList("_id","part","info"));
         Prod thisProd = qt.getMDContent(id_P, Arrays.asList("_id","part","info"), Prod.class);
 
-        System.out.println("thisProd"+thisProd);
+        //System.out.println("thisProd"+thisProd);
 
         if (thisProd != null && thisProd.getPart() != null && thisProd.getPart().getJSONArray("objItem").size() > 0 &&
                 thisProd.getInfo().getId_C().equals(myCompId))
@@ -1521,7 +1516,7 @@ public class FlowServiceImpl implements FlowService {
 
         //ZJ
         if (dq != 1) {
-//            System.out.println("bmdpt:"+objOItem.getBmdpt());
+//            //System.out.println("bmdpt:"+objOItem.getBmdpt());
             // 创建订单时间操作处理专用类
             OrderODate orderODate = new OrderODate();
             // 添加时间操作处理信息
@@ -1571,9 +1566,9 @@ public class FlowServiceImpl implements FlowService {
                     orderODate.setKaiJie(5);
                 }
             }
-            System.out.println("wn2qtyneed:"+objOItem.getWn2qtyneed()+" - teDurTotal:"
-                    +orderODate.getTeDurTotal()+" - tePrep:"+orderODate.getTePrep()+" - prior:"+objOItem.getWn0prior());
-            System.out.println("csTeJ:"+" - id_P:"+objOItem.getId_P()+" - id_PF:"+id_PF+" - dq:"+dq);
+            //System.out.println("wn2qtyneed:"+objOItem.getWn2qtyneed()+" - teDurTotal:"
+//                    +orderODate.getTeDurTotal()+" - tePrep:"+orderODate.getTePrep()+" - prior:"+objOItem.getWn0prior());
+            //System.out.println("csTeJ:"+" - id_P:"+objOItem.getId_P()+" - id_PF:"+id_PF+" - dq:"+dq);
             // 添加信息
             orderODate.setId_O(objAction.getId_O());
             orderODate.setId_C(myCompId);
@@ -1582,7 +1577,7 @@ public class FlowServiceImpl implements FlowService {
             oDates.add(orderODate);
             // 判断存储零件编号的合并信息记录合并时的下标为空
             if (null == mergeJ.getInteger(objOItem.getId_P())) {
-//                System.out.println("合并记录，为空");
+//                //System.out.println("合并记录，为空");
                 // 添加下标信息
                 mergeJ.put(objOItem.getId_P(),oDates.size()-1);
             }
@@ -1597,8 +1592,8 @@ public class FlowServiceImpl implements FlowService {
                     ,myCompId,0L,0L,-1, isNextPart);
             // 设置任务公司编号
             task.setId_C(myCompId);
-            System.out.println("task:");
-            System.out.println(JSON.toJSONString(task));
+            //System.out.println("task:");
+            //System.out.println(JSON.toJSONString(task));
             oTasks.add(task);
         }
         //ZJ
@@ -1658,7 +1653,7 @@ public class FlowServiceImpl implements FlowService {
 
                     if (unitAction.getPrtPrev().contains(idAndIndex) ||
                             (finO.equals(unitOItem.getId_O()) && fin_Ind.equals(unitOItem.getIndex()))){
-                        System.out.println("repeated");
+                        //System.out.println("repeated");
 
                     } else {
                         if (!myPrior.equals(partArray.getJSONObject(checkPrev).getInteger("wn0prior"))) {
@@ -1672,7 +1667,7 @@ public class FlowServiceImpl implements FlowService {
             } while (keepGoing);
         } catch (Exception e)
         {
-            System.out.println(e);
+            //System.out.println(e);
             e.printStackTrace();
         }
 
@@ -1686,7 +1681,7 @@ public class FlowServiceImpl implements FlowService {
 //                    } else if ((myPrior + 2) == partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
 //                        keepGoing = false;
 //                    } else if (myPrior == partArray.getJSONObject(checkNext).getInteger("wn0prior")) {
-//                        System.out.println("Same Prior, do nothing here");
+//                        //System.out.println("Same Prior, do nothing here");
 //                    }
 //                    checkNext++;
 //                } while (keepGoing);
@@ -1719,7 +1714,7 @@ public class FlowServiceImpl implements FlowService {
 
 
                     unitAction.getUpPrnts().add(upPrntsData);
-                    System.out.println(unitAction);
+                    //System.out.println(unitAction);
                     objActionCollection.get(finO).set(fin_Ind, unitAction);
                 }
 
@@ -1755,14 +1750,14 @@ public class FlowServiceImpl implements FlowService {
 
                 if (dgType.equals(1))
                 {
-                    System.out.println("partIndex@1"+ partIndex);
+                    //System.out.println("partIndex@1"+ partIndex);
                     // fix the action of the next+ item using the unitAction of the 1st one
                     unitAction.setIndex(partIndex);
                     for (int i = 0; i< unitAction.getSubParts().size(); i++)
                     {
                         unitAction.getSubParts().getJSONObject(i).put("upIndex", partIndex);
-//                        System.out.println("now all sub shit");
-//                        System.out.println(qtyNeed);
+//                        //System.out.println("now all sub shit");
+//                        //System.out.println(qtyNeed);
 //
 //                        OrderAction subAction = objActionCollection.get(unitAction.getSubParts().getJSONObject(i).getString("id_O")).
 //                                get(unitAction.getSubParts().getJSONObject(i).getInteger("index"));
@@ -1793,17 +1788,17 @@ public class FlowServiceImpl implements FlowService {
 
         Double currentQty = unitOItem.getWn2qtyneed();
 //
-//        System.out.println("current"+currentQty);
-//        System.out.println("qtyNeed"+qtyNeed);
-//        System.out.println("qtySub"+qtySubNeed);
-        System.out.println("I am checking here");
-        System.out.println(currentQty);
-        System.out.println(unitOItem.getWrdN().getString("cn"));
-        System.out.println(qtyNeed);
+//        //System.out.println("current"+currentQty);
+//        //System.out.println("qtyNeed"+qtyNeed);
+//        //System.out.println("qtySub"+qtySubNeed);
+        //System.out.println("I am checking here");
+        //System.out.println(currentQty);
+        //System.out.println(unitOItem.getWrdN().getString("cn"));
+        //System.out.println(qtyNeed);
 
         unitOItem.setWn2qtyneed(currentQty + qtyNeed * qtySubNeed);
 
-        System.out.println(unitOItem.getWn2qtyneed());
+        //System.out.println(unitOItem.getWn2qtyneed());
 
 
 
@@ -1816,13 +1811,13 @@ public class FlowServiceImpl implements FlowService {
             oDa.setWn2qtyneed(oDa.getWn2qtyneed()+currentQty);
             oDates.set(ind,oDa);
 
-            System.out.println(id_OP+finO);
+            //System.out.println(id_OP+finO);
             if (!dgType.equals(1))
             {
-//                System.out.println("I am checking 2");
-//                System.out.println(currentQty);
-//                System.out.println(unitOItem.getWrdN().getString("cn"));
-//                System.out.println(unitOItem.getWn2qtyneed());
+//                //System.out.println("I am checking 2");
+//                //System.out.println(currentQty);
+//                //System.out.println(unitOItem.getWrdN().getString("cn"));
+//                //System.out.println(unitOItem.getWn2qtyneed());
 //
                 JSONObject upPrntsData = unitAction.getUpPrnts().getJSONObject(0); //******
 //                     upPrntsData.put("CALcul", unitOItem.getWn2qtyneed());
@@ -1831,7 +1826,7 @@ public class FlowServiceImpl implements FlowService {
 //                upPrntsData.put("CALculatetyneed3", qtySubNeed);
 //                upPrntsData.put("CALculatetyneed4", qtyNeed);
 //
-//                System.out.println("*** upPrntsData" + upPrntsData);
+//                //System.out.println("*** upPrntsData" + upPrntsData);
             }
             else {
                 dgType = 2;
@@ -1852,33 +1847,33 @@ public class FlowServiceImpl implements FlowService {
 
 
 
-    @Override
-    public ApiResponse dgTaskOrder(String id_O) {
-
-        try {
-            Order order = qt.getMDContent(id_O, Arrays.asList("info", "oItem", "action"), Order.class);
-
-
-            JSONArray objAction = order.getAction().getJSONArray("objAction");
-            JSONArray objItem = order.getOItem().getJSONArray("objItem");
-            System.out.println(" here 1");
-//        Integer index = 0;
-
-            this.dgTaskLoop(objAction, objItem, 0, objItem.size());
-
-            System.out.println(" final 8");
-
-            qt.errPrint("objAction", null, objAction);
-            qt.setMDContent(id_O, qt.setJson("action.objAction", objAction), Order.class);
-
-            return retResult.ok(CodeEnum.OK.getCode(), "");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-    }
+//    @Override
+//    public ApiResponse dgTaskOrder(String id_O) {
+//
+//        try {
+//            Order order = qt.getMDContent(id_O, Arrays.asList("info", "oItem", "action"), Order.class);
+//
+//
+//            JSONArray objAction = order.getAction().getJSONArray("objAction");
+//            JSONArray objItem = order.getOItem().getJSONArray("objItem");
+//            //System.out.println(" here 1");
+////        Integer index = 0;
+//
+//            this.dgTaskLoop(objAction, objItem, 0, objItem.size());
+//
+//            //System.out.println(" final 8");
+//
+//            qt.errPrint("objAction", null, objAction);
+//            qt.setMDContent(id_O, qt.setJson("action.objAction", objAction), Order.class);
+//
+//            return retResult.ok(CodeEnum.OK.getCode(), "");
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+//
+//    }
     // not DG outside id_O, only the internal ones
     // id_O is always the same
     // tempPrev []
@@ -1900,112 +1895,110 @@ public class FlowServiceImpl implements FlowService {
 
 
     // set item(index-1)'s subPart []
-    private JSONArray dgTaskLoop(JSONArray objAction, JSONArray objItem, int index, int endIndex) {
-
-        try {
-            JSONArray tempPrev = new JSONArray();
-            JSONArray tempIndex = new JSONArray();
-            JSONArray tempSub = new JSONArray();
-
-            for (int j = index; j < endIndex; j++) {
-                System.out.println(" here 3  - " + j);
-
-                if (!objItem.getJSONObject(j).getString("seq").equals("2")) {
-                    //       add to tempIndex
-                    JSONObject prevData = new JSONObject();
-
-                    prevData.put("id_O", objItem.getJSONObject(j).getString("id_O"));
-                    prevData.put("index", j);
-                    tempIndex.add(qt.cloneObj(prevData));
-                    //       set prtPrev = tempPrev
-                    System.out.println(" here 4.1 concurr" + tempPrev);
-                    System.out.println(" here 4.1" + tempIndex);
-
-
-                    objAction.getJSONObject(j).put("prtPrev", qt.cloneArr(tempPrev));
-                    objAction.getJSONObject(j).put("prtNext", new JSONArray());
-
-                } else {
-                    //    loop each tempPrev
-                    JSONObject thisData = new JSONObject();
-
-                    thisData.put("id_O", objItem.getJSONObject(j).getString("id_O"));
-                    thisData.put("index", j);
-                    for (int i = 0; i < tempIndex.size(); i++) {
-                        System.out.println(" here 4.2 next step");
-
-                        Integer prevIndex = tempIndex.getJSONObject(i).getInteger("index");
-                        //     set prtNext = tempIndex
-                        objAction.getJSONObject(prevIndex).getJSONArray("prtNext").add(qt.cloneObj(thisData));
-                    }
-                    //    set prtPrev = id_O, tempPrev
-                    objAction.getJSONObject(j).put("prtPrev", qt.cloneArr(tempIndex));
-                    objAction.getJSONObject(j).put("prtNext", new JSONArray());
-
-                    System.out.println(" here 4.2" + tempIndex);
-                    System.out.println(" here 4.2" + tempPrev);
-
-
-                    //    set tempPrev = tempIndex, and tempIndex = []
-                    tempPrev = qt.cloneArr(tempIndex);
-                    tempIndex = new JSONArray();
-                    tempIndex.add(thisData);
-                }
-
-                JSONObject sub = new JSONObject();
-                System.out.println(" here 7");
-
-                //subParts = id_O, id_P, index, prior, qtyEach, upIndex, wrdN
-                sub.put("id_O", objItem.getJSONObject(j).getString("id_O"));
-                sub.put("id_P", objItem.getJSONObject(j).getString("id_P"));
-                sub.put("index", j);
-                sub.put("prior", objItem.getJSONObject(j).getString("wn0prior"));
-                sub.put("upIndex", index - 1);
-                sub.put("wrdN", objItem.getJSONObject(j).getJSONObject("wrdN"));
-                tempSub.add(sub);
-                System.out.println(" here 8" + objAction);
-
-                if (index != 0) {
-                    //upPrnt = id_O, index, wn2qtyneed, wrdN
-                    JSONObject upPrnt = new JSONObject();
-                    upPrnt.put("id_O", objItem.getJSONObject(j).getString("id_O"));
-                    upPrnt.put("index", index - 1);
-                    upPrnt.put("wn2qtyneed", objItem.getJSONObject(index - 1).getDouble("wn2qtyneed"));
-                    upPrnt.put("wrdN", objItem.getJSONObject(index - 1).getJSONObject("wrdN"));
-
-                    System.out.println(" here 9" + upPrnt);
-                    objAction.getJSONObject(j).put("upPrnt", new JSONArray());
-                    objAction.getJSONObject(j).getJSONArray("upPrnt").add(qt.cloneObj(upPrnt));
-                    System.out.println(" here 9" + objAction.getJSONObject(j).getJSONArray("upPrnt"));
-
-                } else {
-                    System.out.println(" here 10" + j);
-                    objAction.getJSONObject(j).put("upPrnt", new JSONArray());
-                }
-
-                if (objItem.getJSONObject(j).getInteger("objSub") > 0) {
-                    System.out.println(" here 6" + j + " " + objItem.getJSONObject(j).getInteger("objSub"));
-
-                    JSONArray subPart = this.dgTaskLoop(objAction, objItem, j + 1, j + 1 + objItem.getJSONObject(j).getInteger("objSub"));
-                    objAction.getJSONObject(j).put("subParts", subPart);
-                    System.out.println(" here 6" + subPart);
-                    j = j + objItem.getJSONObject(j).getInteger("objSub");
-
-                } else {
-                    System.out.println(" here 5 objSub=0");
-                    objAction.getJSONObject(j).put("subParts", new JSONArray());
-                }
-            }
-
-            return tempSub; //subParts
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-
-    }
+//    private JSONArray dgTaskLoop(JSONArray objAction, JSONArray objItem, int index, int endIndex) {
+//
+//        try {
+//            JSONArray tempPrev = new JSONArray();
+//            JSONArray tempIndex = new JSONArray();
+//            JSONArray tempSub = new JSONArray();
+//
+//            for (int j = index; j < endIndex; j++) {
+//                //System.out.println(" here 3  - " + j);
+//
+//                if (!objItem.getJSONObject(j).getString("seq").equals("2")) {
+//                    //       add to tempIndex
+//                    JSONObject prevData = new JSONObject();
+//
+//                    prevData.put("id_O", objItem.getJSONObject(j).getString("id_O"));
+//                    prevData.put("index", j);
+//                    tempIndex.add(qt.cloneObj(prevData));
+//                    //       set prtPrev = tempPrev
+//                    //System.out.println(" here 4.1 concurr" + tempPrev);
+//                    //System.out.println(" here 4.1" + tempIndex);
+//
+//
+//                    objAction.getJSONObject(j).put("prtPrev", qt.cloneArr(tempPrev));
+//                    objAction.getJSONObject(j).put("prtNext", new JSONArray());
+//
+//                } else {
+//                    //    loop each tempPrev
+//                    JSONObject thisData = new JSONObject();
+//
+//                    thisData.put("id_O", objItem.getJSONObject(j).getString("id_O"));
+//                    thisData.put("index", j);
+//                    for (int i = 0; i < tempIndex.size(); i++) {
+//                        //System.out.println(" here 4.2 next step");
+//
+//                        Integer prevIndex = tempIndex.getJSONObject(i).getInteger("index");
+//                        //     set prtNext = tempIndex
+//                        objAction.getJSONObject(prevIndex).getJSONArray("prtNext").add(qt.cloneObj(thisData));
+//                    }
+//                    //    set prtPrev = id_O, tempPrev
+//                    objAction.getJSONObject(j).put("prtPrev", qt.cloneArr(tempIndex));
+//                    objAction.getJSONObject(j).put("prtNext", new JSONArray());
+//
+//                    //System.out.println(" here 4.2" + tempIndex);
+//                    //System.out.println(" here 4.2" + tempPrev);
+//
+//
+//                    //    set tempPrev = tempIndex, and tempIndex = []
+//                    tempPrev = qt.cloneArr(tempIndex);
+//                    tempIndex = new JSONArray();
+//                    tempIndex.add(thisData);
+//                }
+//
+//                JSONObject sub = new JSONObject();
+//                //System.out.println(" here 7");
+//
+//                //subParts = id_O, id_P, index, prior, qtyEach, upIndex, wrdN
+//                sub.put("id_O", objItem.getJSONObject(j).getString("id_O"));
+//                sub.put("id_P", objItem.getJSONObject(j).getString("id_P"));
+//                sub.put("index", j);
+//                sub.put("prior", objItem.getJSONObject(j).getString("wn0prior"));
+//                sub.put("upIndex", index - 1);
+//                sub.put("wrdN", objItem.getJSONObject(j).getJSONObject("wrdN"));
+//                tempSub.add(sub);
+//                //System.out.println(" here 8" + objAction);
+//
+//                if (index != 0) {
+//                    //upPrnt = id_O, index, wn2qtyneed, wrdN
+//                    JSONObject upPrnt = new JSONObject();
+//                    upPrnt.put("id_O", objItem.getJSONObject(j).getString("id_O"));
+//                    upPrnt.put("index", index - 1);
+//                    upPrnt.put("wn2qtyneed", objItem.getJSONObject(index - 1).getDouble("wn2qtyneed"));
+//                    upPrnt.put("wrdN", objItem.getJSONObject(index - 1).getJSONObject("wrdN"));
+//
+//                    //System.out.println(" here 9" + upPrnt);
+//                    objAction.getJSONObject(j).put("upPrnt", new JSONArray());
+//                    objAction.getJSONObject(j).getJSONArray("upPrnt").add(qt.cloneObj(upPrnt));
+//                    //System.out.println(" here 9" + objAction.getJSONObject(j).getJSONArray("upPrnt"));
+//
+//                } else {
+//                    //System.out.println(" here 10" + j);
+//                    objAction.getJSONObject(j).put("upPrnt", new JSONArray());
+//                }
+//
+//                if (objItem.getJSONObject(j).getInteger("objSub") > 0) {
+//                    //System.out.println(" here 6" + j + " " + objItem.getJSONObject(j).getInteger("objSub"));
+//
+//                    JSONArray subPart = this.dgTaskLoop(objAction, objItem, j + 1, j + 1 + objItem.getJSONObject(j).getInteger("objSub"));
+//                    objAction.getJSONObject(j).put("subParts", subPart);
+//                    //System.out.println(" here 6" + subPart);
+//                    j = j + objItem.getJSONObject(j).getInteger("objSub");
+//
+//                } else {
+//                    //System.out.println(" here 5 objSub=0");
+//                    objAction.getJSONObject(j).put("subParts", new JSONArray());
+//                }
+//            }
+//
+//            return tempSub; //subParts
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+//    }
 
 
 
@@ -2042,7 +2035,7 @@ public class FlowServiceImpl implements FlowService {
                 throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), "产品需要重新检查");
             }
             stat.put("count", stat.getInteger("count") + 1);
-            System.out.println("stat" + stat);
+            //System.out.println("stat" + stat);
 
 
             // Here if it is already loop too much by over the checked wn0Count by our dgCheck
@@ -2058,7 +2051,7 @@ public class FlowServiceImpl implements FlowService {
             List<Prod> prods = (List<Prod>) qt.getMDContentMany(setId_P, "part", Prod.class);
             JSONObject jsonProdPart = new JSONObject();
             for (Prod prod : prods) {
-                System.out.println("prod in prods" + prod);
+                //System.out.println("prod in prods" + prod);
                 jsonProdPart.put(prod.getId(), prod.getPart());
             }
             for (int i = 0; i < arrayObjItem.size(); i++) {
@@ -2131,7 +2124,7 @@ public class FlowServiceImpl implements FlowService {
             //有下一层
             if (jsonProdPart.getJSONObject(jsonObjItem.getString("id_I")) != null) {
                 JSONArray arrayPartObjItem = jsonProdPart.getJSONObject(jsonObjItem.getString("id_I")).getJSONArray("objItem");
-                jsonChildren.put("children", recursionProdPart(arrayPartObjItem, stat));
+                jsonChildren.put("children", recursionInfoPart(arrayPartObjItem, stat));
             }
             arrayChildren.add(jsonChildren);
         }
@@ -2169,8 +2162,8 @@ public class FlowServiceImpl implements FlowService {
             // ******调用验证方法******
             this.dgCheckUtil(pidList,id_P, id_C, nextPart,isRecurred,isEmpty, stat);
 
-            System.out.println("layer "+ stat.get("layer"));
-            System.out.println("count "+ stat.get("count"));
+            //System.out.println("layer "+ stat.get("layer"));
+            //System.out.println("count "+ stat.get("count"));
 
 
         // 添加到返回结果
@@ -2210,7 +2203,7 @@ public class FlowServiceImpl implements FlowService {
             // 根据父编号获取父产品信息
 //            Prod thisItem = coupaUtil.getProdByListKey(id_P, Arrays.asList("part","info"));
             Prod thisItem = qt.getMDContent(id_P, qt.strList("info", "part"), Prod.class);
-            System.out.println("thiItem"+thisItem);
+            //System.out.println("thiItem"+thisItem);
 
             // 层级加一
             stat.put("layer", stat.getInteger("layer") + 1 );
@@ -2222,7 +2215,7 @@ public class FlowServiceImpl implements FlowService {
             if (null != thisItem) {
 
                 for (int i = 0; i < pidList.size(); i++) {
-                    System.out.println("冲突Check"+id_P);
+                    //System.out.println("冲突Check"+id_P);
                     // 判断编号与当前的有冲突
                     if (pidList.getString(i).equals(id_P)) {
                         // 创建零件信息
@@ -2256,11 +2249,11 @@ public class FlowServiceImpl implements FlowService {
                     for (int j = 0; j < nextItem.size(); j++) {
                         // 判断零件不为空并且零件编号不为空
                         stat.put("count", stat.getInteger("count") + 1 );
-                        System.out.println("count "+ stat.getInteger("count"));
+                        //System.out.println("count "+ stat.getInteger("count"));
                         if (null != nextItem.get(j) && null != nextItem.getJSONObject(j).get("id_P")) {
 
                                 // 继续调用验证方法
-                                System.out.println("判断无冲突"+isConflict);
+                                //System.out.println("判断无冲突"+isConflict);
                                 if (nextItem.getJSONObject(j).getDouble("wn4qtyneed") == null ||
                                         nextItem.getJSONObject(j).getDouble("wn2qty") == null ||
                                         nextItem.getJSONObject(j).getDouble("wn2port") == null)
@@ -2330,7 +2323,7 @@ public class FlowServiceImpl implements FlowService {
 
         if (stat.getInteger("count") < stat.getInteger("allCount"))
         {
-            System.out.println("it's less than that"+ stat.getInteger("count"));
+            //System.out.println("it's less than that"+ stat.getInteger("count"));
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
         }
 
@@ -2361,7 +2354,7 @@ public class FlowServiceImpl implements FlowService {
 
                 JSONArray partDataES = qt.getES("lBProd", qt.setESFilt("id_P", thisItem.getString("id_P"), "id_CB", id_C));
 
-                System.out.println(partDataES);
+                //System.out.println(partDataES);
 //            Prod thisProd = coupaUtil.getProdByListKey(
 //                    thisItem.getString("id_P"), Arrays.asList("part","info"));
                 Prod thisProd = qt.getMDContent(thisItem.getString("id_P"), qt.strList("info", "part"), Prod.class);
@@ -2373,8 +2366,8 @@ public class FlowServiceImpl implements FlowService {
                 } else {
                     // 获取id的信息
                     ProdInfo prodInfo = thisProd.getInfo();
-                    System.out.println("prodInfo");
-                    System.out.println(prodInfo);
+                    //System.out.println("prodInfo");
+                    //System.out.println(prodInfo);
                     JSONObject part = thisProd.getPart();
 //                Comp compById = coupaUtil.getCompByListKey(id_C, Arrays.asList("info"));
                     Comp compById = qt.getMDContent(id_C, "info", Comp.class);
@@ -2409,29 +2402,18 @@ public class FlowServiceImpl implements FlowService {
             if (partDataES.getJSONObject(0).getInteger("lUT") != null) {
                 thisItem.put("lUT", partDataES.getJSONObject(0).getInteger("lUT"));
             }
-//                thisItem.put("seq", partDataES.getJSONObject(0).getString("seq"));
                 thisItem.put("tdur", partDataES.getJSONObject(0).getInteger("tdur"));
             if (partDataES.getJSONObject(0).getDouble("wn4price") != null) {
                 thisItem.put("wn4price", partDataES.getJSONObject(0).getDouble("wn4price"));
             }
-//                thisItem.put("tmd", partDataES.getJSONObject(0).getString("tmd"));
                 thisItem.put("pic", partDataES.getJSONObject(0).getString("pic"));
                 thisItem.put("wrdN", partDataES.getJSONObject(0).getJSONObject("wrdN"));
                 thisItem.put("wrddesc", partDataES.getJSONObject(0).getJSONObject("wrddesc"));
                 thisItem.put("ref", partDataES.getJSONObject(0).getString("refB"));
-                thisItem.put("grpB", partDataES.getJSONObject(0).getString("grpB"));
                 thisItem.put("bmdpt", bmdptValue);
-                System.out.println(thisItem.get("id_P") + "--" + thisItem);
                 partItem.set(item, thisItem);
-//                partItem.set(item,partDataES.getJSONObject(0));
-//                partItem.getJSONObject(item).put("bmdpt",bmdptValue);
-                System.out.println("thisItem"+JSON.toJSONString(partItem.getJSONObject(item)));
-
         }
-//        JSONObject partData = new JSONObject();
-//        partData.put("part.objItem",partItem);
         qt.setMDContent(id_P, qt.setJson("part.objItem", partItem),Prod.class);
-//        coupaUtil.updateProdByListKeyVal(id_P,partData);
     }
 
         /**
@@ -2445,36 +2427,35 @@ public class FlowServiceImpl implements FlowService {
          * DONE Check Kev
 
          */
-        @Override
-        public ApiResponse getPartIsNull(String id_P) {
-
-            // 根据id获取产品信息
-//            Prod prod = coupaUtil.getProdByListKey(
-//                    id_P,Arrays.asList("info","part"));
-            Prod prod = qt.getMDContent(id_P, Arrays.asList("_id","part","info"), Prod.class);
-
-            // 判断产品为空
-            if (null == prod) {
-                // 返回错误信息
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
-            }
-            // 获取产品零件信息
-            JSONObject part = prod.getPart();
-            // 判断产品零件信息为空
-            if (null == part) {
-                // 返回错误信息
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PART_IS_NULL.getCode(), "0");
-            }
-            // 获取prod的part信息
-            JSONArray partItem = prod.getPart().getJSONArray("objItem");
-            // 判断产品零件信息为空
-            if (null == partItem || partItem.size() == 0) {
-                // 返回错误信息
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PART_IS_NULL.getCode(), null);
-            }
-            // 抛出操作成功异常
-            return retResult.ok(CodeEnum.OK.getCode(), "1");
-        }
+//        @Override
+//        public ApiResponse getPartIsNull(String id_P) {
+//
+//            // 根据id获取产品信息
+//
+//            Prod prod = qt.getMDContent(id_P, Arrays.asList("_id","part","info"), Prod.class);
+//
+//            // 判断产品为空
+//            if (null == prod) {
+//                // 返回错误信息
+//                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
+//            }
+//            // 获取产品零件信息
+//            JSONObject part = prod.getPart();
+//            // 判断产品零件信息为空
+//            if (null == part) {
+//                // 返回错误信息
+//                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PART_IS_NULL.getCode(), "0");
+//            }
+//            // 获取prod的part信息
+//            JSONArray partItem = prod.getPart().getJSONArray("objItem");
+//            // 判断产品零件信息为空
+//            if (null == partItem || partItem.size() == 0) {
+//                // 返回错误信息
+//                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PART_IS_NULL.getCode(), null);
+//            }
+//            // 抛出操作成功异常
+//            return retResult.ok(CodeEnum.OK.getCode(), "1");
+//        }
 
     /**
      * 删除指定list的redis键 - 注释完成
@@ -2486,7 +2467,7 @@ public class FlowServiceImpl implements FlowService {
     @Override
     public ApiResponse dgRemove(String id_O,String id_C,String id_U) {
 
-//        Order orderParent = coupaUtil.getOrderByListKey(id_O, Arrays.asList());
+
         Order orderParent = qt.getMDContent(id_O, Arrays.asList("info","action", "oItem", "casItemx", "view"),Order.class);
 
         if (orderParent == null)
@@ -2495,6 +2476,7 @@ public class FlowServiceImpl implements FlowService {
         }
         JSONArray casList;
 
+        //TODO KEV this check is meaningless, you should never get casItemx.objOrder anymore
         if (orderParent.getCasItemx().getJSONObject(id_C) == null)
         {
             casList = orderParent.getCasItemx().getJSONArray("objOrder");
@@ -2511,6 +2493,8 @@ public class FlowServiceImpl implements FlowService {
         {
             // check if orders are final, if need request Cancel, send request
             // if ok, open order
+            //TODO KEV Check 1 - loop thru all my suppliers and see if they are real or myself, if one of them is real, we need them to agree cancel / both cancel lST
+
 
             String subOrderId = casList.getJSONObject(i).getString("id_O");
 
@@ -2578,7 +2562,7 @@ public class FlowServiceImpl implements FlowService {
      */
     @Override
     public ApiResponse timeHandle(String id_O, String id_U, String id_C, Long teStart,Integer wn0TPrior) {
-        System.out.println("初始-teStart:"+teStart+" , id_U:"+id_U);
+        //System.out.println("初始-teStart:"+teStart+" , id_U:"+id_U);
         // 调用时间处理方法
         timeZjService.getAtFirst(id_O,teStart,id_C,wn0TPrior);
         // 抛出操作成功异常
@@ -2642,7 +2626,7 @@ public class FlowServiceImpl implements FlowService {
 
         if (stat.getInteger("count") < stat.getInteger("allCount"))
         {
-            System.out.println("it's less than that"+ stat.getInteger("count"));
+            //System.out.println("it's less than that"+ stat.getInteger("count"));
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
         }
 
@@ -2670,7 +2654,7 @@ public class FlowServiceImpl implements FlowService {
 
             JSONArray infoDataES = qt.getES("lBInfo", qt.setESFilt("id_I", thisItem.getString("id_I"), "id_CB", id_C));
 
-            System.out.println(infoDataES);
+            //System.out.println(infoDataES);
             //if this is my own info, I dig into it to check further
             if (infoDataES.getJSONObject(0).getString("id_C").equals(id_C)) {
 
@@ -2683,19 +2667,14 @@ public class FlowServiceImpl implements FlowService {
                 }
             }
 
-
-
-
             // saving updated Key info into part
 
             thisItem.put("grp", infoDataES.getJSONObject(0).getString("grp"));
             thisItem.put("grpB", infoDataES.getJSONObject(0).getString("grpB"));
-//                thisItem.put("tmd", partDataES.getJSONObject(0).getString("tmd"));
             thisItem.put("pic", infoDataES.getJSONObject(0).getString("pic"));
             thisItem.put("wrdN", infoDataES.getJSONObject(0).getJSONObject("wrdN"));
             thisItem.put("wrddesc", infoDataES.getJSONObject(0).getJSONObject("wrddesc"));
             thisItem.put("ref", infoDataES.getJSONObject(0).getString("refB"));
-            thisItem.put("grpB", infoDataES.getJSONObject(0).getString("grpB"));
             infoItem.set(item, thisItem);
 
         }
@@ -2732,10 +2711,7 @@ public class FlowServiceImpl implements FlowService {
 
         // ******调用验证方法******
         this.dgCheckInfoUtil(pidList,id_I, id_C, nextPart, isRecurred,isEmpty, stat);
-
-        System.out.println("layer "+ stat.get("layer"));
-        System.out.println("count "+ stat.get("count"));
-
+        
 
         // 添加到返回结果
         result.put("recurred",isRecurred);
@@ -2783,7 +2759,7 @@ public class FlowServiceImpl implements FlowService {
         if (null != thisItem) {
 
             for (int i = 0; i < pidList.size(); i++) {
-                System.out.println("冲突Check"+id_I);
+                //System.out.println("冲突Check"+id_I);
                 // 判断编号与当前的有冲突
                 if (pidList.getString(i).equals(id_I)) {
                     // 创建零件信息
@@ -2817,11 +2793,11 @@ public class FlowServiceImpl implements FlowService {
                 for (int j = 0; j < nextItem.size(); j++) {
                     // 判断零件不为空并且零件编号不为空
                     stat.put("count", stat.getInteger("count") + 1 );
-                    System.out.println("count "+ stat.getInteger("count"));
+                    //System.out.println("count "+ stat.getInteger("count"));
                     if (null != nextItem.get(j) && null != nextItem.getJSONObject(j).get("id_I")) {
 
                         // 继续调用验证方法
-                        System.out.println("判断无冲突"+isConflict);
+                        //System.out.println("判断无冲突"+isConflict);
 
                         this.dgCheckInfoUtil(checkList, nextItem.getJSONObject(j).getString("id_I"), id_C, nextItem.getJSONObject(j)
                                     , isRecurred, isEmpty, stat);

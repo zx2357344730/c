@@ -385,7 +385,7 @@ public class CusServiceImpl implements CusService {
             if (null != cusmsg) {
                 JSONArray objCusMsg = cusmsg.getJSONArray("objCusMsg");
                 if (null != objCusMsg) {
-                    if (bcdStatus == 51) {
+                    if (bcdStatus == 51) { // 51 do something 已接受 cusmsg
                         JSONObject objCusSon = objCusMsg.getJSONObject(index);
                         String id_UCusNew = objCusSon.getString("id_UCus");
                         if (null != id_UCusNew) {
@@ -403,7 +403,7 @@ public class CusServiceImpl implements CusService {
                         id_Us.add(id_U);
                         sendMsgNotice(id_CCus,"已接受",id_UCus,id_O,51,id_Us,index);
                         return retResult.ok(CodeEnum.OK.getCode(), "1");
-                    } else if (bcdStatus == 52) {
+                    } else if (bcdStatus == 52) { // 51 do something 已完成 cusmsg
                         JSONObject objCusSon = objCusMsg.getJSONObject(index);
                         String id_U = objCusSon.getString("id_U");
                         qt.setMDContent(id_O,qt.setJson("cusmsg.objCusMsg."+index+".bcdStatus", bcdStatus), Order.class);
@@ -428,6 +428,7 @@ public class CusServiceImpl implements CusService {
         return retResult.ok(CodeEnum.OK.getCode(), "0");
     }
 
+    //TODO KEV Delete not much use this one
     @Override
     public ApiResponse restoreCusLog(String id_O, String id_CCus,Integer index) {
         JSONArray result = qt.getES("cusmsg", qt.setESFilt("id_C",id_CCus,"id_O",id_O,"index",index));
@@ -555,6 +556,7 @@ public class CusServiceImpl implements CusService {
      * @author tang
      * @date 创建时间: 2023/5/29
      * @ver 版本号: 1.0.0
+     * getFCAuth
      */
     @Override
     public ApiResponse getLogAuth(String id_C, String grpUW, String grpUN,String type) {
@@ -572,6 +574,7 @@ public class CusServiceImpl implements CusService {
                         if (null != grpUNRole) {
                             JSONObject log = grpUNRole.getJSONObject("log");
                             if (null !=log) {
+                                //TODO KEV delete? get role.objData.grpUW.gettype, grpUN, log ....??? this is not working, need to
                                 result.put("isOk",1);
                                 result.put("data",log);
                                 System.out.println("返回结果:");
@@ -604,6 +607,7 @@ public class CusServiceImpl implements CusService {
         return retResult.error("500",result);
     }
 
+    //TODO KEV ... what is this ?
     @Override
     public ApiResponse renewCusUser(String id_C, JSONArray indexS, JSONArray ids, Integer type) {
         Asset asset = qt.getConfig(id_C,"a-auth","flowControl");
@@ -765,6 +769,8 @@ public class CusServiceImpl implements CusService {
      * @date 创建时间: 2023/5/29
      * @ver 版本号: 1.0.0
      */
+
+    //TODO ZJ move this to logFlow pojo
     public void sendMsgNotice(String id_CCus,String desc,String logUser
             ,String id_O,int bcdStatus,JSONArray id_Us,Integer index){
         JSONObject dataNew = new JSONObject();
@@ -788,6 +794,7 @@ public class CusServiceImpl implements CusService {
      * @date 创建时间: 2023/5/30
      * @ver 版本号: 1.0.0
      */
+    //TODO ZJ move to ws, where to use this?
     public void sendMsgOneNew(String sendUser,LogFlow logFlow){
 //        JSONObject data = logFlow.getData();
 //        data.put("id_UPointTo",sendUser);
@@ -797,7 +804,7 @@ public class CusServiceImpl implements CusService {
             logFlow.setId_Us(qt.setArray(logFlow.getId_U()));
         }
         JSONObject data = logFlow.getData();
-        data.put("id_UPointTo",logFlow.getId_Us());
+        data.put("id_UPointTo",logFlow.getId_Us()); // xxxxxx
         logFlow.setData(data);
         ws.sendWS(logFlow);
     }
@@ -816,6 +823,8 @@ public class CusServiceImpl implements CusService {
      * @date 创建时间: 2023/5/29
      * @ver 版本号: 1.0.0
      */
+
+    //TODO ZJ, use a regular init, DELETE this.
     private LogFlow getNullLogFlow(String logType,String subType,String desc,String id_C,String id_U
             ,JSONObject data,String id_O,Integer index){
         LogFlow logFlow = LogFlow.getInstance();

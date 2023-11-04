@@ -45,7 +45,7 @@ public class DgCheckUtil {
         try {
             // 根据父编号获取父产品信息
             Prod thisItem = qt.getMDContent(id_P, qt.strList("info", "part"), Prod.class);
-//            System.out.println("thiItem" + thisItem);
+//            // *** System.out.println("thiItem" + thisItem);
             // 层级加一
             stat.put("layer", stat.getInteger("layer") + 1);
 
@@ -55,7 +55,7 @@ public class DgCheckUtil {
             // 判断父产品不为空，部件父产品零件不为空
             if (thisItem != null) {
                 for (int i = 0; i < pidList.size(); i++) {
-//                System.out.println("冲突Check" + id_P);
+//                // *** System.out.println("冲突Check" + id_P);
                     // 判断编号与当前的有冲突
                     if (pidList.getString(i).equals(id_P)) {
                         // 创建零件信息
@@ -87,25 +87,25 @@ public class DgCheckUtil {
 //                    for (int i = 0; i < nextItem.size(); i++) {
 //                        String id_p = nextItem.getJSONObject(i).getString("id_P");
 //                        if (id_p.equals("62fcaae0cb15c454f3170c65")) {
-//                            System.out.println("p:"+id_P);
+//                            // *** System.out.println("p:"+id_P);
 //                        }
 //                    }
                     // 遍历零件信息1
                     for (int j = 0; j < nextItem.size(); j++) {
                         // 判断零件不为空并且零件编号不为空
                         stat.put("count", stat.getInteger("count") + 1);
-//                    System.out.println("count " + stat.getInteger("count"));
+//                    // *** System.out.println("count " + stat.getInteger("count"));
                         if (null != nextItem.get(j) && null != nextItem.getJSONObject(j).get("id_P")) {
 
                             // 继续调用验证方法
-//                        System.out.println("判断无冲突" + isConflict);
+//                        // *** System.out.println("判断无冲突" + isConflict);
                             if (nextItem.getJSONObject(j).getDouble("wn4qtyneed") == null ||
                                     nextItem.getJSONObject(j).getDouble("wn2qty") == null ||
                                     nextItem.getJSONObject(j).getDouble("wn2port") == null) {
                                 if (null == objectMap) {
                                     objectMap = new JSONObject();
                                 }
-                                System.out.println("为空-1");
+                                // *** System.out.println("为空-1");
                                 objectMap.put("errDesc", "数量为空！");
                                 isEmpty.add(objectMap);
                             } else {
@@ -119,7 +119,7 @@ public class DgCheckUtil {
                             }
                         } else {
                             if (null != objectMap) {
-                                System.out.println("为空-2");
+                                // *** System.out.println("为空-2");
                                 objectMap.put("errDesc", "产品不存在！");
                                 isEmpty.add(objectMap);
                             }
@@ -127,13 +127,13 @@ public class DgCheckUtil {
                     }
                 }
             } else if (!id_P.equals("")) {
-                System.out.println("为空-3");
-                System.out.println("问题输出:"+id_P);
+                // *** System.out.println("为空-3");
+                // *** System.out.println("问题输出:"+id_P);
                 objectMap.put("errDesc", "产品不存在！");
                 isEmpty.add(objectMap);
             }
         } catch (Exception ex) {
-            System.out.println("出现异常:" + ex.getMessage());
+            // *** System.out.println("出现异常:" + ex.getMessage());
             ex.printStackTrace();
         }
     }
@@ -218,19 +218,19 @@ public class DgCheckUtil {
      * @param myCompId  公司编号
      * @return  线程处理结果
      */
-    @Async
-    public Future<String> testResult(HashSet<String> id_Ps, JSONArray item, String myCompId) {
-        Future<String> future;
-        try {
-            // 调用递归验证方法
-            checkUtil(id_Ps,item,myCompId);
-            future = new AsyncResult<>("success:");
-        } catch(IllegalArgumentException e){
-            future = new AsyncResult<>("error-IllegalArgumentException");
-        }
-        System.out.println("--- "+getThreadId()+" ---");
-        return future;
-    }
+//    @Async
+//    public Future<String> execThread(HashSet<String> id_Ps, JSONArray item, String myCompId) {
+//        Future<String> future;
+//        try {
+//            // 调用递归验证方法
+//            checkUtil(id_Ps,item,myCompId);
+//            future = new AsyncResult<>("success:");
+//        } catch(IllegalArgumentException e){
+//            future = new AsyncResult<>("error-IllegalArgumentException");
+//        }
+//        // *** System.out.println("--- "+getThreadId()+" ---");
+//        return future;
+//    }
     /**
      * 开启多线程递归产品方法（List<JSONObject>版本）
      * @param id_Ps 递归所有id存储
@@ -239,9 +239,9 @@ public class DgCheckUtil {
      * @return  线程处理结果
      */
     @Async
-    public Future<String> testResult(HashSet<String> id_Ps, List<JSONObject> item, String myCompId) {
+    public Future<String> execThread(HashSet<String> id_Ps, List<JSONObject> item, String myCompId) {
         Future<String> future;
-        System.out.println("--- "+getThreadId()+" ---");
+//        // *** System.out.println("--- "+getThreadId()+" ---");
         try {
             // 调用递归验证方法
             checkUtil(id_Ps,item,myCompId);
@@ -249,7 +249,6 @@ public class DgCheckUtil {
         } catch(IllegalArgumentException e){
             future = new AsyncResult<>("error-IllegalArgumentException");
         }
-        System.out.println("+++ "+getThreadId()+" +++");
         return future;
     }
 

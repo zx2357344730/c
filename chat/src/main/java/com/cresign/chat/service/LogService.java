@@ -24,9 +24,9 @@ public interface LogService {
      * @ver 1.0.0
      * @date 2021/7/12 14:47
      */
-    void sendPush(String clientId,String title,String body,String token);
-
-    void sendPushBatch(JSONArray cidArray, String title, String body);
+//    void sendPush(String clientId,String title,String body,String token);
+//
+//    void sendPushBatch(JSONArray cidArray, String title, String body);
 
     /**
      * 根据can获取单个用户信息
@@ -48,7 +48,7 @@ public interface LogService {
      */
     ApiResponse unsetGpio(JSONObject can);
 
-    String getToken();
+//    String getToken();
 
 
 //    /**
