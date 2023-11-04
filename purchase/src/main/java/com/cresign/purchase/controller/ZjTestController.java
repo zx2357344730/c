@@ -297,7 +297,10 @@ public class ZjTestController {
     public ApiResponse statisticsChKin(@RequestBody JSONObject reqJson) {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
-            return zjService.statisticsChKin(reqJson.getString("id_C"),reqJson.getJSONArray("sumDates"));
+            return zjService.statisticsChKin(reqJson.getString("id_C")
+                    ,reqJson.getJSONArray("sumDates"),reqJson.getInteger("chkInMode")
+                    , reqJson.getBoolean("isAllSpecialTime"),reqJson.getBoolean("isAutoCardReplacement")
+                    ,reqJson.getBoolean("isSumSpecialTime"));
         } catch (Exception e) {
             return getUserToken.err(new JSONObject(), "ZjTestController.statisticsChKin", e);
         }
