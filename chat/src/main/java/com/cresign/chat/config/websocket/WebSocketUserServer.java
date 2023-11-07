@@ -333,7 +333,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             //////////
 //            }
         } catch (Exception e){
-            System.out.println("出现异常:"+e.getMessage());
 //            e.printStackTrace();
 //            if (uId.equals("6256789ae1908c03460f906f")) {
 //                qt.setRDSet(Ws.ws_mq_prefix,uId+":err",e.getMessage(),600L);
@@ -690,14 +689,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                         rdInfo.remove(client); //TODO ZJ 1.MQ - ws.sendWS 2. WS - getRD - app.ws1, web.ws2, wx.ws1
                         ws.sendESOnly(logContent);
                     }
-
-                }else
-                    {
-
-                        ws.sendWS(logContent);  // for (rdInfo ...
-                    }
-
-                    ws.sendWS();
                     for (String client : rdInfo.keySet()) {
                         // 获取端信息
                         JSONObject rdInfoData = rdInfo.getJSONObject(client);
