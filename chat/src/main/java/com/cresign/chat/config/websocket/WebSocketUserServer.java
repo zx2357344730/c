@@ -49,12 +49,6 @@ import java.util.UUID;
 )
 public class WebSocketUserServer implements RocketMQListener<String> {
 
-//    @Override
-//    public boolean equals(Object obj){
-//        return super.equals(obj);
-//    }
-//    @Override
-//    public native int hashCode();
     /**
      * 用来根据用户编号存储每个用户的WebSocket连接信息
      */
@@ -94,10 +88,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * 与某个客户端的连接会话，需要通过它来给客户端发送数据
      */
     private Session session;
-//    /**
-//     * 当前唯一编号
-//     */
-//    private String onlyId;
     private String thisUser;
     private String thisClient;
     /**
@@ -132,11 +122,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             String mqKey = WsId.topic + ":" + WsId.tap;
             // 设置当前用户session
             this.session = session;
-            //set thisUser thisClient
             this.thisUser = uId;
             this.thisClient = client; //wx/app/web
-            // 获取当前唯一编号
-//            this.onlyId = UUID.randomUUID().toString().replace("-","");
             // 获取redis信息
             JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, uId); // appID? /mqKey
             // 判断redis信息为空
@@ -206,8 +193,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             s = s.replaceAll("%20"," ");
             String replace = s.replace("-----BEGIN PUBLIC KEY-----", "");
             String replace2 = replace.replace("-----END PUBLIC KEY-----", "");
-//            // 设置前端公钥
-//            WebSocketUserServer.loginPublicKeyList.put(this.onlyId,replace2);
             Map<String, String> mapWebKey;
             if (WebSocketUserServer.loginPublicKeyList.containsKey(uId)) {
                 mapWebKey = WebSocketUserServer.loginPublicKeyList.get(uId);
@@ -224,8 +209,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             JSONObject keyM = new JSONObject();
             keyM.put("privateKeyJava",privateKeyJava);
             keyM.put("publicKeyJava",publicKeyJava);
-//            // 存储后端钥匙
-//            WebSocketUserServer.keyJava.put(this.onlyId,keyM);
             Map<String, JSONObject> mapKeyJava;
             if (WebSocketUserServer.keyJava.containsKey(uId)) {
                 mapKeyJava = WebSocketUserServer.keyJava.get(uId);
@@ -234,23 +217,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             }
             mapKeyJava.put(client,keyM);
             WebSocketUserServer.keyJava.put(uId,mapKeyJava);
-//            if (WebSocketUserServer.webSocketSet.containsKey(uId)) {
-//                // 添加新端信息
-//                WebSocketUserServer.webSocketSet.get(uId).put(this.onlyId,this);
-//                WebSocketUserServer.clients.get(uId).put(client,this.onlyId);
-//                WebSocketUserServer.appIds.get(uId).put(this.onlyId,appId);
-//            } else {
-//                // 创建端
-//                Map<String, WebSocketUserServer> map = new HashMap<>(16);
-//                map.put(this.onlyId,this);
-//                WebSocketUserServer.webSocketSet.put(uId,map);
-//                Map<String,String> map1 = new HashMap<>(16);
-//                map1.put(client,this.onlyId);
-//                WebSocketUserServer.clients.put(uId,map1);
-//                Map<String,String> map2 = new HashMap<>(16);
-//                map2.put(this.onlyId,appId);
-//                WebSocketUserServer.appIds.put(uId,map2);
-//            }
             if (WebSocketUserServer.webSocketSet.containsKey(uId)) {
                 // 添加新端信息
                 WebSocketUserServer.webSocketSet.get(uId).put(client,this);
@@ -271,73 +237,31 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             System.out.println("----- ws打开 -----:" + ",uId:" + uId + ", 服务:"+mqKey+", 端:"+client);
             System.out.println("在线人数:"+getOnlineCount());
             System.out.println("当前用户在线-端-:"+JSON.toJSONString(WebSocketUserServer.clients.get(uId).keySet()));
-//            String collection = client + "RefreshToken";
-            // 获取redisToken
-//            String getRefreshToken = qt.getRDSetStr(collection,token);
-//            if (null == getRefreshToken) {
-//                System.out.println("不等于-getToken:");
-//                // 创建回应前端日志
-//                LogFlow logContent = LogFlow.getInstance();
-//                logContent.setId(null);
-//                logContent.setZcndesc(null);
-//                logContent.setTmd(null);
-//                logContent.setId_C(null);
-//                logContent.setId_U(uId);
-//                logContent.setLogType("usageflow");
-//                logContent.setSubType("tokenExpire");
-//                logContent.setTzone(null);
-//                JSONObject data = new JSONObject();
-//                // 携带后端公钥
-//                data.put("publicKeyJava", WebSocketUserServer.keyJava.get(this.onlyId).getString("publicKeyJava"));
-//                data.put("client",client);
-//                logContent.setData(data);
-//                //每次响应之前随机获取AES的key，加密data数据
-//                String keyAes = AesUtil.getKey();
-//                // 根据AES加密数据
-//                JSONObject stringMap = aes(logContent,keyAes);
-//                stringMap.put("en",true);
-//                // 发送到前端
-//                this.sendMessage(stringMap,keyAes,true);
-//                this.onClose(uId,client,appId);
-//            } else {
-                // 创建回应前端日志
-                LogFlow logContent = LogFlow.getInstance();
-                logContent.setId(null);
-                logContent.setZcndesc(null);
-                logContent.setTmd(null);
-                logContent.setId_C(null);
-                logContent.setId_U(uId);
-                logContent.setLogType("key");
-                logContent.setTzone(null);
-                ///////////////////////...
-                JSONObject data = new JSONObject();
-                data.put("client",client);
-                // 携带后端公钥
-                data.put("publicKeyJava", WebSocketUserServer.keyJava.get(uId).get(client).getString("publicKeyJava"));
-                logContent.setData(data);
-                //每次响应之前随机获取AES的key，加密data数据
-                String keyAes = AesUtil.getKey();
-                // 根据AES加密数据
-                JSONObject stringMap = aes(logContent,keyAes);
-                stringMap.put("en",true);
-                stringMap.put("totalOnlineCount",getOnlineCount());
-                // 发送到前端
-                this.sendMessage(stringMap,keyAes,true);
-//            if (uId.equals("6256789ae1908c03460f906f")) {
-//                qt.setRDSet(Ws.ws_mq_prefix,uId+":clients",JSON.toJSONString(WebSocketUserServer.clients.get(uId)),600L);
-//                qt.setRDSet(Ws.ws_mq_prefix,uId+":appIds",JSON.toJSONString(WebSocketUserServer.appIds.get(uId)),600L);
-//                qt.setRDSet(Ws.ws_mq_prefix,uId+":loginPublicKeyList",JSON.toJSONString(WebSocketUserServer.loginPublicKeyList.get(uId)),600L);
-//                qt.setRDSet(Ws.ws_mq_prefix,uId+":webSocketSet",JSON.toJSONString(WebSocketUserServer.webSocketSet.get(uId).keySet()),600L);
-////                qt.setRDSet(Ws.ws_mq_prefix,uId+":keyJava",JSON.toJSONString(WebSocketUserServer.keyJava),600L);
-//            }
-            //////////
-//            }
+            // 创建回应前端日志
+            LogFlow logContent = LogFlow.getInstance();
+            logContent.setId(null);
+            logContent.setZcndesc(null);
+            logContent.setTmd(null);
+            logContent.setId_C(null);
+            logContent.setId_U(uId);
+            logContent.setLogType("key");
+            logContent.setTzone(null);
+            ///////////////////////...
+            JSONObject data = new JSONObject();
+            data.put("client",client);
+            // 携带后端公钥
+            data.put("publicKeyJava", WebSocketUserServer.keyJava.get(uId).get(client).getString("publicKeyJava"));
+            logContent.setData(data);
+            //每次响应之前随机获取AES的key，加密data数据
+            String keyAes = AesUtil.getKey();
+            // 根据AES加密数据
+            JSONObject stringMap = aes(logContent,keyAes);
+            stringMap.put("en",true);
+            stringMap.put("totalOnlineCount",getOnlineCount());
+            // 发送到前端
+            this.sendMessage(stringMap,keyAes,true);
         } catch (Exception e){
             System.out.println("出现异常:"+e.getMessage());
-//            e.printStackTrace();
-//            if (uId.equals("6256789ae1908c03460f906f")) {
-//                qt.setRDSet(Ws.ws_mq_prefix,uId+":err",e.getMessage(),600L);
-//            }
             closeWS(uId,client,appId);
         }
     }
@@ -354,9 +278,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //        System.out.println("websocket:关闭, 用户:"+uId+", 端:"+client+", 服务:"+WsId.topic + ":" + WsId.tap+", appId:"+appId);
         // 调用清理ws方法
         closeWS(uId,client,appId);
-//        if (uId.equals("6256789ae1908c03460f906f")) {
-//            qt.setRDSet(Ws.ws_mq_prefix,uId+":onClose","websocket:关闭, 用户:"+uId+", 端:"+client+", 服务:"+WsId.topic + ":" + WsId.tap+", appId:"+appId,600L);
-//        }
     }
 
     /**
@@ -375,9 +296,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         String msg = "-Error: "+error;
         String msg2 = writer.toString().substring(0, 650);
         ws.sendUsageFlow(qt.setJson("cn", msg), msg2, "wsError", "WS");
-//        if (uId.equals("6256789ae1908c03460f906f")) {
-//            qt.setRDSet(Ws.ws_mq_prefix,uId+":onError",error.getMessage(),600L);
-//        }
     }
     /**
      * 实现服务器主动推送 XXX only did aes encrypt on stringMap
@@ -509,7 +427,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                                 // 加密logContent数据
                                 JSONObject stringMap = aes(logData,key);
                                 stringMap.put("en",true);
-//                                String onlyId = WebSocketUserServer.clients.get(logData.getId_U()).get(client);
                                 WebSocketUserServer.webSocketSet.get(logData.getId_U()).get(client).sendMessage(stringMap,key,true);
                                 ////////////////////////////
                             }
@@ -569,7 +486,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
     //TODO ZJ 太多closeWS了, 这样对于前端就是突然断线, 字段放redis
     private static synchronized void closeWS(String uId,String client,String appId){
         if (null != WebSocketUserServer.webSocketSet.get(uId)) {
-//            String onlyIdThis = getOnlyId(uId, client);
             if (null!=WebSocketUserServer.appIds.get(uId)
                     && null!=WebSocketUserServer.appIds.get(uId).get(client)
                     && WebSocketUserServer.appIds.get(uId).get(client).equals(appId)) {
@@ -690,14 +606,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                         rdInfo.remove(client); //TODO ZJ 1.MQ - ws.sendWS 2. WS - getRD - app.ws1, web.ws2, wx.ws1
                         ws.sendESOnly(logContent);
                     }
-
-                }else
-                    {
-
-                        ws.sendWS(logContent);  // for (rdInfo ...
-                    }
-
-                    ws.sendWS();
+                    ws.sendWS(logContent);
                     for (String client : rdInfo.keySet()) {
                         // 获取端信息
                         JSONObject rdInfoData = rdInfo.getJSONObject(client);
