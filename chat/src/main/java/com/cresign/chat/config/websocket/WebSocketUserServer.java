@@ -606,7 +606,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                         rdInfo.remove(client); //TODO ZJ 1.MQ - ws.sendWS 2. WS - getRD - app.ws1, web.ws2, wx.ws1
                         ws.sendESOnly(logContent);
                     }
-                    ws.sendWS(logContent);
                     for (String client : rdInfo.keySet()) {
                         // 获取端信息
                         JSONObject rdInfoData = rdInfo.getJSONObject(client);
