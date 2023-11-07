@@ -37,7 +37,7 @@ public class RegisterUserUtils {
     private Qt qt;
 
     @Transactional(noRollbackFor = ResponseException.class)
-    public String registerUser(Map<String, Object> info) throws IOException {
+    public String registerUser(Map<String, Object> info) {
 
 
             InitJava initJava = qt.getInitData(); //qt.getMDContent("cn_java", "newUser", InitJava.class);

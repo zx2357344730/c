@@ -27,12 +27,13 @@ public class MqToEs implements RocketMQListener<String> {
     @Autowired
     private Qt qt;
 
+    //TODO ZJ 有用吗
+
     @Override
     public void onMessage(String s) {
         // 转换为json信息
-            JSONObject json = JSONObject.parseObject(s);
+        JSONObject json = JSONObject.parseObject(s);
         qt.addES(json.getString("logType"), json);
-//        sendLogByES(logData.getLogType(),logData);
         System.out.println("es:从mq 拿数据写入完成");
     }
 

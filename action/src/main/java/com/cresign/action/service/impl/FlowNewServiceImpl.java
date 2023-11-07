@@ -59,18 +59,14 @@ public class FlowNewServiceImpl implements FlowNewService {
     @Autowired
     private RetResult retResult;
 
-//    @Autowired
-//    private FlowAsyncUtil flowAsyncUtil;
-
     @Autowired
     private DgCheckUtil checkUtil;
 
     @Override
     @Transactional(noRollbackFor = ResponseException.class)
-    public ApiResponse getDgResult(String id_OParent, String id_U, String myCompId
-            , Long teStart, String divideOrder) {
-        System.out.println("开始时间:");
-        System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+    public ApiResponse getDgResult(String id_OParent, String id_U, String myCompId, Long teStart, String divideOrder) {
+        // **System.out.println("开始时间:");
+        // **System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         // 调用方法获取订单信息
         Order salesOrderData = qt.getMDContent(id_OParent, Arrays.asList("oItem", "info", "view", "action"), Order.class);
 
@@ -83,20 +79,21 @@ public class FlowNewServiceImpl implements FlowNewService {
         if (!salesOrderData.getInfo().getId_C().equals(myCompId)) {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
         }
-        Map<String, Prod> dgProd = new HashMap<>(16);
         if (salesOrderData.getOItem().getJSONArray("allProdId") == null){
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "需要检查所有零件");
         }
-
-        List<Prod> prods = qt.getMDContentFast(salesOrderData.getOItem().getJSONArray("allProdId")
-                , qt.strList("info", "part"), Prod.class);
+        
+        
+        Map<String, Prod> dgProd = new HashMap<>(16);
+        List<Prod> prods = qt.getMDContentFast(salesOrderData.getOItem().getJSONArray("allProdId"), qt.strList("info", "part"), Prod.class);
         prods.forEach(prod -> dgProd.put(prod.getId(),prod));
-        System.out.println("中间时间:");
-        System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        
+        
+        // **System.out.println("中间时间:");
+        // **System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         // 第一次把action卡创建出来
         if (null == salesOrderData.getAction()) {
-            JSONObject newEmptyAction = new JSONObject();
-            salesOrderData.setAction(newEmptyAction);
+            salesOrderData.setAction(new JSONObject());
         }
         if (null != salesOrderData.getAction().getString("isDg")) {
             // 返回为空错误信息
@@ -165,9 +162,9 @@ public class FlowNewServiceImpl implements FlowNewService {
         if (objActionCollection.size() == 0) {
             throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
         }
-        System.out.println(JSON.toJSONString(casItemData));
+        // **System.out.println(JSON.toJSONString(casItemData));
 
-        /////////// setup Dep.objlBProd + objlSProd for grpP
+        ///////////TODO KEV once I fixed def, grpO, grpA setup Dep.objlBProd + objlSProd for grpP
 
         //putting the Sales order as the last casItem... I donno why
         JSONObject thisOrderData = new JSONObject();
@@ -236,7 +233,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 //            JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
 
             for (OrderOItem orderOItem : unitOItem) {
-//                System.out.println(orderOItem.getGrpB());
+//                // **System.out.println(orderOItem.getGrpB());
                 String grpB = orderOItem.getGrpB();
                 if (grpBGroup.getJSONObject(grpB) == null) {
                     grpBGroup.put(grpB, defResultBP.getJSONObject(grpB));
@@ -255,9 +252,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             }
 
             JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
-
-//            JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
-
+            
             for (OrderOItem orderOItem : unitOItem) {
                 String grp = orderOItem.getGrp();
 
@@ -269,7 +264,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 
 //            grpO = "1000";
 //            grpOB = "1000";
-            System.out.print("got all ok");
+            // **System.out.print("got all ok");
 
             if (id_OParent.equals(thisOrderId)) {
                 // make sales order Action
@@ -282,7 +277,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 
                 // 根据键设置订单id
                 newPO.setId(thisOrderId);
-                System.out.print("got1" + thisOrderId);
+                // **System.out.print("got1" + thisOrderId);
 
                 // priority is BY order, get from info and write into ALL oItem
                 OrderInfo newPO_Info = new OrderInfo(prodCompId, targetCompId, unitOItem.get(0).getId_CP(), "", id_OParent, "", "",
@@ -342,7 +337,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 //                qt.addMD(newPO);
                 addOrder.add(newPO);
 //                    qt.setES(....)
-//                System.out.println("sales order SAVED " + newPO.getInfo().getWrdN().getString("cn"));
+//                // **System.out.println("sales order SAVED " + newPO.getInfo().getWrdN().getString("cn"));
 
 //              // 创建lSBOrder订单
                 lSBOrder lsbOrder = new lSBOrder(prodCompId, targetCompId, "", "", id_OParent, thisOrderId, arrayId_P,
@@ -352,10 +347,10 @@ public class FlowNewServiceImpl implements FlowNewService {
             }
         }
         qt.addAllMD(addOrder);
-//        System.out.println("save-end");
-//        System.out.println("all finished...");
-//        System.out.println("结束-时间:");
-//        System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//        // **System.out.println("save-end");
+//        // **System.out.println("all finished...");
+//        // **System.out.println("结束-时间:");
+//        // **System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         qt.errPrint("结束-时间:",null,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         // END FOR
         // 抛出操作成功异常
@@ -385,168 +380,168 @@ public class FlowNewServiceImpl implements FlowNewService {
         return retResult.ok(CodeEnum.OK.getCode(), "");
     }
 
-    private HashSet<String> getCheckOrderAllId_P(JSONArray objItem,String myCompId){
-        HashSet<String> id_Ps = new HashSet<>();
-        int forZon = objItem.size() / 7;
-        JSONArray item6 = new JSONArray();
-        JSONArray item7 = new JSONArray();
-        if (forZon > 0) {
-            JSONArray item1 = new JSONArray();
-            JSONArray item2 = new JSONArray();
-            JSONArray item3 = new JSONArray();
-            JSONArray item4 = new JSONArray();
-            JSONArray item5 = new JSONArray();
-            int lei = 0;
-            for (int i = 0; i < forZon; i++) {
-                item1.add(objItem.getJSONObject(lei));
-                item2.add(objItem.getJSONObject(lei+1));
-                item3.add(objItem.getJSONObject(lei+2));
-                item4.add(objItem.getJSONObject(lei+3));
-                item5.add(objItem.getJSONObject(lei+4));
-                item6.add(objItem.getJSONObject(lei+5));
-                item7.add(objItem.getJSONObject(lei+6));
-                lei+=7;
-            }
-            int jie = objItem.size()-(forZon*7);
-            if (jie > 0) {
-                if (jie == 1) {
-                    item1.add(objItem.getJSONObject((forZon*7)));
-                } else if (jie == 2) {
-                    item1.add(objItem.getJSONObject((forZon*7)));
-                    item2.add(objItem.getJSONObject((forZon*7)+1));
-                } else if (jie == 3) {
-                    item1.add(objItem.getJSONObject((forZon*7)));
-                    item2.add(objItem.getJSONObject((forZon*7)+1));
-                    item3.add(objItem.getJSONObject((forZon*7)+2));
-                } else if (jie == 4) {
-                    item1.add(objItem.getJSONObject((forZon*7)));
-                    item2.add(objItem.getJSONObject((forZon*7)+1));
-                    item3.add(objItem.getJSONObject((forZon*7)+2));
-                    item4.add(objItem.getJSONObject((forZon*7)+3));
-                } else if (jie == 5) {
-                    item1.add(objItem.getJSONObject((forZon*7)));
-                    item2.add(objItem.getJSONObject((forZon*7)+1));
-                    item3.add(objItem.getJSONObject((forZon*7)+2));
-                    item4.add(objItem.getJSONObject((forZon*7)+3));
-                    item5.add(objItem.getJSONObject((forZon*7)+4));
-                } else {
-                    item1.add(objItem.getJSONObject((forZon*7)));
-                    item2.add(objItem.getJSONObject((forZon*7)+1));
-                    item3.add(objItem.getJSONObject((forZon*7)+2));
-                    item4.add(objItem.getJSONObject((forZon*7)+3));
-                    item5.add(objItem.getJSONObject((forZon*7)+4));
-                    item6.add(objItem.getJSONObject((forZon*7)+5));
-                }
-            }
-            Future<String> future1 = checkUtil.testResult(id_Ps, item1, myCompId);
-            Future<String> future2 = checkUtil.testResult(id_Ps, item2, myCompId);
-            Future<String> future3 = checkUtil.testResult(id_Ps, item3, myCompId);
-            Future<String> future4 = checkUtil.testResult(id_Ps, item4, myCompId);
-            Future<String> future5 = checkUtil.testResult(id_Ps, item5, myCompId);
-            Future<String> future6 = checkUtil.testResult(id_Ps, item6, myCompId);
-            checkUtil.checkUtil(id_Ps,item7,myCompId);
-            while (true) {
-                if (future1.isDone()
-                        && future2.isDone() && future3.isDone() && future4.isDone()
-                        && future5.isDone() && future6.isDone()
-                ) {
-                    break;
-                }
-            }
-        } else {
-            if (objItem.size() > 3) {
-                boolean isAdd = true;
-                for (int i = 0; i < objItem.size(); i++) {
-                    if (isAdd) {
-                        isAdd = false;
-                        item7.add(objItem.getJSONObject(i));
-                    } else {
-                        isAdd = true;
-                        item6.add(objItem.getJSONObject(i));
-                    }
-                }
-                Future<String> future6 = checkUtil.testResult(id_Ps, item6, myCompId);
-                checkUtil.checkUtil(id_Ps,item7,myCompId);
-                while (true) {
-                    if ( future6.isDone()) {
-                        break;
-                    }
-                }
-            } else {
-                checkUtil.checkUtil(id_Ps,item7,myCompId);
-            }
-        }
-        return id_Ps;
-    }
+//    private HashSet<String> getCheckOrderAllId_P(JSONArray objItem,String myCompId){
+//        HashSet<String> id_Ps = new HashSet<>();
+//        int forZon = objItem.size() / 7;
+//        JSONArray item6 = new JSONArray();
+//        JSONArray item7 = new JSONArray();
+//        if (forZon > 0) {
+//            JSONArray item1 = new JSONArray();
+//            JSONArray item2 = new JSONArray();
+//            JSONArray item3 = new JSONArray();
+//            JSONArray item4 = new JSONArray();
+//            JSONArray item5 = new JSONArray();
+//            int lei = 0;
+//            for (int i = 0; i < forZon; i++) {
+//                item1.add(objItem.getJSONObject(lei));
+//                item2.add(objItem.getJSONObject(lei+1));
+//                item3.add(objItem.getJSONObject(lei+2));
+//                item4.add(objItem.getJSONObject(lei+3));
+//                item5.add(objItem.getJSONObject(lei+4));
+//                item6.add(objItem.getJSONObject(lei+5));
+//                item7.add(objItem.getJSONObject(lei+6));
+//                lei+=7;
+//            }
+//            int jie = objItem.size()-(forZon*7);
+//            if (jie > 0) {
+//                if (jie == 1) {
+//                    item1.add(objItem.getJSONObject((forZon*7)));
+//                } else if (jie == 2) {
+//                    item1.add(objItem.getJSONObject((forZon*7)));
+//                    item2.add(objItem.getJSONObject((forZon*7)+1));
+//                } else if (jie == 3) {
+//                    item1.add(objItem.getJSONObject((forZon*7)));
+//                    item2.add(objItem.getJSONObject((forZon*7)+1));
+//                    item3.add(objItem.getJSONObject((forZon*7)+2));
+//                } else if (jie == 4) {
+//                    item1.add(objItem.getJSONObject((forZon*7)));
+//                    item2.add(objItem.getJSONObject((forZon*7)+1));
+//                    item3.add(objItem.getJSONObject((forZon*7)+2));
+//                    item4.add(objItem.getJSONObject((forZon*7)+3));
+//                } else if (jie == 5) {
+//                    item1.add(objItem.getJSONObject((forZon*7)));
+//                    item2.add(objItem.getJSONObject((forZon*7)+1));
+//                    item3.add(objItem.getJSONObject((forZon*7)+2));
+//                    item4.add(objItem.getJSONObject((forZon*7)+3));
+//                    item5.add(objItem.getJSONObject((forZon*7)+4));
+//                } else {
+//                    item1.add(objItem.getJSONObject((forZon*7)));
+//                    item2.add(objItem.getJSONObject((forZon*7)+1));
+//                    item3.add(objItem.getJSONObject((forZon*7)+2));
+//                    item4.add(objItem.getJSONObject((forZon*7)+3));
+//                    item5.add(objItem.getJSONObject((forZon*7)+4));
+//                    item6.add(objItem.getJSONObject((forZon*7)+5));
+//                }
+//            }
+//            Future<String> future1 = checkUtil.execThread(id_Ps, item1, myCompId);
+//            Future<String> future2 = checkUtil.execThread(id_Ps, item2, myCompId);
+//            Future<String> future3 = checkUtil.execThread(id_Ps, item3, myCompId);
+//            Future<String> future4 = checkUtil.execThread(id_Ps, item4, myCompId);
+//            Future<String> future5 = checkUtil.execThread(id_Ps, item5, myCompId);
+//            Future<String> future6 = checkUtil.execThread(id_Ps, item6, myCompId);
+//            checkUtil.checkUtil(id_Ps,item7,myCompId);
+//            while (true) {
+//                if (future1.isDone()
+//                        && future2.isDone() && future3.isDone() && future4.isDone()
+//                        && future5.isDone() && future6.isDone()
+//                ) {
+//                    break;
+//                }
+//            }
+//        } else {
+//            if (objItem.size() > 3) {
+//                boolean isAdd = true;
+//                for (int i = 0; i < objItem.size(); i++) {
+//                    if (isAdd) {
+//                        isAdd = false;
+//                        item7.add(objItem.getJSONObject(i));
+//                    } else {
+//                        isAdd = true;
+//                        item6.add(objItem.getJSONObject(i));
+//                    }
+//                }
+//                Future<String> future6 = checkUtil.execThread(id_Ps, item6, myCompId);
+//                checkUtil.checkUtil(id_Ps,item7,myCompId);
+//                while (true) {
+//                    if ( future6.isDone()) {
+//                        break;
+//                    }
+//                }
+//            } else {
+//                checkUtil.checkUtil(id_Ps,item7,myCompId);
+//            }
+//        }
+//        return id_Ps;
+//    }
     private HashSet<String> getCheckOrderAllId_P2(JSONArray objItem,String myCompId){
         HashSet<String> id_Ps = new HashSet<>();
         int itemSize = objItem.size();
         if (itemSize <= 6) {
             checkUtil.checkUtil(id_Ps,objItem,myCompId);
         }
-        int deng;
+        int breakCount; //breakdown count
         if (itemSize <= 12) {
-            deng = 2;
+            breakCount = 2;
         } else if (itemSize <= 18) {
-            deng = 3;
+            breakCount = 3;
         } else if (itemSize <= 24) {
-            deng = 4;
+            breakCount = 4;
         } else if (itemSize <= 30) {
-            deng = 5;
+            breakCount = 5;
         } else if (itemSize <= 36) {
-            deng = 6;
+            breakCount = 6;
         } else {
-            deng = 7;
+            breakCount = 7;
         }
-        List<List<JSONObject>> subList = qt.getSubList(deng, objItem, true, JSONObject.class);
-        Future<String> future1 = checkUtil.testResult(id_Ps, subList.get(1), myCompId);
-        if (deng == 2) {
-            getReturn(deng,future1,null,null,null,null,null,id_Ps,subList.get(0),myCompId);
+        List<List<JSONObject>> subList = qt.getSubList(breakCount, objItem, true, JSONObject.class);
+        Future<String> future1 = checkUtil.execThread(id_Ps, subList.get(1), myCompId);
+        if (breakCount == 2) {
+            threadReturn(breakCount,future1,null,null,null,null,null,id_Ps,subList.get(0),myCompId);
             return id_Ps;
         }
-        Future<String> future2 = checkUtil.testResult(id_Ps, subList.get(2), myCompId);
-        if (deng == 3) {
-            getReturn(deng,future1,future2,null,null,null,null,id_Ps,subList.get(0),myCompId);
+        Future<String> future2 = checkUtil.execThread(id_Ps, subList.get(2), myCompId);
+        if (breakCount == 3) {
+            threadReturn(breakCount,future1,future2,null,null,null,null,id_Ps,subList.get(0),myCompId);
             return id_Ps;
         }
-        Future<String> future3 = checkUtil.testResult(id_Ps, subList.get(3), myCompId);
-        if (deng == 4) {
-            getReturn(deng,future1,future2,future3,null,null,null,id_Ps,subList.get(0),myCompId);
+        Future<String> future3 = checkUtil.execThread(id_Ps, subList.get(3), myCompId);
+        if (breakCount == 4) {
+            threadReturn(breakCount,future1,future2,future3,null,null,null,id_Ps,subList.get(0),myCompId);
             return id_Ps;
         }
-        Future<String> future4 = checkUtil.testResult(id_Ps, subList.get(4), myCompId);
-        if (deng == 5) {
-            getReturn(deng,future1,future2,future3,future4,null,null,id_Ps,subList.get(0),myCompId);
+        Future<String> future4 = checkUtil.execThread(id_Ps, subList.get(4), myCompId);
+        if (breakCount == 5) {
+            threadReturn(breakCount,future1,future2,future3,future4,null,null,id_Ps,subList.get(0),myCompId);
             return id_Ps;
         }
-        Future<String> future5 = checkUtil.testResult(id_Ps, subList.get(5), myCompId);
-        if (deng == 6) {
-            getReturn(deng,future1,future2,future3,future4,future5,null,id_Ps,subList.get(0),myCompId);
+        Future<String> future5 = checkUtil.execThread(id_Ps, subList.get(5), myCompId);
+        if (breakCount == 6) {
+            threadReturn(breakCount,future1,future2,future3,future4,future5,null,id_Ps,subList.get(0),myCompId);
             return id_Ps;
         }
-        Future<String> future6 = checkUtil.testResult(id_Ps, subList.get(6), myCompId);
-        getReturn(deng,future1,future2,future3,future4,future5,future6,id_Ps,subList.get(0),myCompId);
+        Future<String> future6 = checkUtil.execThread(id_Ps, subList.get(6), myCompId);
+        threadReturn(breakCount,future1,future2,future3,future4,future5,future6,id_Ps,subList.get(0),myCompId);
         return id_Ps;
     }
 
-    public void getReturn(int deng,Future<String> future1
+    public void threadReturn(int breakCount,Future<String> future1
             ,Future<String> future2,Future<String> future3
             ,Future<String> future4,Future<String> future5,Future<String> future6
             ,HashSet<String> id_Ps,List<JSONObject> subListSon, String myCompId){
-        System.out.println("?");
+        // **System.out.println("?");
         checkUtil(id_Ps,subListSon,myCompId);
-        System.out.println("- ! -");
+        // **System.out.println("- ! -");
         while (true) {
-            if (deng == 2 && future1.isDone()) {
+            if (breakCount == 2 && future1.isDone()) {
                 break;
-            } else if (deng == 3 && future1.isDone() && future2.isDone()) {
+            } else if (breakCount == 3 && future1.isDone() && future2.isDone()) {
                 break;
-            } else if (deng == 4 && future1.isDone() && future2.isDone() && future3.isDone()) {
+            } else if (breakCount == 4 && future1.isDone() && future2.isDone() && future3.isDone()) {
                 break;
-            } else if (deng == 5 && future1.isDone() && future2.isDone()
+            } else if (breakCount == 5 && future1.isDone() && future2.isDone()
                     && future3.isDone() && future4.isDone()) {
                 break;
-            } else if (deng == 6 && future1.isDone() && future2.isDone() && future5.isDone()
+            } else if (breakCount == 6 && future1.isDone() && future2.isDone() && future5.isDone()
                     && future3.isDone() && future4.isDone()) {
                 break;
             } else {
@@ -625,7 +620,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         } else if (null != pidActionCollection.get(id_P)) {
             //Now, it is prod not task， Must Merge if id_P is in pidActionCollection
             // as long as you have it in pidArray, you MUST merge
-//            System.out.println("I merged2////" + upperAction);
+//            // **System.out.println("I merged2////" + upperAction);
 //            if (prodCompId.equals(myCompId)){
 //                cun2.add(grpB);
 //            }
@@ -671,9 +666,9 @@ public class FlowNewServiceImpl implements FlowNewService {
             );
 
 
-//            System.out.println("salesOrder@now");
-//            System.out.println(objActionCollection.get(fin_O));
-//            System.out.println(objActionCollection.get(id_OParent));
+//            // **System.out.println("salesOrder@now");
+//            // **System.out.println(objActionCollection.get(fin_O));
+//            // **System.out.println(objActionCollection.get(id_OParent));
             return;
         } else if (dgType.equals(1)) {
             newOrderId = id_OParent;
@@ -682,17 +677,17 @@ public class FlowNewServiceImpl implements FlowNewService {
             // Now need to check if prodCompId is in casItemData, if so, get and append 1 more prod in that order
             // 根据公司获取递归订单id
             boolean isNew = true;
-            boolean div = divideOrder.equals("true");
+            boolean isDivideGrp = divideOrder.equals("true");
             String grpBNew;
             for (int k = 0; k < casItemData.size(); k++) {
-//                System.out.println("casItem" + casItemData.getJSONObject(k));
+//                // **System.out.println("casItem" + casItemData.getJSONObject(k));
                 // 2 cases: prod is mine, check only if casItemx Type =2 and not 4
                 if (prodCompId.equals(myCompId) &&
                         prodCompId.equals(casItemData.getJSONObject(k).getString("id_C")) &&
                         casItemData.getJSONObject(k).getString("type").equals("2")
                         || prodCompId.equals(casItemData.getJSONObject(k).getString("id_C"))
                 ) {
-                    if (div && prodCompId.equals(myCompId)) {
+                    if (isDivideGrp && prodCompId.equals(myCompId)) {
                         grpBNew = casItemData.getJSONObject(k).getString("grpB");
                         if (null != grpBNew && grpBNew.equals(grpB)) {
                             newOrderId = casItemData.getJSONObject(k).getString("id_O");
@@ -720,7 +715,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 
 
                 if (prodCompId.equals(myCompId)) {
-                    if (div) {
+                    if (isDivideGrp) {
                         Asset as1 = qt.getConfig(prodCompId, "a-auth", "def.objlBP."+grpB+".wrdN");
                         String grpName = as1.getDef().getJSONObject("objlBP").getJSONObject(grpB).getJSONObject("wrdN").getString("cn");
 
@@ -807,10 +802,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 
                 upPrntsData.put("id_O", upperOItem.getId_O());
                 upPrntsData.put("index", upperOItem.getIndex());
-
                 upPrntsData.put("wn2qtyneed", objOItem.getWn2qtyneed());
-
-
                 upPrntsData.put("wrdN", upperOItem.getWrdN());
                 objAction.getUpPrnts().add(upPrntsData);
 
@@ -872,7 +864,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                             idAndIndex.put("id_O", partArray.getJSONObject(checkPrev).getString("fin_O"));
                             idAndIndex.put("index", partArray.getJSONObject(checkPrev).getInteger("fin_Ind"));
                             if (unitAction.getPrtPrev().contains(idAndIndex)) {
-//                                System.out.println("repeated");
+//                                // **System.out.println("repeated");
 
                             } else if (myPrior != partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
                                 if ((myPrior - 1) == partArray.getJSONObject(checkPrev).getInteger("wn0prior")) {
@@ -945,7 +937,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         if (!id_P.equals("")) {
 //            Prod thisProd = qt.getMDContent(id_P, Arrays.asList("_id", "part", "info"), Prod.class);
             Prod thisProd = dgProd.get(id_P);
-//            System.out.println("thisProd" + thisProd);
+//            // **System.out.println("thisProd" + thisProd);
 
 //            if (thisProd != null && thisProd.getPart() != null && thisProd.getPart().getJSONArray("objItem").size() > 0 &&
 //                    thisProd.getInfo().getId_C().equals(myCompId)) {
@@ -1027,9 +1019,9 @@ public class FlowNewServiceImpl implements FlowNewService {
                     orderODate.setKaiJie(5);
                 }
             }
-//            System.out.println("wn2qtyneed:" + objOItem.getWn2qtyneed() + " - teDurTotal:"
+//            // **System.out.println("wn2qtyneed:" + objOItem.getWn2qtyneed() + " - teDurTotal:"
 //                    + orderODate.getTeDurTotal() + " - tePrep:" + orderODate.getTePrep() + " - prior:" + objOItem.getWn0prior());
-//            System.out.println("csTeJ:" + " - id_P:" + objOItem.getId_P() + " - id_PF:" + id_PF + " - dq:" + dq);
+//            // **System.out.println("csTeJ:" + " - id_P:" + objOItem.getId_P() + " - id_PF:" + id_PF + " - dq:" + dq);
             // 添加信息
             orderODate.setId_O(objAction.getId_O());
             orderODate.setId_C(myCompId);
@@ -1052,8 +1044,8 @@ public class FlowNewServiceImpl implements FlowNewService {
                     , myCompId, 0L, 0L, -1, isNextPart);
             // 设置任务公司编号
             task.setId_C(myCompId);
-//            System.out.println("task:");
-//            System.out.println(JSON.toJSONString(task));
+//            // **System.out.println("task:");
+//            // **System.out.println(JSON.toJSONString(task));
             oTasks.add(task);
         }
         //ZJ
@@ -1106,7 +1098,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         orderParentData.setOItem(salesOrder_OItem);
 
         JSONArray view = orderParentData.getView();
-        System.out.println("got all ok Sales");
+        // **System.out.println("got all ok Sales");
 
         //Create oStock
         JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(salesOItem));
@@ -1129,94 +1121,94 @@ public class FlowNewServiceImpl implements FlowNewService {
 
         qt.saveMD(orderParentData);
 //        saveOrder.add(orderParentData);
-        System.out.println("sales order SAVED Parent " + orderParentData.getInfo().getWrdN().getString("cn"));
+        // **System.out.println("sales order SAVED Parent " + orderParentData.getInfo().getWrdN().getString("cn"));
     }
 
-
-    private synchronized void dgCheckUtil(JSONArray pidList, String id_P, String id_C
-            , JSONObject objectMap, JSONArray isRecurred
-            , JSONArray isEmpty, JSONObject stat, HashSet<String> id_Ps) {
-        try {
-
-//            System.out.println(id_P);
-            // 根据父编号获取父产品信息
-            Prod thisItem = qt.getMDContent(id_P, qt.strList("info", "part"), Prod.class);
-//        System.out.println("thiItem" + thisItem);
-
-            // 层级加一
-            stat.put("layer", stat.getInteger("layer") + 1);
-
-            boolean isConflict = false;
-            JSONArray checkList = new JSONArray();
-
-            // 判断父产品不为空，部件父产品零件不为空
-            if (thisItem != null) {
-                for (int i = 0; i < pidList.size(); i++) {
-//                System.out.println("冲突Check" + id_P);
-                    // 判断编号与当前的有冲突
-                    if (pidList.getString(i).equals(id_P)) {
-                        // 创建零件信息
-                        JSONObject conflictProd = new JSONObject();
-                        // 添加零件信息
-                        conflictProd.put("id_P", id_P);
-                        conflictProd.put("layer", (stat.getInteger("layer") + 1));
-                        conflictProd.put("index", i);
-                        // 添加到结果存储
-                        isRecurred.add(conflictProd);
-                        // 设置为有冲突
-                        isConflict = true;
-                        // 结束
-                        break;
-                    }
-                }
-
-                if (!isConflict) {
-                    checkList = (JSONArray) pidList.clone();
-                    checkList.add(id_P);
-                }
-
-                // 获取prod的part信息
-                if (!isConflict &&
-                        null != thisItem.getPart() &&
-                        thisItem.getInfo().getId_C().equals(id_C) &&
-                        null != thisItem.getPart().get("objItem")) {
-                    JSONArray nextItem = thisItem.getPart().getJSONArray("objItem");
-                    // 遍历零件信息1
-                    for (int j = 0; j < nextItem.size(); j++) {
-                        // 判断零件不为空并且零件编号不为空
-                        stat.put("count", stat.getInteger("count") + 1);
-//                    System.out.println("count " + stat.getInteger("count"));
-                        if (null != nextItem.get(j) && null != nextItem.getJSONObject(j).get("id_P")) {
-
-                            // 继续调用验证方法
-//                        System.out.println("判断无冲突" + isConflict);
-                            if (nextItem.getJSONObject(j).getDouble("wn4qtyneed") == null ||
-                                    nextItem.getJSONObject(j).getDouble("wn2qty") == null ||
-                                    nextItem.getJSONObject(j).getDouble("wn2port") == null) {
-                                objectMap.put("errDesc", "数量为空！");
-                                isEmpty.add(objectMap);
-                            } else {
-                                id_Ps.add(nextItem.getJSONObject(j).getString("id_P"));
-                                this.dgCheckUtil(checkList, nextItem.getJSONObject(j).getString("id_P"), id_C, nextItem.getJSONObject(j)
-                                        , isRecurred, isEmpty, stat, id_Ps);
-                            }
-                        } else {
-                            if (null != objectMap) {
-                                objectMap.put("errDesc", "产品不存在！");
-                                isEmpty.add(objectMap);
-                            }
-                        }
-                    }
-                }
-            } else if (!id_P.equals("")) {
-                objectMap.put("errDesc", "产品不存在！");
-                isEmpty.add(objectMap);
-            }
-        } catch (Exception ex) {
-            System.out.println("出现异常:" + ex.getMessage());
-            ex.printStackTrace();
-        }
-    }
+//
+//    private synchronized void dgCheckUtil(JSONArray pidList, String id_P, String id_C
+//            , JSONObject objectMap, JSONArray isRecurred
+//            , JSONArray isEmpty, JSONObject stat, HashSet<String> id_Ps) {
+//        try {
+//
+////            // **System.out.println(id_P);
+//            // 根据父编号获取父产品信息
+//            Prod thisItem = qt.getMDContent(id_P, qt.strList("info", "part"), Prod.class);
+////        // **System.out.println("thiItem" + thisItem);
+//
+//            // 层级加一
+//            stat.put("layer", stat.getInteger("layer") + 1);
+//
+//            boolean isConflict = false;
+//            JSONArray checkList = new JSONArray();
+//
+//            // 判断父产品不为空，部件父产品零件不为空
+//            if (thisItem != null) {
+//                for (int i = 0; i < pidList.size(); i++) {
+////                // **System.out.println("冲突Check" + id_P);
+//                    // 判断编号与当前的有冲突
+//                    if (pidList.getString(i).equals(id_P)) {
+//                        // 创建零件信息
+//                        JSONObject conflictProd = new JSONObject();
+//                        // 添加零件信息
+//                        conflictProd.put("id_P", id_P);
+//                        conflictProd.put("layer", (stat.getInteger("layer") + 1));
+//                        conflictProd.put("index", i);
+//                        // 添加到结果存储
+//                        isRecurred.add(conflictProd);
+//                        // 设置为有冲突
+//                        isConflict = true;
+//                        // 结束
+//                        break;
+//                    }
+//                }
+//
+//                if (!isConflict) {
+//                    checkList = (JSONArray) pidList.clone();
+//                    checkList.add(id_P);
+//                }
+//
+//                // 获取prod的part信息
+//                if (!isConflict &&
+//                        null != thisItem.getPart() &&
+//                        thisItem.getInfo().getId_C().equals(id_C) &&
+//                        null != thisItem.getPart().get("objItem")) {
+//                    JSONArray nextItem = thisItem.getPart().getJSONArray("objItem");
+//                    // 遍历零件信息1
+//                    for (int j = 0; j < nextItem.size(); j++) {
+//                        // 判断零件不为空并且零件编号不为空
+//                        stat.put("count", stat.getInteger("count") + 1);
+////                    // **System.out.println("count " + stat.getInteger("count"));
+//                        if (null != nextItem.get(j) && null != nextItem.getJSONObject(j).get("id_P")) {
+//
+//                            // 继续调用验证方法
+////                        // **System.out.println("判断无冲突" + isConflict);
+//                            if (nextItem.getJSONObject(j).getDouble("wn4qtyneed") == null ||
+//                                    nextItem.getJSONObject(j).getDouble("wn2qty") == null ||
+//                                    nextItem.getJSONObject(j).getDouble("wn2port") == null) {
+//                                objectMap.put("errDesc", "数量为空！");
+//                                isEmpty.add(objectMap);
+//                            } else {
+//                                id_Ps.add(nextItem.getJSONObject(j).getString("id_P"));
+//                                this.dgCheckUtil(checkList, nextItem.getJSONObject(j).getString("id_P"), id_C, nextItem.getJSONObject(j)
+//                                        , isRecurred, isEmpty, stat, id_Ps);
+//                            }
+//                        } else {
+//                            if (null != objectMap) {
+//                                objectMap.put("errDesc", "产品不存在！");
+//                                isEmpty.add(objectMap);
+//                            }
+//                        }
+//                    }
+//                }
+//            } else if (!id_P.equals("")) {
+//                objectMap.put("errDesc", "产品不存在！");
+//                isEmpty.add(objectMap);
+//            }
+//        } catch (Exception ex) {
+//            // **System.out.println("出现异常:" + ex.getMessage());
+//            ex.printStackTrace();
+//        }
+//    }
 
     /**
      * @param id_P                the P that is merging
@@ -1239,6 +1231,9 @@ public class FlowNewServiceImpl implements FlowNewService {
         // upperAction and upperOItem @ dgLayer = 1 is here with just regular shit
         // qtyNeed = upperOItem.qtyNeed
         Double qtyNeed = upperOItem.getWn2qtyneed();
+
+
+        //TODO KEV replace oItem/action setup with summOrder, and fixing lSBOrder?
 
         int checkPrev = partIndex - 1;
         Integer checkNext = partIndex + 1;
@@ -1269,7 +1264,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 
                     if (unitAction.getPrtPrev().contains(idAndIndex) ||
                             (finO.equals(unitOItem.getId_O()) && fin_Ind.equals(unitOItem.getIndex()))) {
-//                        System.out.println("repeated");
+//                        // **System.out.println("repeated");
 
                     } else {
                         if (!myPrior.equals(partArray.getJSONObject(checkPrev).getInteger("wn0prior"))) {
@@ -1282,7 +1277,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                 checkPrev--;
             } while (keepGoing);
         } catch (Exception e) {
-            System.out.println("合并异常:" + e.getMessage());
+            // **System.out.println("合并异常:" + e.getMessage());
             e.printStackTrace();
         }
 
@@ -1313,7 +1308,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 
 
             unitAction.getUpPrnts().add(upPrntsData);
-//            System.out.println(unitAction);
+//            // **System.out.println(unitAction);
             objActionCollection.get(finO).set(fin_Ind, unitAction);
         }
 
@@ -1348,7 +1343,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                 finO, fin_Ind, dgType, objActionCollection, objOItemCollection, oDates, mergeJ);
 
         if (dgType.equals(1)) {
-//            System.out.println("partIndex@1" + partIndex);
+//            // **System.out.println("partIndex@1" + partIndex);
             // fix the action of the next+ item using the unitAction of the 1st one
             unitAction.setIndex(partIndex);
             for (int i = 0; i < unitAction.getSubParts().size(); i++) {
@@ -1374,14 +1369,9 @@ public class FlowNewServiceImpl implements FlowNewService {
 
 
         Double currentQty = unitOItem.getWn2qtyneed();
-//        System.out.println("I am checking here");
-//        System.out.println(currentQty);
-//        System.out.println(unitOItem.getWrdN().getString("cn"));
-//        System.out.println(qtyNeed);
-
         unitOItem.setWn2qtyneed(currentQty + qtyNeed * qtySubNeed);
 
-//        System.out.println(unitOItem.getWn2qtyneed());
+//        // **System.out.println(unitOItem.getWn2qtyneed());
 
 
         // summ qtyall and qtyneed if I am not the main Parent
@@ -1393,7 +1383,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             oDa.setWn2qtyneed(oDa.getWn2qtyneed() + currentQty);
             oDates.set(ind, oDa);
 
-//            System.out.println(id_OP + finO);
+//            // **System.out.println(id_OP + finO);
             if (!dgType.equals(1)) {
                 JSONObject upPrntsData = unitAction.getUpPrnts().getJSONObject(0);
                 upPrntsData.put("wn2qtyneed", unitOItem.getWn2qtyneed());
@@ -1430,7 +1420,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         try {
             // 根据父编号获取父产品信息
             Prod thisItem = qt.getMDContent(id_P, qt.strList("info", "part"), Prod.class);
-//            System.out.println("thiItem" + thisItem);
+//            // **System.out.println("thiItem" + thisItem);
             // 层级加一
             stat.put("layer", stat.getInteger("layer") + 1);
 
@@ -1440,7 +1430,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             // 判断父产品不为空，部件父产品零件不为空
             if (thisItem != null) {
                 for (int i = 0; i < pidList.size(); i++) {
-//                System.out.println("冲突Check" + id_P);
+//                // **System.out.println("冲突Check" + id_P);
                     // 判断编号与当前的有冲突
                     if (pidList.getString(i).equals(id_P)) {
                         // 创建零件信息
@@ -1469,28 +1459,22 @@ public class FlowNewServiceImpl implements FlowNewService {
                         thisItem.getInfo().getId_C().equals(id_C) &&
                         null != thisItem.getPart().get("objItem")) {
                     JSONArray nextItem = thisItem.getPart().getJSONArray("objItem");
-//                    for (int i = 0; i < nextItem.size(); i++) {
-//                        String id_p = nextItem.getJSONObject(i).getString("id_P");
-//                        if (id_p.equals("62fcaae0cb15c454f3170c65")) {
-//                            System.out.println("p:"+id_P);
-//                        }
-//                    }
                     // 遍历零件信息1
                     for (int j = 0; j < nextItem.size(); j++) {
                         // 判断零件不为空并且零件编号不为空
                         stat.put("count", stat.getInteger("count") + 1);
-//                    System.out.println("count " + stat.getInteger("count"));
+//                    // **System.out.println("count " + stat.getInteger("count"));
                         if (null != nextItem.get(j) && null != nextItem.getJSONObject(j).get("id_P")) {
 
                             // 继续调用验证方法
-//                        System.out.println("判断无冲突" + isConflict);
+//                        // **System.out.println("判断无冲突" + isConflict);
                             if (nextItem.getJSONObject(j).getDouble("wn4qtyneed") == null ||
                                     nextItem.getJSONObject(j).getDouble("wn2qty") == null ||
                                     nextItem.getJSONObject(j).getDouble("wn2port") == null) {
                                 if (null == objectMap) {
                                     objectMap = new JSONObject();
                                 }
-                                System.out.println("为空-1");
+                                // **System.out.println("为空-1");
                                 objectMap.put("errDesc", "数量为空！");
                                 isEmpty.add(objectMap);
                             } else {
@@ -1504,7 +1488,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                             }
                         } else {
                             if (null != objectMap) {
-                                System.out.println("为空-2");
+                                // **System.out.println("为空-2");
                                 objectMap.put("errDesc", "产品不存在！");
                                 isEmpty.add(objectMap);
                             }
@@ -1512,13 +1496,13 @@ public class FlowNewServiceImpl implements FlowNewService {
                     }
                 }
             } else if (!id_P.equals("")) {
-                System.out.println("为空-3");
-                System.out.println("问题输出:"+id_P);
+                // **System.out.println("为空-3");
+                // **System.out.println("问题输出:"+id_P);
                 objectMap.put("errDesc", "产品不存在！");
                 isEmpty.add(objectMap);
             }
         } catch (Exception ex) {
-            System.out.println("出现异常:" + ex.getMessage());
+            // **System.out.println("出现异常:" + ex.getMessage());
             ex.printStackTrace();
         }
     }
@@ -1529,36 +1513,36 @@ public class FlowNewServiceImpl implements FlowNewService {
      * @param item  当前产品列表
      * @param myCompId  公司编号
      */
-    public void checkUtil(HashSet<String> id_Ps, JSONArray item, String myCompId){
-        for (int i = 0; i < item.size(); i++) {
-            String id_P = item.getJSONObject(i).getString("id_P");
-            if (id_Ps.contains(id_P)) {
-                continue;
-            }
-            // 创建异常信息存储
-            JSONArray isRecurred = new JSONArray();
-            // 创建产品信息存储
-            JSONArray isEmpty = new JSONArray();
-            // 创建零件id集合
-            JSONArray pidList = new JSONArray();
-            JSONObject nextPart = new JSONObject();
-
-            JSONObject stat = new JSONObject();
-            stat.put("layer", 0);
-            stat.put("count", 0);
-
-            // ******调用验证方法******
-            id_Ps.add(id_P);
-            checkUtilCore(pidList, id_P, myCompId, nextPart, isRecurred, isEmpty, stat, id_Ps);
-
-            if (isRecurred.size() > 0) {
-                throw new ErrorResponseException(HttpStatus.OK, com.cresign.tools.config.async.ActionEnum.ERR_PROD_RECURRED.getCode(), id_P);
-            }
-            if (isEmpty.size() > 0) {
-                throw new ErrorResponseException(HttpStatus.OK, com.cresign.tools.config.async.ActionEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
-            }
-        }
-    }
+//    public void checkUtil(HashSet<String> id_Ps, JSONArray item, String myCompId){
+//        for (int i = 0; i < item.size(); i++) {
+//            String id_P = item.getJSONObject(i).getString("id_P");
+//            if (id_Ps.contains(id_P)) {
+//                continue;
+//            }
+//            // 创建异常信息存储
+//            JSONArray isRecurred = new JSONArray();
+//            // 创建产品信息存储
+//            JSONArray isEmpty = new JSONArray();
+//            // 创建零件id集合
+//            JSONArray pidList = new JSONArray();
+//            JSONObject nextPart = new JSONObject();
+//
+//            JSONObject stat = new JSONObject();
+//            stat.put("layer", 0);
+//            stat.put("count", 0);
+//
+//            // ******调用验证方法******
+//            id_Ps.add(id_P);
+//            checkUtilCore(pidList, id_P, myCompId, nextPart, isRecurred, isEmpty, stat, id_Ps);
+//
+//            if (isRecurred.size() > 0) {
+//                throw new ErrorResponseException(HttpStatus.OK, com.cresign.tools.config.async.ActionEnum.ERR_PROD_RECURRED.getCode(), id_P);
+//            }
+//            if (isEmpty.size() > 0) {
+//                throw new ErrorResponseException(HttpStatus.OK, com.cresign.tools.config.async.ActionEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
+//            }
+//        }
+//    }
     /**
      * 递归验证方法（List<JSONObject>版本）
      * @param id_Ps 递归所有id存储

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class WsId {
-    public static final String ws = "1";
+    public static final String ws = "1"; // ****only need to change this
     public static final String topic = "wsTopic"+ws;
     public static final String tap = "wsTap"+ws;
     public static final String group = "wsGroup"+ws;

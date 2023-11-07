@@ -133,7 +133,7 @@ public class WxLoginServiceImpl implements WxLoginService {
      * @return java.lang.String
      */
     @Override
-    public ApiResponse wxWebLogin(String code) throws IOException {
+    public ApiResponse wxWebLogin(String code) {
 
 
         // 获取返回的code凭据,code作为换取access_token的票据，
@@ -147,46 +147,38 @@ public class WxLoginServiceImpl implements WxLoginService {
                         "&grant_type=authorization_code";
 
         // 把code凭据发送后，通过code换取网页授权access_token
-        JSONObject jsonObject = WxAuthUtil.doGetJson(codeUrl);
+        JSONObject wxResult = WxAuthUtil.doGetJson(codeUrl);
 
 
+//
+//        // openid 用户唯一标识，请注意，在未关注公众号时，用户访问公众号的网页，也会产生一个用户和公众号唯一的OpenID
+//        String openid = jsonObject.getString("openid");
+//
+//
+//        // 网页授权接口调用凭证,注意：此access_token与基础支持的access_token不同
+//        // token维持时间只有两小时，具体操作重新刷新token 看这个说明
+//        // https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421140842
+//        String token = jsonObject.getString("access_token");
 
-        // openid 用户唯一标识，请注意，在未关注公众号时，用户访问公众号的网页，也会产生一个用户和公众号唯一的OpenID
-        String openid = jsonObject.getString("openid");
-
-
-        // 网页授权接口调用凭证,注意：此access_token与基础支持的access_token不同
-        // token维持时间只有两小时，具体操作重新刷新token 看这个说明
-        // https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421140842
-        String token = jsonObject.getString("access_token");
-
-        // 获取用户信息的 url
-        String infoUrl =
-                "https://api.weixin.qq.com/sns/userinfo?access_token=" + token +
-                        "&openid=" + openid +
-                        "&lang=zh_CN";
+//        // 获取用户信息的 url
+//        String infoUrl =
+//                "https://api.weixin.qq.com/sns/userinfo?access_token=" + token +
+//                        "&openid=" + openid +
+//                        "&lang=zh_CN";
 
         // 用户信息json
-        JSONObject userInfo = WxAuthUtil.doGetJson(infoUrl);
+//        JSONObject userInfo = WxAuthUtil.doGetJson(infoUrl);
 
         // 如果绑定了公众号则有unionid，如果没有绑定则用openid
-        String unionid = jsonObject.getString("unionid");
+        String unionid = wxResult.getString("unionid");
 
-//        //创建查询对象
-//        Query query = new Query(Criteria.where("info.id_WX").is(unionid));
-//
-//        // 创建Auth对象存放查询后的结果
-//        User user = mongoTemplate.findOne(query, User.class);
+
         JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", unionid));
-        if (null == es || es.size() == 0
-//                || !getIsEsKV(es, qt.setJson("id_WX", unionid))
-        ) {
+        if (null == es || es.size() == 0) {
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
                     LOGIN_NOTFOUND_USER.getCode(),unionid);
         }
-//        JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_WX", unionid)).getJSONObject(0);
         // 创建Auth对象存放查询后的结果
-//        User user = qt.getMDContentAll(getEsV(es,"id_U"),User.class);
         User user = qt.getMDContent(getEsV(es,"id_U"),qt.strList("info","rolex"),User.class);
         // 判断两种情况：
         // 1. 账号已经绑定了
@@ -194,12 +186,9 @@ public class WxLoginServiceImpl implements WxLoginService {
         if (ObjectUtils.isEmpty(user)
 //                || null!=userLn
         ) {
-
-             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-WX_NOT_BIND.getCode(),unionid);
-
+             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.WX_NOT_BIND.getCode(),unionid);
         }
-        if (getIsOffSimple(user.getInfo().getMbn())) {
+        if (isUserRegisterOff(user.getInfo().getMbn())) {
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
                     USER_REG_OFF.getCode(),unionid);
         }
@@ -337,7 +326,7 @@ WX_NOT_BIND.getCode(),unionid);
 //                    result.put("t_desc", "该账户正在注销中！！！");
 //                    return retResult.ok(CodeEnum.OK.getCode(), result);
 //                }
-                if (getIsOffSimple(user.getInfo().getMbn())) {
+                if (isUserRegisterOff(user.getInfo().getMbn())) {
                     throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
                             USER_REG_OFF.getCode(),id_WX);
                 }
@@ -381,7 +370,7 @@ WX_NOT_BIND.getCode(),unionid);
         User user = qt.getMDContent(getEsV(es,"id_U"),qt.strList("info","rolex"),User.class);
         // 判断用户是否存在
         if (user!=null){
-            if (getIsOffSimple(user.getInfo().getMbn())) {
+            if (isUserRegisterOff(user.getInfo().getMbn())) {
                 throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
                         USER_REG_OFF.getCode(),null);
             }
@@ -580,8 +569,7 @@ WX_NOT_BIND.getCode(), null);
                 qt.setRDSet(SMSTypeEnum.LOGIN.getSmsType(), phone, smsNum, 180L);
                 return retResult.ok(CodeEnum.OK.getCode(), null);
             } else {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-SMS_CODE_NOT_CORRECT.getCode(), null);
+                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.SMS_CODE_NOT_CORRECT.getCode(), null);
             }
 
         } else {
@@ -770,7 +758,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         return retResult.ok( CodeEnum.OK.getCode(), 0);
     }
 
-    public boolean getIsOffSimple(String phone){
+    public boolean isUserRegisterOff(String phone){
         String[] s = phone.split("_");
         return s.length > 1 && s[1].equals("off");
     }

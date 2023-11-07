@@ -126,19 +126,26 @@ public class RedirectServiceImpl implements RedirectService {
         data.put("latitude",latitude);
         log.setData(data);
         log.setId_Us(id_Us);
-        JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, entries.get("id_U").toString());
-        if (null != rdInfo && rdInfo.size()>0) {
-            for (String cli : rdInfo.keySet()) {
-                JSONObject cliInfo = rdInfo.getJSONObject(cli);
-                // 发送日志
-                ws.sendWSOnly(cliInfo.getString("mqKey"),log);
-            }
-//            JSONObject cliInfo = rdInfo.getJSONObject("uniapp");
-//            // 发送日志
-//            ws.sendWSOnly(cliInfo.getString("mqKey"),log);
-        } else {
-            return retResult.ok(CodeEnum.OK.getCode(), "操作失败，用户离线");
-        }
+        //TODO ZJ 没必要 rdInfo,
+
+//        JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, entries.get("id_U").toString());
+//        if (null != rdInfo && rdInfo.size()>0) {
+//            for (String cli : rdInfo.keySet()) {
+//                //TODO ZJ 没必要 rdInfo,
+//                JSONObject cliInfo = rdInfo.getJSONObject(cli);
+//                // 发送日志
+//                ws.sendMQ(cliInfo.getString("mqKey"),log);
+//
+//            }
+//            ws.sendWS(log);
+////            JSONObject cliInfo = rdInfo.getJSONObject("uniapp");
+////            // 发送日志
+////            ws.sendMQ(cliInfo.getString("mqKey"),log);
+//        } else {
+//            return retResult.ok(CodeEnum.OK.getCode(), "操作失败，用户离线");
+//        }
+        ws.sendWS(log); // why offline = 有问题?
+
         return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
     }
 

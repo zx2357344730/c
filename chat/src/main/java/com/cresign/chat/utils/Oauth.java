@@ -40,6 +40,7 @@ public class Oauth {
      *@author           Kevin
      *@updated             2020/5/15 13:28
      */
+    //TODO KEV double check if this is same as login's
     public  String setToken(User user, String cid, String grpU, String dep,  String clientType){
 
             String token = "";
@@ -80,8 +81,6 @@ public class Oauth {
             dataSet.put("modAuth", modArray);
             String uid = user.getId();
 
-            System.out.println("setting Token" + dataSet.toJSONString());
-
             token = jwtUtil.createJWT(uid, clientType);
 
             qt.setRDSet(clientType + "Token", token, dataSet, 500L);
@@ -89,21 +88,21 @@ public class Oauth {
             return token;
     }
 
-    /**
-     *##description:      获取 refreshToken
-     *@param
-     *@return
-     *@author           JackSon
-     *@updated             2020/5/15 15:45
-     */
-    public  String setRefreshToken(String uid, String clientType) {
-
-        Long second = clientType.equals("web") ? 604800L : 3888000L;
-
-        String refreshToken = jwtUtil.createJWT(UUID.randomUUID().toString(), clientType);
-        qt.setRDSet(clientType + "RefreshToken", refreshToken,uid, second);
-
-        return refreshToken;
-    }
+//    /**
+//     *##description:      获取 refreshToken
+//     *@param
+//     *@return
+//     *@author           JackSon
+//     *@updated             2020/5/15 15:45
+//     */
+//    public  String setRefreshToken(String uid, String clientType) {
+//
+//        Long second = clientType.equals("web") ? 604800L : 3888000L;
+//
+//        String refreshToken = jwtUtil.createJWT(UUID.randomUUID().toString(), clientType);
+//        qt.setRDSet(clientType + "RefreshToken", refreshToken,uid, second);
+//
+//        return refreshToken;
+//    }
 
 }

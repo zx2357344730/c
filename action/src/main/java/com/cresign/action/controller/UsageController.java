@@ -45,21 +45,6 @@ public class UsageController {
         }
     }
 
-
-//    @SecurityParameter
-//    @PostMapping("/v1/setRecentTask")
-//    public ApiResponse setRecentTask(@RequestBody JSONObject json) {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-//        return usageService.setRecentTask(
-//                tokData.getString("id_U"),
-//                tokData.getString("id_C"),
-//                json.getString("id_O"),
-//                json.getInteger("index"),
-//                json.getString("id"),
-//                json.getString("id_FS")
-//        );
-//    }
-
     @SecurityParameter
     @PostMapping("/v1/setFav")
     public ApiResponse setFav(@RequestBody JSONObject json) {
@@ -261,24 +246,4 @@ public class UsageController {
         }
     }
 
-//    @SecurityParameter
-//    @PostMapping("/v1/connectionComp")
-//    public ApiResponse connectionComp(@RequestBody JSONObject json) throws IOException {
-//        return usageService.connectionComp(
-//                json.getString("id_C"),
-//                json.getString("id_CB"),
-//                json.getBoolean("isCB")
-//        );
-//    }
-//
-//    @SecurityParameter
-//    @PostMapping("/v1/connectionProd")
-//    public ApiResponse connectionProd(@RequestBody JSONObject json) throws IOException {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-//
-//        return usageService.connectionProd(
-//                tokData.getString("id_C"),
-//                json.getString("id_P")
-//        );
-//    }
 }

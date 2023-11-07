@@ -47,40 +47,48 @@ public class WxAuthUtil {
      * @updated 2020/7/29 9:43
      * @return com.alibaba.fastjson.JSONObject
      */
-    public static JSONObject doGetJson(String url) throws IOException {
+    public static JSONObject doGetJson(String url) {
 
-        // 声明json对象
-        JSONObject jsonObject = null;
+        try {
+            // 声明json对象
+            JSONObject jsonObject = null;
 
-        // 声明client连接对象
+            // 声明client连接对象
 //        DefaultHttpClient client = new DefaultHttpClient();
 
-        // 什么get请求方式
-        HttpGet httpGet = new HttpGet(url);
+            // 什么get请求方式
+            HttpGet httpGet = new HttpGet(url);
 
-        HttpClient client = HttpClientBuilder.create().build();
+            HttpClient client = HttpClientBuilder.create().build();
 
-        // 声明response返回
-        HttpResponse response = client.execute(httpGet);
+            // 声明response返回
+            HttpResponse response = client.execute(httpGet);
 
-        // 获取返回内容
-        HttpEntity entity = response.getEntity();
+            // 获取返回内容
+            HttpEntity entity = response.getEntity();
 
-        // 判断是否为空，是 则返回NULL，否返回JSON对象
-        if (entity != null) {
+            // 判断是否为空，是 则返回NULL，否返回JSON对象
+            if (entity != null) {
 
-            // 编码格式utf-8
-            String result = EntityUtils.toString(entity, "UTF-8");
+                // 编码格式utf-8
+                String result = EntityUtils.toString(entity, "UTF-8");
 
-            // 获取其返回内容并且转换为json对象
-            jsonObject = JSONObject.parseObject(result);
+                // 获取其返回内容并且转换为json对象
+                jsonObject = JSONObject.parseObject(result);
+
+            }
+
+            // 释放连接
+            httpGet.releaseConnection();
+
+            return jsonObject;
+
+        }
+        catch (Exception e)
+        {
 
         }
 
-        // 释放连接
-        httpGet.releaseConnection();
-
-        return jsonObject;
 
     }
 

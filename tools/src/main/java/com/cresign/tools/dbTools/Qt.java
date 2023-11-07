@@ -475,31 +475,31 @@ public class Qt {
         System.out.println("start_thread-id:"+ qtThread.getThreadId());
         Future<String> future1 = qtThread.threadMD(subList.get(1), list,strList,classType);
         if (splitNum == 2) {
-            getReturn(splitNum,future1,null,null,null,null,list,subList.get(0),strList,classType);
+            threadReturn(splitNum,future1,null,null,null,null,list,subList.get(0),strList,classType);
             return list;
         }
         Future<String> future2 = qtThread.threadMD(subList.get(2), list,strList,classType);
         if (splitNum == 3) {
-            getReturn(splitNum,future1,future2,null,null,null,list,subList.get(0),strList,classType);
+            threadReturn(splitNum,future1,future2,null,null,null,list,subList.get(0),strList,classType);
             return list;
         }
         Future<String> future3 = qtThread.threadMD(subList.get(3), list,strList,classType);
         if (splitNum == 4) {
-            getReturn(splitNum,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
+            threadReturn(splitNum,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
             return list;
         }
         Future<String> future4 = qtThread.threadMD(subList.get(4), list,strList,classType);
         if (splitNum == 5) {
-            getReturn(splitNum,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
+            threadReturn(splitNum,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
             return list;
         }
         Future<String> future5 = qtThread.threadMD(subList.get(5), list,strList,classType);
-        getReturn(splitNum,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
+        threadReturn(splitNum,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
         return list;
     }
 
 
-    public <T> void getReturn(int splitNum,Future<String> future1
+    public <T> void threadReturn(int splitNum,Future<String> future1
             ,Future<String> future2,Future<String> future3
             ,Future<String> future4,Future<String> future5,List<T> list
             ,List<String> subListSon,List<String> strList, Class<T> classType){
@@ -537,9 +537,7 @@ public class Qt {
                 }
             }
         }
-//        System.out.println("大小:");
-//        System.out.println(list.size());
-        errPrint("结果集合大小:",null,list.size());
+        errPrint("结果集合大小:",list.size());
     }
 
     public List<?> getMDContentMany(HashSet setIds, String field, Class<?> classType) {
@@ -577,6 +575,7 @@ public class Qt {
 
     public void errPrint(String title, Exception e, Object... vars)
     {
+
         System.out.println("****[" +title+"]****");
 
 //            System.out.println("[");
@@ -1232,7 +1231,6 @@ public class Qt {
             sourceBuilder.sort(sortKey, SortOrder.ASC);
         try {
 
-            this.errPrint("getES", null, index, page, size, sortKey, sortOrder, filterArray);
             SearchRequest request = new SearchRequest();
 
             String[] indices = index.split("/");
