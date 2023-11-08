@@ -8,6 +8,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ZjTestServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ZjTestServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Ws.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/Ws.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,7 +68,7 @@
       <recent name="com.cresign.login.utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.GatewayApp">
+  <component name="RunManager" selected="Application.ChatApp">
     <configuration name="ActionApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.cresign.action.ActionApp" />
       <module name="action" />
