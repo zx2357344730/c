@@ -381,7 +381,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
 //                            }
 //                        }
                         // 获取发送用户列表
-                        ws.setId_Us(logData);
+                        ws.setId_UsByFC(logData);
                         ws.setAppIds(logData);
                         JSONArray id_Us = logData.getId_Us();
                         JSONObject rdInfoMap = new JSONObject();

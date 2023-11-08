@@ -27,11 +27,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author tang
@@ -688,19 +686,8 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(), "发送-同意查看-失败");
     }
 
-    /**
-     *
-     * @param id_C
-     * @param sumDates
-     * @param chkInMode 打卡模式
-     * @param isAllSpecialTime 是否全部特殊时间
-     * @param isAutoCardReplacement 是否自动系统补卡
-     * @param isSumSpecialTime 是否统计特殊时间
-     * @return
-     */
     @Override
-    public ApiResponse statisticsChKin(String id_C,JSONArray sumDates,int chkInMode
-            ,boolean isAllSpecialTime,boolean isAutoCardReplacement,boolean isSumSpecialTime) {
+    public ApiResponse statisticsChKin(String id_C,JSONArray sumDates) {
         String date = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         Asset asset = qt.getConfig(id_C, "a-chkin", "chkin");
         if (null == asset || null == asset.getChkin()) {
@@ -712,7 +699,6 @@ public class ZjTestServiceImpl implements ZjTestService {
         JSONObject bm1 = objChkin.getJSONObject("bm1");
         JSONObject zb1 = bm1.getJSONObject("zb1");
         String theSameDay = sumDates.getString(0);
-//        int chkInMode = 0;
         // 获取上下班时间
         JSONArray arrTime = zb1.getJSONArray("arrTime");
         // 获取上班前打卡时间范围
@@ -737,73 +723,48 @@ public class ZjTestServiceImpl implements ZjTestService {
         JSONArray dayMust = zb1.getJSONArray("dayMust");
         // 无须打卡日期
         JSONArray dayMiss = zb1.getJSONArray("dayMiss");
-        teDur+=7200;
-        if (isAllSpecialTime) {
-            JSONArray chkInEs = qt.getES("chkin", qt.setESFilt("id_U", "6256789ae1908c03460f906f"));
-            if (null == chkInEs || chkInEs.size() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
-                        CHK_IN_NOT_FOUND.getCode(),"");
-            }
-            List<Long> userDates1 = getUserDates(chkInEs);
-            testSpecialTime(userDates1,teDur);
-
-            JSONArray chkInEs2 = qt.getES("chkin", qt.setESFilt("id_U", "test"));
-            if (null == chkInEs2 || chkInEs2.size() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
-                        CHK_IN_NOT_FOUND.getCode(),"");
-            }
-            List<Long> userDates2 = getUserDates(chkInEs2);
-            testSpecialTime(userDates2,teDur);
-            return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+        JSONArray chkInEs = qt.getES("chkin", qt.setESFilt("id_U", "6256789ae1908c03460f906f"));
+        if (null == chkInEs || chkInEs.size() == 0) {
+            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                    CHK_IN_NOT_FOUND.getCode(),"");
         }
-        List<Long> arrTimeLong = getArrTime(arrTime, theSameDay);
-        if (chkInMode == 0) {
-            JSONArray chkInEs = qt.getES("chkin", qt.setESFilt("id_U", "6256789ae1908c03460f906f"));
-            if (null == chkInEs || chkInEs.size() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
-                        CHK_IN_NOT_FOUND.getCode(),"");
-            }
-            List<Long> userDates1 = getUserDates(chkInEs);
-            testChkInSum(arrTimeLong,userDates1,"6256789ae1908c03460f906f",teDur
-                    ,isAutoCardReplacement,isSumSpecialTime,ovt);
+        testChkInSum(chkInEs,arrTime,theSameDay,"6256789ae1908c03460f906f",teDur);
 
-            JSONArray chkInEs2 = qt.getES("chkin", qt.setESFilt("id_U", "test"));
-            if (null == chkInEs2 || chkInEs2.size() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
-                        CHK_IN_NOT_FOUND.getCode(),"");
-            }
-            List<Long> userDates2 = getUserDates(chkInEs2);
-            testChkInSum(arrTimeLong,userDates2,"test",teDur
-                    ,isAutoCardReplacement,isSumSpecialTime,ovt);
-            return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
-        } else if (chkInMode == 1) {
-            JSONArray chkInEs = qt.getES("chkin", qt.setESFilt("id_U", "6256789ae1908c03460f906f"));
-            if (null == chkInEs || chkInEs.size() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
-                        CHK_IN_NOT_FOUND.getCode(),"");
-            }
-            List<Long> userDates1 = getUserDates(chkInEs);
-            testChkInSumHeadTail(arrTimeLong,userDates1,"6256789ae1908c03460f906f",teDur
-                    ,isAutoCardReplacement,isSumSpecialTime,ovt);
-
-            JSONArray chkInEs2 = qt.getES("chkin", qt.setESFilt("id_U", "test"));
-            if (null == chkInEs2 || chkInEs2.size() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
-                        CHK_IN_NOT_FOUND.getCode(),"");
-            }
-            List<Long> userDates2 = getUserDates(chkInEs2);
-            testChkInSumHeadTail(arrTimeLong,userDates2,"test",teDur
-                    ,isAutoCardReplacement,isSumSpecialTime,ovt);
-            return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+        JSONArray chkInEs2 = qt.getES("chkin", qt.setESFilt("id_U", "test"));
+        if (null == chkInEs2 || chkInEs2.size() == 0) {
+            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.
+                    CHK_IN_NOT_FOUND.getCode(),"");
         }
+        testChkInSum(chkInEs2,arrTime,theSameDay,"test",teDur);
         return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
     }
 
-    public void testChkInSum(List<Long> arrTimeLong,List<Long> userDates,String id_U
-            ,long teDur,boolean isAutoCardReplacement,boolean isSumSpecialTime,JSONArray ovt){
+    public void testChkInSum(JSONArray chkInEs,JSONArray arrTime,String theSameDay,String id_U,long teDur){
+        List<LogFlow> logFlows = new ArrayList<>();
+        for (int i = 0; i < chkInEs.size(); i++) {
+            logFlows.add(JSONObject.parseObject(JSON.toJSONString(chkInEs.getJSONObject(i)), LogFlow.class));
+        }
+        //lambda表达式实现List接口sort方法排序
+        logFlows.sort(Comparator.comparing(num -> num.getData().getString("date")));
+        List<Long> dates = new ArrayList<>();
+        for (LogFlow logFlow : logFlows) {
+            JSONObject data = logFlow.getData();
+            String date1 = data.getString("date");
+            dates.add(getDeLong(date1));
+        }
+        // 加班时间
+        List<Long> workOvertime = new ArrayList<>();
+        // 正常时间
+//        List<Long> regularClass = new ArrayList<>();
+        // 确认上班时间点
+//        int [] queRenTime = new int[dates.size()];
+//        long [] errTime = new long[dates.size()];
+        List<Long> arrTimeLong = new ArrayList<>();
+        for (int i = 0; i < arrTime.size(); i++) {
+            arrTimeLong.add(getDeLong(theSameDay+" "+arrTime.getString(i)));
+        }
         List<List<Long>> originTimeList = new ArrayList<>();
         List<List<Long>> arrTimeList = new ArrayList<>();
-        List<List<Long>> centreTimeList = new ArrayList<>();
         List<Long> originListNew = new ArrayList<>();
         List<Long> centreListNew = new ArrayList<>();
         long chi = 0;
@@ -815,13 +776,11 @@ public class ZjTestServiceImpl implements ZjTestService {
             centreList.add(upper);
             centreList.add(below);
             arrTimeList.add(centreList);
-            List<Long> centreTimeSon = new ArrayList<>();
 
             List<Long> originList = new ArrayList<>();
-            List<Long> upperBelowBetween = getUpperBelowBetween(upper, below, userDates, 30, 30);
+            List<Long> upperBelowBetween = getUpperBelowBetween(upper, below, dates, 60, 60);
             if (upperBelowBetween.size() == 0) {
                 originTimeList.add(originList);
-                centreTimeList.add(centreTimeSon);
                 continue;
             }
             if (upperBelowBetween.size() > 4) {
@@ -835,359 +794,28 @@ public class ZjTestServiceImpl implements ZjTestService {
                 originList.addAll(upperBelowBetween);
                 if (upperBelowBetween.get(0) <= upper) {
                     centreListNew.add(upper);
-                    centreTimeSon.add(upper);
                 } else {
                     chi += upperBelowBetween.get(0) - upper;
                     centreListNew.add(upperBelowBetween.get(0));
-                    centreTimeSon.add(upperBelowBetween.get(0));
                 }
                 if (upperBelowBetween.size() == 4) {
                     centreListNew.add(upperBelowBetween.get(1));
                     centreListNew.add(upperBelowBetween.get(2));
-                    centreTimeSon.add(upperBelowBetween.get(1));
-                    centreTimeSon.add(upperBelowBetween.get(2));
                 }
                 if (upperBelowBetween.get(upperBelowBetween.size() - 1) >= below) {
                     centreListNew.add(below);
-                    centreTimeSon.add(below);
                 } else {
                     zao += below - upperBelowBetween.get(upperBelowBetween.size() - 1);
                     centreListNew.add(upperBelowBetween.get(upperBelowBetween.size() - 1));
-                    centreTimeSon.add(upperBelowBetween.get(upperBelowBetween.size() - 1));
                 }
             } else {
                 long original;
-                boolean isNormalUpper = false;
-                boolean isNormalBelow = false;
                 if (upperBelowBetween.size() == 3) {
-                    if (upperBelowBetween.get(0) <= upper) {
-                        centreListNew.add(upper);
-                        centreTimeSon.add(upper);
-                        originListNew.add(upperBelowBetween.get(0));
-                        originList.add(upperBelowBetween.get(0));
-                    } else {
-                        if (isAutoCardReplacement) {
-                            centreListNew.add(upper);
-                            centreTimeSon.add(upper);
-                        } else {
-                            chi += upperBelowBetween.get(0) - upper;
-                            centreListNew.add(0L);
-                            centreTimeSon.add(0L);
-                        }
-                        originListNew.add(0L);
-                        originList.add(0L);
-                        for (Long betweenTime : upperBelowBetween) {
-                            originListNew.add(betweenTime);
-                            originList.add(betweenTime);
-                            centreListNew.add(betweenTime);
-                            centreTimeSon.add(betweenTime);
-                        }
-                        Long centreTime1 = upperBelowBetween.get(0);
-                        Long centreTime2 = upperBelowBetween.get(1);
-                        zao += centreTime2 - centreTime1;
-                        originTimeList.add(originList);
-                        centreTimeList.add(centreTimeSon);
-                        continue;
-                    }
-                    if (upperBelowBetween.get(upperBelowBetween.size() - 1) >= below) {
-                        centreListNew.add(below);
-                        centreTimeSon.add(below);
-                        originListNew.add(upperBelowBetween.get(upperBelowBetween.size() - 1));
-                        originList.add(upperBelowBetween.get(upperBelowBetween.size() - 1));
-                    } else {
-                        for (int j = 1; j < upperBelowBetween.size(); j++) {
-                            originListNew.add(upperBelowBetween.get(j));
-                            originList.add(upperBelowBetween.get(j));
-                            centreListNew.add(upperBelowBetween.get(j));
-                            centreTimeSon.add(upperBelowBetween.get(j));
-                        }
-                        if (isAutoCardReplacement) {
-                            centreListNew.add(below);
-                            centreTimeSon.add(below);
-                        } else {
-                            zao += below - upperBelowBetween.get(upperBelowBetween.size() - 1);
-                            centreListNew.add(0L);
-                            centreTimeSon.add(0L);
-                        }
-                        originListNew.add(0L);
-                        originList.add(0L);
-                        Long centreTime1 = upperBelowBetween.get(1);
-                        Long centreTime2 = upperBelowBetween.get(2);
-                        zao += centreTime2 - centreTime1;
-                    }
-                    originTimeList.add(originList);
-                    centreTimeList.add(centreTimeSon);
-                    continue;
+                    original = upperBelowBetween.get(upperBelowBetween.size() - 1);
                 } else {
                     original = upperBelowBetween.get(0);
-                    if (original <= upper) {
-                        isNormalUpper = true;
-                    } else {
-                        if (original >= below) {
-                            isNormalBelow = true;
-                        }
-                    }
                 }
-                int originIndex = getContrastChkInTimeNew(original, centreList);
-                int newIndex;
-                // isUpper是对应newIndex的上下班时间
-                boolean isUpper = true;
-                if(originIndex % 2 == 0){
-                    newIndex = originIndex+1;
-                    isUpper = false;
-                } else {
-                    newIndex = originIndex-1;
-                }
-                Long originTime = centreList.get(originIndex);
-                if (isAutoCardReplacement) {
-                    Long newTime = centreList.get(newIndex);
-//                    Long origTime = centreList.get(originIndex);
-                    if (isNormalUpper) {
-                        originListNew.add(original);
-                        originListNew.add(0L);
-                        centreListNew.add(originTime);
-                        centreListNew.add(newTime);
-                        centreTimeSon.add(originTime);
-                        centreTimeSon.add(newTime);
-                        originList.add(original);
-                        originList.add(0L);
-                    } else {
-                        if (isNormalBelow) {
-                            originListNew.add(0L);
-                            originListNew.add(original);
-                            centreListNew.add(newTime);
-                            centreListNew.add(originTime);
-                            centreTimeSon.add(newTime);
-                            centreTimeSon.add(originTime);
-                            originList.add(0L);
-                            originList.add(original);
-                        } else {
-                            if (original < originTime) {
-                                originListNew.add(original);
-                                originListNew.add(0L);
-                                centreListNew.add(original);
-                                centreListNew.add(originTime);
-                                centreTimeSon.add(original);
-                                centreTimeSon.add(originTime);
-                                originList.add(original);
-                                originList.add(0L);
-                            } else {
-                                originListNew.add(0L);
-                                originListNew.add(original);
-                                centreListNew.add(originTime);
-                                centreListNew.add(original);
-                                centreTimeSon.add(originTime);
-                                centreTimeSon.add(original);
-                                originList.add(0L);
-                                originList.add(original);
-                            }
-                            if (isUpper) {
-                                chi += (original - newTime);
-                            } else {
-                                zao += (newTime - original);
-                            }
-                        }
-                    }
-//                    Long newTime = centreList.get(newIndex);
-                } else {
-                    if (original < originTime) {
-                        originListNew.add(original);
-                        originListNew.add(0L);
-                        centreListNew.add(original);
-                        centreListNew.add(0L);
-                        centreTimeSon.add(original);
-                        centreTimeSon.add(0L);
-                        originList.add(original);
-                        originList.add(0L);
-                    } else {
-                        originListNew.add(0L);
-                        originListNew.add(original);
-                        centreListNew.add(0L);
-                        centreListNew.add(original);
-                        centreTimeSon.add(0L);
-                        centreTimeSon.add(original);
-                        originList.add(0L);
-                        originList.add(original);
-                    }
-                }
-            }
-            originTimeList.add(originList);
-            centreTimeList.add(centreTimeSon);
-        }
-        System.out.println();
-        System.out.println("-------------------- "+id_U+" --------------------");
-        System.out.println("正常时间纠正New - centreListNew:");
-        System.out.println(JSON.toJSONString(getTimeToStr(centreListNew)));
-        System.out.println("正常时间 - originListNew:");
-        System.out.println(JSON.toJSONString(getTimeToStr(originListNew)));
-//        System.out.println("特殊时间 - specialTimeList:");
-//        System.out.println(JSON.toJSONString(getTimeToStr(specialTimeList)));
-        System.out.println("++++++++++++++++++++++++++++++++");
-        System.out.println("正常每段时间纠正 - centreTimeList:");
-        getTimeToListStr(centreTimeList);
-        System.out.println("++++++++++++++++++++++++++++++++");
-        System.out.println("正常每段时间 - originTimeList:");
-        getTimeToListStr(originTimeList);
-//        System.out.println("++++++++++++++++++++++++++++++++");
-//        System.out.println("正常每段时间 - arrTimeList:");
-//        getTimeToListStr(arrTimeList);
-        long zon = 0;
-        long jia = 0;
-        long que = 0;
-        long work;
-        for (int i = 0; i < centreListNew.size(); i+=2) {
-            long ownUpper = centreListNew.get(i);
-            long ownBelow = centreListNew.get(i+1);
-            if (ownUpper == 0 || ownBelow == 0) {
-                continue;
-            }
-            zon += ownBelow - ownUpper;
-        }
-        for (int i = 0; i < arrTimeList.size(); i++) {
-            List<Long> arrList = arrTimeList.get(i);
-            List<Long> centreList = centreTimeList.get(i);
-            boolean isQue = false;
-            if (centreList.size() == 0) {
-                isQue = true;
-            } else if (centreList.size() == 2) {
-                Long upper = centreList.get(0);
-                Long below = centreList.get(1);
-                if (upper == 0 || below == 0) {
-                    isQue = true;
-                }
-            }
-            if (isQue) {
-                Long ownUpper = arrList.get(0);
-                Long ownBelow = arrList.get(1);
-                que += ownBelow - ownUpper;
-            }
-        }
-        for (int i = 0; i < ovt.size(); i++) {
-            Integer ovtIndex = ovt.getInteger(i);
-            List<Long> centreList = centreTimeList.get(ovtIndex/2);
-            if (centreList.size() > 0) {
-                for (int j = 0; j < centreList.size(); j+=2) {
-                    Long upper = centreList.get(j);
-                    Long below = centreList.get(j + 1);
-                    if (upper == 0 || below == 0) {
-                        continue;
-                    }
-                    jia += below - upper;
-                }
-            }
-        }
-        work = zon - jia;
-//        if (zon > teDur) {
-//            zon = teDur;
-//        }
-        System.out.println("总上班时间 - zon:"+zon);
-        System.out.println("普通上班时间: - work:"+work);
-        System.out.println("迟到时间 - chi:"+chi);
-        System.out.println("早退时间 - zao:"+zao);
-        System.out.println("加班时间 - jia:"+jia);
-        System.out.println("缺勤时间 - que:"+que);
-        System.out.println("总要求上班时间 - teDur:"+teDur);
-        if (isSumSpecialTime) {
-            long te = 0;
-            long start = arrTimeLong.get(0);
-            long end = arrTimeLong.get(arrTimeLong.size()-1);
-            // 开始或小于开始时间
-            List<Long> startSpecialList = new ArrayList<>();
-            // 结束或大于结束时间
-            List<Long> endSpecialList = new ArrayList<>();
-            for (Long da : userDates) {
-                if (da <= start) {
-                    startSpecialList.add(da);
-                } else if (da >= end) {
-                    endSpecialList.add(da);
-                }
-            }
-            if (startSpecialList.size() > 0 && startSpecialList.size() % 2 != 0) {
-                startSpecialList.remove(startSpecialList.size()-1);
-            }
-            if (endSpecialList.size() > 0 && endSpecialList.size() % 2 != 0) {
-                endSpecialList.remove(0);
-            }
-            for (int i = 0; i < startSpecialList.size(); i+=2) {
-                Long ownUpper = startSpecialList.get(i);
-                Long ownBelow = startSpecialList.get(i + 1);
-                te += ownBelow - ownUpper;
-            }
-            for (int i = 0; i < endSpecialList.size(); i+=2) {
-                Long ownUpper = endSpecialList.get(i);
-                Long ownBelow = endSpecialList.get(i + 1);
-                te += ownBelow - ownUpper;
-            }
-            System.out.println("特殊- 开始 -时间 - startSpecialList:");
-            System.out.println(JSON.toJSONString(getTimeToStr(startSpecialList)));
-            System.out.println("特殊= 结束 =时间 - endSpecialList:");
-            System.out.println(JSON.toJSONString(getTimeToStr(endSpecialList)));
-            System.out.println("特殊上班时间 - te:"+te);
-        }
-    }
-    public void testChkInSumHeadTail(List<Long> arrTimeLong,List<Long> userDates,String id_U
-            ,long teDur,boolean isAutoCardReplacement,boolean isSumSpecialTime,JSONArray ovt){
-        List<List<Long>> originTimeList = new ArrayList<>();
-        List<List<Long>> arrTimeList = new ArrayList<>();
-        List<List<Long>> centreTimeList = new ArrayList<>();
-        List<Long> originListNew = new ArrayList<>();
-        List<Long> centreListNew = new ArrayList<>();
-        long chi = 0;
-        long zao = 0;
-        for (int i = 0; i < arrTimeLong.size(); i+=2) {
-            Long upper = arrTimeLong.get(i);
-            Long below = arrTimeLong.get(i + 1);
-            List<Long> centreList = new ArrayList<>();
-            centreList.add(upper);
-            centreList.add(below);
-            arrTimeList.add(centreList);
-
-            List<Long> originList = new ArrayList<>();
-            List<Long> centreTimeSon = new ArrayList<>();
-            List<Long> upperBelowBetween = getUpperBelowBetween(upper, below, userDates, 30, 30);
-            if (upperBelowBetween.size() == 0) {
-                originTimeList.add(originList);
-                centreTimeList.add(centreTimeSon);
-                continue;
-            }
-            List<Long> upperBelowBetweenNew = new ArrayList<>();
-            if (upperBelowBetween.size() > 2) {
-                upperBelowBetweenNew.add(upperBelowBetween.get(0));
-                upperBelowBetweenNew.add(upperBelowBetween.get(upperBelowBetween.size()-1));
-            } else {
-                upperBelowBetweenNew.addAll(upperBelowBetween);
-            }
-            if (upperBelowBetweenNew.size() % 2 == 0) {
-                originListNew.addAll(upperBelowBetweenNew);
-                originList.addAll(upperBelowBetweenNew);
-                if (upperBelowBetweenNew.get(0) <= upper) {
-                    centreListNew.add(upper);
-                    centreTimeSon.add(upper);
-                } else {
-                    chi += upperBelowBetweenNew.get(0) - upper;
-                    centreListNew.add(upperBelowBetweenNew.get(0));
-                    centreTimeSon.add(upperBelowBetweenNew.get(0));
-                }
-                if (upperBelowBetweenNew.get(upperBelowBetweenNew.size() - 1) >= below) {
-                    centreListNew.add(below);
-                    centreTimeSon.add(below);
-                } else {
-                    zao += below - upperBelowBetweenNew.get(upperBelowBetweenNew.size() - 1);
-                    centreListNew.add(upperBelowBetweenNew.get(upperBelowBetweenNew.size() - 1));
-                    centreTimeSon.add(upperBelowBetweenNew.get(upperBelowBetweenNew.size() - 1));
-                }
-            } else {
-                long original = upperBelowBetweenNew.get(0);
-                boolean isNormalUpper = false;
-                boolean isNormalBelow = false;
-                if (original <= upper) {
-                    isNormalUpper = true;
-                } else {
-                    if (original >= below) {
-                        isNormalBelow = true;
-                    }
-                }
-                int originIndex = getContrastChkInTimeNew(original, centreList);
+                int originIndex = getContrastChkInTimeNew(original, arrTimeLong);
                 int newIndex;
                 boolean isUpper = true;
                 if(originIndex % 2 == 0){
@@ -1196,367 +824,296 @@ public class ZjTestServiceImpl implements ZjTestService {
                 } else {
                     newIndex = originIndex-1;
                 }
-                Long originTime = centreList.get(originIndex);
-                if (isAutoCardReplacement) {
-                    Long newTime = centreList.get(newIndex);
-//                    Long origTime = centreList.get(originIndex);
-                    if (isNormalUpper) {
-                        originListNew.add(original);
-                        originListNew.add(0L);
-                        centreListNew.add(originTime);
-                        centreListNew.add(newTime);
-                        centreTimeSon.add(originTime);
-                        centreTimeSon.add(newTime);
-                        originList.add(original);
-                        originList.add(0L);
-                    } else {
-                        if (isNormalBelow) {
-                            originListNew.add(0L);
-                            originListNew.add(original);
-                            centreListNew.add(newTime);
-                            centreListNew.add(originTime);
-                            centreTimeSon.add(newTime);
-                            centreTimeSon.add(originTime);
-                            originList.add(0L);
-                            originList.add(original);
-                        } else {
-                            if (original < originTime) {
-                                originListNew.add(original);
-                                originListNew.add(0L);
-                                centreListNew.add(original);
-                                centreListNew.add(originTime);
-                                centreTimeSon.add(original);
-                                centreTimeSon.add(originTime);
-                                originList.add(original);
-                                originList.add(originTime);
-                            } else {
-                                originListNew.add(0L);
-                                originListNew.add(original);
-                                centreListNew.add(originTime);
-                                centreListNew.add(original);
-                                centreTimeSon.add(originTime);
-                                centreTimeSon.add(original);
-                                originList.add(originTime);
-                                originList.add(original);
-                            }
-                            if (isUpper) {
-                                chi += (original - newTime);
-                            } else {
-                                zao += (newTime - original);
-                            }
-                        }
-                    }
+                Long originTime = arrTimeLong.get(originIndex);
+                if (original < originTime) {
+                    originListNew.add(original);
+                    originListNew.add(0L);
+                    centreListNew.add(original);
+                    centreListNew.add(originTime);
+                    originList.add(original);
+                    originList.add(originTime);
                 } else {
-                    if (original < originTime) {
-                        originListNew.add(original);
-                        originListNew.add(0L);
-                        centreListNew.add(original);
-                        centreListNew.add(0L);
-                        centreTimeSon.add(original);
-                        centreTimeSon.add(0L);
-                        originList.add(original);
-                        originList.add(0L);
-                    } else {
-                        originListNew.add(0L);
-                        originListNew.add(original);
-                        centreListNew.add(0L);
-                        centreListNew.add(original);
-                        centreTimeSon.add(0L);
-                        centreTimeSon.add(original);
-                        originList.add(0L);
-                        originList.add(original);
-                    }
+                    originListNew.add(0L);
+                    originListNew.add(original);
+                    centreListNew.add(originTime);
+                    centreListNew.add(original);
+                    originList.add(originTime);
+                    originList.add(original);
+                }
+                Long newTime = arrTimeLong.get(newIndex);
+                if (isUpper) {
+                    chi += (original - newTime);
+                } else {
+                    zao += (newTime - original);
                 }
             }
             originTimeList.add(originList);
-            centreTimeList.add(centreTimeSon);
         }
-        System.out.println();
-        System.out.println("-------------------- "+id_U+" --------------------");
-        System.out.println("正常时间纠正New - centreListNew:");
-        System.out.println(JSON.toJSONString(getTimeToStr(centreListNew)));
-        System.out.println("正常时间 - originListNew:");
-        System.out.println(JSON.toJSONString(getTimeToStr(originListNew)));
-//        System.out.println("特殊时间 - specialTimeList:");
-//        System.out.println(JSON.toJSONString(getTimeToStr(specialTimeList)));
-        System.out.println("++++++++++++++++++++++++++++++++");
-        System.out.println("正常每段时间纠正 - centreTimeList:");
-        getTimeToListStr(centreTimeList);
-        System.out.println("++++++++++++++++++++++++++++++++");
-        System.out.println("正常每段时间 - originTimeList:");
-        getTimeToListStr(originTimeList);
-        long zon = 0;
-        long jia = 0;
-        long que = 0;
-        long work;
-        for (int i = 0; i < centreListNew.size(); i+=2) {
-            long ownUpper = centreListNew.get(i);
-            long ownBelow = centreListNew.get(i+1);
-            if (ownUpper == 0 || ownBelow == 0) {
-                continue;
-            }
-            zon += ownBelow - ownUpper;
-        }
-        for (int i = 0; i < arrTimeList.size(); i++) {
-            List<Long> arrList = arrTimeList.get(i);
-            List<Long> centreList = centreTimeList.get(i);
-            boolean isQue = false;
-            if (centreList.size() == 0) {
-                isQue = true;
-            } else if (centreList.size() == 2) {
-                Long upper = centreList.get(0);
-                Long below = centreList.get(1);
-                if (upper == 0 || below == 0) {
-                    isQue = true;
+        long start = arrTimeLong.get(0);
+        long end = arrTimeLong.get(arrTime.size()-1);
+        // 开始或小于开始时间
+        List<Long> startList = new ArrayList<>();
+        // 结束或大于结束时间
+        List<Long> endList = new ArrayList<>();
+//        // 中间正常时间
+//        List<Long> centreList = new ArrayList<>();
+//        // 中间补卡时间
+//        List<Long> centreRepairList = new ArrayList<>();
+//        // 原本上班时间
+//        List<Long> originList = new ArrayList<>();
+        for (int i = 0; i < dates.size(); i++) {
+            Long da = dates.get(i);
+            if (da <= start) {
+                startList.add(da);
+//                queRenTime[i] = 2;
+            } else if (da >= end) {
+                endList.add(da);
+//                queRenTime[i] = 2;
+            } else {
+//                System.out.println("for:");
+                long contrastChkInTimeSt = getContrastChkInTime(da, arrTimeLong.get(0));
+                if (0 != contrastChkInTimeSt) {
+                    startList.add(contrastChkInTimeSt);
+//                    errTime[0] = da;
+//                    queRenTime[i] = 3;
+                    continue;
                 }
-            }
-            if (isQue) {
-                Long ownUpper = arrList.get(0);
-                Long ownBelow = arrList.get(1);
-                que += ownBelow - ownUpper;
-            }
-        }
-        for (int i = 0; i < ovt.size(); i++) {
-            Integer ovtIndex = ovt.getInteger(i);
-            List<Long> centreList = centreTimeList.get(ovtIndex/2);
-            if (centreList.size() > 0) {
-                for (int j = 0; j < centreList.size(); j+=2) {
-                    Long upper = centreList.get(j);
-                    Long below = centreList.get(j + 1);
-                    if (upper == 0 || below == 0) {
-                        continue;
-                    }
-                    jia += below - upper;
+                long contrastChkInTimeEn = getContrastChkInTime(da, arrTimeLong.get(arrTime.size()-1));
+                if (0 != contrastChkInTimeEn) {
+                    endList.add(contrastChkInTimeEn);
+//                    errTime[dates.size()-1] = da;
+//                    queRenTime[i] = 3;
+//                    continue;
                 }
-            }
-        }
-        work = zon - jia;
-//        if (zon > teDur) {
-//            zon = teDur;
-//        }
-        System.out.println("总上班时间 - zon:"+zon);
-        System.out.println("普通上班时间: - work:"+work);
-        System.out.println("迟到时间 - chi:"+chi);
-        System.out.println("早退时间 - zao:"+zao);
-        System.out.println("加班时间 - jia:"+jia);
-        System.out.println("缺勤时间 - que:"+que);
-        System.out.println("总要求上班时间 - teDur:"+teDur);
-        if (isSumSpecialTime) {
-            long te = 0;
-            long start = arrTimeLong.get(0);
-            long end = arrTimeLong.get(arrTimeLong.size()-1);
-            // 开始或小于开始时间
-            List<Long> startSpecialList = new ArrayList<>();
-            // 结束或大于结束时间
-            List<Long> endSpecialList = new ArrayList<>();
-            for (Long da : userDates) {
-                if (da <= start) {
-                    startSpecialList.add(da);
-                } else if (da >= end) {
-                    endSpecialList.add(da);
-                }
-            }
-            if (startSpecialList.size() > 0 && startSpecialList.size() % 2 != 0) {
-                startSpecialList.remove(startSpecialList.size()-1);
-            }
-            if (endSpecialList.size() > 0 && endSpecialList.size() % 2 != 0) {
-                endSpecialList.remove(0);
-            }
-            for (int i = 0; i < startSpecialList.size(); i+=2) {
-                Long ownUpper = startSpecialList.get(i);
-                Long ownBelow = startSpecialList.get(i + 1);
-                te += ownBelow - ownUpper;
-            }
-            for (int i = 0; i < endSpecialList.size(); i+=2) {
-                Long ownUpper = endSpecialList.get(i);
-                Long ownBelow = endSpecialList.get(i + 1);
-                te += ownBelow - ownUpper;
-            }
-            System.out.println("特殊- 开始 -时间 - startSpecialList:");
-            System.out.println(JSON.toJSONString(getTimeToStr(startSpecialList)));
-            System.out.println("特殊= 结束 =时间 - endSpecialList:");
-            System.out.println(JSON.toJSONString(getTimeToStr(endSpecialList)));
-            System.out.println("特殊上班时间 - te:"+te);
-        }
-    }
-
-    public void testSpecialTime(List<Long> userDates,long teDur){
-        if (null == userDates || userDates.size() == 0) {
-            return;
-        }
-        if (userDates.size() % 2 != 0) {
-            userDates.remove(userDates.size()-1);
-        }
-        long te = 0;
-        long que = 0;
-        for (int i = 0; i < userDates.size(); i+=2) {
-            Long upper = userDates.get(i);
-            Long below = userDates.get(i + 1);
-            te += below - upper;
-        }
-        if (te > teDur) {
-            te = teDur;
-        } else {
-            que = teDur - te;
-        }
-        System.out.println();
-        System.out.println("用户上班时间 - userDates:");
-        System.out.println(JSON.toJSONString(getTimeToStr(userDates)));
-        System.out.println();
-        System.out.println("特殊上班时间 - te:"+te);
-        System.out.println("缺勤时间 - que:"+que);
-        System.out.println("总要求上班时间 - teDur:"+teDur);
-        System.out.println();
-    }
-
-//    public long[] getRangeTime(List<Long> arrTimeLong,List<List<Long>> arrTimeList,List<Long> dates
-//            ,List<List<Long>> originTimeList,List<Long> originListNew,List<Long> centreListNew
-//            ,boolean isAutoCardReplacement){
-//        long[] result = new long[2];
-//        long chi = 0L;
-//        long zao = 0L;
-//        for (int i = 0; i < arrTimeLong.size(); i+=2) {
-//            Long upper = arrTimeLong.get(i);
-//            Long below = arrTimeLong.get(i + 1);
-//            List<Long> centreList = new ArrayList<>();
-//            centreList.add(upper);
-//            centreList.add(below);
-//            arrTimeList.add(centreList);
-//
-//            List<Long> originList = new ArrayList<>();
-//            List<Long> upperBelowBetween = getUpperBelowBetween(upper, below, dates, 60, 60);
-//            if (upperBelowBetween.size() == 0) {
-//                originTimeList.add(originList);
-//                continue;
-//            }
-//            if (upperBelowBetween.size() > 4) {
-//                int reduce = upperBelowBetween.size() - 4;
-//                for (int j = 0; j < reduce; j++) {
-//                    upperBelowBetween.remove(upperBelowBetween.size()-1);
-//                }
-//            }
-//            if (upperBelowBetween.size() % 2 == 0) {
-//                originListNew.addAll(upperBelowBetween);
-//                originList.addAll(upperBelowBetween);
-//                if (upperBelowBetween.get(0) <= upper) {
-//                    centreListNew.add(upper);
+//                List<Long> contrastChkInTime = getContrastChkInTime(da, arrTimeLong);
+//                if (contrastChkInTime.get(0) != 0) {
+//                    centreList.add(contrastChkInTime.get(0));
+//                    centreRepairList.add(contrastChkInTime.get(0));
+//                    queRenTime[i] = 1;
 //                } else {
-//                    chi += upperBelowBetween.get(0) - upper;
-//                    centreListNew.add(upperBelowBetween.get(0));
+//                    centreList.add(da);
+//                    Long systemTime = contrastChkInTime.get(1);
+//                    if (systemTime < da) {
+//                        centreRepairList.add(systemTime);
+//                        centreRepairList.add(da);
+//                    } else {
+//                        centreRepairList.add(da);
+//                        centreRepairList.add(systemTime);
+//                    }
+//                    queRenTime[i] = 0;
 //                }
-//                if (upperBelowBetween.size() == 4) {
-//                    centreListNew.add(upperBelowBetween.get(1));
-//                    centreListNew.add(upperBelowBetween.get(2));
-//                }
-//                if (upperBelowBetween.get(upperBelowBetween.size() - 1) >= below) {
-//                    centreListNew.add(below);
-//                } else {
-//                    zao += below - upperBelowBetween.get(upperBelowBetween.size() - 1);
-//                    centreListNew.add(upperBelowBetween.get(upperBelowBetween.size() - 1));
-//                }
+//                originList.add(da);
+            }
+        }
+        System.out.println("-----------------------------------");
+//        if (startList.size() > 0 && startList.size() % 2 != 0) {
+//            Long st = startList.get(startList.size() - 1);
+//            List<Long> contrastChkInTimeSt = getContrastChkInTimeNew(st, arrTimeLong.get(0));
+//            if (contrastChkInTimeSt.get(0) != 0) {
+//                centreList.add(0,contrastChkInTimeSt.get(0));
+//                centreRepairList.add(0,contrastChkInTimeSt.get(0));
+//                queRenTime[0] = 1;
 //            } else {
-//                long original;
-//                if (upperBelowBetween.size() == 3) {
-//                    original = upperBelowBetween.get(upperBelowBetween.size() - 1);
-//                } else {
-//                    original = upperBelowBetween.get(0);
-//                }
-//                int originIndex = getContrastChkInTimeNew(original, arrTimeLong);
-//                int newIndex;
-//                boolean isUpper = true;
-//                if(originIndex % 2 == 0){
-//                    newIndex = originIndex+1;
-//                    isUpper = false;
-//                } else {
-//                    newIndex = originIndex-1;
-//                }
-//                Long originTime = arrTimeLong.get(originIndex);
-//                if (isAutoCardReplacement) {
-//                    if (original < originTime) {
-//                        originListNew.add(original);
-//                        originListNew.add(0L);
-//                        centreListNew.add(original);
-//                        centreListNew.add(originTime);
-//                        originList.add(original);
-//                        originList.add(originTime);
-//                    } else {
-//                        originListNew.add(0L);
-//                        originListNew.add(original);
-//                        centreListNew.add(originTime);
-//                        centreListNew.add(original);
-//                        originList.add(originTime);
-//                        originList.add(original);
-//                    }
-//                    Long newTime = arrTimeLong.get(newIndex);
-//                    if (isUpper) {
-//                        chi += (original - newTime);
-//                    } else {
-//                        zao += (newTime - original);
-//                    }
-//                } else {
-//                    if (original < originTime) {
-//                        originListNew.add(original);
-//                        originListNew.add(0L);
-//                        centreListNew.add(original);
-//                        centreListNew.add(0L);
-//                        originList.add(original);
-//                        originList.add(0L);
-//                    } else {
-//                        originListNew.add(0L);
-//                        originListNew.add(original);
-//                        centreListNew.add(0L);
-//                        centreListNew.add(original);
-//                        originList.add(0L);
-//                        originList.add(original);
-//                    }
-//                }
+//                centreList.add(0,st);
+//                centreRepairList.add(0,st);
+//                queRenTime[0] = 0;
 //            }
-//            originTimeList.add(originList);
+//            if (errTime[0] != 0) {
+//                originList.add(0,errTime[0]);
+//            } else {
+//                originList.add(0,st);
+//            }
+//            startList.remove(startList.size()-1);
 //        }
-//        result[0] = chi;
-//        result[1] = zao;
-//        return result;
-//    }
+//        if (endList.size() > 0 && endList.size() % 2 != 0) {
+//            Long en = endList.get(0);
+//            long contrastChkInTimeEn = getContrastChkInTime(en, arrTimeLong.get(arrTimeLong.size()-1));
+//            if (contrastChkInTimeEn != 0) {
+//                centreList.add(contrastChkInTimeEn);
+//                centreRepairList.add(contrastChkInTimeEn);
+//                queRenTime[dates.size()-1] = 1;
+//            } else {
+//                centreList.add(en);
+//                centreRepairList.add(en);
+//                queRenTime[dates.size()-1] = 0;
+//            }
+//            if (errTime[errTime.length-1] != 0) {
+//                originList.add(errTime[errTime.length-1]);
+//            } else {
+//                originList.add(en);
+//            }
+//            endList.remove(0);
+//        }
+        if (startList.size() > 0 && startList.size() % 2 != 0) {
+//            Long st = startList.get(startList.size() - 1);
+//            List<Long> contrastChkInTimeSt = getContrastChkInTimeNew(st, arrTimeLong.get(0));
+//            if (contrastChkInTimeSt.get(0) != 0) {
+//                centreList.add(0,contrastChkInTimeSt.get(0));
+//                centreRepairList.add(0,contrastChkInTimeSt.get(0));
+//                queRenTime[0] = 1;
+//            } else {
+//                centreList.add(0,st);
+//                centreRepairList.add(0,st);
+//                queRenTime[0] = 0;
+//            }
+//            if (errTime[0] != 0) {
+//                originList.add(0,errTime[0]);
+//            } else {
+//                originList.add(0,st);
+//            }
+            startList.remove(startList.size()-1);
+//            queRenTime[0] = 1;
+        }
+        if (endList.size() > 0 && endList.size() % 2 != 0) {
+//            Long en = endList.get(0);
+//            long contrastChkInTimeEn = getContrastChkInTime(en, arrTimeLong.get(arrTimeLong.size()-1));
+//            if (contrastChkInTimeEn != 0) {
+//                centreList.add(contrastChkInTimeEn);
+//                centreRepairList.add(contrastChkInTimeEn);
+//                queRenTime[dates.size()-1] = 1;
+//            } else {
+//                centreList.add(en);
+//                centreRepairList.add(en);
+//                queRenTime[dates.size()-1] = 0;
+//            }
+//            if (errTime[errTime.length-1] != 0) {
+//                originList.add(errTime[errTime.length-1]);
+//            } else {
+//                originList.add(en);
+//            }
+            endList.remove(0);
+//            queRenTime[dates.size()-1] = 1;
+        }
+        if (startList.size() >= 2) {
+            workOvertime.addAll(startList);
+        }
+        if (endList.size() >= 2) {
+            workOvertime.addAll(endList);
+        }
+        System.out.println();
+        System.out.println("-------------------- "+id_U+" --------------------");
+        System.out.println("正常时间纠正New - centreListNew:");
+        System.out.println(JSON.toJSONString(centreListNew));
+        System.out.println(JSON.toJSONString(getTimeToStr(centreListNew)));
+        System.out.println("正常时间New - originListNew:");
+        System.out.println(JSON.toJSONString(originListNew));
+        System.out.println(JSON.toJSONString(getTimeToStr(originListNew)));
+//        System.out.println("正常时间纠正 - centreList:");
+//        System.out.println(JSON.toJSONString(centreList));
+//        System.out.println(JSON.toJSONString(getTimeToStr(centreList)));
+//        System.out.println("正常时间 - originList:");
+//        System.out.println(JSON.toJSONString(originList));
+//        System.out.println(JSON.toJSONString(getTimeToStr(originList)));
+//        System.out.println("正常补卡时间 - centreRepairList:");
+//        System.out.println(JSON.toJSONString(centreRepairList));
+//        System.out.println(JSON.toJSONString(getTimeToStr(centreRepairList)));
+        System.out.println("加班 - workOvertime:");
+        System.out.println(JSON.toJSONString(workOvertime));
+        System.out.println(JSON.toJSONString(getTimeToStr(workOvertime)));
+        long zon = 0;
+        long jia = 0;
+        long que = 0;
+//        System.out.println("确认正常时间 - queRenTime:");
+//        System.out.println(JSON.toJSONString(queRenTime));
+        for (int i = 0; i < centreListNew.size(); i+=2) {
+            long ownUpper = centreListNew.get(i);
+            long ownBelow = centreListNew.get(i+1);
+            zon += ownBelow - ownUpper;
+        }
+        for (int i = 0; i < arrTimeList.size(); i++) {
+//            List<Long> arrList = arrTimeList.get(i);
+//            long arrZon = 0;
+//            for (int j = 0; j < arrList.size(); j+=2) {
+//                Long ownUpper = arrList.get(j);
+//                Long ownBelow = arrList.get(j + 1);
+//                arrZon += ownBelow - ownUpper;
+//            }
+//            long xinZon = 0;
+//            List<Long> originList = originTimeList.get(i);
+//            for (int j = 0; j < originList.size(); j+=2) {
+//                Long ownUpper = arrList.get(j);
+//                Long ownBelow = arrList.get(j + 1);
+//                zon += ownBelow - ownUpper;
+//                xinZon += ownBelow - ownUpper;
+//            }
+            List<Long> arrList = arrTimeList.get(i);
+            List<Long> originList = originTimeList.get(i);
+            if (originList.size() == 0) {
+                for (int j = 0; j < arrList.size(); j+=2) {
+                    Long ownUpper = arrList.get(j);
+                    Long ownBelow = arrList.get(j + 1);
+                    que += ownBelow - ownUpper;
+                }
+            }
+//            System.out.println("第-{ "+(i+1)+" }-段时间,余剩时间:"+(arrZon-xinZon));
+        }
+//        for (int i = 0; i < centreList.size(); i+=2) {
+//            Long arrUpper = arrTimeLong.get(i);
+//            long ownUpper = centreList.get(i);
+//            Long origUpper = originList.get(i);
+//            int queUpper = queRenTime[i+startList.size()];
+//            long upperTime;
+//            long upper;
+//            if (queUpper == 0) {
+//                upperTime = arrUpper;
+//                upper = (arrUpper - ownUpper);
+////                System.out.println("arrUpper:"+arrUpper+" , ownUpper:"+ownUpper);
+////                System.out.println("upper:"+upper);
+//            } else {
+//                upperTime = ownUpper;
+//                upper = ownUpper - origUpper;
+//            }
+//            if (upper < 0) {
+//                chi -= upper;
+//                queRenTime[i+startList.size()] = 0;
+//            }
+//            Long arrBelow = arrTimeLong.get(i+1);
+//            long ownBelow = centreList.get(i+1);
+//            Long origBelow = originList.get(i+1);
+//            int queBelow = queRenTime[i+startList.size()+1];
+//            long belowTime;
+//            long below;
+//            if (queBelow == 0) {
+//                belowTime = arrBelow;
+//                below = arrBelow - ownBelow;
+////                System.out.println("arrBelow:"+arrBelow+" , ownBelow"+ ownBelow);
+////                System.out.println("below:"+below);
+//            } else {
+//                belowTime = ownBelow;
+//                below = ownBelow - origBelow;
+//            }
+//            if (below > 0) {
+//                zao += below;
+//                queRenTime[i+startList.size()+1] = 0;
+//            }
+//            zon += belowTime - upperTime;
+//        }
+        for (int i = 0; i < workOvertime.size(); i+=2) {
+            Long ownUpper = workOvertime.get(i);
+            Long ownBelow = workOvertime.get(i + 1);
+            jia += ownBelow - ownUpper;
+        }
+//        zon -= chi + zao;
+        if (zon > teDur) {
+            zon = teDur;
+        }
+//        System.out.println("确认正常时间 - queRenTime:");
+//        System.out.println(JSON.toJSONString(queRenTime));
+//        System.out.println("异常时间 - errTime:");
+//        System.out.println(JSON.toJSONString(errTime));
+        System.out.println("总时间 - zon:"+zon);
+        System.out.println("迟到时间 - chi:"+chi);
+        System.out.println("早退时间 - zao:"+zao);
+        System.out.println("加班时间 - jia:"+jia);
+        System.out.println("缺勤时间 - que:"+que);
+    }
 
-    public List<Long> getUserDates(JSONArray chkInEs){
-        List<LogFlow> logFlows = new ArrayList<>();
-        for (int i = 0; i < chkInEs.size(); i++) {
-            logFlows.add(JSONObject.parseObject(JSON.toJSONString(chkInEs.getJSONObject(i)), LogFlow.class));
-        }
-        //lambda表达式实现List接口sort方法排序
-        logFlows.sort(Comparator.comparing(num -> num.getData().getString("date")));
-        List<Long> dates = new ArrayList<>();
-        for (LogFlow logFlow : logFlows) {
-            JSONObject data = logFlow.getData();
-            String date1 = data.getString("date");
-            dates.add(getDeLong(date1));
-        }
-        return dates;
-    }
-    public List<Long> getArrTime(JSONArray arrTime,String theSameDay){
-        // 正常规定上班时间
-        List<Long> arrTimeLong = new ArrayList<>();
-        for (int i = 0; i < arrTime.size(); i++) {
-            arrTimeLong.add(getDeLong(theSameDay+" "+arrTime.getString(i)));
-        }
-        return arrTimeLong;
-    }
     public List<String> getTimeToStr(List<Long> timeList){
         List<String> correctWorkDateStr = new ArrayList<>();
         for (Long aLong : timeList) {
             correctWorkDateStr.add(getDeDate(aLong));
         }
         return correctWorkDateStr;
-    }
-    public void getTimeToListStr(List<List<Long>> timeList){
-        for (List<Long> longs : timeList) {
-            List<String> correctWorkDateStr = new ArrayList<>();
-            for (Long aLong : longs) {
-                correctWorkDateStr.add(getDeDate(aLong));
-            }
-            System.out.println(JSON.toJSONString(correctWorkDateStr));
-        }
-        System.out.println("---------------------");
     }
 
     public long getDeLong(String date){
@@ -1584,42 +1141,42 @@ public class ZjTestServiceImpl implements ZjTestService {
         return sdf.format(dateNew);
     }
 
-//    public List<Long> getContrastChkInTime(long original,List<Long> arrTimeLong){
-//        System.out.println("duo:");
-//        System.out.println(original);
-//        List<Long> countList = new ArrayList<>();
-//        List<Long> resultList = new ArrayList<>();
-////        for (int i = 1; i < arrTimeLong.size()-1; i++) {
-////            Long ti = arrTimeLong.get(i);
-////            long re = original - ti;
-////            countList.add((re < 0) ? -re : re);
-////        }
-//        for (Long ti : arrTimeLong) {
+    public List<Long> getContrastChkInTime(long original,List<Long> arrTimeLong){
+        System.out.println("duo:");
+        System.out.println(original);
+        List<Long> countList = new ArrayList<>();
+        List<Long> resultList = new ArrayList<>();
+//        for (int i = 1; i < arrTimeLong.size()-1; i++) {
+//            Long ti = arrTimeLong.get(i);
 //            long re = original - ti;
 //            countList.add((re < 0) ? -re : re);
 //        }
-//        int index = 0;
-//        long mix = countList.get(0);
-//        for (int i = 1; i < countList.size(); i++) {
-//            if (countList.get(i) < mix) {
-//                mix = countList.get(i);
-//                index = i;
-//            }
-//        }
-////        index+=1;
-//        System.out.println("resultList:");
-//        System.out.println(JSON.toJSONString(countList));
-//        System.out.println("re:"+arrTimeLong.get(index)+" , index:"+(index));
-//        if (mix < 3600) {
-//            resultList.add(arrTimeLong.get(index));
-////            return arrTimeLong.get(index);
-//            return resultList;
-//        }
-//        resultList.add(0L);
-//        resultList.add(arrTimeLong.get(index));
-////        return 0;
-//        return resultList;
-//    }
+        for (Long ti : arrTimeLong) {
+            long re = original - ti;
+            countList.add((re < 0) ? -re : re);
+        }
+        int index = 0;
+        long mix = countList.get(0);
+        for (int i = 1; i < countList.size(); i++) {
+            if (countList.get(i) < mix) {
+                mix = countList.get(i);
+                index = i;
+            }
+        }
+//        index+=1;
+        System.out.println("resultList:");
+        System.out.println(JSON.toJSONString(countList));
+        System.out.println("re:"+arrTimeLong.get(index)+" , index:"+(index));
+        if (mix < 3600) {
+            resultList.add(arrTimeLong.get(index));
+//            return arrTimeLong.get(index);
+            return resultList;
+        }
+        resultList.add(0L);
+        resultList.add(arrTimeLong.get(index));
+//        return 0;
+        return resultList;
+    }
     public int getContrastChkInTimeNew(long original,List<Long> arrTimeLong){
         List<Long> countList = new ArrayList<>();
         for (Long ti : arrTimeLong) {
@@ -1640,32 +1197,32 @@ public class ZjTestServiceImpl implements ZjTestService {
         return index;
     }
 
-//    public long getContrastChkInTime(long original,long timeLong){
-////        System.out.println("dang:"+original+" , timeLong:"+timeLong);
-//        long l = original - timeLong;
-////        System.out.println("l:"+l);
-//        long re = (l < 0) ? -l : l;
-////        System.out.println("re:"+re);
-//        if (re < 3600) {
-//            return timeLong;
-//        }
-//        return 0;
-//    }
-//    public List<Long> getContrastChkInTimeNew(long original,long timeLong){
-//        List<Long> result = new ArrayList<>();
-////        System.out.println("dang:"+original+" , timeLong:"+timeLong);
-//        long l = original - timeLong;
-////        System.out.println("l:"+l);
-//        long re = (l < 0) ? -l : l;
-////        System.out.println("re:"+re);
-//        if (re < 3600) {
-//            result.add(timeLong);
-//            return result;
-//        }
-//        result.add(0L);
-//        result.add(timeLong);
-//        return result;
-//    }
+    public long getContrastChkInTime(long original,long timeLong){
+//        System.out.println("dang:"+original+" , timeLong:"+timeLong);
+        long l = original - timeLong;
+//        System.out.println("l:"+l);
+        long re = (l < 0) ? -l : l;
+//        System.out.println("re:"+re);
+        if (re < 3600) {
+            return timeLong;
+        }
+        return 0;
+    }
+    public List<Long> getContrastChkInTimeNew(long original,long timeLong){
+        List<Long> result = new ArrayList<>();
+//        System.out.println("dang:"+original+" , timeLong:"+timeLong);
+        long l = original - timeLong;
+//        System.out.println("l:"+l);
+        long re = (l < 0) ? -l : l;
+//        System.out.println("re:"+re);
+        if (re < 3600) {
+            result.add(timeLong);
+            return result;
+        }
+        result.add(0L);
+        result.add(timeLong);
+        return result;
+    }
     public List<Long> getUpperBelowBetween(long upper,long below,List<Long> originList,long upperRange,long belowRange){
         List<Long> resultList = new ArrayList<>();
         upperRange *= 60;

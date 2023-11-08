@@ -575,33 +575,33 @@ public class Qt {
 
     public void errPrint(String title, Exception e, Object... vars)
     {
-
-        System.out.println("****[" +title+"]****");
-
-//            System.out.println("[");
-        for (Object item : vars)
-        {
-            if (item == null)
-            {
-                System.out.println("....null");
-            }
-            else if (item.getClass().toString().startsWith("class java.util.Array"))
-            {
-                System.out.println(this.toJArray(item));
-            }
-            else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
-                    item.getClass().toString().startsWith("class java.util"))
-            {
-                System.out.println(this.toJson(item));
-            }
-            else {
-                System.out.println(item);
-            }
-        }
-        System.out.println("*****[End]*****");
-
-        if (e != null)
-            e.printStackTrace();
+//
+//        System.out.println("****[" +title+"]****");
+//
+////            System.out.println("[");
+//        for (Object item : vars)
+//        {
+//            if (item == null)
+//            {
+//                System.out.println("....null");
+//            }
+//            else if (item.getClass().toString().startsWith("class java.util.Array"))
+//            {
+//                System.out.println(this.toJArray(item));
+//            }
+//            else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
+//                    item.getClass().toString().startsWith("class java.util"))
+//            {
+//                System.out.println(this.toJson(item));
+//            }
+//            else {
+//                System.out.println(item);
+//            }
+//        }
+//        System.out.println("*****[End]*****");
+//
+//        if (e != null)
+//            e.printStackTrace();
     }
 
     public void errPrint(String title, Object... vars)
@@ -911,6 +911,11 @@ public class Qt {
         }
 
     }
+
+//    abc
+//    {
+//         get inJava get "xxxx", id_I => getMD id_I, jsonInfo.xxx, Info.class return
+//    }
 
     public void addAllMD(Collection<?> collection) {
         // 新增order信息

@@ -3,19 +3,13 @@ package com.cresign.tools.dbTools;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.encrypt.HttpClientUtils;
-import com.cresign.tools.encrypt.RSAUtils;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
-import com.cresign.tools.request.HttpClientUtil;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
-import java.util.UUID;
 
 /**
  * @author kevin
@@ -100,7 +94,7 @@ public class Ws {
      */
     @Async
     public void sendWS(LogFlow logContent){
-        this.setId_Us(logContent);
+        this.setId_UsByFC(logContent);
         this.setAppIds(logContent);
         this.sendWSCore(logContent);
         this.sendESOnly(logContent);
@@ -160,7 +154,7 @@ public class Ws {
 //            userPushIds.add(userList.getJSONObject(i).getString("id_APPs"));
         }
         log.setId_Us(userIds);
-        this.setId_Us(log);
+        this.setId_UsByFC(log);
         this.setAppIds(log); //统一用这个拿APPID
 //        log.setId_APPs(userPushIds);
     }
@@ -183,7 +177,6 @@ public class Ws {
 
         if (logContent.getId_Us().size() > 0) {
             if (logContent.getId_APPs().size() == 0) {
-                //TODO ZJ 参考 389行, 这里getES 太多次
                 JSONArray lnUser = qt.getES("lNUser", qt.setESFilt("id_U", "contain", logContent.getId_Us()));
                 JSONObject esAll = qt.arr2Obj(lnUser,"id_U");
                 // 遍历用户列表
@@ -212,7 +205,7 @@ public class Ws {
      * @date 创建时间: 2023/9/2
      * @ver 版本号: 1.0.0
      */
-    public void setId_Us(LogFlow logContent){
+    public void setId_UsByFC(LogFlow logContent){
         // 获取公司编号
         String id_C = logContent.getId_C();
         // 获取供应商编号
@@ -301,7 +294,7 @@ public class Ws {
             this.sendESOnly(log);
         } else if (type.equals("WS"))
         {
-            this.setId_Us(log);
+            this.setId_UsByFC(log);
             this.setAppIds(log);
             this.sendWSCore(log);
         } else if (type.equals("WSXP")) // noPush

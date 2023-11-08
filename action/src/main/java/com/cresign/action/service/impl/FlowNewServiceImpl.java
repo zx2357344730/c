@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.common.ActionEnum;
 import com.cresign.action.service.FlowNewService;
-//import com.cresign.action.utils.FlowAsyncUtil;
 import com.cresign.action.utils.DgCheckUtil;
 import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.advice.RetResult;
@@ -68,7 +67,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         // **System.out.println("开始时间:");
         // **System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         // 调用方法获取订单信息
-        Order salesOrderData = qt.getMDContent(id_OParent, Arrays.asList("oItem", "info", "view", "action"), Order.class);
+        Order salesOrderData = qt.getMDContent(id_OParent, "", Order.class);
 
         // 判断订单是否为空
         if (null == salesOrderData) {

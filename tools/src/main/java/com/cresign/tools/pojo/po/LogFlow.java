@@ -177,6 +177,39 @@ public class LogFlow {
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
+    public void setUsageLog(JSONObject tokData, String updateType, String zcndesc, Integer imp, String id, String listType, JSONObject wrdN, String grp)
+    {
+        this.id = "";
+        this.id_FS = "";
+        this.logType = "usageflow";
+        this.subType = "update";
+        this.dep = "";
+        this.grpU = tokData.getString("grpU");
+        this.grpB = "1000";
+        this.grp = "1000";
+        this.id_U = tokData.getString("id_U");
+        this.id_P = "";
+        this.id_O = "";
+        this.id_OP = "";
+        this.index = 0;
+        this.id_C = tokData.getString("id_C");
+        this.id_CS = "";
+
+        this.wrdN = wrdN;
+        this.imp = imp;
+        this.wrdNU = tokData.getJSONObject("wrdNU");
+        this.pic = tokData.getString("pic");
+        this.lang = "cn";
+        this.zcndesc = zcndesc;
+        this.tzone = 8;
+        JSONObject data = this.getData();
+        data.put("upType", updateType);
+        data.put("id", id);
+        data.put("listType", listType);
+        data.put("grp", grp);
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+    }
+
 
     public void setActionTime (Long taStart, Long taFin, String type) {
         JSONObject data = this.getData();

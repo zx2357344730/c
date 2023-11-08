@@ -30,7 +30,7 @@ public interface UsageService {
 
     ApiResponse getNacosStatus();
 
-    ApiResponse notify(String id_U, String id_C, JSONObject wrdNU, String id, JSONObject wrdN, JSONObject wrddesc);
+    ApiResponse notifyLog(String id_U, String id_C, JSONObject wrdNU, String id, String id_I, JSONObject wrdN, JSONObject wrddesc);
 
     /**
      * 连接真公司
