@@ -42,6 +42,7 @@ public interface ZjTestService {
             , String subType, String zcnDesc, JSONObject data,int imp);
     ApiResponse applyForAgreeWith(String id_U, String id_C, String id, String logType
             , String subType, String zcnDesc, JSONObject data,int imp);
-    ApiResponse statisticsChKin(String id_C, JSONArray sumDates,int chkInMode
-            ,boolean isAllSpecialTime,boolean isAutoCardReplacement,boolean isSumSpecialTime);
+
+    ApiResponse addBlankCompNew(JSONObject tokData, JSONObject wrdN, JSONObject wrddesc,
+                                    String pic, String ref);
 }
