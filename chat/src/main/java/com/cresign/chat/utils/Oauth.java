@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 /**
  * ##class: Oauth
  * ##description: 设置 token，以及oauth等

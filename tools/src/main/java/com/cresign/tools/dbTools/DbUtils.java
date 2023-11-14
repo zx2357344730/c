@@ -12,7 +12,6 @@ import com.cresign.tools.pojo.es.lSAsset;
 import com.cresign.tools.pojo.po.*;
 import com.cresign.tools.pojo.po.assetCard.AssetAStock;
 import com.cresign.tools.pojo.po.assetCard.AssetInfo;
-import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.reflectTools.ApplicationContextTools;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -749,7 +748,9 @@ public class DbUtils {
         try {
         JSONObject listCol = new JSONObject();
         this.summOrder(order, listCol);
-        qt.saveMD(order);
+//        qt.saveMD(order);
+        qt.setMDContent(order.getId(), qt.setJson("view", order.getView(), "info", order.getInfo(), "oItem", order.getOItem(),
+                "oStock", order.getOStock(), "action", order.getAction()), Order.class);
         qt.setES("lSBOrder", qt.setESFilt("id_O", order.getId()), listCol);
         } catch (Exception e) {
             e.printStackTrace();
@@ -779,7 +780,8 @@ public class DbUtils {
     public JSONObject summOrder(Order order, JSONObject listCol, JSONArray cardList, JSONArray arrayIndex) {
 
         if (order.getOItem() == null)
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
+            this.initOItem(order);
+//            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
 
         JSONArray oItem = order.getOItem().getJSONArray("objItem");
         JSONArray oStock = null;
@@ -1068,7 +1070,7 @@ public class DbUtils {
     }
 
 
-    // SE if / info / exec (oTrig, cTrig, Summ00s, tempa
+//     SE if / info / exec (oTrig, cTrig, Summ00s, tempa
     public void oTriggerIf(JSONObject jsonObjIf, JSONObject jsonObjVar, JSONObject jsonObjExec) {
         try {
             String script = jsonObjIf.getString("script");
@@ -1091,7 +1093,7 @@ public class DbUtils {
                 String scriptSubString = scriptSplit[2];
                 System.out.println("valueFor" + valueFor + ",scriptSubString=" + scriptSubString);
                 if (!scriptSubString.contains("for")) {
-                    Object varFor = scriptEngineVar(jsonObjVar.get(valueFor), jsonObjVar);
+                    Object varFor = scriptEngineVar(jsonObjVar.getString(valueFor), jsonObjVar);
                     JSONArray arrayValue = (JSONArray) JSON.toJSON(varFor);
                     for (int i = 0; i < arrayValue.size(); i++) {
                         JSONObject value = arrayValue.getJSONObject(i);
@@ -1115,7 +1117,7 @@ public class DbUtils {
                                     if (valueFor.equals(key)) {
                                         bindings.put(key, value);
                                     } else {
-                                        Object var = scriptEngineVar(jsonObjVar.get(key), jsonObjVar);
+                                        Object var = scriptEngineVar(jsonObjVar.getString(key), jsonObjVar);
                                         bindings.put(key, var);
                                     }
                                 }
@@ -1158,7 +1160,7 @@ public class DbUtils {
                             for (int k = 0; k < arrayKey.length; k++) {
                                 String key = arrayKey[k];
                                 System.out.println("key=" + key);
-                                Object var = scriptEngineVar(jsonObjVar.get(key), jsonObjVar);
+                                Object var = scriptEngineVar(jsonObjVar.getString(key), jsonObjVar);
                                 bindings.put(key, var);
                             }
                         }
@@ -1187,11 +1189,35 @@ public class DbUtils {
                 JSONObject jsonExec = arrayExec.getJSONObject(i);
                 String method = jsonExec.getString("method");
                 System.out.println("method=" + method);
-
+                JSONObject jsonParams = new JSONObject();
+                JSONObject jsonStruct = jsonExec.getJSONObject("pStruct");
+                String id_I = jsonStruct.getString("id_I");
+                String structKey = jsonStruct.getString("key");
+                String structVal = jsonStruct.getString("val");
+                if (!id_I.isEmpty()) {
+                    Info info = qt.getMDContent(id_I, "jsonInfo", Info.class);
+                    JSONObject jsonInfo = info.getJsonInfo().getJSONObject("objData");
+                    String[] valSplit = structKey.split("\\.");
+                    if (structVal.equals("")) {
+                        if (structKey.equals("")) {
+                            jsonParams = jsonInfo;
+                        } else if (valSplit.length == 1) {
+                            jsonParams = jsonInfo.getJSONObject(valSplit[0]);
+                        } else if (valSplit.length == 2) {
+                            jsonParams = jsonInfo.getJSONObject(valSplit[0]).getJSONObject(valSplit[1]);
+                        }
+                    } else {
+                        if (structKey.equals("")) {
+                            jsonParams.put(structVal, jsonInfo);
+                        } else if (valSplit.length == 1) {
+                            jsonParams.put(structVal, jsonInfo.getJSONObject(valSplit[0]));
+                        } else if (valSplit.length == 2) {
+                            jsonParams.put(structVal, jsonInfo.getJSONObject(valSplit[0]).getJSONObject(valSplit[1]));
+                        }
+                    }
+                }
                 //just break down params
                 JSONArray arrayParams = qt.cloneArr(jsonExec.getJSONArray("params"));
-//                JSONObject jsonParams = (JSONObject) jsonObjExec.getJSONObject("params").clone();
-                JSONObject jsonParams = new JSONObject();
                 for (int j = 0; j < arrayParams.size(); j++) {
                     JSONObject jsonParam = arrayParams.getJSONObject(j);
                     String key = jsonParam.getString("key");
@@ -1202,20 +1228,25 @@ public class DbUtils {
                             String[] valSplit = val.split("\\.");
                             System.out.println("paramSplit.length=" + valSplit.length);
                             JSONObject jsonVar = jsonVars.getJSONObject(valSplit[1]);
-                            String retType = jsonVar.getString("retType");
-                            if (retType.equals("String")) {
-                                String var = jsonVar.getString("val");
-                                System.out.println("var=" + var);
-                                jsonParam.put("val", var);
-                            } else if (retType.equals("json")) {
-                                JSONObject var = jsonVar.getJSONObject("val");
-                                System.out.println("var=" + var);
-                                if (valSplit.length == 2) {
-                                    jsonParam.put("val", var);
-                                } else if (valSplit.length > 2) {
-                                    jsonParams.put("val", var.getJSONObject(valSplit[2]));
-                                }
+                            if (valSplit.length == 2) {
+                                jsonParam.put("val", jsonVar.get("val"));
+                            } else if (valSplit.length == 3) {
+                                jsonParams.put("val", jsonVar.getJSONObject("val").get(valSplit[2]));
                             }
+//                            String retType = jsonVar.getString("retType");
+//                            if (retType.equals("String")) {
+//                                String var = jsonVar.getString("val");
+//                                System.out.println("var=" + var);
+//                                jsonParam.put("val", var);
+//                            } else if (retType.equals("json")) {
+//                                JSONObject var = jsonVar.getJSONObject("val");
+//                                System.out.println("var=" + var);
+//                                if (valSplit.length == 2) {
+//                                    jsonParam.put("val", var);
+//                                } else if (valSplit.length > 2) {
+//                                    jsonParams.put("val", var.getJSONObject(valSplit[2]));
+//                                }
+//                            }
                         }
                     }
                     String[] keySplit = key.split("\\.");
@@ -1241,9 +1272,18 @@ public class DbUtils {
                     Method method1 = clazz.getMethod(methodSplit[1], new Class[]{JSONObject.class});
 
                     //Key!! invoke here with bean + params
-                    Object invoke = method1.invoke(bean, jsonParams);
-                    System.out.println("invoke=" + invoke);
-
+                    JSONObject jsonOutput = jsonExec.getJSONObject("output");
+                    if (jsonOutput != null) {
+                        JSONObject invoke = (JSONObject) JSON.toJSON(method1.invoke(bean, jsonParams));
+                        String key = jsonOutput.getString("key");
+                        String type = jsonExec.getString("type");
+                        String valType = jsonOutput.getString("valType");
+                        JSONObject jsonVar = qt.setJson("type", type, "valType", valType, "val", invoke);
+                        jsonVars.put(key, jsonVar);
+                        System.out.println("jsonVars99=" + jsonVars);
+                    } else {
+                        method1.invoke(bean, jsonParams);
+                    }
                 } else {
                     //发日志
                     //Else, send log in "method" logFlow
@@ -1260,345 +1300,819 @@ public class DbUtils {
         }
     }
 
-    public Object scriptEngineVar(Object obj, JSONObject jsonVars) {
+
+    public Object scriptEngineVar(String var, JSONObject jsonVars) {
         try {
-            if (obj instanceof String) {
-                String var = obj.toString();
-                System.out.println("");
-                System.out.println("var=" + var);
-                System.out.println("jsonVars=" + jsonVars);
-                if (var.startsWith("##")) {
-                    //Get from card
-                    if (var.startsWith("##C")) {
-                        if (var.startsWith("##CC")) {
-                            String varSubstring = var.substring(5);
-                            String[] varSplits = varSubstring.split("\\$\\$");
-                            StringBuffer sb = new StringBuffer();
-                            for (int i = 0; i < varSplits.length; i++) {
-                                String varSplit = varSplits[i];
-                                if (varSplit.startsWith("##")) {
-                                    String key = varSplit.substring(2);
-                                    qt.errPrint("sev", jsonVars.getString(key), jsonVars, varSplit);
-                                    Object result = scriptEngineVar(jsonVars.getString(key), jsonVars);
-                                    System.out.println("##CC=" + key + ":" + result);
-                                    sb.append(result);
-                                } else {
-                                    sb.append(varSplit);
-                                }
-                            }
-                            return sb.toString();
-                        }
-
-                        String[] scriptSplit = var.split("\\.");
-                        Query query = new Query(new Criteria("_id").is(scriptSplit[2]));
-                        List list = new ArrayList();
-                        //See which COUPA
-                        switch (scriptSplit[1]) {
-                            case "Comp":
-                                list = mongoTemplate.find(query, Comp.class);
-                                break;
-                            case "Order":
-                                list = mongoTemplate.find(query, Order.class);
-                                break;
-                            case "User":
-                                list = mongoTemplate.find(query, User.class);
-                                break;
-                            case "Prod":
-                                list = mongoTemplate.find(query, Prod.class);
-                                break;
-                            case "Asset":
-                                list = mongoTemplate.find(query, Asset.class);
-                                break;
-                        }
-                        if (list.get(0) == null) {
-                            return null;
-                        }
-                        JSONObject jsonList = (JSONObject) JSON.toJSON(list.get(0));
-                        if (jsonList.getJSONObject(scriptSplit[3]) == null) {
-                            return null;
-                        }
-                        JSONObject jsonVar = jsonList.getJSONObject(scriptSplit[3]);
-                        for (int k = 4; k < scriptSplit.length - 1; k++) {
-                            //根据[拆分
-                            //break up array
-                            String[] ifArray = scriptSplit[k].split("\\[");
-                            System.out.println("length=" + ifArray.length);
-                            //拆分成一份类型为jsonObject
-                            if (ifArray.length == 1) {
-                                if (jsonVar.getJSONObject(ifArray[0]) == null) {
-                                    return null;
-                                }
-                                jsonVar = jsonVar.getJSONObject(ifArray[0]);
-                            }
-                            //拆分成两份类型为jsonArray
-                            if (ifArray.length == 2) {
-                                String[] index = ifArray[1].split("]");
-                                if (jsonVar.getJSONArray(ifArray[0]).getJSONObject(Integer.parseInt(index[0])) == null) {
-                                    return null;
-                                }
-                                jsonVar = jsonVar.getJSONArray(ifArray[0]).getJSONObject(Integer.parseInt(index[0]));
-                            }
-                        }
-                        System.out.println("jsonVar=" + jsonVar);
-                        if (jsonVar.get(scriptSplit[scriptSplit.length - 1]) == null) {
-                            return null;
-                        }
-                        if (var.startsWith("##CB")) {
-                            Boolean scriptResult = jsonVar.getBoolean(scriptSplit[scriptSplit.length - 1]);
-                            return scriptResult;
-                        }
-                        if (var.startsWith("##CS")) {
-                            String scriptResult = jsonVar.getString(scriptSplit[scriptSplit.length - 1]);
-                            return scriptResult;
-                        }
-                        if (var.startsWith("##CI")) {
-                            Integer scriptResult = jsonVar.getInteger(scriptSplit[scriptSplit.length - 1]);
-                            return scriptResult;
-                        }
-                        if (var.startsWith("##CN")) {
-                            Double scriptResult = jsonVar.getDouble(scriptSplit[scriptSplit.length - 1]);
-                            return scriptResult;
-                        }
-                        if (var.startsWith("##CA")) {
-                            JSONArray scriptResult = jsonVar.getJSONArray(scriptSplit[scriptSplit.length - 1]);
-                            return scriptResult;
-                        }
-                        if (var.startsWith("##CO")) {
-                            System.out.println("test=" + jsonVar.getJSONObject(scriptSplit[scriptSplit.length - 1]));
-
-                            return jsonVar.getJSONObject(scriptSplit[scriptSplit.length - 1]);
-                        }
-                    }
-                    //T means it is a counter
-                    else if (var.startsWith("##T")) {
-                        String[] scriptSplit = var.split("\\.");
-                        Asset asset = qt.getConfig(scriptSplit[1], "a-core", "refAuto");
-                        if (asset == null || asset.getRefAuto() == null || asset.getRefAuto().getJSONObject("objCounter") == null ||
-                                asset.getRefAuto().getJSONObject("objCounter").getJSONObject(scriptSplit[2]) == null) {
-                            return null;
-                        }
-                        JSONObject jsonCounter = asset.getRefAuto().getJSONObject("objCounter").getJSONObject(scriptSplit[2]);
-                        Integer count = jsonCounter.getInteger("count");
-                        Integer max = jsonCounter.getInteger("max");
-                        Integer digit = jsonCounter.getInteger("digit");
-                        int length = digit - String.valueOf(count).length();
-                        System.out.println("length=" + length);
+            System.out.println("");
+            System.out.println("var=" + var);
+            System.out.println("jsonVars=" + jsonVars);
+            if (var.startsWith("##")) {
+                //Get from card
+                if (var.startsWith("##C")) {
+                    if (var.startsWith("##CC")) {
+                        String varSubstring = var.substring(5);
+                        String[] varSplits = varSubstring.split("\\$\\$");
                         StringBuffer sb = new StringBuffer();
-                        for (int i = 0; i < length; i++) {
-                            sb.append("0");
-                        }
-                        String strCount = String.valueOf(sb);
-                        strCount += count;
-                        System.out.println("strCount=" + strCount);
-                        if (count == max) {
-                            count = 1;
-                        } else {
-                            count++;
-                        }
-                        System.out.println("count=" + count);
-                        JSONObject jsonUpdate = qt.setJson("refAuto.objCounter." + scriptSplit[2] + ".count", count);
-                        qt.setMDContent(asset.getId(), jsonUpdate, Asset.class);
-                        return strCount;
-                    }
-                    //##F.com.cresign.timer.controller.StatController##getStatisticByEs1##op0
-                    //F = it is a function, then break the string and recall myself to calculate
-                    else if (var.startsWith("##F")) {
-                        String varSubstring = var.substring(4);
-                        String[] varSplit = varSubstring.split("##");
-                        System.out.println("##F=" + varSplit[0] + "," + varSplit[1] + "," + varSplit[2]);
-                        String result = (String) scriptEngineVar(jsonVars.getJSONObject(varSplit[2]).get("val"), jsonVars);
-                        System.out.println("result=" + result);
-                        JSONObject jsonResult = JSONObject.parseObject(result);
-                        System.out.println("jsonResult=" + jsonResult);
-                        Class<?> clazz = Class.forName(varSplit[0]);
-                        Object bean = ApplicationContextTools.getBean(clazz);
-                        Method method1 = clazz.getMethod(varSplit[1], new Class[]{JSONObject.class});
-                        System.out.println("varSplit[1]=" + varSplit[1]);
-                        System.out.println("method1=" + method1);
-                        //invoke....
-                        Object invoke = method1.invoke(bean, jsonResult);
-                        System.out.println("invoke=" + invoke);
-                        return invoke;
-                    }
-                    //D = date formates
-                    else if (var.startsWith("##D")) {
-                        if (var.startsWith("##DT")) {
-                            String varSubstring = var.substring(5);
-                            System.out.println("varSubstring=" + varSubstring);
-                            SimpleDateFormat sdf = new SimpleDateFormat(varSubstring);
-                            String date = sdf.format(new Date());
-                            System.out.println("##DT=" + date);
-                            return date;
-                        }
-                        else {
-                            String varSubstring = var.substring(4);
-                            System.out.println("varSubstring=" + varSubstring);
-                            String[] varSplit = varSubstring.split("##");
-                            SimpleDateFormat sdf = null;
-                            Calendar calendar = Calendar.getInstance();
-                            for (int i = varSplit.length - 1; i >= 0; i--) {
-                                String partTime = varSplit[i];
-                                if (partTime.equals("*")) {
-                                    switch (i) {
-                                        case 0:
-                                            sdf = new SimpleDateFormat("yyyy");
-                                            varSplit[0] = sdf.format(calendar.getTime());
-                                            break;
-                                        case 1:
-                                            sdf = new SimpleDateFormat("MM");
-                                            varSplit[1] = sdf.format(calendar.getTime());
-                                            break;
-                                        case 2:
-                                            sdf = new SimpleDateFormat("dd");
-                                            varSplit[2] = sdf.format(calendar.getTime());
-                                            break;
-                                        case 3:
-                                            sdf = new SimpleDateFormat("HH");
-                                            varSplit[3] = sdf.format(calendar.getTime());
-                                            break;
-                                        case 4:
-                                            sdf = new SimpleDateFormat("mm");
-                                            varSplit[4] = sdf.format(calendar.getTime());
-                                            break;
-                                        case 5:
-                                            sdf = new SimpleDateFormat("ss");
-                                            varSplit[5] = sdf.format(calendar.getTime());
-                                            break;
-                                    }
-                                } else if (partTime.startsWith("+") || partTime.startsWith("-")) {
-                                    int part = Integer.parseInt(partTime);
-                                    System.out.println("part=" + part);
-                                    switch (i) {
-                                        case 0:
-                                            calendar.add(Calendar.YEAR, part);
-                                            sdf = new SimpleDateFormat("yyyy");
-                                            varSplit[0] = sdf.format(calendar.getTime());
-                                            break;
-                                        case 1:
-                                            calendar.add(Calendar.MONTH, part);
-                                            sdf = new SimpleDateFormat("MM");
-                                            varSplit[1] = sdf.format(calendar.getTime());
-                                            break;
-                                        case 2:
-                                            calendar.add(Calendar.DATE, part);
-                                            sdf = new SimpleDateFormat("dd");
-                                            varSplit[2] = sdf.format(calendar.getTime());
-                                            break;
-                                        case 3:
-                                            calendar.add(Calendar.HOUR_OF_DAY, part);
-                                            sdf = new SimpleDateFormat("HH");
-                                            varSplit[3] = sdf.format(calendar.getTime());
-                                            break;
-                                        case 4:
-                                            calendar.add(Calendar.MINUTE, part);
-                                            sdf = new SimpleDateFormat("mm");
-                                            varSplit[4] = sdf.format(calendar.getTime());
-                                            break;
-                                        case 5:
-                                            calendar.add(Calendar.SECOND, part);
-                                            sdf = new SimpleDateFormat("ss");
-                                            varSplit[5] = sdf.format(calendar.getTime());
-                                            break;
-                                    }
-                                }
-                                System.out.println("i=" + i + ",varSplit=" + varSplit[i]);
-                            }
-                            StringBuffer stringBuffer = new StringBuffer();
-                            stringBuffer = stringBuffer.append(varSplit[0]).append("/").append(varSplit[1]).append("/").append(varSplit[2])
-                                    .append(" ").append(varSplit[3]).append(":").append(varSplit[4]).append(":").append(varSplit[5]);
-                            System.out.println("##D=" + stringBuffer);
-                            return stringBuffer;
-                        }
-                    }
-                    // else this is not a ##, use script engine to get result
-                    else {
-                        String varSubString = var.substring(4);
-                        if (varSubString.contains("for")) {
-                            return null;
-                        }
-                        ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("javascript");
-                        Compilable compilable = (Compilable) scriptEngine;
-                        Bindings bindings = scriptEngine.createBindings();
-                        CompiledScript compiledScript = compilable.compile(varSubString);
-                        String[] varSplit = var.split("\\(");
-                        System.out.println(varSplit[0] + "," + varSplit[1]);
-                        if (varSplit[1].split("\\)\\{").length > 0) {
-                            String scriptVar = varSplit[1].split("\\)\\{")[0];
-                            System.out.println("scriptVar=" + scriptVar);
-                            if (scriptVar != null && !scriptVar.equals("")) {
-                                System.out.println("true");
-                                String[] arrayKey = scriptVar.split(",");
-                                System.out.println("arrayKey.size=" + arrayKey.length);
-                                for (int i = 0; i < arrayKey.length; i++) {
-                                    String key = arrayKey[i];
-                                    System.out.println("key=" + key);
-                                    // I am calling myself again here
-                                    Object result = scriptEngineVar(jsonVars.getJSONObject(key).get("val"), jsonVars);
-                                    System.out.println(i + ":" + result);
-                                    bindings.put(key, result);
-                                }
+                        for (int i = 0; i < varSplits.length; i++) {
+                            String varSplit = varSplits[i];
+                            if (varSplit.startsWith("##")) {
+                                String key = varSplit.substring(2);
+                                qt.errPrint("sev", jsonVars.getString(key), jsonVars, varSplit);
+                                Object result = scriptEngineVar(jsonVars.getString(key), jsonVars);
+                                System.out.println("##CC=" + key + ":" + result);
+                                sb.append(result);
+                            } else {
+                                sb.append(varSplit);
                             }
                         }
+                        return sb.toString();
+                    }
 
-                        //after created all compile data, here is actual eval
-                        if (var.startsWith("##B")) {
-                            Boolean scriptResult = (Boolean) compiledScript.eval(bindings);
-                            return scriptResult;
+                    String[] scriptSplit = var.split("\\.");
+                    Query query = new Query(new Criteria("_id").is(scriptSplit[2]));
+                    List list = new ArrayList();
+                    //See which COUPA
+                    switch (scriptSplit[1]) {
+                        case "Comp":
+                            list = mongoTemplate.find(query, Comp.class);
+                            break;
+                        case "Order":
+                            list = mongoTemplate.find(query, Order.class);
+                            break;
+                        case "User":
+                            list = mongoTemplate.find(query, User.class);
+                            break;
+                        case "Prod":
+                            list = mongoTemplate.find(query, Prod.class);
+                            break;
+                        case "Asset":
+                            list = mongoTemplate.find(query, Asset.class);
+                            break;
+                    }
+                    if (list.get(0) == null) {
+                        return null;
+                    }
+                    JSONObject jsonList = (JSONObject) JSON.toJSON(list.get(0));
+                    if (jsonList.getJSONObject(scriptSplit[3]) == null) {
+                        return null;
+                    }
+                    JSONObject jsonVar = jsonList.getJSONObject(scriptSplit[3]);
+                    for (int k = 4; k < scriptSplit.length - 1; k++) {
+                        //根据[拆分
+                        //break up array
+                        String[] ifArray = scriptSplit[k].split("\\[");
+                        System.out.println("length=" + ifArray.length);
+                        //拆分成一份类型为jsonObject
+                        if (ifArray.length == 1) {
+                            if (jsonVar.getJSONObject(ifArray[0]) == null) {
+                                return null;
+                            }
+                            jsonVar = jsonVar.getJSONObject(ifArray[0]);
                         }
-                        if (var.startsWith("##S")) {
-                            String scriptResult = compiledScript.eval(bindings).toString();
-                            return scriptResult;
+                        //拆分成两份类型为jsonArray
+                        if (ifArray.length == 2) {
+                            String[] index = ifArray[1].split("]");
+                            if (jsonVar.getJSONArray(ifArray[0]).getJSONObject(Integer.parseInt(index[0])) == null) {
+                                return null;
+                            }
+                            jsonVar = jsonVar.getJSONArray(ifArray[0]).getJSONObject(Integer.parseInt(index[0]));
                         }
-                        if (var.startsWith("##I")) {
-                            Integer scriptResult = (Integer) compiledScript.eval(bindings);
-                            System.out.println("##I=" + scriptResult);
-                            return scriptResult;
-                        }
-                        if (var.startsWith("##N")) {
-                            Double scriptResult = (Double) compiledScript.eval(bindings);
-                            System.out.println("##N=" + scriptResult);
-                            return scriptResult;
-                        }
-                        if (var.startsWith("##A")) {
-                            String result = JSON.toJSONString((compiledScript.eval(bindings)));
-                            System.out.println("##A=" + result);
-                            result = result.replace("\\", "");
-                            System.out.println(result);
-                            result = result.substring(1, result.length() - 1);
-                            System.out.println(result);
-                            JSONArray scriptResult = JSON.parseArray(result);
-                            System.out.println(scriptResult);
-                            return scriptResult;
-                        }
-                        if (var.startsWith("##O")) {
-                            String result = JSON.toJSONString(compiledScript.eval(bindings));
-                            System.out.println("##O=" + result);
-                            result = result.replace("\\", "");
-                            System.out.println(result);
-                            result = result.substring(1, result.length() - 1);
-                            System.out.println(result);
-                            JSONObject scriptResult = JSON.parseObject(result);
-                            System.out.println(scriptResult);
-                            return scriptResult;
-                        }
+                    }
+                    System.out.println("jsonVar=" + jsonVar);
+                    if (jsonVar.get(scriptSplit[scriptSplit.length - 1]) == null) {
+                        return null;
+                    }
+                    if (var.startsWith("##CB")) {
+                        Boolean scriptResult = jsonVar.getBoolean(scriptSplit[scriptSplit.length - 1]);
+                        return scriptResult;
+                    }
+                    if (var.startsWith("##CS")) {
+                        String scriptResult = jsonVar.getString(scriptSplit[scriptSplit.length - 1]);
+                        return scriptResult;
+                    }
+                    if (var.startsWith("##CI")) {
+                        Integer scriptResult = jsonVar.getInteger(scriptSplit[scriptSplit.length - 1]);
+                        return scriptResult;
+                    }
+                    if (var.startsWith("##CN")) {
+                        Double scriptResult = jsonVar.getDouble(scriptSplit[scriptSplit.length - 1]);
+                        return scriptResult;
+                    }
+                    if (var.startsWith("##CA")) {
+                        JSONArray scriptResult = jsonVar.getJSONArray(scriptSplit[scriptSplit.length - 1]);
+                        return scriptResult;
+                    }
+                    if (var.startsWith("##CO")) {
+                        System.out.println("test=" + jsonVar.getJSONObject(scriptSplit[scriptSplit.length - 1]));
+
+                        return jsonVar.getJSONObject(scriptSplit[scriptSplit.length - 1]);
                     }
                 }
-                // if they are not B/S/N/A/O, it's NO ##, so it's either number or text
-                //正则判断是否数字
-                Pattern pattern = Pattern.compile("-?[0-9]+(\\\\.[0-9]+)?");
-                Matcher matcher = pattern.matcher(var);
-                //判断字符串是否是数字
-                if (matcher.matches()) {
-                    return Double.parseDouble(var);
+                //T means it is a counter
+                else if (var.startsWith("##T")) {
+                    String[] scriptSplit = var.split("\\.");
+                    Asset asset = qt.getConfig(scriptSplit[1], "a-core", "refAuto");
+                    if (asset == null || asset.getRefAuto() == null || asset.getRefAuto().getJSONObject("objCounter") == null ||
+                            asset.getRefAuto().getJSONObject("objCounter").getJSONObject(scriptSplit[2]) == null) {
+                        return null;
+                    }
+                    JSONObject jsonCounter = asset.getRefAuto().getJSONObject("objCounter").getJSONObject(scriptSplit[2]);
+                    Integer count = jsonCounter.getInteger("count");
+                    Integer max = jsonCounter.getInteger("max");
+                    Integer digit = jsonCounter.getInteger("digit");
+                    int length = digit - String.valueOf(count).length();
+                    System.out.println("length=" + length);
+                    StringBuffer sb = new StringBuffer();
+                    for (int i = 0; i < length; i++) {
+                        sb.append("0");
+                    }
+                    String strCount = String.valueOf(sb);
+                    strCount += count;
+                    System.out.println("strCount=" + strCount);
+                    if (count == max) {
+                        count = 1;
+                    } else {
+                        count++;
+                    }
+                    System.out.println("count=" + count);
+                    JSONObject jsonUpdate = qt.setJson("refAuto.objCounter." + scriptSplit[2] + ".count", count);
+                    qt.setMDContent(asset.getId(), jsonUpdate, Asset.class);
+                    return strCount;
+                }
+                //##F.com.cresign.timer.controller.StatController##getStatisticByEs1##op0
+                //F = it is a function, then break the string and recall myself to calculate
+                else if (var.startsWith("##F")) {
+                    String varSubstring = var.substring(4);
+                    String[] varSplit = varSubstring.split("##");
+                    System.out.println("##F=" + varSplit[0] + "," + varSplit[1] + "," + varSplit[2]);
+                    JSONObject jsonResult;
+                    if (jsonVars.getJSONObject(varSplit[2]).get("val") instanceof String) {
+                        String result = (String) scriptEngineVar(jsonVars.getJSONObject(varSplit[2]).getString("val"), jsonVars);
+                        System.out.println("result=" + result);
+                        jsonResult = JSONObject.parseObject(result);
+                    } else {
+                        jsonResult = jsonVars.getJSONObject(varSplit[2]).getJSONObject("val");
+                    }
+                    System.out.println("jsonResult=" + jsonResult);
+                    Class<?> clazz = Class.forName(varSplit[0]);
+                    Object bean = ApplicationContextTools.getBean(clazz);
+                    Method method1 = clazz.getMethod(varSplit[1], new Class[]{JSONObject.class});
+                    System.out.println("varSplit[1]=" + varSplit[1]);
+                    System.out.println("method1=" + method1);
+                    //invoke....
+                    Object invoke = method1.invoke(bean, jsonResult);
+                    System.out.println("invoke=" + invoke);
+                    return invoke;
+                }
+                //D = date formates
+                else if (var.startsWith("##D")) {
+                    if (var.startsWith("##DT")) {
+                        String varSubstring = var.substring(5);
+                        System.out.println("varSubstring=" + varSubstring);
+                        SimpleDateFormat sdf = new SimpleDateFormat(varSubstring);
+                        String date = sdf.format(new Date());
+                        System.out.println("##DT=" + date);
+                        return date;
+                    }
+                    else {
+                        String varSubstring = var.substring(4);
+                        System.out.println("varSubstring=" + varSubstring);
+                        String[] varSplit = varSubstring.split("##");
+                        SimpleDateFormat sdf = null;
+                        Calendar calendar = Calendar.getInstance();
+                        for (int i = varSplit.length - 1; i >= 0; i--) {
+                            String partTime = varSplit[i];
+                            if (partTime.equals("*")) {
+                                switch (i) {
+                                    case 0:
+                                        sdf = new SimpleDateFormat("yyyy");
+                                        varSplit[0] = sdf.format(calendar.getTime());
+                                        break;
+                                    case 1:
+                                        sdf = new SimpleDateFormat("MM");
+                                        varSplit[1] = sdf.format(calendar.getTime());
+                                        break;
+                                    case 2:
+                                        sdf = new SimpleDateFormat("dd");
+                                        varSplit[2] = sdf.format(calendar.getTime());
+                                        break;
+                                    case 3:
+                                        sdf = new SimpleDateFormat("HH");
+                                        varSplit[3] = sdf.format(calendar.getTime());
+                                        break;
+                                    case 4:
+                                        sdf = new SimpleDateFormat("mm");
+                                        varSplit[4] = sdf.format(calendar.getTime());
+                                        break;
+                                    case 5:
+                                        sdf = new SimpleDateFormat("ss");
+                                        varSplit[5] = sdf.format(calendar.getTime());
+                                        break;
+                                }
+                            } else if (partTime.startsWith("+") || partTime.startsWith("-")) {
+                                int part = Integer.parseInt(partTime);
+                                System.out.println("part=" + part);
+                                switch (i) {
+                                    case 0:
+                                        calendar.add(Calendar.YEAR, part);
+                                        sdf = new SimpleDateFormat("yyyy");
+                                        varSplit[0] = sdf.format(calendar.getTime());
+                                        break;
+                                    case 1:
+                                        calendar.add(Calendar.MONTH, part);
+                                        sdf = new SimpleDateFormat("MM");
+                                        varSplit[1] = sdf.format(calendar.getTime());
+                                        break;
+                                    case 2:
+                                        calendar.add(Calendar.DATE, part);
+                                        sdf = new SimpleDateFormat("dd");
+                                        varSplit[2] = sdf.format(calendar.getTime());
+                                        break;
+                                    case 3:
+                                        calendar.add(Calendar.HOUR_OF_DAY, part);
+                                        sdf = new SimpleDateFormat("HH");
+                                        varSplit[3] = sdf.format(calendar.getTime());
+                                        break;
+                                    case 4:
+                                        calendar.add(Calendar.MINUTE, part);
+                                        sdf = new SimpleDateFormat("mm");
+                                        varSplit[4] = sdf.format(calendar.getTime());
+                                        break;
+                                    case 5:
+                                        calendar.add(Calendar.SECOND, part);
+                                        sdf = new SimpleDateFormat("ss");
+                                        varSplit[5] = sdf.format(calendar.getTime());
+                                        break;
+                                }
+                            }
+                            System.out.println("i=" + i + ",varSplit=" + varSplit[i]);
+                        }
+                        StringBuffer stringBuffer = new StringBuffer();
+                        stringBuffer = stringBuffer.append(varSplit[0]).append("/").append(varSplit[1]).append("/").append(varSplit[2])
+                                .append(" ").append(varSplit[3]).append(":").append(varSplit[4]).append(":").append(varSplit[5]);
+                        System.out.println("##D=" + stringBuffer);
+                        return stringBuffer;
+                    }
+                }
+                else if (var.startsWith("##PU")) {
+                    String[] varSplit = var.split("\\.");
+                    String[] numSplit = varSplit[2].split(",");
+                    if (varSplit[0].equals("Integer")) {
+                        Integer num1;
+                        Integer num2;
+                        if (numSplit[0].startsWith("##")) {
+                            num1 = jsonVars.getJSONObject(numSplit[0]).getInteger("val");
+                        } else {
+                            num1 = Integer.parseInt(numSplit[0]);
+                        }
+                        if (numSplit[1].startsWith("##")) {
+                            num2 = jsonVars.getJSONObject(numSplit[1]).getInteger("val");
+                        } else {
+                            num2 = Integer.parseInt(numSplit[1]);
+                        }
+                        if (varSplit[2].equals("+")) {
+                            return num1 + num2;
+                        } else if (varSplit[2].equals("-")) {
+                            return num1 - num2;
+                        } else if (varSplit[2].equals("*")) {
+                            return num1 * num2;
+                        } else if (varSplit[2].equals("/")) {
+                            return num1 / num2;
+                        }
+                    }
+                    else if (varSplit[0].equals("Double")) {
+                        Double num1;
+                        Double num2;
+                        if (numSplit[0].startsWith("##")) {
+                            num1 = jsonVars.getJSONObject(numSplit[0]).getDouble("val");
+                        } else {
+                            num1 = Double.parseDouble(numSplit[0]);
+                        }
+                        if (numSplit[1].startsWith("##")) {
+                            num2 = jsonVars.getJSONObject(numSplit[1]).getDouble("val");
+                        } else {
+                            num2 = Double.parseDouble(numSplit[1]);
+                        }
+                        if (varSplit[2].equals("+")) {
+                            return DoubleUtils.add(num1, num2);
+                        } else if (varSplit[2].equals("-")) {
+                            return DoubleUtils.subtract(num1, num2);
+                        } else if (varSplit[2].equals("*")) {
+                            return DoubleUtils.multiply(num1, num2);
+                        } else if (varSplit[2].equals("/")) {
+                            return DoubleUtils.divide(num1, num2);
+                        }
+                    }
+                    else if (varSplit[0].equals("String")) {
+                        String str1;
+                        String str2;
+                        if (numSplit[0].startsWith("##")) {
+                            str1 = jsonVars.getJSONObject(numSplit[0]).getString("val");
+                        } else {
+                            str1 = numSplit[0];
+                        }
+                        if (numSplit[1].startsWith("##")) {
+                            str2 = jsonVars.getJSONObject(numSplit[1]).getString("val");
+                        } else {
+                            str2 = numSplit[1];
+                        }
+                        return str1.equals(str2);
+                    }
+                }
+                else if (var.startsWith("##PA")) {
+                    String[] varSplit = var.split("\\.");
+                    String[] numSplit = varSplit[2].split(",");
+                    if (varSplit[0].equals("Integer")) {
+                        Integer num1;
+                        Integer num2;
+                        if (numSplit[0].startsWith("##")) {
+                            num1 = jsonVars.getJSONObject(numSplit[0]).getInteger("val");
+                        } else {
+                            num1 = Integer.parseInt(numSplit[0]);
+                        }
+                        if (numSplit[1].startsWith("##")) {
+                            num2 = jsonVars.getJSONObject(numSplit[1]).getInteger("val");
+                        } else {
+                            num2 = Integer.parseInt(numSplit[1]);
+                        }
+                        if (varSplit[2].equals("=")) {
+                            return num1 == num2;
+                        } else if (varSplit[2].equals(">")) {
+                            return num1 > num2;
+                        } else if (varSplit[2].equals(">=")) {
+                            return num1 >= num2;
+                        }
+                    }
+                    else if (varSplit[0].equals("Double")) {
+                        Double num1;
+                        Double num2;
+                        if (numSplit[0].startsWith("##")) {
+                            num1 = jsonVars.getJSONObject(numSplit[0]).getDouble("val");
+                        } else {
+                            num1 = Double.parseDouble(numSplit[0]);
+                        }
+                        if (numSplit[1].startsWith("##")) {
+                            num2 = jsonVars.getJSONObject(numSplit[1]).getDouble("val");
+                        } else {
+                            num2 = Double.parseDouble(numSplit[1]);
+                        }
+                        if (varSplit[2].equals("=")) {
+                            return DoubleUtils.doubleEquals(num1, num2);
+                        } else if (varSplit[2].equals(">")) {
+                            return DoubleUtils.doubleGt(num1, num2);
+                        } else if (varSplit[2].equals(">=")) {
+                            return DoubleUtils.doubleGte(num1, num2);
+                        }
+                    }
+                    else if (varSplit[0].equals("String")) {
+                        String str1;
+                        String str2;
+                        if (numSplit[0].startsWith("##")) {
+                            str1 = jsonVars.getJSONObject(numSplit[0]).getString("val");
+                        } else {
+                            str1 = numSplit[0];
+                        }
+                        if (numSplit[1].startsWith("##")) {
+                            str2 = jsonVars.getJSONObject(numSplit[1]).getString("val");
+                        } else {
+                            str2 = numSplit[1];
+                        }
+                        return str1.equals(str2);
+                    }
+                }
+                // else this is not a ##, use script engine to get result
+                else {
+                    String varSubString = var.substring(4);
+                    if (varSubString.contains("for")) {
+                        return null;
+                    }
+                    ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("javascript");
+                    Compilable compilable = (Compilable) scriptEngine;
+                    Bindings bindings = scriptEngine.createBindings();
+                    CompiledScript compiledScript = compilable.compile(varSubString);
+                    String[] varSplit = var.split("\\(");
+                    System.out.println(varSplit[0] + "," + varSplit[1]);
+                    if (varSplit[1].split("\\)\\{").length > 0) {
+                        String scriptVar = varSplit[1].split("\\)\\{")[0];
+                        System.out.println("scriptVar=" + scriptVar);
+                        if (scriptVar != null && !scriptVar.equals("")) {
+                            System.out.println("true");
+                            String[] arrayKey = scriptVar.split(",");
+                            System.out.println("arrayKey.size=" + arrayKey.length);
+                            for (int i = 0; i < arrayKey.length; i++) {
+                                String key = arrayKey[i];
+                                System.out.println("key=" + key);
+                                // I am calling myself again here
+                                Object result;
+                                if (jsonVars.getJSONObject(key).get("val") instanceof String) {
+                                    result = scriptEngineVar(jsonVars.getJSONObject(key).getString("val"), jsonVars);
+                                } else {
+                                    result = jsonVars.getJSONObject(key).get("val");
+                                }
+                                System.out.println(i + ":" + result);
+                                bindings.put(key, result);
+                            }
+                        }
+                    }
+
+                    //after created all compile data, here is actual eval
+                    if (var.startsWith("##B")) {
+                        Boolean scriptResult = (Boolean) compiledScript.eval(bindings);
+                        return scriptResult;
+                    }
+                    if (var.startsWith("##S")) {
+                        String scriptResult = compiledScript.eval(bindings).toString();
+                        return scriptResult;
+                    }
+                    if (var.startsWith("##I")) {
+                        Integer scriptResult = (Integer) compiledScript.eval(bindings);
+                        System.out.println("##I=" + scriptResult);
+                        return scriptResult;
+                    }
+                    if (var.startsWith("##N")) {
+                        Double scriptResult = (Double) compiledScript.eval(bindings);
+                        System.out.println("##N=" + scriptResult);
+                        return scriptResult;
+                    }
+                    if (var.startsWith("##A")) {
+                        String result = JSON.toJSONString((compiledScript.eval(bindings)));
+                        System.out.println("##A=" + result);
+                        result = result.replace("\\", "");
+                        System.out.println(result);
+                        result = result.substring(1, result.length() - 1);
+                        System.out.println(result);
+                        JSONArray scriptResult = JSON.parseArray(result);
+                        System.out.println(scriptResult);
+                        return scriptResult;
+                    }
+                    if (var.startsWith("##O")) {
+                        String result = JSON.toJSONString(compiledScript.eval(bindings));
+                        System.out.println("##O=" + result);
+                        result = result.replace("\\", "");
+                        System.out.println(result);
+                        result = result.substring(1, result.length() - 1);
+                        System.out.println(result);
+                        JSONObject scriptResult = JSON.parseObject(result);
+                        System.out.println(scriptResult);
+                        return scriptResult;
+                    }
                 }
             }
-            return obj;
+            // if they are not B/S/N/A/O, it's NO ##, so it's either number or text
+            //正则判断是否数字
+            Pattern pattern = Pattern.compile("-?[0-9]+(\\\\.[0-9]+)?");
+            Matcher matcher = pattern.matcher(var);
+            //判断字符串是否是数字
+            if (matcher.matches()) {
+                return Double.parseDouble(var);
+            }
+            return var;
         } catch (Exception e)
         {
             e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
         }
     }
+//
+//    public Object scriptEngineVar2(Object obj, JSONObject jsonVars) {
+//        try {
+//            if (obj instanceof String) {
+//                String var = obj.toString();
+//                System.out.println("");
+//                System.out.println("var=" + var);
+//                System.out.println("jsonVars=" + jsonVars);
+//                if (var.startsWith("##")) {
+//                    //Get from card
+//                    if (var.startsWith("##C")) {
+//                        if (var.startsWith("##CC")) {
+//                            String varSubstring = var.substring(5);
+//                            String[] varSplits = varSubstring.split("\\$\\$");
+//                            StringBuffer sb = new StringBuffer();
+//                            for (int i = 0; i < varSplits.length; i++) {
+//                                String varSplit = varSplits[i];
+//                                if (varSplit.startsWith("##")) {
+//                                    String key = varSplit.substring(2);
+//                                    qt.errPrint("sev", jsonVars.getString(key), jsonVars, varSplit);
+//                                    Object result = scriptEngineVar(jsonVars.getString(key), jsonVars);
+//                                    System.out.println("##CC=" + key + ":" + result);
+//                                    sb.append(result);
+//                                } else {
+//                                    sb.append(varSplit);
+//                                }
+//                            }
+//                            return sb.toString();
+//                        }
+//
+//                        String[] scriptSplit = var.split("\\.");
+//                        Query query = new Query(new Criteria("_id").is(scriptSplit[2]));
+//                        List list = new ArrayList();
+//                        //See which COUPA
+//                        switch (scriptSplit[1]) {
+//                            case "Comp":
+//                                list = mongoTemplate.find(query, Comp.class);
+//                                break;
+//                            case "Order":
+//                                list = mongoTemplate.find(query, Order.class);
+//                                break;
+//                            case "User":
+//                                list = mongoTemplate.find(query, User.class);
+//                                break;
+//                            case "Prod":
+//                                list = mongoTemplate.find(query, Prod.class);
+//                                break;
+//                            case "Asset":
+//                                list = mongoTemplate.find(query, Asset.class);
+//                                break;
+//                        }
+//                        if (list.get(0) == null) {
+//                            return null;
+//                        }
+//                        JSONObject jsonList = (JSONObject) JSON.toJSON(list.get(0));
+//                        if (jsonList.getJSONObject(scriptSplit[3]) == null) {
+//                            return null;
+//                        }
+//                        JSONObject jsonVar = jsonList.getJSONObject(scriptSplit[3]);
+//                        for (int k = 4; k < scriptSplit.length - 1; k++) {
+//                            //根据[拆分
+//                            //break up array
+//                            String[] ifArray = scriptSplit[k].split("\\[");
+//                            System.out.println("length=" + ifArray.length);
+//                            //拆分成一份类型为jsonObject
+//                            if (ifArray.length == 1) {
+//                                if (jsonVar.getJSONObject(ifArray[0]) == null) {
+//                                    return null;
+//                                }
+//                                jsonVar = jsonVar.getJSONObject(ifArray[0]);
+//                            }
+//                            //拆分成两份类型为jsonArray
+//                            if (ifArray.length == 2) {
+//                                String[] index = ifArray[1].split("]");
+//                                if (jsonVar.getJSONArray(ifArray[0]).getJSONObject(Integer.parseInt(index[0])) == null) {
+//                                    return null;
+//                                }
+//                                jsonVar = jsonVar.getJSONArray(ifArray[0]).getJSONObject(Integer.parseInt(index[0]));
+//                            }
+//                        }
+//                        System.out.println("jsonVar=" + jsonVar);
+//                        if (jsonVar.get(scriptSplit[scriptSplit.length - 1]) == null) {
+//                            return null;
+//                        }
+//                        if (var.startsWith("##CB")) {
+//                            Boolean scriptResult = jsonVar.getBoolean(scriptSplit[scriptSplit.length - 1]);
+//                            return scriptResult;
+//                        }
+//                        if (var.startsWith("##CS")) {
+//                            String scriptResult = jsonVar.getString(scriptSplit[scriptSplit.length - 1]);
+//                            return scriptResult;
+//                        }
+//                        if (var.startsWith("##CI")) {
+//                            Integer scriptResult = jsonVar.getInteger(scriptSplit[scriptSplit.length - 1]);
+//                            return scriptResult;
+//                        }
+//                        if (var.startsWith("##CN")) {
+//                            Double scriptResult = jsonVar.getDouble(scriptSplit[scriptSplit.length - 1]);
+//                            return scriptResult;
+//                        }
+//                        if (var.startsWith("##CA")) {
+//                            JSONArray scriptResult = jsonVar.getJSONArray(scriptSplit[scriptSplit.length - 1]);
+//                            return scriptResult;
+//                        }
+//                        if (var.startsWith("##CO")) {
+//                            System.out.println("test=" + jsonVar.getJSONObject(scriptSplit[scriptSplit.length - 1]));
+//
+//                            return jsonVar.getJSONObject(scriptSplit[scriptSplit.length - 1]);
+//                        }
+//                    }
+//                    //T means it is a counter
+//                    else if (var.startsWith("##T")) {
+//                        String[] scriptSplit = var.split("\\.");
+//                        Asset asset = qt.getConfig(scriptSplit[1], "a-core", "refAuto");
+//                        if (asset == null || asset.getRefAuto() == null || asset.getRefAuto().getJSONObject("objCounter") == null ||
+//                                asset.getRefAuto().getJSONObject("objCounter").getJSONObject(scriptSplit[2]) == null) {
+//                            return null;
+//                        }
+//                        JSONObject jsonCounter = asset.getRefAuto().getJSONObject("objCounter").getJSONObject(scriptSplit[2]);
+//                        Integer count = jsonCounter.getInteger("count");
+//                        Integer max = jsonCounter.getInteger("max");
+//                        Integer digit = jsonCounter.getInteger("digit");
+//                        int length = digit - String.valueOf(count).length();
+//                        System.out.println("length=" + length);
+//                        StringBuffer sb = new StringBuffer();
+//                        for (int i = 0; i < length; i++) {
+//                            sb.append("0");
+//                        }
+//                        String strCount = String.valueOf(sb);
+//                        strCount += count;
+//                        System.out.println("strCount=" + strCount);
+//                        if (count == max) {
+//                            count = 1;
+//                        } else {
+//                            count++;
+//                        }
+//                        System.out.println("count=" + count);
+//                        JSONObject jsonUpdate = qt.setJson("refAuto.objCounter." + scriptSplit[2] + ".count", count);
+//                        qt.setMDContent(asset.getId(), jsonUpdate, Asset.class);
+//                        return strCount;
+//                    }
+//                    //##F.com.cresign.timer.controller.StatController##getStatisticByEs1##op0
+//                    //F = it is a function, then break the string and recall myself to calculate
+//                    else if (var.startsWith("##F")) {
+//                        String varSubstring = var.substring(4);
+//                        String[] varSplit = varSubstring.split("##");
+//                        System.out.println("##F=" + varSplit[0] + "," + varSplit[1] + "," + varSplit[2]);
+//                        String result = (String) scriptEngineVar(jsonVars.getJSONObject(varSplit[2]).get("val"), jsonVars);
+//                        System.out.println("result=" + result);
+//                        JSONObject jsonResult = JSONObject.parseObject(result);
+//                        System.out.println("jsonResult=" + jsonResult);
+//                        Class<?> clazz = Class.forName(varSplit[0]);
+//                        Object bean = ApplicationContextTools.getBean(clazz);
+//                        Method method1 = clazz.getMethod(varSplit[1], new Class[]{JSONObject.class});
+//                        System.out.println("varSplit[1]=" + varSplit[1]);
+//                        System.out.println("method1=" + method1);
+//                        //invoke....
+//                        Object invoke = method1.invoke(bean, jsonResult);
+//                        System.out.println("invoke=" + invoke);
+//                        return invoke;
+//                    }
+//                    //D = date formates
+//                    else if (var.startsWith("##D")) {
+//                        if (var.startsWith("##DT")) {
+//                            String varSubstring = var.substring(5);
+//                            System.out.println("varSubstring=" + varSubstring);
+//                            SimpleDateFormat sdf = new SimpleDateFormat(varSubstring);
+//                            String date = sdf.format(new Date());
+//                            System.out.println("##DT=" + date);
+//                            return date;
+//                        }
+//                        else {
+//                            String varSubstring = var.substring(4);
+//                            System.out.println("varSubstring=" + varSubstring);
+//                            String[] varSplit = varSubstring.split("##");
+//                            SimpleDateFormat sdf = null;
+//                            Calendar calendar = Calendar.getInstance();
+//                            for (int i = varSplit.length - 1; i >= 0; i--) {
+//                                String partTime = varSplit[i];
+//                                if (partTime.equals("*")) {
+//                                    switch (i) {
+//                                        case 0:
+//                                            sdf = new SimpleDateFormat("yyyy");
+//                                            varSplit[0] = sdf.format(calendar.getTime());
+//                                            break;
+//                                        case 1:
+//                                            sdf = new SimpleDateFormat("MM");
+//                                            varSplit[1] = sdf.format(calendar.getTime());
+//                                            break;
+//                                        case 2:
+//                                            sdf = new SimpleDateFormat("dd");
+//                                            varSplit[2] = sdf.format(calendar.getTime());
+//                                            break;
+//                                        case 3:
+//                                            sdf = new SimpleDateFormat("HH");
+//                                            varSplit[3] = sdf.format(calendar.getTime());
+//                                            break;
+//                                        case 4:
+//                                            sdf = new SimpleDateFormat("mm");
+//                                            varSplit[4] = sdf.format(calendar.getTime());
+//                                            break;
+//                                        case 5:
+//                                            sdf = new SimpleDateFormat("ss");
+//                                            varSplit[5] = sdf.format(calendar.getTime());
+//                                            break;
+//                                    }
+//                                } else if (partTime.startsWith("+") || partTime.startsWith("-")) {
+//                                    int part = Integer.parseInt(partTime);
+//                                    System.out.println("part=" + part);
+//                                    switch (i) {
+//                                        case 0:
+//                                            calendar.add(Calendar.YEAR, part);
+//                                            sdf = new SimpleDateFormat("yyyy");
+//                                            varSplit[0] = sdf.format(calendar.getTime());
+//                                            break;
+//                                        case 1:
+//                                            calendar.add(Calendar.MONTH, part);
+//                                            sdf = new SimpleDateFormat("MM");
+//                                            varSplit[1] = sdf.format(calendar.getTime());
+//                                            break;
+//                                        case 2:
+//                                            calendar.add(Calendar.DATE, part);
+//                                            sdf = new SimpleDateFormat("dd");
+//                                            varSplit[2] = sdf.format(calendar.getTime());
+//                                            break;
+//                                        case 3:
+//                                            calendar.add(Calendar.HOUR_OF_DAY, part);
+//                                            sdf = new SimpleDateFormat("HH");
+//                                            varSplit[3] = sdf.format(calendar.getTime());
+//                                            break;
+//                                        case 4:
+//                                            calendar.add(Calendar.MINUTE, part);
+//                                            sdf = new SimpleDateFormat("mm");
+//                                            varSplit[4] = sdf.format(calendar.getTime());
+//                                            break;
+//                                        case 5:
+//                                            calendar.add(Calendar.SECOND, part);
+//                                            sdf = new SimpleDateFormat("ss");
+//                                            varSplit[5] = sdf.format(calendar.getTime());
+//                                            break;
+//                                    }
+//                                }
+//                                System.out.println("i=" + i + ",varSplit=" + varSplit[i]);
+//                            }
+//                            StringBuffer stringBuffer = new StringBuffer();
+//                            stringBuffer = stringBuffer.append(varSplit[0]).append("/").append(varSplit[1]).append("/").append(varSplit[2])
+//                                    .append(" ").append(varSplit[3]).append(":").append(varSplit[4]).append(":").append(varSplit[5]);
+//                            System.out.println("##D=" + stringBuffer);
+//                            return stringBuffer;
+//                        }
+//                    }
+//                    // else this is not a ##, use script engine to get result
+//                    else {
+//                        String varSubString = var.substring(4);
+//                        if (varSubString.contains("for")) {
+//                            return null;
+//                        }
+//                        ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("javascript");
+//                        Compilable compilable = (Compilable) scriptEngine;
+//                        Bindings bindings = scriptEngine.createBindings();
+//                        CompiledScript compiledScript = compilable.compile(varSubString);
+//                        String[] varSplit = var.split("\\(");
+//                        System.out.println(varSplit[0] + "," + varSplit[1]);
+//                        if (varSplit[1].split("\\)\\{").length > 0) {
+//                            String scriptVar = varSplit[1].split("\\)\\{")[0];
+//                            System.out.println("scriptVar=" + scriptVar);
+//                            if (scriptVar != null && !scriptVar.equals("")) {
+//                                System.out.println("true");
+//                                String[] arrayKey = scriptVar.split(",");
+//                                System.out.println("arrayKey.size=" + arrayKey.length);
+//                                for (int i = 0; i < arrayKey.length; i++) {
+//                                    String key = arrayKey[i];
+//                                    System.out.println("key=" + key);
+//                                    // I am calling myself again here
+//                                    Object result = scriptEngineVar(jsonVars.getJSONObject(key).get("val"), jsonVars);
+//                                    System.out.println(i + ":" + result);
+//                                    bindings.put(key, result);
+//                                }
+//                            }
+//                        }
+//
+//                        //after created all compile data, here is actual eval
+//                        if (var.startsWith("##B")) {
+//                            Boolean scriptResult = (Boolean) compiledScript.eval(bindings);
+//                            return scriptResult;
+//                        }
+//                        if (var.startsWith("##S")) {
+//                            String scriptResult = compiledScript.eval(bindings).toString();
+//                            return scriptResult;
+//                        }
+//                        if (var.startsWith("##I")) {
+//                            Integer scriptResult = (Integer) compiledScript.eval(bindings);
+//                            System.out.println("##I=" + scriptResult);
+//                            return scriptResult;
+//                        }
+//                        if (var.startsWith("##N")) {
+//                            Double scriptResult = (Double) compiledScript.eval(bindings);
+//                            System.out.println("##N=" + scriptResult);
+//                            return scriptResult;
+//                        }
+//                        if (var.startsWith("##A")) {
+//                            String result = JSON.toJSONString((compiledScript.eval(bindings)));
+//                            System.out.println("##A=" + result);
+//                            result = result.replace("\\", "");
+//                            System.out.println(result);
+//                            result = result.substring(1, result.length() - 1);
+//                            System.out.println(result);
+//                            JSONArray scriptResult = JSON.parseArray(result);
+//                            System.out.println(scriptResult);
+//                            return scriptResult;
+//                        }
+//                        if (var.startsWith("##O")) {
+//                            String result = JSON.toJSONString(compiledScript.eval(bindings));
+//                            System.out.println("##O=" + result);
+//                            result = result.replace("\\", "");
+//                            System.out.println(result);
+//                            result = result.substring(1, result.length() - 1);
+//                            System.out.println(result);
+//                            JSONObject scriptResult = JSON.parseObject(result);
+//                            System.out.println(scriptResult);
+//                            return scriptResult;
+//                        }
+//                    }
+//                }
+//                // if they are not B/S/N/A/O, it's NO ##, so it's either number or text
+//                //正则判断是否数字
+//                Pattern pattern = Pattern.compile("-?[0-9]+(\\\\.[0-9]+)?");
+//                Matcher matcher = pattern.matcher(var);
+//                //判断字符串是否是数字
+//                if (matcher.matches()) {
+//                    return Double.parseDouble(var);
+//                }
+//            }
+//            return obj;
+//        } catch (Exception e)
+//        {
+//            e.printStackTrace();
+//            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+//        }
+//    }
 
     public void initAction(JSONObject orderOItem, JSONArray action, Integer index)
     {
@@ -1651,6 +2165,14 @@ public class DbUtils {
         {
             action.getJSONObject(index).put("prtNext", new JSONArray());
         }
+    }
+
+    public void initOItem(Order order)
+    {
+        JSONObject newOItem = qt.setJson("objItem", new JSONArray(), "arrP", new JSONArray(),
+                "bmdHeight", "unset", "objItemCol", new JSONArray(), "wn2qty", 0.0, "wn4price", 0.0,
+                "objCard", qt.setArray("oItem"));
+        order.setOItem(newOItem);
     }
 
     public void initOQc(JSONObject orderOItem, JSONArray oQc, Integer index)
@@ -1897,18 +2419,23 @@ public class DbUtils {
             } else {
                 defKey = "objlBP";
             }
-//            String grpP = allProdObj.getJSONObject(id_P).getJSONObject("info").getString("grp");
-            jsonLsasset.put("grp", "1000");
-//            JSONObject jsonDef = allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
-//            if (grpP == null || grpP.equals("")) {
-//                jsonLsasset.put("grp", "1000");
-//            } else {
-//                if (jsonDef.getJSONObject(grpP) == null) {
-//                    jsonLsasset.put("grp", "1000");
-//                } else {
-//                    jsonLsasset.put("grp", jsonDef.getJSONObject(grpP).getString("grpA"));
-//                }
-//            }
+            if (allProdObj.getJSONObject(id_P) == null || allAssetObj.getJSONObject(id_C) == null) {
+                jsonLsasset.put("grp", "");
+            } else {
+                String grpP = allProdObj.getJSONObject(id_P).getJSONObject("info").getString("grp");
+                JSONObject jsonDef = allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
+                if (grpP == null || grpP.isEmpty() || jsonDef.getJSONObject(grpP) == null) {
+                    jsonLsasset.put("grp", "1000");
+                } else {
+                    jsonLsasset.put("grp", jsonDef.getJSONObject(grpP).getString("grpA"));
+                }
+                if (allAssetObj.getJSONObject(id_C) == null &&
+                        allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey) == null) {
+                    jsonLsasset.put("grp", "");
+                } else {
+                    allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
+                }
+            }
         }
         for (int i = 0; i < arrayLbasset.size(); i++) {
             JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
@@ -1933,18 +2460,23 @@ public class DbUtils {
             } else {
                 defKey = "objlBP";
             }
-//            String grpP = allProdObj.getJSONObject(id_P).getJSONObject("info").getString("grp");
-//            JSONObject jsonDef = allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
-            jsonLbasset.put("grp", "1000");
-//            if (grpP == null || grpP.equals("")) {
-//                jsonLbasset.put("grp", "1000");
-//            } else {
-//                if (jsonDef.getJSONObject(grpP) == null) {
-//                    jsonLbasset.put("grp", "1000");
-//                } else {
-//                    jsonLbasset.put("grp", jsonDef.getJSONObject(grpP).getString("grpA"));
-//                }
-//            }
+            if (allProdObj.getJSONObject(id_P) == null || allAssetObj.getJSONObject(id_C) == null) {
+                jsonLbasset.put("grp", "");
+            } else {
+                String grpP = allProdObj.getJSONObject(id_P).getJSONObject("info").getString("grp");
+                JSONObject jsonDef = allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
+                if (grpP == null || grpP.isEmpty() || jsonDef.getJSONObject(grpP) == null) {
+                    jsonLbasset.put("grp", "1000");
+                } else {
+                    jsonLbasset.put("grp", jsonDef.getJSONObject(grpP).getString("grpA"));
+                }
+                if (allAssetObj.getJSONObject(id_C) == null &&
+                        allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey) == null) {
+                    jsonLbasset.put("grp", "");
+                } else {
+                    allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
+                }
+            }
         }
 
         System.out.println("arraylsasset=" + arrayLsasset);

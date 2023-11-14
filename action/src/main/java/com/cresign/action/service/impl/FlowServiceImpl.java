@@ -492,7 +492,7 @@ public class FlowServiceImpl implements FlowService {
     public ApiResponse getDgSingle(String id_OParent, Integer index, String id_U,String myCompId,Long teStart) {
 
         // 调用方法获取订单信息
-        Order salesOrderData = qt.getMDContent(id_OParent, Arrays.asList("oItem", "info","view", "action", "oStock", "casItemx"), Order.class);
+        Order salesOrderData = qt.getMDContent(id_OParent, "", Order.class);
 
         // 判断订单是否为空
         if (null == salesOrderData) {

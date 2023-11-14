@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-
 @RefreshScope
 @Component
 public class WxAuthUtil {
@@ -86,10 +84,9 @@ public class WxAuthUtil {
         }
         catch (Exception e)
         {
+            return null;
 
         }
-
-
     }
 
 }

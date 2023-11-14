@@ -234,13 +234,14 @@ public class UsageServiceImpl implements UsageService {
     }
 
     @Override
-    public ApiResponse notify(String id_U, String id_C, JSONObject wrdNU, String id, JSONObject wrdN, JSONObject wrddesc) {
+    public ApiResponse notifyLog(String id_U, String id_C, JSONObject wrdNU, String id, String id_I, JSONObject wrdN, JSONObject wrddesc) {
         Asset asset = qt.getConfig(id_C, "a-auth", "flowControl");
         JSONArray arrayFlow = asset.getFlowControl().getJSONArray("objData");
         JSONObject jsonNotify = qt.setJson("id_U", id_U,
                 "wrdNU", wrdNU,
                 "wrdN", wrdN,
                 "wrddesc", wrddesc,
+                "id_I", id_I,
                 "tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         for (int i = 0; i < arrayFlow.size(); i++) {
             JSONObject jsonFlow = arrayFlow.getJSONObject(i);

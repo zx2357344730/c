@@ -233,11 +233,12 @@ public class UsageController {
     public ApiResponse notify(@RequestBody JSONObject json) {
         try {
             JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-            return usageService.notify(
+            return usageService.notifyLog(
                     tokData.getString("id_U"),
                     tokData.getString("id_C"),
                     tokData.getJSONObject("wrdNU"),
                     json.getString("id"),
+                    json.getString("id_I"),
                     json.getJSONObject("wrdN"),
                     json.getJSONObject("wrddesc")
             );
