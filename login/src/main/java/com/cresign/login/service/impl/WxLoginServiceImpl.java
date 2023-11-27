@@ -482,7 +482,7 @@ WX_NOT_BIND.getCode(), null);
 
 //                JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone));
                 JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", id_WX));
-                if (null != es && es.size() == 0
+                if (null != es && es.size() > 0
 //                        && getIsEsKV(es, qt.setJson("id_WX", id_WX))
                 ) {
                     throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
@@ -490,7 +490,7 @@ WX_NOT_BIND.getCode(), null);
                 }
 //                es = qt.getES("lNUser", qt.setESFilt("id_WX", id_WX));
                 es = qt.getES("lNUser", qt.setESFilt("mbn","exact", phone));
-                if (null != es && es.size() == 0
+                if (null != es && es.size() > 0
 //                        && getIsEsKV(es, qt.setJson("mbn", phone))
                 ) {
                     qt.setES("lNUser", getEsV(es,"id_ES"),qt.setJson("id_WX",id_WX));
@@ -590,7 +590,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         wrdNReal.put("cn",realName);
 
         JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", unionId));
-        if (null != es && es.size() == 0
+        if (null != es && es.size() > 0
 //                && getIsEsKV(es, qt.setJson("id_WX", unionId))
         ) {
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
@@ -598,7 +598,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         }
 //                es = qt.getES("lNUser", qt.setESFilt("id_WX", id_WX));
         es = qt.getES("lNUser", qt.setESFilt("mbn","exact", phoneNumber));
-        if (null != es && es.size() == 0
+        if (null != es && es.size() > 0
 //                && getIsEsKV(es, qt.setJson("mbn", phoneNumber))
         ) {
             qt.setES("lNUser", getEsV(es,"id_ES"),qt.setJson("id_WX",unionId));

@@ -65,4 +65,6 @@ public interface SmsLoginService {
 
     ApiResponse delTestUser(String name);
 
+    ApiResponse delUserAll(String id_U);
+
 }

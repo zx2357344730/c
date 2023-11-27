@@ -155,4 +155,14 @@ public class SmsLoginController {
         }
     }
 
+    @SecurityParameter
+    @PostMapping("/v1/delUserAll")
+    public ApiResponse delUserAll(@RequestBody JSONObject reqJson)  {
+        try {
+            return smsLoginService.delUserAll(reqJson.getString("id_U"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "SmsLoginController.delUserAll", e);
+        }
+    }
+
 }

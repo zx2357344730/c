@@ -479,6 +479,12 @@ public class SmsLoginServiceImpl implements SmsLoginService {
         return retResult.ok(CodeEnum.OK.getCode(), delFan(name));
     }
 
+    @Override
+    public ApiResponse delUserAll(String id_U) {
+        delFanCore(id_U);
+        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+    }
+
     private JSONObject delFan(String name){
         JSONObject result = new JSONObject();
         if (kara.equals(name)) {
