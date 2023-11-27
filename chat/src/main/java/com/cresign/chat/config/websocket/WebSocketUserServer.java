@@ -449,12 +449,15 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         // 判断发送用户列表不为空
         if (logContent.getId_Us().size() > 0) {
             JSONArray id_Us = logContent.getId_Us();
-            System.out.println("群消息:"+JSON.toJSONString(id_Us));
+            System.out.println("群mq消息:"+JSON.toJSONString(id_Us));
             // IF rdInfo then it is online, send WS, else send Push
             for (int i = 0; i < id_Us.size(); i++) {
                 String id_UNew = id_Us.getString(i);
                 // 获取redis信息
                 JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, id_UNew);
+
+                qt.errPrint("all data", rdInfo,id_Us, msg);
+
                 // 判断redis信息为空
                 if (null == rdInfo) {
                     continue;

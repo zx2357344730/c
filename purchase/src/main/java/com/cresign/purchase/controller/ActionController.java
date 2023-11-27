@@ -141,9 +141,11 @@ public class ActionController {
     public ApiResponse confirmOrder(@RequestBody JSONObject reqJson) {
         try {
             JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
-            return actionService.confirmOrder(
-                    tokData.getString("id_C"),
+            Integer result = actionService.confirmOrder(
+                    tokData,
                     reqJson.getString("id_O"));
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+
         } catch (Exception e) {
             return getUserToken.err(reqJson, "ActionController.confirmOrder", e);
         }
@@ -197,7 +199,7 @@ public class ActionController {
      */
     @SecurityParameter
     @PostMapping("/v2/statusChange")
-    public ApiResponse statusChange(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse statusChange(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
         try {
             JSONObject res = actionService.changeActionStatus(
@@ -216,25 +218,25 @@ public class ActionController {
         }
     }
 
-    @SecurityParameter
-    @PostMapping("/v1/changeActionStatusNew")
-    public ApiResponse changeActionStatusNew(@RequestBody JSONObject reqJson) {
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
-        try {
-            return actionService.changeActionStatusNew(
-                    reqJson.getString("logType"),
-                    reqJson.getInteger("status"),
-                    reqJson.getString("msg"),
-                    reqJson.getInteger("index"),
-                    reqJson.getString("id_O"),
-                    reqJson.getBoolean("isLink"),
-                    reqJson.getString("id_FC"),
-                    reqJson.getString("id_FS"),
-                    tokData, reqJson.getJSONArray("id_Us"));
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "statusChg", e);
-        }
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/changeActionStatusNew")
+//    public ApiResponse changeActionStatusNew(@RequestBody JSONObject reqJson) {
+//        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
+//        try {
+//            return actionService.changeActionStatusNew(
+//                    reqJson.getString("logType"),
+//                    reqJson.getInteger("status"),
+//                    reqJson.getString("msg"),
+//                    reqJson.getInteger("index"),
+//                    reqJson.getString("id_O"),
+//                    reqJson.getBoolean("isLink"),
+//                    reqJson.getString("id_FC"),
+//                    reqJson.getString("id_FS"),
+//                    tokData, reqJson.getJSONArray("id_Us"));
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "statusChg", e);
+//        }
+//    }
 
 
     /**
@@ -242,8 +244,6 @@ public class ActionController {
      * isLink means whether this will control the next step
      * statusType 0 - all stop, 1 - all start, 2 - all finish
      *
-     * @return
-     * @throws IOException
      */
     @SecurityParameter
     @PostMapping("/v1/subStatusChange")
@@ -404,11 +404,11 @@ public class ActionController {
 
     @SecurityParameter
     @PostMapping("/v2/dgConfirmOrder")
-    public ApiResponse dgConfirmOrder(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse dgConfirmOrder(@RequestBody JSONObject reqJson) {
         try {
             JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
             return actionService.dgConfirmOrder(
-                    tokData.getString("id_C"),
+                    tokData,
                     reqJson.getJSONArray("casList"));
         } catch (Exception e) {
             return getUserToken.err(reqJson, "ActionController.dgConfirmOrder", e);

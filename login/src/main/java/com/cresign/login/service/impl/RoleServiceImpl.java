@@ -356,7 +356,7 @@ public class RoleServiceImpl implements RoleService {
         log.setSysLog(id_C, "mut_menu", "更新菜单", 3, qt.setJson("cn", "系统权限更新"));
         ws.setUserListByGrpU(log, id_C, grpU);
         log.setData(qt.setJson("type", "chgUserGrp"));
-        ws.sendWS(log);
+        ws.sendWSDirect(log);
 
         return retResult.ok(CodeEnum.OK.getCode(), "");
 

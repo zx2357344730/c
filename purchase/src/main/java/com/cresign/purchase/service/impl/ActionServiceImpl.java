@@ -109,7 +109,7 @@ public class ActionServiceImpl implements ActionService {
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),grpBOld.getString("grpB"), "",
                         objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
-                        i,id_C,order.getInfo().getId_C(),objItem.getJSONObject(i).getString("pic"),grpBOld.getString("dep"),
+                        i,order.getInfo().getId_CB(),order.getInfo().getId_C(),objItem.getJSONObject(i).getString("pic"),grpBOld.getString("dep"),
                         "转换另一队伍执行",3,objItem.getJSONObject(i).getJSONObject("wrdN"), wrdNU);
                 logStop.setLogData_action(oAction, oItem);
                 logStop.getData().put("bcdStatus", 9);
@@ -119,7 +119,7 @@ public class ActionServiceImpl implements ActionService {
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),grpBNew.getString("grpB"), "",
                         objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
-                        i,id_C,order.getInfo().getId_C(),objItem.getJSONObject(i).getString("pic"),grpBNew.getString("dep"),
+                        i,order.getInfo().getId_CB(),order.getInfo().getId_C(),objItem.getJSONObject(i).getString("pic"),grpBNew.getString("dep"),
                         "转换队伍，开始执行",3,objItem.getJSONObject(i).getJSONObject("wrdN"), wrdNU);
                 logStart.setLogData_action(oAction, oItem);
                 logStart.getData().put("bcdStatus", 1);
@@ -157,7 +157,7 @@ public class ActionServiceImpl implements ActionService {
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),"", grpBOld.getString("grpB"),
                         objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
-                        i,order.getInfo().getId_CB(),id_C,objItem.getJSONObject(i).getString("pic"),grpBOld.getString("dep"),
+                        i,order.getInfo().getId_CB(),order.getInfo().getId_C(),objItem.getJSONObject(i).getString("pic"),grpBOld.getString("dep"),
                         "转换另一队伍执行",3,objItem.getJSONObject(i).getJSONObject("wrdN"), wrdNU);
                 logStop.setLogData_action(oAction, oItem);
                 logStop.getData().put("bcdStatus", 9);
@@ -166,7 +166,7 @@ public class ActionServiceImpl implements ActionService {
                         id_U, grpU, objItem.getJSONObject(i).getString("id_P"),"", grpBNew.getString("grpB"),
                         objAction.getJSONObject(i).getString("id_OP"),
                         objItem.getJSONObject(i).getString("id_O"),
-                        i,order.getInfo().getId_CB(),id_C,objItem.getJSONObject(i).getString("pic"),grpBNew.getString("dep"),
+                        i,order.getInfo().getId_CB(),order.getInfo().getId_C(),objItem.getJSONObject(i).getString("pic"),grpBNew.getString("dep"),
                         "转换另一队伍执行",3,objItem.getJSONObject(i).getJSONObject("wrdN"), wrdNU);
 
                 logStart.setLogData_action(oAction, oItem);
@@ -209,7 +209,7 @@ public class ActionServiceImpl implements ActionService {
         // Start making log with data
         LogFlow logL = new LogFlow("action",actData.getString("id_FC"),
                 actData.getString("id_FS"),"stateChg", tokData.getString("id_U"),tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(),orderOItem.getGrp(),
-                orderAction.getId_OP(), id_O,index,actData.getJSONObject("info").getString("id_CB"),orderOItem.getId_C(), "",tokData.getString("dep"),message,3,orderOItem.getWrdN(),tokData.getJSONObject("wrdNU"));
+                orderAction.getId_OP(), id_O,index,orderOItem.getId_CB(),orderOItem.getId_C(), "",tokData.getString("dep"),message,3,orderOItem.getWrdN(),tokData.getJSONObject("wrdNU"));
 
         logL.setLogData_action(orderAction,orderOItem);
         logL.getData().put("bcdStatus", -1 * bcdStatus);
@@ -262,7 +262,7 @@ public class ActionServiceImpl implements ActionService {
             LogFlow logFlow = new LogFlow("oQc", id,
                     id_Fs, "scoreAf", id_U, tokData.getString("grpU")
                     , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                    orderAction.getId_OP(), id_O, index, orderOItem.getId_CB(), orderOItem.getId_C(), ""
                     , tokData.getString("dep"), "申请评分成功!", 3, orderOItem.getWrdN()
                     , tokData.getJSONObject("wrdNU"));
             // 设置发送对象
@@ -318,7 +318,7 @@ public class ActionServiceImpl implements ActionService {
             LogFlow logFlow = new LogFlow("oQc", id,
                     id_Fs, "score", id_U, tokData.getString("grpU")
                     , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                    orderAction.getId_OP(), id_O, index, orderOItem.getId_CB(), orderOItem.getId_C(), ""
                     , tokData.getString("dep"), "评分成功!", 3, orderOItem.getWrdN()
                     , tokData.getJSONObject("wrdNU"));
             logFlow.getData().put("score",score);
@@ -420,12 +420,11 @@ public class ActionServiceImpl implements ActionService {
         LogFlow logL = new LogFlow("msg", id,
                 id_FS, subType, tokData.getString("id_U"), tokData.getString("grpU")
                 , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                orderAction.getId_OP(), id_O, index, tokData.getString("id_C"), orderOItem.getId_C(), ""
+                orderAction.getId_OP(), id_O, index, orderOItem.getId_CB(), orderOItem.getId_C(), ""
                 , tokData.getString("dep"), desc, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
         // 设置日志信息
         logL.setData(data);
         logL.setId_Us(id_Us);
-//        ws.sendWS(logL);
         // 发送日志信息
         ws.sendWS(logL);
         return retResult.ok(CodeEnum.OK.getCode(), "发送成功");
@@ -439,20 +438,20 @@ public class ActionServiceImpl implements ActionService {
      * @date 创建时间: 2023/5/30
      * @ver 版本号: 1.0.0
      */
-    public void sendMsgOneNew(String sendUser,LogFlow logFlow){
+//    public void sendMsgOneNew(String sendUser,LogFlow logFlow){
+////        JSONObject data = logFlow.getData();
+////        data.put("id_UPointTo",sendUser);
+//        if (null != sendUser) {
+//            logFlow.setId_Us(qt.setArray(sendUser, logFlow.getId_U()));
+//        } else {
+//            logFlow.setId_Us(qt.setArray(logFlow.getId_U()));
+//        }
 //        JSONObject data = logFlow.getData();
-//        data.put("id_UPointTo",sendUser);
-        if (null != sendUser) {
-            logFlow.setId_Us(qt.setArray(sendUser, logFlow.getId_U()));
-        } else {
-            logFlow.setId_Us(qt.setArray(logFlow.getId_U()));
-        }
-        JSONObject data = logFlow.getData();
-        data.put("id_UPointTo",logFlow.getId_Us());
-        logFlow.setData(data);
+//        data.put("id_UPointTo",logFlow.getId_Us());
 //        logFlow.setData(data);
-        ws.sendWS(logFlow);
-    }
+////        logFlow.setData(data);
+//        ws.sendWS(logFlow);
+//    }
 
     /**
      * 客服回访顾客api
@@ -515,13 +514,12 @@ public class ActionServiceImpl implements ActionService {
         LogFlow logFlow = new LogFlow("oQc", id,
                 id_Fs, "foCount", id_U, tokData.getString("grpU")
                 , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                orderAction.getId_OP(), id_O, index, orderOItem.getId_CB(), orderOItem.getId_C(), ""
                 , tokData.getString("dep"), "回访成功!", 3, orderOItem.getWrdN()
                 , tokData.getJSONObject("wrdNU"));
         // 设置日志data信息
         logFlow.getData().put("type",type);
         logFlow.getData().put("dataInfo",dataInfo);
-//        ws.sendWS(logFlow);
         // 设置日志接收用户列表
         logFlow.setId_Us(id_Us);
         logFlow.setTmd(dateNow);
@@ -557,7 +555,7 @@ public class ActionServiceImpl implements ActionService {
         LogFlow logLNewMsg = new LogFlow("msg", id,
                 id_Fs, subType, id_U, tokData.getString("grpU")
                 , orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                orderAction.getId_OP(), id_O, index, id_C, orderOItem.getId_C(), ""
+                orderAction.getId_OP(), id_O, index, orderOItem.getId_CB(), orderOItem.getId_C(), ""
                 , tokData.getString("dep"), desc, 3, orderOItem.getWrdN()
                 , tokData.getJSONObject("wrdNU"));
         // 设置日志data
@@ -659,20 +657,19 @@ public class ActionServiceImpl implements ActionService {
                 OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
                 OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
 
+
+                 // [E1323] xxxx产品 - 工序 " " 拼接zcndesc
                 String wrdNP = orderOItem.getWrdNP() == null ? "" : (orderOItem.getWrdNP().getString("cn") +  " - " );
-                // [E1323] xxxx产品 - 工序 " "
-                String taskName = "[" + orderAction.getRefOP() + "] " +
-                       wrdNP + orderOItem.getWrdN().getString("cn") + " ";
+                String prefixTaskName = orderAction.getRefOP().equals("") ? "" :  "[" + orderAction.getRefOP() + "] ";
+                String taskName = prefixTaskName + wrdNP + orderOItem.getWrdN().getString("cn") + " ";
 
                 // 根据下标获取递归信息
 
-                // 判断新的状态和旧状态不一样
-//                if (orderAction.getBcdStatus().equals(status)) {
-//                    // 抛出操作成功异常
-////                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
-//                    return retResult.error(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
-//
-//                }
+                // 判断新的状态和旧状态如果一样, 该操作已被处理, 两人同时有用, 防止重复按
+                if (orderAction.getBcdStatus().equals(status)) {
+                    // 抛出操作成功异常
+                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
+                }
 
                 // 备注
                 String message;
@@ -762,6 +759,19 @@ public class ActionServiceImpl implements ActionService {
                         duraType = "allEnd";
 
                         break;
+                    case -2:                    // 2 = finish, set qtyfin setNextDesc
+//                        if (orderAction.getBcdStatus() != 2 && orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3 && orderAction.getBcdStatus() != -8 && orderAction.getBcdStatus() != 7) {
+//                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
+//                        }
+                        if (orderAction.getSumChild() > 0 && orderAction.getBmdpt() == 2 && isLink) {
+                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
+                        }
+
+                        message = taskName + "[已完成] " + msg;
+                        isStateChg = true;
+                        duraType = "allEnd";
+
+                        break;
                     case 3:
                     case -8: // resume OItem
                         if (orderAction.getBcdStatus() != 8) {
@@ -830,7 +840,7 @@ public class ActionServiceImpl implements ActionService {
                             // need to unpause then cancel
                             LogFlow logL = new LogFlow("action", id_FC,
                                     id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                                    orderAction.getId_OP(), id_O, index, tokData.getString("id_C"), orderOItem.getId_C(), "", tokData.getString("dep"), "[准备取消]", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+                                    orderAction.getId_OP(), id_O, index, orderOItem.getId_CB(), orderOItem.getId_C(), "", tokData.getString("dep"), "[准备取消]", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
                             logL.setLogData_action(orderAction, orderOItem);
                             logL.getData().put("bcdStatus", -8);
                             ws.sendWS(logL);
@@ -904,7 +914,7 @@ public class ActionServiceImpl implements ActionService {
 
                 if (isStateChg) {
 
-                    if (status.equals(2) || status.equals(9))
+                    if (status.equals(-2) || status.equals(2) || status.equals(9))
                     {
                         //removing it from flowControl RefOP
                         this.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
@@ -914,7 +924,7 @@ public class ActionServiceImpl implements ActionService {
                     // Start making log with data
                     LogFlow logL = new LogFlow("action", id_FC,
                             id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                            orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), message, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+                            orderAction.getId_OP(), id_O, index, orderOItem.getId_CB(), orderOItem.getId_C(), "", tokData.getString("dep"), message, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
 
                     // Here set time info into action's log
                     logL.setLogData_action(orderAction, orderOItem);
@@ -926,6 +936,7 @@ public class ActionServiceImpl implements ActionService {
                         logL.setActionTime(0L, DateUtils.getTimeStamp(), duraType);
                     }
 
+                    qt.errPrint("logL is", logL);
                     ws.sendWS(logL);
                 }
 
@@ -949,18 +960,19 @@ public class ActionServiceImpl implements ActionService {
                     this.sumDura(id_O, index, logDURA);
                 }
 
-                    mapKey.put("action.objAction." + index, orderAction);
-                    qt.setMDContent(id_O, mapKey, Order.class);
 
-                    if (null != listCol.getInteger("lST")) {
-                        qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
-                    }
+                mapKey.put("action.objAction." + index, orderAction);
+                qt.setMDContent(id_O, mapKey, Order.class);
+
+                if (null != listCol.getInteger("lST")) {
+                    qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
+                }
 
                 // if Quest, send log + update OItem of myself = task = DG = above
                 // get upPrnt data, and find the prob, set that status of Prob to status
 
                 //*** Here we set oStock qty to 1 whenever noP task is completed
-                if (status == 2 && orderOItem.getId_P().equals(""))
+                if ((status == 2 || status == -2) && orderOItem.getId_P().equals(""))
                 {
                     Order oStockCheck = qt.getMDContent(id_O, Arrays.asList("info","oStock", "action", "oItem", "view"), Order.class);
                     if (oStockCheck.getOStock() != null)
@@ -1016,7 +1028,7 @@ public class ActionServiceImpl implements ActionService {
                         throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
                     }
                 } else if ((status == 2 && orderAction.getBisactivate() != 4) || status == 7) {
-                    // activate = 4 means Skip = already pushed Next
+                    // activate = 4 means Skip = already pushed Next, status == -2 then skip upNext
                     if (orderAction.getUpPrnts().size() == 0 && orderOItem.getId_P().equals("")) {
                         //Here for noP, DO NOT check parent, it will blow up
                         this.updateNext(orderAction, tokData);
@@ -1033,413 +1045,412 @@ public class ActionServiceImpl implements ActionService {
                     this.updateSon(orderAction, tokData);
                 }
 
-
             // 抛出操作成功异常
             return res;
 //            return retResult.ok(CodeEnum.OK.getCode(), res);
         }
 
-    @Override
-    @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
-    public ApiResponse changeActionStatusNew(String logType, Integer status, String msg,
-                                          Integer index, String id_O, Boolean isLink,
-                                          String id_FC, String id_FS, JSONObject tokData,JSONArray id_UsLog) {
-
-        JSONObject actData = this.getActionData(id_O, index);
-
-        OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
-        OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
-
-        String taskName = orderOItem.getWrdN().getString("cn");
-
-        // 根据下标获取递归信息
-
-        // 判断新的状态和旧状态不一样
-//                if (orderAction.getBcdStatus().equals(status)) {
-//                    // 抛出操作成功异常
-////                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
-//                    return retResult.error(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
+//    @Override
+//    @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
+//    public ApiResponse changeActionStatusNew(String logType, Integer status, String msg,
+//                                          Integer index, String id_O, Boolean isLink,
+//                                          String id_FC, String id_FS, JSONObject tokData,JSONArray id_UsLog) {
 //
+//        JSONObject actData = this.getActionData(id_O, index);
+//
+//        OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
+//        OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
+//
+//        String taskName = orderOItem.getWrdN().getString("cn");
+//
+//        // 根据下标获取递归信息
+//
+//        // 判断新的状态和旧状态不一样
+////                if (orderAction.getBcdStatus().equals(status)) {
+////                    // 抛出操作成功异常
+//////                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
+////                    return retResult.error(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
+////
+////                }
+//
+//        // 备注
+//        String message;
+//        JSONObject res = new JSONObject();
+//        JSONObject mapKey = new JSONObject();
+//        JSONObject listCol = new JSONObject();
+//        boolean isStateChg = false;
+//        String duraType = "none";
+//
+//        /***
+//         * logStatus(wn0prog) = 2@推送 3@开始 1@停 -1@再开 -6@取消 5@完成
+//         * bcdStatus = 0, 1 start, 2 end, -8 resume, 8 stop, 9 cancel
+//         * 0 about, 1 process, 9 stop, -8(3) resume/process, 3 finished, 10 cancel, 8 process(with next started)
+//         * rePush = > -2,
+//         *
+//         * 1. send logDura, 2. favRecent+, 3.
+//         */
+//        // if state => 1 ^id_Us+ / ^state => 1 / ^logState 1 / ^ logdura+start / ^recent+ / ^lST = 8
+//        // if state => 5 ^(add me) id_Us+ / ^state no chg / ^logState no / ^logdura+start / ^recent+
+//        // if state => 6 ^(rem me) id+Us- / ^state no chg / ^logState no / ^logdura+end / ^recent keep
+//
+//        // 8 pause (^if id_Us [1]) id_Us- / ^stateChg / ^logState / ^logdura+end / ^recent keep
+//        // 3/-8 resume (^id_Us+) / id_Us = []? ^stateChg / ^logState / ^logdura+start /
+//
+//        // if state => 2 ^statechg/^logState /^id_Us = [] / ^logdura all user end /  ^FavRecent remove all / ^lST = 13
+//
+//        // 7 start next => ^isactivated = 4 / push next / ^nothing else changed
+//        // 9 cancel => ^state = 9 / ^id_Us = [] ^ all user end / ^favRecent remove all
+//
+//        // ???repush state = 0 log sent as 0, waiting for user to start?
+//
+//        // activate = 4 means Skip = already pushed Next
+//
+//
+//        JSONArray id_Us = orderAction.getId_Us() == null ? new JSONArray() : orderAction.getId_Us();
+//
+//        // 判断属于什么操作
+//        switch (status) {
+//            case 1:
+//                // Start an OItem, DG just start, Task just start, Quest start + update Prob
+//                if (orderAction.getBcdStatus() != 0) {
+//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经开始过了");
 //                }
-
-        // 备注
-        String message;
-        JSONObject res = new JSONObject();
-        JSONObject mapKey = new JSONObject();
-        JSONObject listCol = new JSONObject();
-        boolean isStateChg = false;
-        String duraType = "none";
-
-        /***
-         * logStatus(wn0prog) = 2@推送 3@开始 1@停 -1@再开 -6@取消 5@完成
-         * bcdStatus = 0, 1 start, 2 end, -8 resume, 8 stop, 9 cancel
-         * 0 about, 1 process, 9 stop, -8(3) resume/process, 3 finished, 10 cancel, 8 process(with next started)
-         * rePush = > -2,
-         *
-         * 1. send logDura, 2. favRecent+, 3.
-         */
-        // if state => 1 ^id_Us+ / ^state => 1 / ^logState 1 / ^ logdura+start / ^recent+ / ^lST = 8
-        // if state => 5 ^(add me) id_Us+ / ^state no chg / ^logState no / ^logdura+start / ^recent+
-        // if state => 6 ^(rem me) id+Us- / ^state no chg / ^logState no / ^logdura+end / ^recent keep
-
-        // 8 pause (^if id_Us [1]) id_Us- / ^stateChg / ^logState / ^logdura+end / ^recent keep
-        // 3/-8 resume (^id_Us+) / id_Us = []? ^stateChg / ^logState / ^logdura+start /
-
-        // if state => 2 ^statechg/^logState /^id_Us = [] / ^logdura all user end /  ^FavRecent remove all / ^lST = 13
-
-        // 7 start next => ^isactivated = 4 / push next / ^nothing else changed
-        // 9 cancel => ^state = 9 / ^id_Us = [] ^ all user end / ^favRecent remove all
-
-        // ???repush state = 0 log sent as 0, waiting for user to start?
-
-        // activate = 4 means Skip = already pushed Next
-
-
-        JSONArray id_Us = orderAction.getId_Us() == null ? new JSONArray() : orderAction.getId_Us();
-
-        // 判断属于什么操作
-        switch (status) {
-            case 1:
-                // Start an OItem, DG just start, Task just start, Quest start + update Prob
-                if (orderAction.getBcdStatus() != 0) {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经开始过了");
-                }
-                // 设置备注信息
-                // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
-                message = "[开始运行]" + msg;
-
-                //Adding myself to the id_Us of action to indicate
-                id_Us.add(tokData.getString("id_U"));
-                orderAction.setId_Us(id_Us);
-                res.put("isJoin", 1);
-                res.put("id_Us", orderAction.getId_Us());
-                if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
-                    mapKey.put("info.lST", 8);
-                    listCol.put("lST", 8);
-                }
-                orderAction.setBcdStatus(status);
-                isStateChg = true;
-                duraType = "start";
-
-                break;
-            case 2:                    // 2 = finish, set qtyfin setNextDesc
-//                        if (orderAction.getBcdStatus() != 2 && orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3 && orderAction.getBcdStatus() != -8 && orderAction.getBcdStatus() != 7) {
-//                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
-//                        }
-                if (orderAction.getSumChild() > 0 && orderAction.getBmdpt() == 2 && isLink) {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
-                }
-
-                Double progress = Double.valueOf((actData.getInteger("progress") + 1) / actData.getJSONArray("actionArray").size() * 100);
-                //update actions' total progress
-                if (progress == 100.0) {
-                    mapKey.put("info.lST", 13);
-                    listCol.put("lST", 13);
-                }
-                mapKey.put("action.wn2progress", progress);
-                orderAction.setBcdStatus(status);
-
-                message = "[已完成]" + msg;
-                isStateChg = true;
-                duraType = "allEnd";
-
-                break;
-            case 3:
-            case -8: // resume OItem
-                if (orderAction.getBcdStatus() != 8) {
-                    return retResult.ok(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
-
-//                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
-                }
-
-                message = "[已恢复执行]" + msg;
-                orderAction.setBcdStatus(-8);
-                res.put("isJoin", 1);
-                res.put("id_Us", orderAction.getId_Us());
-                isStateChg = true;
-                duraType = "resume";
-
-                break;
-            case 5: // 加入
-                id_Us.add(tokData.getString("id_U"));
-                orderAction.setId_Us(id_Us);
-                message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功]" + msg;
-                // set back status to original status
-                status = orderAction.getBcdStatus();
-
-                res.put("isJoin", 1);
-                res.put("id_Us", orderAction.getId_Us());
-                duraType = "start";
-                break;
-            case 6:
-                id_Us.remove(tokData.getString("id_U"));
-                orderAction.setId_Us(id_Us);
-
-                message = tokData.getJSONObject("wrdNU").getString("cn") + "[退出成功]" + msg;
-                status = orderAction.getBcdStatus();
-
-                res.put("isJoin", 0);
-                res.put("id_Us", orderAction.getId_Us());
-                duraType = "end";
-                break;
-            case 7:
-                if ((orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != -8)
-                        || orderAction.getBisactivate() == 4) {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能操作");
-                }
-                orderAction.setBisactivate(4);
-                message = "[继续下一个]" + msg;
-
-                break;
-            case 8: // pause
-                if (orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3
-                        && orderAction.getBcdStatus() != -8) {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能");
-                }                    // 设置备注信息
-                message = "[已暂停]" + msg;
-                orderAction.setBcdStatus(status);
-                isStateChg = true;
-                duraType = "pause";
-
-//                    logStatus = 1;
-                break;
-            case 9: // cancel
-
-                // pause but it's nothing special
-                if (orderAction.getBcdStatus() == 8) {
-                    // need to unpause then cancel
-                    LogFlow logL = new LogFlow("action", id_FC,
-                            id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                            orderAction.getId_OP(), id_O, index, tokData.getString("id_C"), orderOItem.getId_C(), "", tokData.getString("dep"), "[准备取消]", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
-                    logL.setLogData_action(orderAction, orderOItem);
-                    logL.getData().put("bcdStatus", -8);
-                    ws.sendWS(logL);
-                }
-                // 设置备注信息
-                orderAction.setBcdStatus(status);
-                message = "[已取消]" + msg;
-                isStateChg = true;
-                duraType = "allEnd";
-                break;
-            case 54:
-                // 设置备注信息
-                // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
-                message = "[cusMsg-拒收]" + msg;
-
-                //Adding myself to the id_Us of action to indicate
-//                        id_Us.add(tokData.getString("id_U"));
-//                        orderAction.setId_Us(id_Us);
-//                        res.put("isJoin", 1);
-//                        res.put("id_Us", orderAction.getId_Us());
-//                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
-//                            mapKey.put("info.lST", 8);
-//                            listCol.put("lST", 8);
-//                        }
-                orderAction.setBcdStatus(status);
-//                        duraType = "start";
-                res.put("isJoin", 1);
-                res.put("id_Us", orderAction.getId_Us());
-                isStateChg = true;
-//                        duraType = "resume";
-                break;
-            case 55:
-                message = "[cusMsg-删除]" + msg;
-
-                //Adding myself to the id_Us of action to indicate
-//                        id_Us.add(tokData.getString("id_U"));
-//                        orderAction.setId_Us(id_Us);
-//                        res.put("isJoin", 1);
-//                        res.put("id_Us", orderAction.getId_Us());
-//                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
-//                            mapKey.put("info.lST", 8);
-//                            listCol.put("lST", 8);
-//                        }
-                orderAction.setBcdStatus(status);
-                res.put("isJoin", 1);
-                res.put("id_Us", orderAction.getId_Us());
-                isStateChg = true;
-//                        duraType = "resume";
-                break;
-            case 53:
-                message = "[已恢复执行]" + msg;
-                orderAction.setBcdStatus(-8);
-                res.put("isJoin", 1);
-                res.put("id_Us", orderAction.getId_Us());
-                isStateChg = true;
-                duraType = "resume";
-                break;
-            default:
-                message = taskName + "[无法操作]";
-                break;
-        }
-
-        // 设置产品状态
-        String compId;
-
-        if (logType.endsWith("SL")) {
-            compId = actData.getJSONObject("info").getString("id_CB");
-        } else {
-            compId = tokData.getString("id_C");
-        }
-
-        if (isStateChg) {
-
-            if (status.equals(2) || status.equals(9))
-            {
-                //removing it from flowControl RefOP
-                this.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
-                        id_FC, id_FS, orderAction.getId_OP(), orderAction.getRefOP(), orderAction.getWrdNP(), orderAction.getIndex(), false );
-            }
-
-            // Start making log with data
-            LogFlow logL = new LogFlow("action", id_FC,
-                    id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), message, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
-
-            // Here set time info into action's log
-            logL.setLogData_action(orderAction, orderOItem);
-            logL.getData().put("id_Us",actData.getJSONArray("id_Us"));
-
-            if (duraType.equals("start") || duraType.equals("resume")) {
-                logL.setActionTime(DateUtils.getTimeStamp(), 0L, duraType);
-            } else if (duraType.equals("end") || duraType.equals("pause") || duraType.equals("allEnd")) {
-                logL.setActionTime(0L, DateUtils.getTimeStamp(), duraType);
-            }
-
-            logL.setId_Us(id_UsLog);
-            ws.sendWS(logL);
-        }
-
-        // setup User's Fav card
-        if (duraType.equals("start"))
-            this.setFavRecent(tokData.getString("id_C"), tokData.getString("id_U"), id_O, index, id_FC, id_FS,
-                    orderOItem.getWrdN(), orderOItem.getPic());
-        else if (duraType.equals("end")) {
-            this.removeFavRecent(qt.setArray(tokData.getString("id_U")), id_O, index, id_FC, id_FS, orderAction.getArrUA());
-            orderAction.getId_Us().remove(tokData.getString("id_U"));
-        }
-        else if (duraType.equals("allEnd"))
-        {
-            this.removeFavRecent(orderAction.getId_Us(), id_O, index, id_FC, id_FS, orderAction.getArrUA());
-            orderAction.setId_Us(new JSONArray());
-            LogFlow logDURA = new LogFlow("action", id_FC,
-                    id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
-
-            // I am just fixing this by putting the "finish" time into calculation and ignoring the last log
-            this.sumDura(id_O, index, logDURA);
-        }
-
-
-//                LogFlow logL = new LogFlow("duraflow", id_FC,
-//                        id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-//                        orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+//                // 设置备注信息
+//                // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
+//                message = "[开始运行]" + msg;
 //
-//                if (duraType.equals("start") || duraType.equals("resume")) { //type start
-//                    // Start making log with data
-//                    logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, duraType);
-//                    logL.setZcndesc("任务计时开始");
-//                    ws.sendWS(logL);
-////casItemx, summ00s
-//                } else if (duraType.equals("end") || duraType.equals("pause")) { //type end
-//                    // End making log with data
-//                    logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
-//                    logL.setZcndesc("任务计时停止");
-//                    ws.sendWS(logL);
-//
-//                } else if (duraType.equals("allEnd")) { // type allEnd
-//                    for (int i = 0; i < orderAction.getId_Us().size(); i++) {
-//                        logL.setId_U(orderAction.getId_Us().getString(i));
-//                        logL.setGrpU("1000");
-//                        logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
-//                        logL.setZcndesc("任务结束");
-//                        ws.sendWS(logL);
-//                    }
+//                //Adding myself to the id_Us of action to indicate
+//                id_Us.add(tokData.getString("id_U"));
+//                orderAction.setId_Us(id_Us);
+//                res.put("isJoin", 1);
+//                res.put("id_Us", orderAction.getId_Us());
+//                if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
+//                    mapKey.put("info.lST", 8);
+//                    listCol.put("lST", 8);
 //                }
-//                try {
-        mapKey.put("action.objAction." + index, orderAction);
-        qt.setMDContent(id_O, mapKey, Order.class);
-
-        if (null != listCol.getInteger("lST")) {
-            qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
-        }
-
-        // if Quest, send log + update OItem of myself = task = DG = above
-        // get upPrnt data, and find the prob, set that status of Prob to status
-
-        //*** Here we set oStock qty to 1 whenever noP task is completed
-        if (status == 2 && orderOItem.getId_P().equals(""))
-        {
-            Order oStockCheck = qt.getMDContent(id_O, Arrays.asList("info","oStock", "action", "oItem", "view"), Order.class);
-            if (oStockCheck.getOStock() != null)
-            {
-                Double qty = oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).getDouble("wn2qtynow");
-                Double qtyAdding = 1 - qty;
-
-                oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).put("wn2qtynow", 1.0);
-                JSONObject listCol2 = new JSONObject();
-                dbu.summOrder(oStockCheck, listCol2, qt.setArray("oStock"));
-//                qt.saveMD(oStockCheck);
-                qt.setMDContent(id_O, qt.setJson("oStock", oStockCheck.getOStock()), Order.class);
-
-                qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
-
-                LogFlow log = new LogFlow(tokData, oStockCheck.getOItem(), oStockCheck.getAction(), "", id_O, index,
-                        "assetflow", "qtyChg", orderAction.getRefOP() + "-" + orderOItem.getWrdN().getString("cn") +
-                        " 完成了 " + qtyAdding, 3);
-
-                Double price = orderOItem.getWn4price() == null ? 0.0: orderOItem.getWn4price();
-                log.setLogData_assetflow(qtyAdding, price, "","");
-
-                log.setId_Us(id_UsLog);
-                ws.sendWS(log);
-            }
-            //getOStock (if not null)
-            //was 0.3 then set to 1
-            //send log that I finished 0.7
-        }
-
-        if (orderAction.getBisactivate() == 7)
-        {
-            JSONObject upPrnt = orderAction.getUpPrnts().getJSONObject(0);
-
-            try {
-                // if any null exception, catch
-                JSONObject taskOwner = this.getActionData(upPrnt.getString("id_O"), upPrnt.getInteger("index"));
-                OrderAction objAction = JSONObject.parseObject(JSON.toJSONString(taskOwner.get("orderAction")), OrderAction.class);
-
-                JSONObject probData = objAction.getProb().getJSONObject(upPrnt.getInteger("probIndex"));
-                probData.put("bcdStatus", status);
-
-                qt.setMDContent(upPrnt.getString("id_O"),
-                        qt.setJson("action.objAction." + upPrnt.getInteger("index"), objAction),
-                        Order.class);
-            } catch (RuntimeException e) {
-                //System.out.println("shit A");
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
-            }
-        } else if ((status == 2 && orderAction.getBisactivate() != 4) || status == 7) {
-            // activate = 4 means Skip = already pushed Next
-            if (orderAction.getUpPrnts().size() == 0 && orderOItem.getId_P().equals("")) {
-                //Here for noP, DO NOT check parent, it will blow up
-                this.updateNext(orderAction, tokData);
-            }
-            else {
-                //for regular DG, we will go check our parent first
-                //then push it together with myself because I am always the first Item
-                this.updateParent(orderAction, tokData);
-            }
-        } else if (status == 1 && orderAction.getBmdpt() == 4)
-        {
-            // here I must check all my subParts, and see if they are prtPrev.size == 0
-            // if so, push
-            this.updateSon(orderAction, tokData);
-        }
-
-
-        // 抛出操作成功异常
-        return retResult.ok(CodeEnum.OK.getCode(), res);
-    }
+//                orderAction.setBcdStatus(status);
+//                isStateChg = true;
+//                duraType = "start";
+//
+//                break;
+//            case 2:                    // 2 = finish, set qtyfin setNextDesc
+////                        if (orderAction.getBcdStatus() != 2 && orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3 && orderAction.getBcdStatus() != -8 && orderAction.getBcdStatus() != 7) {
+////                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
+////                        }
+//                if (orderAction.getSumChild() > 0 && orderAction.getBmdpt() == 2 && isLink) {
+//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
+//                }
+//
+//                Double progress = Double.valueOf((actData.getInteger("progress") + 1) / actData.getJSONArray("actionArray").size() * 100);
+//                //update actions' total progress
+//                if (progress == 100.0) {
+//                    mapKey.put("info.lST", 13);
+//                    listCol.put("lST", 13);
+//                }
+//                mapKey.put("action.wn2progress", progress);
+//                orderAction.setBcdStatus(status);
+//
+//                message = "[已完成]" + msg;
+//                isStateChg = true;
+//                duraType = "allEnd";
+//
+//                break;
+//            case 3:
+//            case -8: // resume OItem
+//                if (orderAction.getBcdStatus() != 8) {
+//                    return retResult.ok(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
+//
+////                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
+//                }
+//
+//                message = "[已恢复执行]" + msg;
+//                orderAction.setBcdStatus(-8);
+//                res.put("isJoin", 1);
+//                res.put("id_Us", orderAction.getId_Us());
+//                isStateChg = true;
+//                duraType = "resume";
+//
+//                break;
+//            case 5: // 加入
+//                id_Us.add(tokData.getString("id_U"));
+//                orderAction.setId_Us(id_Us);
+//                message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功]" + msg;
+//                // set back status to original status
+//                status = orderAction.getBcdStatus();
+//
+//                res.put("isJoin", 1);
+//                res.put("id_Us", orderAction.getId_Us());
+//                duraType = "start";
+//                break;
+//            case 6:
+//                id_Us.remove(tokData.getString("id_U"));
+//                orderAction.setId_Us(id_Us);
+//
+//                message = tokData.getJSONObject("wrdNU").getString("cn") + "[退出成功]" + msg;
+//                status = orderAction.getBcdStatus();
+//
+//                res.put("isJoin", 0);
+//                res.put("id_Us", orderAction.getId_Us());
+//                duraType = "end";
+//                break;
+//            case 7:
+//                if ((orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != -8)
+//                        || orderAction.getBisactivate() == 4) {
+//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能操作");
+//                }
+//                orderAction.setBisactivate(4);
+//                message = "[继续下一个]" + msg;
+//
+//                break;
+//            case 8: // pause
+//                if (orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3
+//                        && orderAction.getBcdStatus() != -8) {
+//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能");
+//                }                    // 设置备注信息
+//                message = "[已暂停]" + msg;
+//                orderAction.setBcdStatus(status);
+//                isStateChg = true;
+//                duraType = "pause";
+//
+////                    logStatus = 1;
+//                break;
+//            case 9: // cancel
+//
+//                // pause but it's nothing special
+//                if (orderAction.getBcdStatus() == 8) {
+//                    // need to unpause then cancel
+//                    LogFlow logL = new LogFlow("action", id_FC,
+//                            id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+//                            orderAction.getId_OP(), id_O, index, tokData.getString("id_C"), orderOItem.getId_C(), "", tokData.getString("dep"), "[准备取消]", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+//                    logL.setLogData_action(orderAction, orderOItem);
+//                    logL.getData().put("bcdStatus", -8);
+//                    ws.sendWS(logL);
+//                }
+//                // 设置备注信息
+//                orderAction.setBcdStatus(status);
+//                message = "[已取消]" + msg;
+//                isStateChg = true;
+//                duraType = "allEnd";
+//                break;
+//            case 54:
+//                // 设置备注信息
+//                // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
+//                message = "[cusMsg-拒收]" + msg;
+//
+//                //Adding myself to the id_Us of action to indicate
+////                        id_Us.add(tokData.getString("id_U"));
+////                        orderAction.setId_Us(id_Us);
+////                        res.put("isJoin", 1);
+////                        res.put("id_Us", orderAction.getId_Us());
+////                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
+////                            mapKey.put("info.lST", 8);
+////                            listCol.put("lST", 8);
+////                        }
+//                orderAction.setBcdStatus(status);
+////                        duraType = "start";
+//                res.put("isJoin", 1);
+//                res.put("id_Us", orderAction.getId_Us());
+//                isStateChg = true;
+////                        duraType = "resume";
+//                break;
+//            case 55:
+//                message = "[cusMsg-删除]" + msg;
+//
+//                //Adding myself to the id_Us of action to indicate
+////                        id_Us.add(tokData.getString("id_U"));
+////                        orderAction.setId_Us(id_Us);
+////                        res.put("isJoin", 1);
+////                        res.put("id_Us", orderAction.getId_Us());
+////                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
+////                            mapKey.put("info.lST", 8);
+////                            listCol.put("lST", 8);
+////                        }
+//                orderAction.setBcdStatus(status);
+//                res.put("isJoin", 1);
+//                res.put("id_Us", orderAction.getId_Us());
+//                isStateChg = true;
+////                        duraType = "resume";
+//                break;
+//            case 53:
+//                message = "[已恢复执行]" + msg;
+//                orderAction.setBcdStatus(-8);
+//                res.put("isJoin", 1);
+//                res.put("id_Us", orderAction.getId_Us());
+//                isStateChg = true;
+//                duraType = "resume";
+//                break;
+//            default:
+//                message = taskName + "[无法操作]";
+//                break;
+//        }
+//
+//        // 设置产品状态
+//        String compId;
+//
+//        if (logType.endsWith("SL")) {
+//            compId = actData.getJSONObject("info").getString("id_CB");
+//        } else {
+//            compId = tokData.getString("id_C");
+//        }
+//
+//        if (isStateChg) {
+//
+//            if (status.equals(2) || status.equals(9))
+//            {
+//                //removing it from flowControl RefOP
+//                this.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
+//                        id_FC, id_FS, orderAction.getId_OP(), orderAction.getRefOP(), orderAction.getWrdNP(), orderAction.getIndex(), false );
+//            }
+//
+//            // Start making log with data
+//            LogFlow logL = new LogFlow("action", id_FC,
+//                    id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+//                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), message, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+//
+//            // Here set time info into action's log
+//            logL.setLogData_action(orderAction, orderOItem);
+//            logL.getData().put("id_Us",actData.getJSONArray("id_Us"));
+//
+//            if (duraType.equals("start") || duraType.equals("resume")) {
+//                logL.setActionTime(DateUtils.getTimeStamp(), 0L, duraType);
+//            } else if (duraType.equals("end") || duraType.equals("pause") || duraType.equals("allEnd")) {
+//                logL.setActionTime(0L, DateUtils.getTimeStamp(), duraType);
+//            }
+//
+//            logL.setId_Us(id_UsLog);
+//            ws.sendWS(logL);
+//        }
+//
+//        // setup User's Fav card
+//        if (duraType.equals("start"))
+//            this.setFavRecent(tokData.getString("id_C"), tokData.getString("id_U"), id_O, index, id_FC, id_FS,
+//                    orderOItem.getWrdN(), orderOItem.getPic());
+//        else if (duraType.equals("end")) {
+//            this.removeFavRecent(qt.setArray(tokData.getString("id_U")), id_O, index, id_FC, id_FS, orderAction.getArrUA());
+//            orderAction.getId_Us().remove(tokData.getString("id_U"));
+//        }
+//        else if (duraType.equals("allEnd"))
+//        {
+//            this.removeFavRecent(orderAction.getId_Us(), id_O, index, id_FC, id_FS, orderAction.getArrUA());
+//            orderAction.setId_Us(new JSONArray());
+//            LogFlow logDURA = new LogFlow("action", id_FC,
+//                    id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+//                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+//
+//            // I am just fixing this by putting the "finish" time into calculation and ignoring the last log
+//            this.sumDura(id_O, index, logDURA);
+//        }
+//
+//
+////                LogFlow logL = new LogFlow("duraflow", id_FC,
+////                        id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
+////                        orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
+////
+////                if (duraType.equals("start") || duraType.equals("resume")) { //type start
+////                    // Start making log with data
+////                    logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, duraType);
+////                    logL.setZcndesc("任务计时开始");
+////                    ws.sendWS(logL);
+//////casItemx, summ00s
+////                } else if (duraType.equals("end") || duraType.equals("pause")) { //type end
+////                    // End making log with data
+////                    logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
+////                    logL.setZcndesc("任务计时停止");
+////                    ws.sendWS(logL);
+////
+////                } else if (duraType.equals("allEnd")) { // type allEnd
+////                    for (int i = 0; i < orderAction.getId_Us().size(); i++) {
+////                        logL.setId_U(orderAction.getId_Us().getString(i));
+////                        logL.setGrpU("1000");
+////                        logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
+////                        logL.setZcndesc("任务结束");
+////                        ws.sendWS(logL);
+////                    }
+////                }
+////                try {
+//        mapKey.put("action.objAction." + index, orderAction);
+//        qt.setMDContent(id_O, mapKey, Order.class);
+//
+//        if (null != listCol.getInteger("lST")) {
+//            qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
+//        }
+//
+//        // if Quest, send log + update OItem of myself = task = DG = above
+//        // get upPrnt data, and find the prob, set that status of Prob to status
+//
+//        //*** Here we set oStock qty to 1 whenever noP task is completed
+//        if (status == 2 && orderOItem.getId_P().equals(""))
+//        {
+//            Order oStockCheck = qt.getMDContent(id_O, Arrays.asList("info","oStock", "action", "oItem", "view"), Order.class);
+//            if (oStockCheck.getOStock() != null)
+//            {
+//                Double qty = oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).getDouble("wn2qtynow");
+//                Double qtyAdding = 1 - qty;
+//
+//                oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).put("wn2qtynow", 1.0);
+//                JSONObject listCol2 = new JSONObject();
+//                dbu.summOrder(oStockCheck, listCol2, qt.setArray("oStock"));
+////                qt.saveMD(oStockCheck);
+//                qt.setMDContent(id_O, qt.setJson("oStock", oStockCheck.getOStock()), Order.class);
+//
+//                qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
+//
+//                LogFlow log = new LogFlow(tokData, oStockCheck.getOItem(), oStockCheck.getAction(), "", id_O, index,
+//                        "assetflow", "qtyChg", orderAction.getRefOP() + "-" + orderOItem.getWrdN().getString("cn") +
+//                        " 完成了 " + qtyAdding, 3);
+//
+//                Double price = orderOItem.getWn4price() == null ? 0.0: orderOItem.getWn4price();
+//                log.setLogData_assetflow(qtyAdding, price, "","");
+//
+//                log.setId_Us(id_UsLog);
+//                ws.sendWS(log);
+//            }
+//            //getOStock (if not null)
+//            //was 0.3 then set to 1
+//            //send log that I finished 0.7
+//        }
+//
+//        if (orderAction.getBisactivate() == 7)
+//        {
+//            JSONObject upPrnt = orderAction.getUpPrnts().getJSONObject(0);
+//
+//            try {
+//                // if any null exception, catch
+//                JSONObject taskOwner = this.getActionData(upPrnt.getString("id_O"), upPrnt.getInteger("index"));
+//                OrderAction objAction = JSONObject.parseObject(JSON.toJSONString(taskOwner.get("orderAction")), OrderAction.class);
+//
+//                JSONObject probData = objAction.getProb().getJSONObject(upPrnt.getInteger("probIndex"));
+//                probData.put("bcdStatus", status);
+//
+//                qt.setMDContent(upPrnt.getString("id_O"),
+//                        qt.setJson("action.objAction." + upPrnt.getInteger("index"), objAction),
+//                        Order.class);
+//            } catch (RuntimeException e) {
+//                //System.out.println("shit A");
+//                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
+//            }
+//        } else if ((status == 2 && orderAction.getBisactivate() != 4) || status == 7) {
+//            // activate = 4 means Skip = already pushed Next
+//            if (orderAction.getUpPrnts().size() == 0 && orderOItem.getId_P().equals("")) {
+//                //Here for noP, DO NOT check parent, it will blow up
+//                this.updateNext(orderAction, tokData);
+//            }
+//            else {
+//                //for regular DG, we will go check our parent first
+//                //then push it together with myself because I am always the first Item
+//                this.updateParent(orderAction, tokData);
+//            }
+//        } else if (status == 1 && orderAction.getBmdpt() == 4)
+//        {
+//            // here I must check all my subParts, and see if they are prtPrev.size == 0
+//            // if so, push
+//            this.updateSon(orderAction, tokData);
+//        }
+//
+//
+//        // 抛出操作成功异常
+//        return retResult.ok(CodeEnum.OK.getCode(), res);
+//    }
 
     private void updateSon(OrderAction orderAction, JSONObject tokData)
     {
@@ -1462,7 +1473,7 @@ public class ActionServiceImpl implements ActionService {
                     orderAction1.setBcdStatus(0); //状态改为准备开始
                     orderAction1.setBisPush(1);
 
-                    this.updateRefOP(tokData.getString("id_C"), orderOItem1.getId_C(),
+                    this.updateRefOP(orderOItem1.getId_CB(), orderOItem1.getId_C(),
                             actData.getString("id_FC"),
                             actData.getString("id_FS"), orderAction1.getId_OP(), orderAction1.getRefOP(),
                             orderAction1.getWrdNP(), sonIndex, true);
@@ -1472,7 +1483,7 @@ public class ActionServiceImpl implements ActionService {
                     LogFlow logL = new LogFlow("action", actData.getString("id_FC"),
                             actData.getString("id_FS"), "stateChg",
                             tokData.getString("id_U"), tokData.getString("grpU"), orderOItem1.getId_P(), orderOItem1.getGrpB(), orderOItem1.getGrp(),
-                            orderAction1.getId_OP(), sonId, sonIndex, tokData.getString("id_C"), orderOItem1.getId_C(),
+                            orderAction1.getId_OP(), sonId, sonIndex, orderOItem1.getId_CB(), orderOItem1.getId_C(),
                             "", tokData.getString("dep"), orderOItem1.getWrdN().get("cn") + "准备工序组开始", 3, orderOItem1.getWrdN(), tokData.getJSONObject("wrdNU"));
                     logL.setLogData_action(orderAction1, orderOItem1);
                     logL.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
@@ -1516,7 +1527,7 @@ public class ActionServiceImpl implements ActionService {
                                 orderAction1.setBcdStatus(0); //状态改为准备开始
                                 orderAction1.setBisPush(1);
 
-                                this.updateRefOP(tokData.getString("id_C"), orderOItem1.getId_C(),
+                                this.updateRefOP(orderOItem1.getId_CB(), orderOItem1.getId_C(),
                                         actData.getString("id_FC"),
                                         actData.getString("id_FS"), orderAction1.getId_OP(), orderAction1.getRefOP(),
                                         orderAction1.getWrdNP(), nextIndex, true );
@@ -1525,7 +1536,7 @@ public class ActionServiceImpl implements ActionService {
                                 LogFlow logL = new LogFlow("action", actData.getString("id_FC"),
                                         actData.getString("id_FS"), "stateChg",
                                         tokData.getString("id_U"), tokData.getString("grpU"), orderOItem1.getId_P(),orderOItem1.getGrpB(), orderOItem1.getGrp(),
-                                        orderAction1.getId_OP(), nextId, nextIndex, tokData.getString("id_C"), orderOItem1.getId_C(),
+                                        orderAction1.getId_OP(), nextId, nextIndex, orderOItem1.getId_CB(), orderOItem1.getId_C(),
                                         "", tokData.getString("dep"), orderOItem1.getWrdN().get("cn") + "准备开始", 3, orderOItem1.getWrdN(), tokData.getJSONObject("wrdNU"));
                                 logL.setLogData_action(orderAction1, orderOItem1);
                                 logL.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
@@ -1574,7 +1585,8 @@ public class ActionServiceImpl implements ActionService {
                         unitActionPrnt.setBcdStatus(0);
                         unitActionPrnt.setBisPush(1);
 
-                        this.updateRefOP(tokData.getString("id_C"), unitOItemPrnt.getId_C(),
+
+                        this.updateRefOP(unitOItemPrnt.getId_CB(), unitOItemPrnt.getId_C(),
                                 actData.getString("id_FC"),
                                 actData.getString("id_FS"), unitActionPrnt.getId_OP(), unitActionPrnt.getRefOP(),
                                 unitActionPrnt.getWrdNP(), indexPrnt, true );
@@ -1584,13 +1596,14 @@ public class ActionServiceImpl implements ActionService {
                         LogFlow logL = new LogFlow("action", actData.getString("id_FC"),
                                 actData.getString("id_FS"), "stateChg",
                                 tokData.getString("id_U"), tokData.getString("grpU"), unitOItemPrnt.getId_P(), unitOItemPrnt.getGrpB(), unitOItemPrnt.getGrp(),
-                                unitActionPrnt.getId_OP(), idPrnt, indexPrnt, tokData.getString("id_C"), unitOItemPrnt.getId_C(),
-                                "", tokData.getString("dep"), "准备开始", 3, unitOItemPrnt.getWrdN(), tokData.getJSONObject("wrdNU"));
+                                unitActionPrnt.getId_OP(), idPrnt, indexPrnt, unitOItemPrnt.getId_CB(), unitOItemPrnt.getId_C(),
+                                "", tokData.getString("dep"), unitOItemPrnt.getWrdN().get("cn") + "准备开始", 3, unitOItemPrnt.getWrdN(), tokData.getJSONObject("wrdNU"));
 
                         //System.out.println(" sending log here"+ logL);
 
                         logL.setLogData_action(unitActionPrnt, unitOItemPrnt);
                         logL.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+
 
 
                         ws.sendWS(logL);
@@ -1973,11 +1986,17 @@ public class ActionServiceImpl implements ActionService {
         try {
             result.put("orderAction",qt.cloneObj(actionArray.getJSONObject(index)));
             result.put("orderOItem",qt.cloneObj(oItemArray.getJSONObject(index)));
-
+        }catch (Exception e)
+        {}
+        try {
             id_FC = grpBGroup.getJSONObject(oItemArray.getJSONObject(index).getString("grpB")).getString("id_Flow");
+        }catch (Exception e)
+            {}
+        try {
             id_FS = grpGroup.getJSONObject(oItemArray.getJSONObject(index).getString("grp")).getString("id_Flow");
         } catch (Exception e)
         {}
+
         result.put("oItemArray", oItemArray);
         result.put("actionArray", actionArray);
         result.put("progress", counter);
@@ -2033,8 +2052,8 @@ public class ActionServiceImpl implements ActionService {
         LogFlow logLP = new LogFlow("action", actData.getString("id_FC"),
                 actData.getString("id_FS"), "stateChg",
                 id_U, grpU, unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(),
-                unitAction.getId_OP(), id_O, index, myCompId, unitOItem.getId_C(),
-                "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
+                unitAction.getId_OP(), id_O, index, unitOItem.getId_CB(), unitOItem.getId_C(),
+                "", dep, unitOItem.getWrdN().get("cn") +" 准备开始", 3, unitOItem.getWrdN(), wrdNU);
         logLP.setLogData_action(unitAction, unitOItem);
         logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
 
@@ -2132,21 +2151,13 @@ public class ActionServiceImpl implements ActionService {
                                             id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
                                             id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
                                             unitAction.getSubParts().getJSONObject(k).getInteger("index"),
-                                            myCompId, subOItem.getId_C(),
-                                            "", dep, "准备开始", 3, subOItem.getWrdN(), wrdNU);
+                                            subOItem.getId_CB(), subOItem.getId_C(),
+                                            "", dep, subOItem.getWrdN().get("cn") + " 准备开始", 3, subOItem.getWrdN(), wrdNU);
                                     logLP.setLogData_action(subAction, subOItem);
                                     logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
 
                                     ws.sendWS(logLP);
-//                                    LogFlow logL = new LogFlow("duraflow", subOrderData.getString("id_FC"),
-//                                            subOrderData.getString("id_FS"), "userStat",
-//                                            id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
-//                                            id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
-//                                            unitAction.getSubParts().getJSONObject(k).getInteger("index"),
-//                                            myCompId, subOItem.getId_C(), "", dep, "任务推送", 3, subOItem.getWrdN(), wrdNU);
-//
-//                                    logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, "push");
-//                                    ws.sendWS(logL);
+
 
 
                                 } else {
@@ -2181,12 +2192,12 @@ public class ActionServiceImpl implements ActionService {
                             this.updateRefOP(myCompId, unitOItem.getId_C(),
                                     id_FC, id_FS, unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getIndex(), true );
 
-
+                            String msgText = "[" + unitAction.getRefOP()+"] " + unitOItem.getWrdN().get("cn") + " 准备开始";
                             LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
                                     id_FC,
                                     id_FS, "stateChg", id_U, grpU,
                                     unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(), id_O, unitAction.getId_O(), unitAction.getIndex(),
-                                    myCompId, unitOItem.getId_C(), "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
+                                    unitOItem.getId_CB(), unitOItem.getId_C(), "", dep, msgText, 3, unitOItem.getWrdN(), wrdNU);
                             logLP.setLogData_action(unitAction, unitOItem);
                             logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
 
@@ -2270,8 +2281,8 @@ public class ActionServiceImpl implements ActionService {
                                         id_U, grpU, subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
                                         id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
                                         unitAction.getSubParts().getJSONObject(k).getInteger("index"),
-                                        myCompId, subOItem.getId_C(),
-                                        "", dep, "准备开始", 3, subOItem.getWrdN(), wrdNU);
+                                        subOItem.getId_CB(), subOItem.getId_C(),
+                                        "", dep, subOItem.getWrdN().get("cn") + "准备开始", 3, subOItem.getWrdN(), wrdNU);
                                 logLP.setLogData_action(subAction, subOItem);
                                 logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
 
@@ -2314,7 +2325,7 @@ public class ActionServiceImpl implements ActionService {
                                 id_FC,
                                 id_FS, "stateChg", id_U, grpU,
                                 unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(), id_O, unitAction.getId_O(), unitAction.getIndex(),
-                                myCompId, unitOItem.getId_C(), "", dep, "准备开始", 3, unitOItem.getWrdN(), wrdNU);
+                                unitOItem.getId_CB(), unitOItem.getId_C(), "", dep, unitOItem.getWrdN().get("cn") +" 准备开始", 3, unitOItem.getWrdN(), wrdNU);
                         logLP.setLogData_action(unitAction, unitOItem);
                         logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
 
@@ -2404,9 +2415,10 @@ public class ActionServiceImpl implements ActionService {
         // Send a log
         LogFlow logLP = new LogFlow(logType,id_FC,
                 id_FS,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
-                oItemData.getString("pic"),dep,"准备开始",3,qt.cloneObj(oItemData.getJSONObject("wrdN")),wrdNU);
+                oItemData.getString("pic"),dep,oItemData.getJSONObject("wrdN").getString("cn") +"准备开始",3,qt.cloneObj(oItemData.getJSONObject("wrdN")),wrdNU);
        logLP.setLogData_action(unitAction,unitOItem);
         logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+        ws.sendWS(logLP);
 
 //        Order order = qt.getMDContent(id_O, Collections.singletonList("oQc"), Order.class);
 //        JSONObject oQc = order.getOQc();
@@ -2432,6 +2444,7 @@ public class ActionServiceImpl implements ActionService {
 //        if (isNull==0) {
             // append an OItem + ActionItem, save OItem and action
             qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,"oQc.objQc."+index,objQcSon), Order.class);
+            qt.setES("lSBOrder", qt.setESFilt("id_O", id_O), qt.setJson("tmd",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())));
 //        } else if (isNull == 1) {
 //            // append an OItem + ActionItem, save OItem and action
 //            qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,"oQc",oQc), Order.class);
@@ -2439,7 +2452,6 @@ public class ActionServiceImpl implements ActionService {
 //            qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,"oQc.objQc",objQc), Order.class);
 //        }
 
-        ws.sendWS(logLP);
 
         return retResult.ok(CodeEnum.OK.getCode(), "done");
     }
@@ -2566,7 +2578,7 @@ public class ActionServiceImpl implements ActionService {
         if (isId_Us) {
             LogFlow logLPNew = new LogFlow(logType,id_FS,
                     id,"stateChg", id_U,grpU,"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
-                    oItemData.getString("pic"),dep,"准备开始",3,qt.cloneObj(oItemData.getJSONObject("wrdN")),wrdNU);
+                    oItemData.getString("pic"),dep,oItemData.getJSONObject("wrdN").getString("cn") + "准备开始",3,qt.cloneObj(oItemData.getJSONObject("wrdN")),wrdNU);
             logLPNew.setLogData_action(unitAction,unitOItem);
             logLPNew.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
             id_Us.add(id_U);
@@ -2678,8 +2690,8 @@ public class ActionServiceImpl implements ActionService {
             }
         }
 
-        OrderAction orderAction = JSONObject.parseObject(JSON.toJSONString(probSet.get("orderAction")),OrderAction.class);
-        OrderOItem orderOItem = JSONObject.parseObject(JSON.toJSONString(probSet.get("orderOItem")),OrderOItem.class);
+        OrderAction orderAction = qt.cloneThis(probSet.get("orderAction"),OrderAction.class);
+        OrderOItem orderOItem = qt.cloneThis(probSet.get("orderOItem"), OrderOItem.class);
 
         if (orderAction.getProb() == null)
         {
@@ -2896,17 +2908,14 @@ public class ActionServiceImpl implements ActionService {
      * @date 2021/6/16 14:49
      */
     @Override
-    public ApiResponse confirmOrder(String id_C,String id_O) {
+    public Integer confirmOrder(JSONObject tokData,String id_O) {
 
         Order order = qt.getMDContent(id_O, "info",Order.class);
-//        QueryBuilder queryBuilder;
+        String id_C = tokData.getString("id_C");
 
         // if I am both buyer and seller, internal order, whatever side I am, set it to both final
         if (order.getInfo().getId_C().equals(id_C) && order.getInfo().getId_C().equals(order.getInfo().getId_CB())) { //Check C== CB
             order.getInfo().setLST(7);
-//            queryBuilder = QueryBuilders.boolQuery()
-//                    .must(QueryBuilders.termQuery("id_O", id_O))
-//                    .must(QueryBuilders.termQuery("id_CB", id_C));
         } // I am id_CB Buyer
         else if (id_C.equals(order.getInfo().getId_CB())) { //if Seller is REAL
             if (qt.judgeComp(id_C, order.getInfo().getId_C()) == 1) {
@@ -2919,9 +2928,6 @@ public class ActionServiceImpl implements ActionService {
                 // if otherComp is fake, set to both confirm
                 order.getInfo().setLST(7);
             }
-//            queryBuilder = QueryBuilders.boolQuery()
-//                    .must(QueryBuilders.termQuery("id_O", id_O))
-//                    .must(QueryBuilders.termQuery("id_CB", id_C));
         } else // I am Seller
         { //if Buyer is REAL
             if (qt.judgeComp(id_C, order.getInfo().getId_CB()) == 1) {
@@ -2934,24 +2940,27 @@ public class ActionServiceImpl implements ActionService {
                 // if otherComp is fake, set to both confirm
                 order.getInfo().setLST(7);
             }
-//            queryBuilder = QueryBuilders.boolQuery()
-//                    .must(QueryBuilders.termQuery("id_O", id_O))
-//                    .must(QueryBuilders.termQuery("id_C", id_C));
         }
-//        JSONObject mapKey = new JSONObject();
-//        mapKey.put("info.lST", order.getInfo().getLST());
-//        coupaUtil.updateOrderByListKeyVal(id_O, mapKey);
 
         qt.setMDContent(id_O, qt.setJson("info.lST", order.getInfo().getLST()), Order.class);
 
+
         //Save MDB above, then update ES here
-//        JSONObject listCol = new JSONObject();
-//        listCol.put("lST", order.getInfo().getLST());
-//        dbUtils.updateListCol(queryBuilder, "lsborder", listCol);
 
         qt.setES("lsborder", qt.setESFilt("id_O", id_O), qt.setJson("lST", order.getInfo().getLST()));
 
-        return retResult.ok(CodeEnum.OK.getCode(), order.getInfo().getLST());
+        String desc = tokData.getJSONObject("wrdNU").getString("cn") + "确认订单" ;
+
+        String listType = order.getInfo().getId_CB() == tokData.getString("id_C") ? "lBOrder" : "lSOrder";
+
+        //Writing update history
+        LogFlow logUsage = new LogFlow();
+        logUsage.setUsageLog(tokData, "confirm", desc, 2, id_O, listType,
+                qt.setJson("cn", desc), listType == "lBOrder" ? order.getInfo().getGrpB(): order.getInfo().getGrp());
+        ws.sendESOnly(logUsage);
+
+        return order.getInfo().getLST();
+//        return retResult.ok(CodeEnum.OK.getCode(), order.getInfo().getLST());
     }
 
     @Override
@@ -2997,22 +3006,22 @@ public class ActionServiceImpl implements ActionService {
 
 
     @Override
-    public ApiResponse dgConfirmOrder(String id_C, JSONArray casList) throws IOException {
+    public ApiResponse dgConfirmOrder(JSONObject tokData, JSONArray casList) {
 
         // loop casItemx orders
-        JSONObject result = new JSONObject();
+        JSONArray result = new JSONArray();
 
         for (int i = 0; i < casList.size(); i++) {
             // check if orders are final, if need request Cancel, send request
             // if ok, open order
-            result.put("final",new JSONArray());
-            result.put("await", new JSONArray());
+//            result.put("final",new JSONArray());
+//            result.put("await", new JSONArray());
             String subOrderId = casList.getJSONObject(i).getString("id_O");
             //confirm it by confirmOrder function
-            this.confirmOrder(id_C, subOrderId);
+            result.add(this.confirmOrder(tokData, subOrderId));
         }
 
-            return retResult.ok(CodeEnum.OK.getCode(), result);
+        return retResult.ok(CodeEnum.OK.getCode(), result);
 
     }
 

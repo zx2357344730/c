@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.enumeration.ToolEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.*;
@@ -194,6 +195,22 @@ public class Qt {
         }
         return this.jsonTo(initData.get(lang), Init.class);
     }
+
+    public JSONObject getInitFormat(String key, String subKey)
+    {
+        InitJava initJava = this.getInitData();
+
+        Info jsonFormat = this.getMDContent(initJava.getIdJson().getString(key), "jsonInfo", Info.class);
+        if (!subKey.equals(""))
+        {
+            return jsonFormat.getJsonInfo().getJSONObject("objData").getJSONObject(subKey);
+
+        } else {
+            return jsonFormat.getJsonInfo().getJSONObject("objData");
+
+        }
+    }
+
     public void updateInitData(String lang, String key, Object val) {
         JSONObject jsonUpdate = this.setJson(key, val);
         if (lang.endsWith("java")) {
@@ -472,7 +489,6 @@ public class Qt {
             splitNum = 6;
         }
         List<List<String>> subList = getSubList(splitNum, queryIds, true, String.class);
-        System.out.println("start_thread-id:"+ qtThread.getThreadId());
         Future<String> future1 = qtThread.threadMD(subList.get(1), list,strList,classType);
         if (splitNum == 2) {
             threadReturn(splitNum,future1,null,null,null,null,list,subList.get(0),strList,classType);
@@ -528,7 +544,8 @@ public class Qt {
                 // 结束死循环
                 break;
             // 否则拆分数量为6，
-            } else {
+            } else if (splitNum == 6 && future1.isDone() && future2.isDone()
+                    && future3.isDone() && future4.isDone()&& future5.isDone()){
                 // 判断线程1，线程2，线程3，线程4，线程5完成
                 if (future1.isDone() && future2.isDone() && future5.isDone()
                         && future3.isDone() && future4.isDone()) {
@@ -575,33 +592,30 @@ public class Qt {
 
     public void errPrint(String title, Exception e, Object... vars)
     {
-//
-//        System.out.println("****[" +title+"]****");
-//
-////            System.out.println("[");
-//        for (Object item : vars)
-//        {
-//            if (item == null)
-//            {
-//                System.out.println("....null");
-//            }
-//            else if (item.getClass().toString().startsWith("class java.util.Array"))
-//            {
-//                System.out.println(this.toJArray(item));
-//            }
-//            else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
-//                    item.getClass().toString().startsWith("class java.util"))
-//            {
-//                System.out.println(this.toJson(item));
-//            }
-//            else {
-//                System.out.println(item);
-//            }
-//        }
-//        System.out.println("*****[End]*****");
-//
-//        if (e != null)
-//            e.printStackTrace();
+
+        try {
+            System.out.println("****[" + title + "]****");
+            for (Object item : vars) {
+                if (item == null) {
+                    System.out.println("....null");
+                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
+                    System.out.println(this.toJArray(item));
+                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
+                        item.getClass().toString().startsWith("class java.util")) {
+                    System.out.println(this.toJson(item));
+                } else {
+                    System.out.println(item);
+                }
+            }
+            System.out.println("*****[End]*****");
+
+            if (e != null)
+                e.printStackTrace();
+        }
+        catch (Exception ex)
+        {
+            System.out.println("****" + title + " is NULL ****");
+        }
     }
 
     public void errPrint(String title, Object... vars)
@@ -764,7 +778,7 @@ public class Qt {
             }
             update.inc("tvs", 1);
             UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-            System.out.println("inSetMD" + updateResult);
+            this.errPrint("inSetMDAP", id, keyVal, updateResult);
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -805,7 +819,10 @@ public class Qt {
             }
             update.inc("tvs", 1);
             UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-            System.out.println("inSetMD" + updateResult);
+            if (updateResult.getModifiedCount() == 0) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.DB_ERROR.getCode(), "");
+            }
+            this.errPrint("inSetMD", id, keyVal, updateResult);
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -830,7 +847,8 @@ public class Qt {
             update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             update.inc("tvs", 1);
             UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-            System.out.println("inSetMD" + updateResult);
+            this.errPrint("inSetMDMany", setId, keyVal, updateResult);
+
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -838,7 +856,7 @@ public class Qt {
         }
     }
     public void setMDContentMany(List<JSONObject> listBulk, Class<?> classType) {
-        System.out.println("listBulk=" + listBulk);
+//        System.out.println("listBulk=" + listBulk);
         try {
             BulkOperations bulk = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, classType);
             listBulk.forEach(jsonBulk -> {
@@ -1117,18 +1135,33 @@ public class Qt {
     }
 
     public <T> T jsonTo(Object data, Class<T> classType){
+        try {
         return JSONObject.parseObject(JSON.toJSONString(data), classType);
+        } catch (Exception e)
+        {
+            return null;
+        }
     }
 
 
     public JSONObject toJson(Object data){
 
-        return JSONObject.parseObject(JSON.toJSONString(data));
+        try {
+            return JSONObject.parseObject(JSON.toJSONString(data));
+        } catch (Exception e)
+        {
+            return null;
+        }
     }
 
     public JSONArray toJArray(Object data){
+        try {
 
         return  JSONArray.parseArray(JSON.toJSONString(data));
+        } catch (Exception e)
+        {
+            return null;
+        }
     }
 
     /////////////////-------------------------------------------

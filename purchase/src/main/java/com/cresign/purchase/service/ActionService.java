@@ -19,8 +19,8 @@ public interface ActionService {
     JSONObject changeActionStatus(String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,
                                   String id_FC, String id_FS, JSONObject tokData);
 
-    ApiResponse changeActionStatusNew(String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,
-                                   String id_FC, String id_FS, JSONObject tokData,JSONArray id_Us) throws IOException;
+//    ApiResponse changeActionStatusNew(String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,
+//                                   String id_FC, String id_FS, JSONObject tokData,JSONArray id_Us) throws IOException;
 
     /**
      * 根据oId修改grpBGroup字段
@@ -68,9 +68,9 @@ public interface ActionService {
 
     ApiResponse subStatusChange(String id_O, Integer index, Boolean isLink, Integer statusType,  JSONObject tokData);
 
-    ApiResponse dgConfirmOrder(String id_C, JSONArray casList) throws IOException;
+    ApiResponse dgConfirmOrder(JSONObject tokData, JSONArray casList);
 
-    ApiResponse confirmOrder(String cId, String id_O);
+    Integer confirmOrder(JSONObject tokData, String id_O);
     ApiResponse cancelOrder(String cId, String id_O);
 
     ApiResponse actionChart(String id_O);

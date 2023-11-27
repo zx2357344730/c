@@ -57,6 +57,36 @@ public class LogFlow {
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
+//    public LogFlow(JSONObject tokData, String id_P, String id_O, String logType, String subType, String zcndesc, Integer imp) {
+//
+//        // for Usageflow
+//        this.id = "";
+//        this.id_FS = "";
+//        this.logType = logType;
+//        this.subType = subType;
+//        this.dep = tokData.getString("dep");
+//        this.grpU = tokData.getString("grpU");
+//        this.grpB = "";
+//        this.grp = "";
+//        this.id_U = tokData.getString("id_U");
+//        this.id_P = id_P;
+//        this.id_O = id_O;
+//        this.id_OP = "";
+//        this.index = 0;
+//        this.id_C = tokData.getString("id_C");
+//        this.id_CS = tokData.getString("id_C");
+//        JSONObject wrdN = new JSONObject();
+//        wrdN.put("cn", zcndesc);
+//        this.wrdN = wrdN;
+//        this.imp = imp;
+//        this.wrdNU = tokData.getJSONObject("wrdNU");
+//        this.pic = "";
+//        this.lang = "cn";
+//        this.zcndesc = zcndesc;
+//        this.tzone = 8;
+//        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+//    }
+
     public LogFlow(String logType, String id_FC, String id_FS,  String subType,
                    String id_U, String grpU, String id_P, String grpPB, String grpPS, String id_OP, String id_O, Integer index, String id_C, String id_CS,
                    String pic,String dep, String zcndesc, Integer imp,
@@ -274,7 +304,10 @@ public class LogFlow {
 
     /**
      * FlowControl标识 ID
+     * id = 自己群ID = idFlow
+     * id_FS = 我是对外的 id_Flow
      */
+    //自己群ID = idFlow
     private String id = "";
     private String id_FS = "";
 

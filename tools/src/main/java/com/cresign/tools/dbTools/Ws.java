@@ -92,9 +92,20 @@ public class Ws {
      *  1. id / id_FS || 2. id_Us[], getES(lBUser), id_APP[]
      *  logContrent.getJSONArray("id_Us") / id_APPs[]
      */
+
     @Async
     public void sendWS(LogFlow logContent){
         this.setId_UsByFC(logContent);
+        this.setAppIds(logContent);
+        qt.errPrint("sending WS", logContent);
+        this.sendWSCore(logContent);
+        this.sendESOnly(logContent);
+    }
+
+    @Async
+    public void sendWSDirect(LogFlow logContent){
+        qt.errPrint("sending WS direct", logContent);
+
         this.setAppIds(logContent);
         this.sendWSCore(logContent);
         this.sendESOnly(logContent);
@@ -227,6 +238,7 @@ public class Ws {
         if (id_CS != null && !id_C.equals(id_CS)) {
             setUserListByFlowControl(id_CS, logContent);
         }
+
     }
 
     /**

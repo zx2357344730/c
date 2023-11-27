@@ -231,16 +231,8 @@ public class FlowServiceImpl implements FlowService {
 
                 JSONObject grpBGroup = new JSONObject();
                 JSONObject grpGroup = new JSONObject();
-//                JSONObject listData = new JSONObject();
-//                JSONArray lsbArray = qt.getES("lsbcomp", qt.setESFilt("id_C", prodCompId, "id_CB", targetCompId));
-//                if (lsbArray.size() > 0) {
-//                    listData = lsbArray.getJSONObject(0);
-//                }
-                String grpO = "";
-                String grpOB = "1000";
-//                String aId;
-                Asset asset = null;
 
+                Asset asset;
                 if (!targetCompId.equals(myCompId))
                 {
 
@@ -250,53 +242,17 @@ public class FlowServiceImpl implements FlowService {
                         asset = myDef;
                     }
                 } else {
-//                    aId = myDef.getId();
                     asset = myDef;
                 }
 
-
-                // if it is a real Company get grpB setting from objlBProd by ref, else do nothing now, later can do extra
-//                if (!aId.equals("none")) {
-//                    Asset asset;
-//                    if (!targetCompId.equals(myCompId))
-//                    {
-//                        asset = dbUtils.getAssetById(aId, Collections.singletonList("def"));
-//
-//                    } else {
-//                        asset = myDef;
-//                    }
                     JSONObject defResultBP = asset.getDef().getJSONObject("objlBP");
-                    JSONObject defResultBC = asset.getDef().getJSONObject("objlBC");
 
                     for (OrderOItem orderOItem : unitOItem) {
-                        //System.out.println(orderOItem.getGrpB());
                         String grpB = orderOItem.getGrpB();
                         if (grpBGroup.getJSONObject(grpB) == null) {
                             grpBGroup.put(grpB, defResultBP.getJSONObject(grpB));
                         }
                     }
-                    // get GrpB and grpS of id_CB
-//                    if (prodCompId.equals(targetCompId))
-//                    {   // I am both
-//                        grpOB = "1010";
-//                    } else {
-//                        String compGrpB = listData.getString("grpB");
-//
-//                        grpOB = defResultBC.getJSONObject(compGrpB).getString("grpO");
-////                        for (int k = 0; k < defResultBC.size(); k++)
-////                        {
-////                            String grpRef = defResultBC.getJSONObject(k).getString("ref");
-////                            if (compGrpB.equals(grpRef))
-////                            {
-////                                grpOB =  defResultBC.getJSONObject(k).getString("grpO");
-////                                break;
-////                            }
-////                        }
-////                    }
-//                }
-
-//                String aId2;
-
                 Asset asset2 = null;
 
                 if (!prodCompId.equals(myCompId))
@@ -311,30 +267,8 @@ public class FlowServiceImpl implements FlowService {
                     asset2 = myDef;
                 }
 
-//                if (!prodCompId.equals(myCompId))
-//                {
-//                    aId2 = qt.getId_A(prodCompId, "a-auth");
-//                } else if (myCompId.equals(targetCompId)) {
-//                    aId2 = "none";
-//                } else {
-//                    aId2 = myDef.getId();
-//                }
-
-                // if it is a real Company get grpB setting from objlBP by ref, else do nothing now, later can do extra
-//                if (!aId2.equals("none")) {
-//                    Asset asset;
-//                    if (!prodCompId.equals(myCompId))
-//                    {
-//                        asset = dbUtils.getAssetById(aId2, Collections.singletonList("def"));
-//
-//                    } else {
-//                        asset = myDef;
-//                    }
-
 
                 JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
-
-                JSONObject defResultSC = asset2.getDef().getJSONObject("objlSC");
 
                     for (OrderOItem orderOItem : unitOItem) {
                         String grp = orderOItem.getGrp();
@@ -345,29 +279,10 @@ public class FlowServiceImpl implements FlowService {
                         }
                     }
 
-//                 get GrpB and grpS of id_CB
-//                    if (prodCompId.equals(targetCompId))
-//                    {   // I am both
-//                        grpO = "1010";
-//                    } else
-//                    {
-//                        String compGrpB = listData.getString("grp");
-//                        grpOB = defResultSC.getJSONObject(compGrpB).getString("grpO");
-//
-//                    for (int k = 0; k < defResultSC.size(); k++)
-//                        {
-//                            String grpRef = defResultSC.getJSONObject(k).getString("ref");
-//                            if (compGrpB.equals(grpRef))
-//                            {
-//                                grpOB =  defResultSC.getJSONObject(k).getString("grpO");
-//                                break;
-//                            }
-//                        }
-//                    }
+                String grpO = defResultSP.getString("grpO") != null ? defResultSP.getString("grpO") : "1000";
+                String grpOB = defResultBP.getString("grpO") != null ? defResultBP.getString("grpO") : "1000";
 
-//                  }
-                grpO = "1000";
-                grpOB = "1000";
+
                 //System.out.print("got all ok");
 
                 if (id_OParent.equals(thisOrderId)) {
@@ -425,7 +340,6 @@ public class FlowServiceImpl implements FlowService {
                 newPO_OItem.put("wn4price", wn4price);
                 newPO_OItem.put("objCard", objCard);
                 newPO.setOItem(newPO_OItem);
-                    //System.out.println("sales order");
 
                 // 创建采购单的Action
                 JSONObject newPO_Action = new JSONObject();
@@ -446,15 +360,9 @@ public class FlowServiceImpl implements FlowService {
                 dbu.summOrder(newPO, listCol);
                 // 新增订单
                     qt.addMD(newPO);
-//                    qt.setES(....)
-                    //System.out.println("sales order SAVED "+ newPO.getInfo().getWrdN().getString("cn"));
-
-
 //              // 创建lSBOrder订单
                 lSBOrder lsbOrder = new lSBOrder(prodCompId,targetCompId,"","",id_OParent,thisOrderId, arrayId_P,
                             "","",null,"1000",unitOItem.get(0).getPic(),4,0,orderNameCas,null,null);
-                    // 新增lsbOrder信息
-
                     qt.addES("lsborder", lsbOrder);
 
                 }
@@ -647,10 +555,8 @@ public class FlowServiceImpl implements FlowService {
             } else {
                 targetCompId = myCompId;
             }
-            for (int j = 0; j < casItemData.size(); j++)
-            {
-                if (casItemData.getJSONObject(j).getString("id_O").equals(thisOrderId))
-                {
+            for (int j = 0; j < casItemData.size(); j++) {
+                if (casItemData.getJSONObject(j).getString("id_O").equals(thisOrderId)) {
                     prodCompId = casItemData.getJSONObject(j).getString("id_C");
 //                    orderNameCas = casItemData.getJSONObject(j).getJSONObject("wrdN");
                     orderNameCas.put("cn", salesOrderData.getInfo().getWrdN().getString("cn") + " - " +
@@ -666,12 +572,11 @@ public class FlowServiceImpl implements FlowService {
             String grpOB = "1000";
             Asset asset = null;
 
-            if (!targetCompId.equals(myCompId))
-            {
+            if (!targetCompId.equals(myCompId)) {
 
-                asset = qt.getConfig(targetCompId,"a-auth","def");
+                asset = qt.getConfig(targetCompId, "a-auth", "def");
 
-                if  (asset.getId().equals("none")) {
+                if (asset.getId().equals("none")) {
                     asset = myDef;
                 }
             } else {
@@ -698,7 +603,6 @@ public class FlowServiceImpl implements FlowService {
 
                     asset2 = myDef;
                 }
-
             } else {
                 asset2 = myDef;
             }
@@ -714,8 +618,8 @@ public class FlowServiceImpl implements FlowService {
                 }
             }
 
-            grpO = "1000";
-            grpOB = "1000";
+            grpO = defResultSP.getString("grpO") != null ? defResultSP.getString("grpO") : "";
+            grpOB = defResultBP.getString("grpO") != null ? defResultBP.getString("grpO") : "1000";
 
 
             if (id_OParent.equals(thisOrderId)) {
@@ -736,7 +640,8 @@ public class FlowServiceImpl implements FlowService {
                 newPO.setId(thisOrderId);
 
                 // priority is BY order, get from info and write into ALL oItem
-                OrderInfo newPO_Info = new OrderInfo(prodCompId,targetCompId,unitOItem.get(0).getId_CP(),"", id_OParent,"","",grpO,grpOB,oParent_prior,unitOItem.get(0).getPic(),4,0,orderNameCas,null);
+                OrderInfo newPO_Info = new OrderInfo(prodCompId,targetCompId,unitOItem.get(0).getId_CP(),"", id_OParent,"","",
+                        grpO,grpOB,oParent_prior,unitOItem.get(0).getPic(),4,0,orderNameCas,null);
 
                 qt.errPrint("newPOInfo", null, targetCompId, prodCompId, newPO_Info);
                 // 设置订单info信息
@@ -2020,6 +1925,7 @@ public class FlowServiceImpl implements FlowService {
             jsonPart.put("name", prod.getInfo().getWrdN().getString("cn"));
             jsonPart.putAll(JSON.parseObject(JSON.toJSONString(prod.getInfo())));
 
+
             jsonPart.put("children", recursionProdPart(arrayObjItem, stat));
 
             return retResult.ok(CodeEnum.OK.getCode(), jsonPart);
@@ -2062,7 +1968,9 @@ public class FlowServiceImpl implements FlowService {
                 //有下一层
                 if (jsonProdPart.getJSONObject(jsonObjItem.getString("id_P")) != null) {
                     JSONArray arrayPartObjItem = jsonProdPart.getJSONObject(jsonObjItem.getString("id_P")).getJSONArray("objItem");
-                    jsonChildren.put("children", recursionProdPart(arrayPartObjItem, stat));
+                    if (arrayPartObjItem != null) {
+                        jsonChildren.put("children", recursionProdPart(arrayPartObjItem, stat));
+                    }
                 }
                 arrayChildren.add(jsonChildren);
             }

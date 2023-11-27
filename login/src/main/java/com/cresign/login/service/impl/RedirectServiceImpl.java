@@ -25,8 +25,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -521,7 +519,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
     @Override
     @Transactional
-    public ApiResponse scanJoinCompCode(String token, String join_user) throws IOException {
+    public ApiResponse scanJoinCompCode(String token, String join_user) {
 
 //        String keyName = SCANCODE_JOINCOMP + token;
 //        Boolean hasKey = redisTemplate0.hasKey(keyName);
@@ -659,14 +657,12 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         return retResult.ok(CodeEnum.OK.getCode(), url);
     }
 
-    private ApiResponse joinAddData(String join_user, Map <Object, Object> entries,int type) throws IOException {
+    private ApiResponse joinAddData(String join_user, Map <Object, Object> entries,int type) {
         /*
           1. 先检查公司是否存在
           2. 将用户加入公司
          */
-//        Query compQ = new Query(new Criteria("_id").is(entries.get("id_C")));
-//        Comp one = mongoTemplate.findOne(compQ, Comp.class);
-//
+
         Comp compOne = qt.getMDContent(entries.get("id_C").toString(), "info", Comp.class);
         if (ObjectUtils.isEmpty(compOne)) {
             throw new ErrorResponseException(HttpStatus.OK, SearchEnum.COMP_NOT_FOUND.getCode(), null) ;
@@ -721,7 +717,6 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 //        mongoTemplate.updateFirst(upUserQ, update, User.class);
         qt.setMDContent(join_user,qt.setJson("rolex.objComp."+entries.get("id_C"),rolex,"info.def_C", entries.get("id_C")), User.class);
 
-
         JSONArray searchResult = qt.getES("lbuser", qt.setESFilt("id_CB", entries.get("id_C"), "id_U", join_user ),1);
 
         if (searchResult.size() == 0) {
@@ -738,17 +733,13 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
             qt.addES("lbuser",qt.toJson(addLBUser));
 
-//            IndexRequest indexRequest = new IndexRequest("lbuser");
-//            indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
-//            try {
-//                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
-//
-//            } catch (IOException e) {
-//
-//                throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_JOIN_COMP_ERROR.getCode(), null);
-//            }
-            //TODO ZEJIN
             //在这里发switchComp 的日志
+            JSONObject data = qt.setJson("type", "addComp");
+            LogFlow log = new LogFlow();
+            log.setSysLog(entries.get("id_C").toString(), "mut_switch", "加入新公司", 3, qt.setJson("cn", "系统权限更新"));
+            log.setId_Us(qt.setArray(join_user));
+            log.setData(data);
+            ws.sendWS(log);
 
 
             return retResult.ok(CodeEnum.OK.getCode(), null);

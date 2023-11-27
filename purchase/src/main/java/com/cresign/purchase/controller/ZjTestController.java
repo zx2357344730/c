@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.websocket.server.PathParam;
-import java.io.IOException;
 
 /**
  * @author tang
@@ -294,20 +293,13 @@ public class ZjTestController {
     }
 
     @SecurityParameter
-    @PostMapping("/v1/addBlankComp")
-    public ApiResponse addBlankComp(@RequestBody JSONObject reqJson) throws IOException {
+    @PostMapping("/v1/statisticsChKin")
+    public ApiResponse statisticsChKin(@RequestBody JSONObject reqJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
-            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-
-            return zjService.addBlankCompNew(
-                    tokData,
-                    reqJson.getJSONObject("wrdN"),
-                    reqJson.getJSONObject("wrddesc"),
-                    reqJson.getString("pic"),
-                    reqJson.getString("ref")
-            );
+            return zjService.statisticsChKin(reqJson.getString("id_C"),reqJson.getJSONArray("sumDates"));
         } catch (Exception e) {
-            return getUserToken.err(reqJson, "ModuleController.addBlankComp", e);
+            return getUserToken.err(new JSONObject(), "ZjTestController.statisticsChKin", e);
         }
     }
 }

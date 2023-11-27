@@ -19,27 +19,31 @@ public class InitJava {
 
     private JSONObject newSpace;
 
-    private JSONObject newCompFake;
+//    private JSONObject newCompFake;
 
     private JSONObject newUser;
 
-    private JSONObject newAsset;
-
-    private JSONObject newProd;
+//    private JSONObject newAsset;
+//
+//    private JSONObject newProd;
 
     private JSONObject ipList;
+    private JSONArray devList;
 
 
-    private JSONObject newProbOrder;
-
-    private JSONObject newMsgOrder;
-
-    private JSONObject newCusmsgOrder;
+    private JSONObject idJson;
 
 
-    private JSONObject newStorageOrder;
-
-    private JSONObject newMoneyOrder;
+//    private JSONObject newProbOrder;
+//
+//    private JSONObject newMsgOrder;
+//
+//    private JSONObject newCusmsgOrder;
+//
+//
+//    private JSONObject newStorageOrder;
+//
+//    private JSONObject newMoneyOrder;
 
 
     private JSONObject cardInit;
@@ -48,23 +52,24 @@ public class InitJava {
 
     private JSONObject logInit;
 
+    private JSONObject modInit;
+
+
     private JSONObject listTypeInit;
 
     private JSONObject cardListAllow;
 
-    private JSONObject exchangeRate;
-
     private Integer tvs = 1;
 
-    private JSONObject statInit;
+//    private JSONObject statInit;
 
+    //monthly update ES list
     private JSONObject flowInit;
 
-    private JSONObject pdfInit;
+//    private JSONObject pdfInit;
 
-    private JSONObject logic;
+//    private JSONObject logic;
 
-    private JSONArray devList;
 
 
 }

@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.enumeration.ToolEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.lBAsset;
@@ -1227,11 +1228,15 @@ public class DbUtils {
                         if (val.startsWith("##OP")) {
                             String[] valSplit = val.split("\\.");
                             System.out.println("paramSplit.length=" + valSplit.length);
+                            for (int k = 0; k < valSplit.length; k++) {
+                                System.out.print(k + ":" + valSplit[k] + ",");
+                            }
                             JSONObject jsonVar = jsonVars.getJSONObject(valSplit[1]);
+                            System.out.println("\njsonVar=" + jsonVar);
                             if (valSplit.length == 2) {
                                 jsonParam.put("val", jsonVar.get("val"));
                             } else if (valSplit.length == 3) {
-                                jsonParams.put("val", jsonVar.getJSONObject("val").get(valSplit[2]));
+                                jsonParam.put("val", jsonVar.getJSONObject("val").get(valSplit[2]));
                             }
 //                            String retType = jsonVar.getString("retType");
 //                            if (retType.equals("String")) {
@@ -1251,6 +1256,7 @@ public class DbUtils {
                     }
                     String[] keySplit = key.split("\\.");
                     System.out.println("keySplit.length=" + keySplit.length);
+                    System.out.println("jsonParam=" + jsonParam);
                     Object val = jsonParam.get("val");
                     if (keySplit.length == 1) {
                         jsonParams.put(key, val);
@@ -1274,7 +1280,7 @@ public class DbUtils {
                     //Key!! invoke here with bean + params
                     JSONObject jsonOutput = jsonExec.getJSONObject("output");
                     if (jsonOutput != null) {
-                        JSONObject invoke = (JSONObject) JSON.toJSON(method1.invoke(bean, jsonParams));
+                        Object invoke = method1.invoke(bean, jsonParams);
                         String key = jsonOutput.getString("key");
                         String type = jsonExec.getString("type");
                         String valType = jsonOutput.getString("valType");
@@ -1300,7 +1306,6 @@ public class DbUtils {
         }
     }
 
-
     public Object scriptEngineVar(String var, JSONObject jsonVars) {
         try {
             System.out.println("");
@@ -1320,6 +1325,10 @@ public class DbUtils {
                                 qt.errPrint("sev", jsonVars.getString(key), jsonVars, varSplit);
                                 Object result = scriptEngineVar(jsonVars.getString(key), jsonVars);
                                 System.out.println("##CC=" + key + ":" + result);
+                                if (qt.toJson(result) != null && qt.toJson(result).getString("cn") != null)
+                                {
+                                    result = qt.toJson(result).getString("cn");
+                                }
                                 sb.append(result);
                             } else {
                                 sb.append(varSplit);
@@ -1438,6 +1447,14 @@ public class DbUtils {
                     JSONObject jsonUpdate = qt.setJson("refAuto.objCounter." + scriptSplit[2] + ".count", count);
                     qt.setMDContent(asset.getId(), jsonUpdate, Asset.class);
                     return strCount;
+                }
+                else if (var.startsWith("##G")) {
+                    String[] scriptSplit = var.split("\\.");
+                    Asset asset = qt.getConfig(scriptSplit[1], "a-core", "refAuto");
+                    if (asset == null || asset.getRefAuto() == null || asset.getRefAuto().getJSONObject("global") == null) {
+                        return null;
+                    }
+                    return asset.getRefAuto().getJSONObject("global").get(scriptSplit[2]);
                 }
                 //##F.com.cresign.timer.controller.StatController##getStatisticByEs1##op0
                 //F = it is a function, then break the string and recall myself to calculate
@@ -1773,6 +1790,72 @@ public class DbUtils {
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
         }
     }
+
+    public JSONObject tempaCOUPA(JSONArray arrayData, JSONObject jsonVar, JSONArray arrayGrpTarget, JSONObject jsonEs, String listType) {
+        jsonEs.remove("grpT");
+        Init init = qt.getInitData("cn");
+
+        JSONObject jsonCol = init.getCol().getJSONObject(listType);
+//        Update update = new Update();
+        JSONObject upKevVal = new JSONObject();
+        for (int i = 0; i < arrayData.size(); i++) {
+            JSONObject jsonData = arrayData.getJSONObject(i);
+            String key = jsonData.getString("key");
+            JSONArray arrayIndex = jsonData.getJSONArray("index");
+
+            /////////////*************////////////
+            Object value = this.scriptEngineVar(jsonData.getString("value"), jsonVar);
+            jsonData.put("value", value);
+            qt.errPrint("key+", jsonData, key, value);
+
+            if (key.equals("info.grp")) {
+                if (!arrayGrpTarget.contains(key)) {
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_FOUND.getCode(), null); //GRP_NOT_MATCH
+                }
+            }
+
+            if (arrayIndex == null) {
+//                update.set(key, value);
+
+                String[] keySplit = key.split("\\.");
+                String colKey = keySplit[keySplit.length - 1];
+
+                if (colKey.startsWith("wrd"))
+                {
+                    key = key + ".cn";
+                    qt.upJson(upKevVal, key, value);
+                    if (jsonCol.getJSONObject(colKey) != null) {
+                        jsonEs.put(colKey, qt.setJson("cn", value));
+                    }
+
+                } else {
+                    qt.upJson(upKevVal, key, value);
+                    if (jsonCol.getJSONObject(colKey) != null) {
+                        jsonEs.put(colKey, value);
+                    }
+                }
+
+            } else {
+                int keyIndexOf = key.indexOf("$");
+                String keyPrefix = key.substring(0, keyIndexOf);
+                String keySuffix = key.substring(keyIndexOf + 1, key.length());
+                if (keySuffix.startsWith("wrd"))
+                {
+                    keySuffix = keySuffix + ".cn";
+                }
+                for (int j = 0; j < arrayIndex.size(); j++) {
+                    Integer index = arrayIndex.getInteger(j);
+                    qt.upJson(upKevVal, keyPrefix +"."+ index+ "." + keySuffix, value);
+                }
+            }
+        }
+//        Map<String, Object> mapResult = new HashMap<>();
+        JSONObject mapResult = new JSONObject();
+        mapResult.put("mongo", upKevVal);
+        mapResult.put("es", jsonEs);
+        return mapResult;
+    }
+
 //
 //    public Object scriptEngineVar2(Object obj, JSONObject jsonVars) {
 //        try {
@@ -2270,8 +2353,8 @@ public class DbUtils {
         return oMoney;
     }
 
-    public void setStock(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer index,
-                         String locAddr, JSONArray locSpace, JSONArray spaceQty, JSONArray arrPP, JSONArray procQty, Integer lAT, String zcndesc, Integer imp) {
+    public void setStock(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer index, String locAddr,
+                         JSONArray locSpace, JSONArray spaceQty, JSONArray arrPP, JSONArray procQty, Boolean isProc, Integer lAT, String zcndesc, Integer imp) {
         if (id_A == null) {
             JSONArray filterArray = qt.setESFilt("id_C", tokData.getString("id_C"), "id_CB", id_CB, "id_P", id_P, "locAddr", locAddr);
             JSONArray arrayEs = qt.getES("lSAsset", filterArray);
@@ -2292,6 +2375,7 @@ public class DbUtils {
                 "locSpace", qt.cloneArr(locSpace),
                 "spaceQty", qt.cloneArr(spaceQty),
                 "lAT", lAT,
+                "isProc", isProc,
                 "log", jsonLog);
         if (arrPP != null && procQty != null) {
             json.put("arrPP", arrPP);
@@ -2302,7 +2386,7 @@ public class DbUtils {
 
     public void setStock(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer index,
                           String locAddr, JSONArray locSpace, JSONArray spaceQty, Integer lAT, String zcndesc, Integer imp) {
-        this.setStock(arrayLsbasset, tokData, id_CB, id_P, id_A, wn2qty, index, locAddr, locSpace, spaceQty, null, null, lAT, zcndesc, imp);
+        this.setStock(arrayLsbasset, tokData, id_CB, id_P, id_A, wn2qty, index, locAddr, locSpace, spaceQty, null, null, null, lAT, zcndesc, imp);
     }
 
     public void setMoney(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer lAT, JSONObject action,
@@ -2563,7 +2647,16 @@ public class DbUtils {
                 String locAddr = assetChgObj.getString("locAddr");
                 JSONArray arrayUpdateLocSpace = assetChgObj.getJSONArray("locSpace");
                 JSONArray arrayUpdateSpaceQty = assetChgObj.getJSONArray("spaceQty");
+                Boolean isProc = assetChgObj.getBoolean("isProc");
+                JSONObject wrdN = jsonOItem.getJSONObject("wrdN");
                 //Type 1: 存在资产
+                if (isProc != null) {
+                    if (isProc) {
+                        wrdN.put("cn", "【已加工】" + wrdN.getString("cn"));
+                    } else {
+                        wrdN.put("cn", "【未加工】" + wrdN.getString("cn"));
+                    }
+                }
                 if (assetChgObj.getJSONObject("jsonLsa") != null)
                 {
                     JSONObject jsonLsa = assetChgObj.getJSONObject("jsonLsa");
@@ -2770,12 +2863,12 @@ public class DbUtils {
 //                    } else if (lAT == 3) {
 //                        grp = "1005";
 //                    }
-                    AssetInfo assetInfo = new AssetInfo(id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
+                    AssetInfo assetInfo = new AssetInfo(id_C, id_C, id_P, wrdN,
                             jsonOItem.getJSONObject("wrddesc"), grp, jsonOItem.getString("ref"),
                             jsonOItem.getString("pic"), lAT);
                     asset.setInfo(assetInfo);
 
-                    lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
+                    lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_C, id_P, wrdN,
                             jsonOItem.getJSONObject("wrddesc"), grp, jsonOItem.getString("pic"),
                             jsonOItem.getString("ref"), lAT, wn2qty, wn4price);
                     lsasset.setLocAddr(locAddr);
@@ -2837,7 +2930,7 @@ public class DbUtils {
 
                 LogFlow log = new LogFlow(tokData, jsonOItem, order.getAction(),
                         order.getInfo().getId_CB(), id_O, index, "assetflow", "stoChg",
-                        jsonOItem.getJSONObject("wrdN").getString("cn") + jsonLog.getString("zcndesc"),
+                        wrdN.getString("cn") + jsonLog.getString("zcndesc"),
                         jsonLog.getInteger("imp"));
                 log.setLogData_assetflow(wn2qty, wn4price, id_A, grpA);
                 System.out.println("assetflow=" + JSON.toJSON(log));

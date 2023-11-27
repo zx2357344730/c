@@ -14,6 +14,9 @@ public enum ChatEnum { // to Tools.ErrEnum
 
     /**
      * 不识别请求
+     * 1. 注册 - User -> idC 也做出来, Comp也要做, info.view 不用a-auth, lNUser 也要id_C
+     * 2. lBUser - id_CB, id_C 也加进lBUser
+     * 3. 有一天, 可以做space, idC -> a-auth 用newBlankComp, rolex 做改动
      */
     ERR_DONT_RECOGNIZE("01001"),
     /**

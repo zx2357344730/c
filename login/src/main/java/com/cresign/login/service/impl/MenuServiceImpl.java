@@ -228,7 +228,7 @@ public class MenuServiceImpl implements MenuService {
         log.setSysLog(id_C, "mut_menu", "更新菜单", 3, qt.setJson("cn", "系统权限更新"));// logtype = usageflow
         log.setData(qt.setJson("type", "updatedMenu")); // set log data
         ws.setUserListByGrpU(log, id_C, grpU); // set log id_Us id_APPs
-        ws.sendWS(log);
+        ws.sendWSDirect(log);
 
         return retResult.ok(CodeEnum.OK.getCode(), "");
 

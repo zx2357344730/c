@@ -39,10 +39,8 @@ public class Init {
 
     private JSONObject logInit;
 
-    private JSONObject pdfInit;
-
     private JSONObject log;
 
-    private JSONArray seMethod;
+//    private JSONArray seMethod;
 
 }
