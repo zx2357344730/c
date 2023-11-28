@@ -188,11 +188,18 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 
 //                    JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn","exact",phone));
                     String id_U = qt.getId_U(phone);
+                    boolean isRegister = true;
                     if (id_U.equals("")) {
-                        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-                                LOGIN_NOTFOUND_USER.getCode(),null);
+//                        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                                LOGIN_NOTFOUND_USER.getCode(),null);
+                        isRegister = false;
                     }
-                    User user = qt.getMDContent(id_U,qt.strList("info","rolex"),User.class);
+                    User user;
+                    if (isRegister) {
+                        user = qt.getMDContent(id_U,qt.strList("info","rolex"),User.class);
+                    } else {
+                        user = null;
+                    }
 
                     //存在则不是注册，返回个人信息
                     if (ObjectUtils.isNotEmpty(user)
