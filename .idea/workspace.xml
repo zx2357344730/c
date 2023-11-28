@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="128c9a26-d44c-4e41-b0e6-dabc284dd13b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SmsLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SmsLoginServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/utils/RegisterUserUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/utils/RegisterUserUtils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

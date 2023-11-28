@@ -2,6 +2,7 @@ package com.cresign.login.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.cresign.tools.advice.RetResult;
+import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ResponseException;
@@ -31,12 +32,14 @@ public class RegisterUserUtils {
 //
 //    @Autowired
 //    private RestHighLevelClient restHighLevelClient;
+    @Autowired
+    private RetResult retResult;
 
     @Autowired
     private Qt qt;
 
     @Transactional(noRollbackFor = ResponseException.class)
-    public String registerUser(Map<String, Object> info) {
+    public void registerUser(Map<String, Object> info) {
 
 
             InitJava initJava = qt.getInitData(); //qt.getMDContent("cn_java", "newUser", InitJava.class);
@@ -93,7 +96,8 @@ public class RegisterUserUtils {
 //            } catch (IOException e) {
 //
 //            }
-            return RetResult.jsonResultEncrypt(HttpStatus.OK, CodeEnum.OK.getCode(), null);
+//            return RetResult.jsonResultEncrypt(HttpStatus.OK, CodeEnum.OK.getCode(), null);
+//        return retResult.ok(CodeEnum.OK.getCode(), null);
 
 
 //        } catch (RuntimeException e) {
