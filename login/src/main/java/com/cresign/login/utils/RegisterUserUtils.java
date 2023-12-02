@@ -1,10 +1,13 @@
 package com.cresign.login.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.es.lNUser;
 import com.cresign.tools.pojo.po.InitJava;
@@ -32,46 +35,51 @@ public class RegisterUserUtils {
 //
 //    @Autowired
 //    private RestHighLevelClient restHighLevelClient;
-    @Autowired
-    private RetResult retResult;
+//    @Autowired
+//    private RetResult retResult;
 
     @Autowired
     private Qt qt;
 
     @Transactional(noRollbackFor = ResponseException.class)
-    public void registerUser(Map<String, Object> info) {
+    public String registerUser(JSONObject info) {
+
+        // in here we have: info.wrdN, pic, mbn, id_WX, id_APP, phoneType, tmd, tmk
+        // objectId
+        String addID = qt.GetObjectId();
+        User addUser = qt.jsonTo(qt.getInitData().getNewUser(), User.class);
+
+        addUser.setId(addID);
+        addUser.getInfo().setMbn(info.getString("mbn"));
+        addUser.getInfo().setWrdN(info.getJSONObject("wrdN"));
+        addUser.getInfo().setPic(info.getString("pic"));
+        addUser.getInfo().setPhoneType(info.getInteger("phoneType"));
+        addUser.getInfo().setId_WX(null != info.get("id_WX") ? info.getString("id_WX") : "");
+        addUser.getInfo().setId_APP(null != info.get("id_APP") ? info.getString("id_APP") : "");
+        addUser.getInfo().setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        addUser.getInfo().setTmk(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        qt.addMD(addUser);
 
 
-            InitJava initJava = qt.getInitData(); //qt.getMDContent("cn_java", "newUser", InitJava.class);
+//        addUser.setRolex(initJava.getNewUser().getJSONObject("rolex"));
+//        UserInfo infoJson = qt.jsonTo(initJava.getNewUser().getJSONObject("info"), UserInfo.class);
+//        if (null != info.get("id_APP")) {
+//            infoJson.setId_APP(info.get("id_APP").toString());
+//        }
+//        System.out.println(JSON.toJSONString(infoJson));
+//        addUser.setInfo(infoJson);
+//        addUser.setView(initJava.getNewUser().getJSONArray("view"));
+        System.out.println("新增注册:");
+        System.out.println(JSON.toJSONString(addUser));
 
-            // objectId
-            String addID = qt.GetObjectId();
+        lNUser lnuser = new lNUser(addID, info.getJSONObject("wrdN"), addUser.getInfo().getWrddesc(),
+                addUser.getInfo().getWrdNReal(), null, info.getString("pic"),
+               addUser.getInfo().getId_APP(), addUser.getInfo().getId_WX(),
+                "", info.getString("mbn"), "China", "cn", 0);
 
-            User addUser = new User();
-
-            addUser.setId(addID);
-            addUser.setRolex(initJava.getNewUser().getJSONObject("rolex"));
-
-            UserInfo infoJson =  qt.jsonTo(initJava.getNewUser().getJSONObject("info"), UserInfo.class);
-            infoJson.setMbn(info.get("mbn").toString());
-            if (null != info.get("id_APP")) {
-                infoJson.setId_APP(info.get("id_APP").toString());
-            }
-            System.out.println(JSON.toJSONString(infoJson));
-            addUser.setInfo(infoJson);
-            addUser.setView(initJava.getNewUser().getJSONArray("view"));
-            System.out.println("新增注册:");
-            System.out.println(JSON.toJSONString(addUser));
-//            mongoTemplate.insert(addUser);
-
-            qt.addMD(addUser);
-
-            lNUser lnuser = new lNUser(addID,infoJson.getWrdN(),infoJson.getWrddesc(),
-                    infoJson.getWrdNReal(),null, infoJson.getPic(), ""
-                    ,"", infoJson.getCem(), infoJson.getMbn(),infoJson.getCnty()
-                    , infoJson.getDefNG(), 0);
-
-            qt.addES("lnuser", lnuser);
+        qt.addES("lNUser", lnuser);
+        return addID;
+    }
             // 查询公司
 //            Query compQuery = new Query(new Criteria("_id").is("5f2a2502425e1b07946f52e9"));
 //            compQuery.fields().include("info");
@@ -107,8 +115,6 @@ public class RegisterUserUtils {
 //        }
 
         //return "";
-
-    }
 
 
 }

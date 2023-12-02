@@ -51,29 +51,8 @@ public class WxLoginServiceImpl implements WxLoginService {
     @Autowired
     private HttpServletRequest request;
 
-    /**
-     * code 凭证
-     */
-    public static final String CODE = "code";
-
-    /**
-     * iv 加密
-     */
-    public static final String IV = "iv";
-
-    /**
-     * encryptedData 加密数据
-     */
-    public static final String ENCRYPTED_DATA = "encryptedData";
-
-//    @Autowired
-//    private MongoTemplate mongoTemplate;
-
     @Autowired
     private LoginResult loginResult;
-
-//    @Autowired
-//    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private RetResult retResult;
@@ -219,13 +198,13 @@ public class WxLoginServiceImpl implements WxLoginService {
 
 
         //获取code
-        String code = reqJson.getString(CODE);
+        String code = reqJson.getString("code");
 
         //获取iv
-        String iv = reqJson.getString(IV);
+        String iv = reqJson.getString("iv");
 
         //获取encryptedData
-        String encryptedData = reqJson.getString(ENCRYPTED_DATA);
+        String encryptedData = reqJson.getString("encryptedData");
 
 
 
@@ -387,197 +366,171 @@ WX_NOT_BIND.getCode(), null);
 
 
 
-    @Override
-    public ApiResponse wxRegisterUser(JSONObject reqJson) throws IOException {
-
-        boolean register_Is = false;
-
-//        Query userQ = new Query();
-        JSONObject info = reqJson.getJSONObject("info");
-
-        Map<String, String> wrdN = new HashMap<>(1);
-        wrdN.put(request.getHeader("lang"), info.getString("wcnN"));
-
-        info.put("wrdN", wrdN);
-
-        if ( "id_WX".equals(reqJson.get("loginType").toString())){
-
-//            userQ.addCriteria(new Criteria("info.id_WX").is(info.get("id_WX")));
+//    @Override
+//    public ApiResponse wxRegisterUser(JSONObject reqJson) {
 //
-//            User user = mongoTemplate.findOne(userQ, User.class);
-            JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", info.get("id_WX")));
-            if (null == es || es.size() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-                        LOGIN_NOTFOUND_USER.getCode(),null);
-            } else {
-                if (!getIsEsKV(es, qt.setJson("id_WX", info.get("id_WX")))) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-                            LOGIN_NOTFOUND_USER.getCode(),null);
-                }
-            }
-            register_Is = true;
-//            User user = qt.getMDContentAll(es.getJSONObject(0).getString("id_U"),User.class);
+//        boolean register_Is = false;
 //
-//            if (null != user) {
+////        Query userQ = new Query();
+//        JSONObject info = reqJson.getJSONObject("info");
+//
+//        Map<String, String> wrdN = new HashMap<>(1);
+//        wrdN.put(request.getHeader("lang"), info.getString("wcnN"));
+//
+//        info.put("wrdN", wrdN);
+//
+//        if ( "id_WX".equals(reqJson.get("loginType").toString())){
+//
+//            JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", info.get("id_WX")));
+//            if (null == es || es.size() == 0) {
 //                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-//REGISTER_USER_IS_HAVE.getCode(), null);
+//                        LOGIN_NOTFOUND_USER.getCode(),null);
 //            } else {
-//
-//                register_Is = true;
-//
-//            }
-
-        } else if (reqJson.get("loginType").toString().equals("id_APP")) {
-
-//            userQ.addCriteria(new Criteria("info.id_WX").is(info.get("clientId")));
-//
-//            User user = mongoTemplate.findOne(userQ, User.class);
-
-            JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", info.get("clientId")));
-            if (null == es || es.size() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-                        LOGIN_NOTFOUND_USER.getCode(),null);
-            } else {
-                if (!getIsEsKV(es, qt.setJson("id_WX", info.get("clientId")))) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-                            LOGIN_NOTFOUND_USER.getCode(),null);
-                }
-            }
-            register_Is = true;
-//            if (null != user) {
-//
-//                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-//REGISTER_USER_IS_HAVE.getCode(), null);
-//
-//            } else {
-//
-//                register_Is = true;
-//
-//            }
-
-        }
-
-        if (register_Is) {
-
-            registerUserUtils.registerUser(info);
-
-            return retResult.ok(CodeEnum.OK.getCode(), null);
-        }
-
-        throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), null);
-    }
-
-    @Override
-    @Transactional(rollbackFor = RuntimeException.class,noRollbackFor = ResponseException.class)
-    public ApiResponse wechatRegister(String phone, Integer phoneType, String smsNum, String wcnN, String clientType, String clientID, String pic, String id_WX) throws IOException {
-
-
-        // 判断是否存在这个 key
-//        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
-        if (qt.hasRDKey(SMSTypeEnum.REGISTER.getSmsType(), phone)) {
-
-            // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
-//            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
-            if (smsNum.equals(qt.getRDSetStr(SMSTypeEnum.REGISTER.getSmsType(), phone))) {
-
-//                JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone));
-                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", id_WX));
-                if (null != es && es.size() > 0
-//                        && getIsEsKV(es, qt.setJson("id_WX", id_WX))
-                ) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-                            REGISTER_USER_IS_HAVE.getCode(), null);
-                }
-//                es = qt.getES("lNUser", qt.setESFilt("id_WX", id_WX));
-                es = qt.getES("lNUser", qt.setESFilt("mbn","exact", phone));
-                if (null != es && es.size() > 0
-//                        && getIsEsKV(es, qt.setJson("mbn", phone))
-                ) {
-                    qt.setES("lNUser", getEsV(es,"id_ES"),qt.setJson("id_WX",id_WX));
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-                            REGISTER_USER_IS_HAVE.getCode(), null);
-                }
-
-//                Query id_WXQue = new Query(new Criteria("info.id_WX").is(id_WX));
-//
-//                User userWX = mongoTemplate.findOne(id_WXQue, User.class);
-//
-//                if (ObjectUtils.isNotEmpty(userWX)) {
-//
+//                if (!getIsEsKV(es, qt.setJson("id_WX", info.get("id_WX")))) {
 //                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-//REGISTER_USER_IS_HAVE.getCode(), null);
-//
+//                            LOGIN_NOTFOUND_USER.getCode(),null);
 //                }
+//            }
+//            register_Is = true;
 //
-//                Query mbnQue = new Query(new Criteria("info.mbn").is(phone));
-//
-//                User user = mongoTemplate.findOne(mbnQue, User.class);
-//
-//
-//                // 查到有手机号但是没有id_WX 则自动绑定
-//                if (ObjectUtils.isNotEmpty(user)) {
-//
-//                    // 设置info信息
-////                    JSONObject infoJson = new JSONObject();
-////                    infoJson.put("id_WX", id_WX);
-////                    infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-////
-////                    Update update = new Update();
-////                    update.set("info.id_WX", id_WX);
-////                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-////
-////                    mongoTemplate.updateFirst(mbnQue, update, User.class);
-//                    qt.setMDContent(user.getId(),qt.setJson("info.id_WX",id_WX
-//                            ,"info.tmd",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())),User.class);
-//
-////                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 1, TimeUnit.MINUTES);
+//        } else if (reqJson.get("loginType").toString().equals("id_APP")) {
 //
 //
-////                    return retResult.ok(CodeEnum.OK.getCode(), null);
+//            JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", info.get("clientId")));
+//            if (null == es || es.size() == 0) {
+//                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                        LOGIN_NOTFOUND_USER.getCode(),null);
+//            } else {
+//                if (!getIsEsKV(es, qt.setJson("id_WX", info.get("clientId")))) {
+//                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                            LOGIN_NOTFOUND_USER.getCode(),null);
+//                }
+//            }
+//            register_Is = true;
+//
+//        }
+//
+//        if (register_Is) {
+//
+//            registerUserUtils.registerUser(info);
+//
+//            return retResult.ok(CodeEnum.OK.getCode(), "regOK");
+//        }
+//
+//        throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), null);
+//    }
+
+//    @Override
+//    @Transactional(rollbackFor = RuntimeException.class,noRollbackFor = ResponseException.class)
+//    public ApiResponse wechatRegister(String phone, Integer phoneType, String smsNum, String wcnN, String clientType, String clientID, String pic, String id_WX) throws IOException {
+//
+//
+//        // 判断是否存在这个 key
+////        if (redisTemplate0.hasKey(SMSTypeEnum.REGISTER.getSmsType() + phone)) {
+//        if (qt.hasRDKey(SMSTypeEnum.REGISTER.getSmsType(), phone)) {
+//
+//            // 判断redis中的 smsSum 是否与前端传来的 smsNum 相同
+////            if (smsNum.equals(redisTemplate0.opsForValue().get(SMSTypeEnum.REGISTER.getSmsType() + phone))) {
+//            if (smsNum.equals(qt.getRDSetStr(SMSTypeEnum.REGISTER.getSmsType(), phone))) {
+//
+////                JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", phone));
+//                JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", id_WX));
+//                if (null != es && es.size() > 0
+////                        && getIsEsKV(es, qt.setJson("id_WX", id_WX))
+//                ) {
 //                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
 //                            REGISTER_USER_IS_HAVE.getCode(), null);
 //                }
-
-
-                Map<String, String> wrdN = new HashMap<>(1);
-                wrdN.put(request.getHeader("lang"), wcnN);
-                // 设置info信息
-                JSONObject infoJson = new JSONObject();
-                infoJson.put("wrdN", wrdN);
-                infoJson.put("pic", pic);
-                infoJson.put("mbn", phone);
-                infoJson.put("id_WX", id_WX);
-                infoJson.put("phoneType", phoneType);
-                infoJson.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-                infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-                // 判断
-                if (ClientEnum.APP_CLIENT.getClientType().equals(clientType)) {
-
-                    // 判断clientID是否为空
-                    if ("".equals(clientID) || null == clientID) {
-                        throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
-                    }
-                    infoJson.put("clientID", clientID);
-
-                }
-
-                // 调用注册用户方法
-                registerUserUtils.registerUser(infoJson);
-
-//                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
-                qt.setRDSet(SMSTypeEnum.LOGIN.getSmsType(), phone, smsNum, 180L);
-                return retResult.ok(CodeEnum.OK.getCode(), null);
-            } else {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.SMS_CODE_NOT_CORRECT.getCode(), null);
-            }
-
-        } else {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-SMS_CODE_NOT_FOUND.getCode(), null);
-        }
-
-    }
+////                es = qt.getES("lNUser", qt.setESFilt("id_WX", id_WX));
+//                es = qt.getES("lNUser", qt.setESFilt("mbn","exact", phone));
+//                if (null != es && es.size() > 0
+////                        && getIsEsKV(es, qt.setJson("mbn", phone))
+//                ) {
+//                    qt.setES("lNUser", getEsV(es,"id_ES"),qt.setJson("id_WX",id_WX));
+//                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                            REGISTER_USER_IS_HAVE.getCode(), null);
+//                }
+//
+////                Query id_WXQue = new Query(new Criteria("info.id_WX").is(id_WX));
+////
+////                User userWX = mongoTemplate.findOne(id_WXQue, User.class);
+////
+////                if (ObjectUtils.isNotEmpty(userWX)) {
+////
+////                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+////REGISTER_USER_IS_HAVE.getCode(), null);
+////
+////                }
+////
+////                Query mbnQue = new Query(new Criteria("info.mbn").is(phone));
+////
+////                User user = mongoTemplate.findOne(mbnQue, User.class);
+////
+////
+////                // 查到有手机号但是没有id_WX 则自动绑定
+////                if (ObjectUtils.isNotEmpty(user)) {
+////
+////                    // 设置info信息
+//////                    JSONObject infoJson = new JSONObject();
+//////                    infoJson.put("id_WX", id_WX);
+//////                    infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//////
+//////                    Update update = new Update();
+//////                    update.set("info.id_WX", id_WX);
+//////                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//////
+//////                    mongoTemplate.updateFirst(mbnQue, update, User.class);
+////                    qt.setMDContent(user.getId(),qt.setJson("info.id_WX",id_WX
+////                            ,"info.tmd",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())),User.class);
+////
+//////                    redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 1, TimeUnit.MINUTES);
+////
+////
+//////                    return retResult.ok(CodeEnum.OK.getCode(), null);
+////                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+////                            REGISTER_USER_IS_HAVE.getCode(), null);
+////                }
+//
+//
+//                Map<String, String> wrdN = new HashMap<>(1);
+//                wrdN.put(request.getHeader("lang"), wcnN);
+//                // 设置info信息
+//                JSONObject infoJson = new JSONObject();
+//                infoJson.put("wrdN", wrdN);
+//                infoJson.put("pic", pic);
+//                infoJson.put("mbn", phone);
+//                infoJson.put("id_WX", id_WX);
+//                infoJson.put("phoneType", phoneType);
+//                infoJson.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//                infoJson.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//                // 判断
+//                if (ClientEnum.APP_CLIENT.getClientType().equals(clientType)) {
+//
+//                    // 判断clientID是否为空
+//                    if ("".equals(clientID) || null == clientID) {
+//                        throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+//                    }
+//                    infoJson.put("clientID", clientID);
+//
+//                }
+//
+//                // 调用注册用户方法
+//                registerUserUtils.registerUser(infoJson);
+//
+////                redisTemplate0.opsForValue().set(SMSTypeEnum.LOGIN.getSmsType() + phone, smsNum, 3, TimeUnit.MINUTES);
+//                qt.setRDSet(SMSTypeEnum.LOGIN.getSmsType(), phone, smsNum, 180L);
+//                return retResult.ok(CodeEnum.OK.getCode(), "regOK");
+//            } else {
+//                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.SMS_CODE_NOT_CORRECT.getCode(), null);
+//            }
+//
+//        } else {
+//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//SMS_CODE_NOT_FOUND.getCode(), null);
+//        }
+//
+//    }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class,noRollbackFor = ResponseException.class)
@@ -587,133 +540,245 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         JSONObject wrdNMap = new JSONObject();
         wrdNMap.put("cn", nickName);
         JSONObject wrdNReal = new JSONObject();
-        wrdNReal.put("cn",realName);
+        wrdNReal.put("cn", realName);
 
-        JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", unionId));
-        if (null != es && es.size() > 0
-//                && getIsEsKV(es, qt.setJson("id_WX", unionId))
-        ) {
+        JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX", "exact", unionId));
+        if (null != es && es.size() > 0) {
             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
                     REGISTER_USER_IS_HAVE.getCode(), null);
         }
-//                es = qt.getES("lNUser", qt.setESFilt("id_WX", id_WX));
-        es = qt.getES("lNUser", qt.setESFilt("mbn","exact", phoneNumber));
-        if (null != es && es.size() > 0
-//                && getIsEsKV(es, qt.setJson("mbn", phoneNumber))
-        ) {
-            qt.setES("lNUser", getEsV(es,"id_ES"),qt.setJson("id_WX",unionId));
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
-                    REGISTER_USER_IS_HAVE.getCode(), null);
+        es = qt.getES("lNUser", qt.setESFilt("mbn", "exact", phoneNumber));
+        if (null != es && es.size() > 0) {
+            // here, if mbn is registered, but wx not yet, just set wx into the already existed mbn
+
+
+            qt.setES("lNUser", qt.setESFilt("mbn", phoneNumber), qt.setJson("id_WX", unionId));
+            qt.setMDContent(es.getJSONObject(0).getString("id_U"), qt.setJson("info.id_WX", unionId), User.class);
+            User user = qt.getMDContent(es.getJSONObject(0).getString("id_U"), qt.strList("info", "rolex"), User.class);
+
+            return retResult.ok(CodeEnum.OK.getCode(), loginResult.allResult(user, "wx", "wx"));
+
+//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                    REGISTER_USER_IS_HAVE.getCode(), null);
+        } else {
+            // Here is register
+            JSONObject info = qt.setJson("wrdN", qt.setJson("cn", nickName), "pic", avatarUrl, "mbn",
+                    phoneNumber, "phoneType", 86, "id_WX", unionId);
+            String id = registerUserUtils.registerUser(info);
+            User user = qt.getMDContent(id, qt.strList("info", "rolex"), User.class);
+
+            return retResult.ok(CodeEnum.OK.getCode(), loginResult.allResult(user, "wx", ""));
+
         }
-
-//        // 1.先通过unionId查询是否已经有用户了,如果有则直接返回出去
-//        Query haveUserQ = new Query(new Criteria("info.id_WX").is(unionId));
-//        User haveUser = mongoTemplate.findOne(haveUserQ, User.class);
-//
-//
-//        // 判断是否有该用户
-//        if (ObjectUtils.isNotEmpty(haveUser)) {
-//            return retResult.ok( CodeEnum.OK.getCode(), null);
-//        }
-//
-//        Query haveUserP = new Query(new Criteria("info.mbn").is(phoneNumber));
-//        User userP = mongoTemplate.findOne(haveUserP, User.class);
-//
-//        if (ObjectUtils.isNotEmpty(userP)) {
-//            //Phone number exist, already registered by app or website
-//            // in this case I only need to add my pic, nickName, union ID, into that id_U
-////            userP.getInfo().setId_WX(unionId);
-////            userP.getInfo().setPic(avatarUrl);
-////            userP.getInfo().setWrdN(wrdNMap);
-////            userP.getInfo().setWrdNReal(wrdNReal);
-////
-////            Update update = new Update();
-////            update.set("info", userP.getInfo());
-////            mongoTemplate.updateFirst(haveUserP, update, User.class);
-//
-//            qt.setMDContent(userP.getId(),qt.setJson("id_WX",unionId,"pic",avatarUrl
-//                    ,"wrdN",wrdNMap,"wrdNReal",wrdNReal),User.class);
-//
-//            return retResult.ok( CodeEnum.OK.getCode(), loginResult.allResult(userP,request.getHeader("clientType"), "wx"));
-//
-//        }
-
-        // 2.开始注册用户到mongodb中
-
-        // 1) info 卡片
-        //Map<String, Object> userInfoMap = new HashMap<>();
-
-
-
-
-        // 2) rolex 卡片
-        //Map<String, Object> rolexMap = new HashMap<>();
-        JSONObject rolexMap = new JSONObject();
-        //List<Map<String, Object>> objCompList = new ArrayList<>();
-        JSONObject objCompDefault = new JSONObject();
-        //Map<String, Object> comMap = new HashMap<>();
-        JSONObject comMap = new JSONObject();
-        comMap.put("id_C", "5f2a2502425e1b07946f52e9");
-        comMap.put("grpU", "1099");
-
-        //List<Map<String, Object>> objModList = new ArrayList<>();
-        JSONArray objModArray = new JSONArray();
-        JSONObject objModMap = new JSONObject();
-
-        JSONObject objMod = qt.setJson("ref", "a-core-0", "mod", "a-core","bcdState", 1, "bcdLevel", 0, "tfin", -1);
-
-        JSONObject objModAuth = new JSONObject();
-        objModAuth.put("a-core-0", objMod);
-
-        objModArray.add(objModMap);
-        comMap.put("modAuth", objModAuth);
-
-        objCompDefault.put("5f2a2502425e1b07946f52e9", comMap);
-        rolexMap.put("objComp", objCompDefault);
-
-        // 3) view 卡片
-        //List<String> viewList = new ArrayList<>(1);
-        JSONArray viewArray = new JSONArray();
-        viewArray.add("Vinfo");
-        viewArray.add("rolex");
-
-        // 添加到user对象中
-        User user = new User();
-
-        String id_U = qt.GetObjectId();
-        user.setId(id_U);
-        UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,wrdNReal, null, "5f2a2502425e1b07946f52e9","cn","CNY",
-                avatarUrl,"China","",phoneNumber,countryCode,"");
-        user.setInfo(userInfo);
-        user.setView(viewArray);
-        user.setRolex(rolexMap);
-
-//        mongoTemplate.insert(user);
-        qt.addMD(user);
-
-        lNUser addLNUser = new lNUser(id_U,wrdNMap,null,wrdNReal,null,avatarUrl,null
-                ,unionId,"",phoneNumber,"China","cn",0);
-        qt.addES("lNUser",addLNUser);
-
-        // 3.插入ES lbuser索引中新增列表
-        JSONObject wrdNCB = new JSONObject();
-        wrdNCB.put("cn", "Cresign");
-
-        lBUser addLBUser = new lBUser(id_U,"5f2a2502425e1b07946f52e9", wrdNMap, wrdNCB, wrdNReal,null, "1099", phoneNumber, "", unionId, avatarUrl,"1000");
-
-        qt.addES("lbuser",addLBUser);
-//        IndexRequest indexRequest = new IndexRequest("lbuser");
-//        indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
-//        try {
-//            restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
-//
-//        } catch (IOException e) {
-//
-//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.USER_NOT_IN_COMP.getCode(), null);
-//        }
-
-        return retResult.ok( CodeEnum.OK.getCode(), loginResult.allResult(user,request.getHeader("clientType"), "wx"));
     }
+
+        //Here we start working on registering this guy
+
+
+//
+//
+//        JSONObject rolexMap = new JSONObject();
+//        //List<Map<String, Object>> objCompList = new ArrayList<>();
+//        JSONObject objCompDefault = new JSONObject();
+//        //Map<String, Object> comMap = new HashMap<>();
+//        JSONObject comMap = new JSONObject();
+//        comMap.put("id_C", "5f2a2502425e1b07946f52e9");
+//        comMap.put("grpU", "1099");
+//
+//        //List<Map<String, Object>> objModList = new ArrayList<>();
+//        JSONArray objModArray = new JSONArray();
+//        JSONObject objModMap = new JSONObject();
+//
+//        JSONObject objMod = qt.setJson("ref", "a-core-0", "mod", "a-core","bcdState", 1, "bcdLevel", 0, "tfin", -1);
+//
+//        JSONObject objModAuth = new JSONObject();
+//        objModAuth.put("a-core-0", objMod);
+//
+//        objModArray.add(objModMap);
+//        comMap.put("modAuth", objModAuth);
+//
+//        objCompDefault.put("5f2a2502425e1b07946f52e9", comMap);
+//        rolexMap.put("objComp", objCompDefault);
+//
+//        // 3) view 卡片
+//        //List<String> viewList = new ArrayList<>(1);
+//        JSONArray viewArray = new JSONArray();
+//        viewArray.add("Vinfo");
+//        viewArray.add("rolex");
+//
+//        // 添加到user对象中
+//        User user = new User();
+//
+//        String id_U = qt.GetObjectId();
+//        user.setId(id_U);
+//        UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,wrdNReal, null, "5f2a2502425e1b07946f52e9","cn","CNY",
+//                avatarUrl,"China","",phoneNumber,countryCode,"");
+//        user.setInfo(userInfo);
+//        user.setView(viewArray);
+//        user.setRolex(rolexMap);
+//
+////        mongoTemplate.insert(user);
+//        qt.addMD(user);
+//
+//        lNUser addLNUser = new lNUser(id_U,wrdNMap,null,wrdNReal,null,avatarUrl,null
+//                ,unionId,"",phoneNumber,"China","cn",0);
+//        qt.addES("lNUser",addLNUser);
+//
+//        // 3.插入ES lbuser索引中新增列表
+//        JSONObject wrdNCB = new JSONObject();
+//        wrdNCB.put("cn", "Cresign");
+//
+//        lBUser addLBUser = new lBUser(id_U,"5f2a2502425e1b07946f52e9", wrdNMap, wrdNCB, wrdNReal,null, "1099", phoneNumber, "", unionId, avatarUrl,"1000");
+//
+//        qt.addES("lbuser",addLBUser);
+////        IndexRequest indexRequest = new IndexRequest("lbuser");
+////        indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
+////        try {
+////            restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+////
+////        } catch (IOException e) {
+////
+////            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.USER_NOT_IN_COMP.getCode(), null);
+////        }
+//
+//        return retResult.ok( CodeEnum.OK.getCode(), loginResult.allResult(user,request.getHeader("clientType"), "wx"));
+//    }
+
+//    @Override
+//    @Transactional(rollbackFor = RuntimeException.class,noRollbackFor = ResponseException.class)
+//    public ApiResponse wxmpRegister2(String nickName, String avatarUrl, String unionId
+//            , Integer countryCode, String phoneNumber,String realName) {
+//
+//        JSONObject wrdNMap = new JSONObject();
+//        wrdNMap.put("cn", nickName);
+//        JSONObject wrdNReal = new JSONObject();
+//        wrdNReal.put("cn",realName);
+//
+//        JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", unionId));
+//        if (null != es && es.size() > 0
+////                && getIsEsKV(es, qt.setJson("id_WX", unionId))
+//        ) {
+//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                    REGISTER_USER_IS_HAVE.getCode(), null);
+//        }
+////                es = qt.getES("lNUser", qt.setESFilt("id_WX", id_WX));
+//        es = qt.getES("lNUser", qt.setESFilt("mbn","exact", phoneNumber));
+//        if (null != es && es.size() > 0
+////                && getIsEsKV(es, qt.setJson("mbn", phoneNumber))
+//        ) {
+//            qt.setES("lNUser", getEsV(es,"id_ES"),qt.setJson("id_WX",unionId));
+//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                    REGISTER_USER_IS_HAVE.getCode(), null);
+//        }
+//
+////        // 1.先通过unionId查询是否已经有用户了,如果有则直接返回出去
+////        Query haveUserQ = new Query(new Criteria("info.id_WX").is(unionId));
+////        User haveUser = mongoTemplate.findOne(haveUserQ, User.class);
+////
+////
+////        // 判断是否有该用户
+////        if (ObjectUtils.isNotEmpty(haveUser)) {
+////            return retResult.ok( CodeEnum.OK.getCode(), null);
+////        }
+////
+////        Query haveUserP = new Query(new Criteria("info.mbn").is(phoneNumber));
+////        User userP = mongoTemplate.findOne(haveUserP, User.class);
+////
+////        if (ObjectUtils.isNotEmpty(userP)) {
+////            //Phone number exist, already registered by app or website
+////            // in this case I only need to add my pic, nickName, union ID, into that id_U
+//////            userP.getInfo().setId_WX(unionId);
+//////            userP.getInfo().setPic(avatarUrl);
+//////            userP.getInfo().setWrdN(wrdNMap);
+//////            userP.getInfo().setWrdNReal(wrdNReal);
+//////
+//////            Update update = new Update();
+//////            update.set("info", userP.getInfo());
+//////            mongoTemplate.updateFirst(haveUserP, update, User.class);
+////
+////            qt.setMDContent(userP.getId(),qt.setJson("id_WX",unionId,"pic",avatarUrl
+////                    ,"wrdN",wrdNMap,"wrdNReal",wrdNReal),User.class);
+////
+////            return retResult.ok( CodeEnum.OK.getCode(), loginResult.allResult(userP,request.getHeader("clientType"), "wx"));
+////
+////        }
+//
+//        // 2.开始注册用户到mongodb中
+//
+//        // 1) info 卡片
+//        //Map<String, Object> userInfoMap = new HashMap<>();
+//
+//
+//
+//
+//        // 2) rolex 卡片
+//        //Map<String, Object> rolexMap = new HashMap<>();
+//        JSONObject rolexMap = new JSONObject();
+//        //List<Map<String, Object>> objCompList = new ArrayList<>();
+//        JSONObject objCompDefault = new JSONObject();
+//        //Map<String, Object> comMap = new HashMap<>();
+//        JSONObject comMap = new JSONObject();
+//        comMap.put("id_C", "5f2a2502425e1b07946f52e9");
+//        comMap.put("grpU", "1099");
+//
+//        //List<Map<String, Object>> objModList = new ArrayList<>();
+//        JSONArray objModArray = new JSONArray();
+//        JSONObject objModMap = new JSONObject();
+//
+//        JSONObject objMod = qt.setJson("ref", "a-core-0", "mod", "a-core","bcdState", 1, "bcdLevel", 0, "tfin", -1);
+//
+//        JSONObject objModAuth = new JSONObject();
+//        objModAuth.put("a-core-0", objMod);
+//
+//        objModArray.add(objModMap);
+//        comMap.put("modAuth", objModAuth);
+//
+//        objCompDefault.put("5f2a2502425e1b07946f52e9", comMap);
+//        rolexMap.put("objComp", objCompDefault);
+//
+//        // 3) view 卡片
+//        //List<String> viewList = new ArrayList<>(1);
+//        JSONArray viewArray = new JSONArray();
+//        viewArray.add("Vinfo");
+//        viewArray.add("rolex");
+//
+//        // 添加到user对象中
+//        User user = new User();
+//
+//        String id_U = qt.GetObjectId();
+//        user.setId(id_U);
+//        UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,wrdNReal, null, "5f2a2502425e1b07946f52e9","cn","CNY",
+//                avatarUrl,"China","",phoneNumber,countryCode,"");
+//        user.setInfo(userInfo);
+//        user.setView(viewArray);
+//        user.setRolex(rolexMap);
+//
+////        mongoTemplate.insert(user);
+//        qt.addMD(user);
+//
+//        lNUser addLNUser = new lNUser(id_U,wrdNMap,null,wrdNReal,null,avatarUrl,null
+//                ,unionId,"",phoneNumber,"China","cn",0);
+//        qt.addES("lNUser",addLNUser);
+//
+//        // 3.插入ES lbuser索引中新增列表
+//        JSONObject wrdNCB = new JSONObject();
+//        wrdNCB.put("cn", "Cresign");
+//
+//        lBUser addLBUser = new lBUser(id_U,"5f2a2502425e1b07946f52e9", wrdNMap, wrdNCB, wrdNReal,null, "1099", phoneNumber, "", unionId, avatarUrl,"1000");
+//
+//        qt.addES("lbuser",addLBUser);
+////        IndexRequest indexRequest = new IndexRequest("lbuser");
+////        indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
+////        try {
+////            restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+////
+////        } catch (IOException e) {
+////
+////            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.USER_NOT_IN_COMP.getCode(), null);
+////        }
+//
+//        return retResult.ok( CodeEnum.OK.getCode(), loginResult.allResult(user,request.getHeader("clientType"), "wx"));
+//    }
 
     @Override
     public ApiResponse getAUN(String id_AUN,String id_C) {
@@ -763,16 +828,16 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         return s.length > 1 && s[1].equals("off");
     }
 
-    public boolean getIsEsKV(JSONArray es,JSONObject data){
-        int jiShu = 0;
-        JSONObject esObj = es.getJSONObject(0);
-        for (String key : data.keySet()) {
-            if (esObj.getString(key).equals(data.getString(key))) {
-                jiShu++;
-            }
-        }
-        return jiShu == data.keySet().size();
-    }
+//    public boolean getIsEsKV(JSONArray es,JSONObject data){
+//        int jiShu = 0;
+//        JSONObject esObj = es.getJSONObject(0);
+//        for (String key : data.keySet()) {
+//            if (esObj.getString(key).equals(data.getString(key))) {
+//                jiShu++;
+//            }
+//        }
+//        return jiShu == data.keySet().size();
+//    }
 
     public String getEsV(JSONArray es,String key){
         return es.getJSONObject(0).getString(key);

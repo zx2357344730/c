@@ -669,8 +669,6 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         }
 
         // 判断用户存不存在
-//        Query userQ = new Query(new Criteria("_id").is(join_user));
-//        User userJson = mongoTemplate.findOne(userQ, User.class);
         User userJson = qt.getMDContent(join_user,"info", User.class);
         //JSONObject userJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(userQ, User.class));
         User userOne = qt.getMDContent(join_user, "rolex.objComp", User.class);
@@ -679,12 +677,6 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         if (null == userOne) {
             throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_IS_NO_FOUND.getCode(), null);
         }
-//
-//        Query userQuery = new Query();
-//        userQuery.addCriteria(new Criteria("_id").is(join_user)
-//                .and("rolex.objComp."+entries.get("id_C")).exists(true));
-//
-//        User userOne = mongoTemplate.findOne(userQuery, User.class);
 
         if (null != userOne.getRolex().getJSONObject("objComp").getJSONObject(entries.get("id_C").toString())) {
             throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_JOIN_IS_HAVE.getCode(), null);
@@ -702,19 +694,17 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         modAuth.put("a-core-0", objMod);
 
         rolex.put("modAuth", modAuth);
+        rolex.put("wrdNC", compOne.getInfo().getWrdN());
+        rolex.put("picC", compOne.getInfo().getPic());
         rolex.put("id_C", entries.get("id_C"));
+
         if (type==0) {
             rolex.put("grpU", "1009");
         } else {
             rolex.put("grpU", entries.get("grpU"));
         }
         rolex.put("dep", "1000");
-//        Update update = new Update();
-//        update.set("rolex.objComp."+entries.get("id_C"), rolex).set("info.def_C", entries.get("id_C"));
-//
-//        Query upUserQ = new Query(new Criteria("_id").is(join_user));
-//
-//        mongoTemplate.updateFirst(upUserQ, update, User.class);
+
         qt.setMDContent(join_user,qt.setJson("rolex.objComp."+entries.get("id_C"),rolex,"info.def_C", entries.get("id_C")), User.class);
 
         JSONArray searchResult = qt.getES("lbuser", qt.setESFilt("id_CB", entries.get("id_C"), "id_U", join_user ),1);
