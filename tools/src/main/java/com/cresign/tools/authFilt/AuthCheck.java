@@ -55,10 +55,18 @@ public class AuthCheck {
             
             Asset asset = qt.getConfig(id_C, "a-auth", "role.objData."+user_grpU+"."+listType+"."+grp);
 
-            JSONObject grpJson = asset.getRole().getJSONObject("objData").getJSONObject(user_grpU).getJSONObject(listType).getJSONObject(grp);
+            JSONObject grpJson = new JSONObject();
+            try {
+                grpJson = asset.getRole().getJSONObject("objData").getJSONObject(user_grpU).getJSONObject(listType).getJSONObject(grp);
+            } catch (Exception e)
+            {
+                throw new ErrorResponseException(HttpStatus.FORBIDDEN,  "042000", "can't find a-auth.grpU");
+            }
+
             if (ObjectUtils.isEmpty(grpJson)) {
                 throw new ErrorResponseException(HttpStatus.FORBIDDEN,  "042000", "can't find a-auth.grpU");
             }
+            
             JSONObject objAuth = grpJson.getJSONObject(authType);
             
             for (String authItem : objAuth.keySet())

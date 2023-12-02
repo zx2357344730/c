@@ -8,6 +8,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 /**
  * ##description: 登录返回工具类
  * @author JackSon
@@ -57,7 +59,7 @@ public class LoginResult {
         infoData.put("id_C", def_C);
 
 
-        if (!"refreshToken".equals(loginType)) {
+//        if (!"refreshToken".equals(loginType)) {
             token = oauth.setToken(
                     user,
                     def_C,
@@ -66,7 +68,9 @@ public class LoginResult {
                     clientType);
 
             newAssignRFToken = oauth.setRefreshToken(user.getId(), clientType);
-        }
+
+
+//        }
 
         if (null != user.getInfo().getDefNG())
             infoData.put("defNG", user.getInfo().getDefNG());
@@ -76,15 +80,19 @@ public class LoginResult {
 
         if (null != user.getInfo().getId_WX())
             infoData.put("id_WX", user.getInfo().getId_WX());
+        else
+            infoData.put("id_WX","");
 
         if (null != user.getInfo().getId_APP())
             infoData.put("id_APP", user.getInfo().getId_APP());
+        else
+            infoData.put("id_APP","");
 
-        if (null != user.getInfo().getMbn())
-            infoData.put("mbn", user.getInfo().getMbn());
 
         if (null != user.getInfo().getId_AUN())
             infoData.put("id_AUN", user.getInfo().getId_AUN());
+        else
+            infoData.put("id_AUN","");
 
         if (null != user.getInfo().getPic())
             infoData.put("user_pic", user.getInfo().getPic());
@@ -92,6 +100,7 @@ public class LoginResult {
         infoData.put("user_wrdN", user.getInfo().getWrdN()); // 用户中文名
 
         infoData.put("token", token);               // 存储token
+        infoData.put("mbn", user.getInfo().getMbn());
 
         infoData.put("refreshToken", newAssignRFToken);  // 存储 refreshToken
 
@@ -125,6 +134,7 @@ public class LoginResult {
         }
 
         // infoData
+        System.out.println("info"+ infoData);
         data.put("infoData", infoData);
 
         // 返回结果

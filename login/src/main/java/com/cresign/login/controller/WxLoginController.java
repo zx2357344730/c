@@ -97,11 +97,11 @@ public class WxLoginController {
     @PostMapping("/v1/wxAsLogin")
     public ApiResponse wXLoginByIdWx(@RequestBody JSONObject reqJson) {
         try {
-            System.out.println("进入wxAsLogin：");
-            System.out.println(JSON.toJSONString(reqJson));
-            String uuId = request.getHeader("uuId");
-            System.out.println("uuId:");
-            System.out.println(uuId);
+//            System.out.println("进入wxAsLogin：");
+//            System.out.println(JSON.toJSONString(reqJson));
+//            String uuId = request.getHeader("uuId");
+//            System.out.println("uuId:");
+//            System.out.println(uuId);
             return wxLoginService.wXLoginByIdWx(
                     reqJson.getString("id_WX"),
                     request.getHeader("clientType"));

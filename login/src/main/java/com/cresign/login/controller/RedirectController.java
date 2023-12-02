@@ -231,7 +231,7 @@ public class RedirectController {
 
     @SecurityParameter
     @PostMapping("/v1/scan_joincomp")
-    public ApiResponse scanJoinCompCode(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse scanJoinCompCode(@RequestBody JSONObject reqJson) {
         try {
             return redirectService.scanJoinCompCode(
                     reqJson.getString("token"),

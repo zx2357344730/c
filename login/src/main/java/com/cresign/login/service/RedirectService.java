@@ -187,7 +187,7 @@ public interface RedirectService {
      * @updated 2021/5/7 12:00
      * @return com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse scanJoinCompCode(String token, String join_user) throws IOException;
+    ApiResponse scanJoinCompCode(String token, String join_user);
 
 
     /**

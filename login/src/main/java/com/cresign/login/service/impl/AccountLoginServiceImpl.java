@@ -210,20 +210,20 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 //        return retResult.ok(CodeEnum.OK.getCode(),"无需修改");
 //    }
 
-    /**
-     * 写入异常信息到err集合
-     * @param err   异常信息集合
-     * @param id_C  公司编号
-     * @param id_A  asset编号
-     * @param desc  错误信息
-     */
-    private void setErrJson(JSONArray err,String id_C,String id_A,String desc){
-        JSONObject reZ = new JSONObject();
-        reZ.put("id_C",id_C);
-        reZ.put("id_A",id_A);
-        reZ.put("desc",desc);
-        err.add(reZ);
-    }
+//    /**
+//     * 写入异常信息到err集合
+//     * @param err   异常信息集合
+//     * @param id_C  公司编号
+//     * @param id_A  asset编号
+//     * @param desc  错误信息
+//     */
+//    private void setErrJson(JSONArray err,String id_C,String id_A,String desc){
+//        JSONObject reZ = new JSONObject();
+//        reZ.put("id_C",id_C);
+//        reZ.put("id_A",id_A);
+//        reZ.put("desc",desc);
+//        err.add(reZ);
+//    }
 
 //    @Override
 //    public ApiResponse getKey(String qdKey) {

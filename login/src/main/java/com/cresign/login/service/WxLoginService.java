@@ -76,7 +76,7 @@ public interface WxLoginService {
      * @updated 2020/8/27 15:25
      * @return java.lang.String
      */
-    ApiResponse wxRegisterUser(JSONObject reqJson) throws IOException;
+//    ApiResponse wxRegisterUser(JSONObject reqJson) throws IOException;
 
 
     /**
@@ -90,7 +90,7 @@ public interface WxLoginService {
      * @param id_WX         用户
      * @return    String
      */
-    ApiResponse wechatRegister(String phone, Integer phoneType, String smsNum, String wcnN, String clientType, String clientID, String pic, String id_WX) throws IOException;
+//    ApiResponse wechatRegister(String phone, Integer phoneType, String smsNum, String wcnN, String clientType, String clientID, String pic, String id_WX) throws IOException;
 
 
     /**

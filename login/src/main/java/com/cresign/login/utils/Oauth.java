@@ -98,10 +98,10 @@ public class Oauth {
      */
     public  String setRefreshToken(String uid, String clientType) {
 
-        Long second = clientType.equals("web") ? 604800L : 3888000L;
+//        Long second = clientType.equals("web") ? 604800L : 3888000L;
 
         String refreshToken = jwtUtil.createJWT(UUID.randomUUID().toString(), clientType);
-        qt.setRDSet(clientType + "RefreshToken", refreshToken,uid, second);
+        qt.setRDSet(clientType + "RefreshToken", refreshToken,uid, 604800L);
 
         return refreshToken;
     }

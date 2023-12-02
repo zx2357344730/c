@@ -38,17 +38,42 @@ public class RegisterUserUtils {
 //
 //    @Autowired
 //    private RestHighLevelClient restHighLevelClient;
-    @Autowired
-    private RetResult retResult;
+//    @Autowired
+//    private RetResult retResult;
 
     @Autowired
     private Qt qt;
 
     @Transactional(noRollbackFor = ResponseException.class)
-    public void registerUser(Map<String, Object> info) {
+    public String registerUser(JSONObject info) {
+
+        // in here we have: info.wrdN, pic, mbn, id_WX, id_APP, phoneType, tmd, tmk
+        // objectId
+        String addID = qt.GetObjectId();
+        User addUser = qt.jsonTo(qt.getInitData().getNewUser(), User.class);
+
+        addUser.setId(addID);
+        addUser.getInfo().setMbn(info.getString("mbn"));
+        addUser.getInfo().setWrdN(info.getJSONObject("wrdN"));
+        addUser.getInfo().setPic(info.getString("pic"));
+        addUser.getInfo().setPhoneType(info.getInteger("phoneType"));
+        addUser.getInfo().setId_WX(null != info.get("id_WX") ? info.getString("id_WX") : "");
+        addUser.getInfo().setId_APP(null != info.get("id_APP") ? info.getString("id_APP") : "");
+        addUser.getInfo().setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        addUser.getInfo().setTmk(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        qt.addMD(addUser);
 
 
-            InitJava initJava = qt.getInitData(); //qt.getMDContent("cn_java", "newUser", InitJava.class);
+//        addUser.setRolex(initJava.getNewUser().getJSONObject("rolex"));
+//        UserInfo infoJson = qt.jsonTo(initJava.getNewUser().getJSONObject("info"), UserInfo.class);
+//        if (null != info.get("id_APP")) {
+//            infoJson.setId_APP(info.get("id_APP").toString());
+//        }
+//        System.out.println(JSON.toJSONString(infoJson));
+//        addUser.setInfo(infoJson);
+//        addUser.setView(initJava.getNewUser().getJSONArray("view"));
+        System.out.println("新增注册:");
+        System.out.println(JSON.toJSONString(addUser));
 
             // objectId
             String addID = qt.GetObjectId();
@@ -131,8 +156,6 @@ public class RegisterUserUtils {
 //        }
 
         //return "";
-
-    }
 
 
 }

@@ -102,7 +102,7 @@ public class SmsLoginController {
                     reqJson.getString("phone"),
                     reqJson.getInteger("phoneType"),
                     reqJson.getString("smsNum"),
-                    request.getHeader(HeaderEnum.CLIENTTYPE.getHeaderName()),
+                    request.getHeader("clientType"),
                     id_APP,
                     pic,
                     new JSONObject().fluentPut("cn","新用户")
