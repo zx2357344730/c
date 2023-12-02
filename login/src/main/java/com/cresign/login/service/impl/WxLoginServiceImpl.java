@@ -3,7 +3,6 @@ package com.cresign.login.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.WxLoginService;
 import com.cresign.login.utils.LoginResult;
 import com.cresign.login.utils.RegisterUserUtils;
@@ -15,13 +14,16 @@ import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.enumeration.SMSTypeEnum;
 import com.cresign.tools.enumeration.manavalue.ClientEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.es.lBUser;
 import com.cresign.tools.pojo.es.lNUser;
+import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.User;
+import com.cresign.tools.pojo.po.compCard.CompInfo;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.cresign.tools.request.HttpClientUtil;
 import org.apache.commons.lang3.ObjectUtils;
@@ -121,7 +123,7 @@ public class WxLoginServiceImpl implements WxLoginService {
 //        if (null != user) {
 //            return retResult.ok(CodeEnum.OK.getCode(),user.getInfo().getId_AUN());
 //        }
-//        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(),"1");
+//        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGIN_NOTFOUND_USER.getCode(),"1");
 //    }
 
     /**
@@ -175,7 +177,7 @@ public class WxLoginServiceImpl implements WxLoginService {
 
         JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", unionid));
         if (null == es || es.size() == 0) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                     LOGIN_NOTFOUND_USER.getCode(),unionid);
         }
         // 创建Auth对象存放查询后的结果
@@ -186,10 +188,10 @@ public class WxLoginServiceImpl implements WxLoginService {
         if (ObjectUtils.isEmpty(user)
 //                || null!=userLn
         ) {
-             throw new ErrorResponseException(HttpStatus.OK, LoginEnum.WX_NOT_BIND.getCode(),unionid);
+             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.WX_NOT_BIND.getCode(),unionid);
         }
         if (isUserRegisterOff(user.getInfo().getMbn())) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                     USER_REG_OFF.getCode(),unionid);
         }
 //        String phone = user.getInfo().getMbn();
@@ -310,7 +312,7 @@ public class WxLoginServiceImpl implements WxLoginService {
             if (null == es || es.size() == 0
 //                    || !getIsEsKV(es, qt.setJson("id_WX", id_WX))
             ) {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                         LOGIN_NOTFOUND_USER.getCode(),id_WX);
             }
 //            User user = qt.getMDContentAll(es.getJSONObject(0).getString("id_U"),User.class);
@@ -327,7 +329,7 @@ public class WxLoginServiceImpl implements WxLoginService {
 //                    return retResult.ok(CodeEnum.OK.getCode(), result);
 //                }
                 if (isUserRegisterOff(user.getInfo().getMbn())) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                             USER_REG_OFF.getCode(),id_WX);
                 }
 
@@ -341,7 +343,7 @@ public class WxLoginServiceImpl implements WxLoginService {
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
-        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                 WX_NOT_BIND.getCode(), null);
     }
 
@@ -363,7 +365,7 @@ public class WxLoginServiceImpl implements WxLoginService {
         if (null == es || es.size() == 0
 //                || !getIsEsKV(es, qt.setJson("id_AUN", id_AUN))
         ) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                     LOGIN_NOTFOUND_USER.getCode(),null);
         }
 //        User user = qt.getMDContentAll(es.getJSONObject(0).getString("id_U"),User.class);
@@ -371,7 +373,7 @@ public class WxLoginServiceImpl implements WxLoginService {
         // 判断用户是否存在
         if (user!=null){
             if (isUserRegisterOff(user.getInfo().getMbn())) {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                         USER_REG_OFF.getCode(),null);
             }
             // 获取用户登录的数据
@@ -380,7 +382,7 @@ public class WxLoginServiceImpl implements WxLoginService {
             return retResult.ok(CodeEnum.OK.getCode(), result);
 
         }
-        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 WX_NOT_BIND.getCode(), null);
     }
 
@@ -407,11 +409,11 @@ WX_NOT_BIND.getCode(), null);
 //            User user = mongoTemplate.findOne(userQ, User.class);
             JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", info.get("id_WX")));
             if (null == es || es.size() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                         LOGIN_NOTFOUND_USER.getCode(),null);
             } else {
                 if (!getIsEsKV(es, qt.setJson("id_WX", info.get("id_WX")))) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                             LOGIN_NOTFOUND_USER.getCode(),null);
                 }
             }
@@ -419,7 +421,7 @@ WX_NOT_BIND.getCode(), null);
 //            User user = qt.getMDContentAll(es.getJSONObject(0).getString("id_U"),User.class);
 //
 //            if (null != user) {
-//                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 //REGISTER_USER_IS_HAVE.getCode(), null);
 //            } else {
 //
@@ -435,18 +437,18 @@ WX_NOT_BIND.getCode(), null);
 
             JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", info.get("clientId")));
             if (null == es || es.size() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                         LOGIN_NOTFOUND_USER.getCode(),null);
             } else {
                 if (!getIsEsKV(es, qt.setJson("id_WX", info.get("clientId")))) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                             LOGIN_NOTFOUND_USER.getCode(),null);
                 }
             }
             register_Is = true;
 //            if (null != user) {
 //
-//                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 //REGISTER_USER_IS_HAVE.getCode(), null);
 //
 //            } else {
@@ -485,7 +487,7 @@ WX_NOT_BIND.getCode(), null);
                 if (null != es && es.size() > 0
 //                        && getIsEsKV(es, qt.setJson("id_WX", id_WX))
                 ) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                             REGISTER_USER_IS_HAVE.getCode(), null);
                 }
 //                es = qt.getES("lNUser", qt.setESFilt("id_WX", id_WX));
@@ -494,7 +496,7 @@ WX_NOT_BIND.getCode(), null);
 //                        && getIsEsKV(es, qt.setJson("mbn", phone))
                 ) {
                     qt.setES("lNUser", getEsV(es,"id_ES"),qt.setJson("id_WX",id_WX));
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                             REGISTER_USER_IS_HAVE.getCode(), null);
                 }
 
@@ -504,7 +506,7 @@ WX_NOT_BIND.getCode(), null);
 //
 //                if (ObjectUtils.isNotEmpty(userWX)) {
 //
-//                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 //REGISTER_USER_IS_HAVE.getCode(), null);
 //
 //                }
@@ -534,7 +536,7 @@ WX_NOT_BIND.getCode(), null);
 //
 //
 ////                    return retResult.ok(CodeEnum.OK.getCode(), null);
-//                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 //                            REGISTER_USER_IS_HAVE.getCode(), null);
 //                }
 
@@ -569,11 +571,11 @@ WX_NOT_BIND.getCode(), null);
                 qt.setRDSet(SMSTypeEnum.LOGIN.getSmsType(), phone, smsNum, 180L);
                 return retResult.ok(CodeEnum.OK.getCode(), null);
             } else {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.SMS_CODE_NOT_CORRECT.getCode(), null);
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.SMS_CODE_NOT_CORRECT.getCode(), null);
             }
 
         } else {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 SMS_CODE_NOT_FOUND.getCode(), null);
         }
 
@@ -593,7 +595,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         if (null != es && es.size() > 0
 //                && getIsEsKV(es, qt.setJson("id_WX", unionId))
         ) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                     REGISTER_USER_IS_HAVE.getCode(), null);
         }
 //                es = qt.getES("lNUser", qt.setESFilt("id_WX", id_WX));
@@ -602,7 +604,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
 //                && getIsEsKV(es, qt.setJson("mbn", phoneNumber))
         ) {
             qt.setES("lNUser", getEsV(es,"id_ES"),qt.setJson("id_WX",unionId));
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                     REGISTER_USER_IS_HAVE.getCode(), null);
         }
 
@@ -681,6 +683,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         User user = new User();
 
         String id_U = qt.GetObjectId();
+        String compId = qt.GetObjectId();
         user.setId(id_U);
         UserInfo userInfo = new UserInfo(unionId,"",wrdNMap,wrdNReal, null, "5f2a2502425e1b07946f52e9","cn","CNY",
                 avatarUrl,"China","",phoneNumber,countryCode,"");
@@ -693,6 +696,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
 
         lNUser addLNUser = new lNUser(id_U,wrdNMap,null,wrdNReal,null,avatarUrl,null
                 ,unionId,"",phoneNumber,"China","cn",0);
+        addLNUser.setId_C(compId);
         qt.addES("lNUser",addLNUser);
 
         // 3.插入ES lbuser索引中新增列表
@@ -700,8 +704,23 @@ SMS_CODE_NOT_FOUND.getCode(), null);
         wrdNCB.put("cn", "Cresign");
 
         lBUser addLBUser = new lBUser(id_U,"5f2a2502425e1b07946f52e9", wrdNMap, wrdNCB, wrdNReal,null, "1099", phoneNumber, "", unionId, avatarUrl,"1000");
-
+        addLBUser.setId_C(compId);
         qt.addES("lbuser",addLBUser);
+        Comp comp = new Comp();
+        CompInfo infoComp = new CompInfo();
+        infoComp.setTmk(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        infoComp.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        infoComp.setId_C(compId);
+        infoComp.setRef(id_U+"Comp");
+        JSONObject wrdN = new JSONObject();
+        wrdN.put("cn",id_U+"-公司");
+        infoComp.setWrdN(wrdN);
+        JSONArray view = new JSONArray();
+        view.add("info");
+        comp.setInfo(infoComp);
+        comp.setView(view);
+        comp.setId(compId);
+        qt.addMD(comp);
 //        IndexRequest indexRequest = new IndexRequest("lbuser");
 //        indexRequest.source(JSON.toJSONString(addLBUser), XContentType.JSON);
 //        try {
@@ -709,7 +728,7 @@ SMS_CODE_NOT_FOUND.getCode(), null);
 //
 //        } catch (IOException e) {
 //
-//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.USER_NOT_IN_COMP.getCode(), null);
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_NOT_IN_COMP.getCode(), null);
 //        }
 
         return retResult.ok( CodeEnum.OK.getCode(), loginResult.allResult(user,request.getHeader("clientType"), "wx"));

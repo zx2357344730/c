@@ -3,12 +3,12 @@ package com.cresign.action.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.action.common.ActionEnum;
 import com.cresign.action.service.TimeZjServiceNew;
 import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Order;
@@ -55,27 +55,27 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
 //        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
 //        // 判断编号为空
 //        if (null == assetId) {
-//            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_ID_NULL.getCode(), "资产编号为空");
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_ID_NULL.getCode(), "资产编号为空");
 //        }
 //        // 根据asset编号获取asset的信息
 //        Asset asset = coupaUtil.getAssetById(assetId, Arrays.asList(timeCard,"chkin00s"));
         Asset asset = qt.getConfig(id_C,"a-chkin","chkin00s");
         // 判断asset为空
         if (null == asset) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_NULL.getCode(), "资产为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_NULL.getCode(), "资产为空");
         }
         // 获取aArrange2卡片信息
 //        JSONObject aArrange = asset.getAArrange2();
         JSONObject aArrange = getAArrangeNew(asset);
         // 判断卡片为空
         if (null == aArrange) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_ARRANGE_NULL.getCode(), "资产Arrange为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_ARRANGE_NULL.getCode(), "资产Arrange为空");
         }
         // 获取chkin00s卡片信息
         JSONObject chkin00s = asset.getChkin00s();
         // 判断卡片为空
         if (null == chkin00s) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_CHK_IN_00_S_NULL.getCode(), "资产内chkin00s为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_CHK_IN_00_S_NULL.getCode(), "资产内chkin00s为空");
         }
         // 获取任务处理状态
         Integer operationState = aArrange.getInteger("operationState");
@@ -85,7 +85,7 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
 //            updateArrangeState(1,assetId);
             updateArrangeState(1,asset.getId());
         } else {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_TASK_PROCESSING.getCode(), "资产时间正在处理中");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_TASK_PROCESSING.getCode(), "资产时间正在处理中");
         }
         try {
             // 获取所有任务信息
@@ -138,7 +138,7 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
                     // 调用方法更新aArrange卡片操作状态接口
 //                    updateArrangeState(0,assetId);
                     updateArrangeState(0,asset.getId());
-                    throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
                 }
                 // 调用方法获取订单信息
 //                Order salesOrderData = coupaUtil.getOrderByListKey(
@@ -152,7 +152,7 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
 //                    updateArrangeState(0,assetId);
                     updateArrangeState(0,asset.getId());
                     // 返回为空错误信息
-                    throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
                 }
                 // 获取递归订单列表
                 JSONArray objOrder = salesOrderData.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
@@ -843,23 +843,23 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
     public ApiResponse timeCalculation(String id_O, int index,int number) {
         Order order = qt.getMDContent(id_O, Arrays.asList("oItem","oStock"), Order.class);
         if (null == order) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ORDER_NULL.getCode(), "订单为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_NULL.getCode(), "订单为空");
         }
         JSONObject oItem = order.getOItem();
         if (null == oItem) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ORDER_O_ITEM_NULL.getCode(), "订单卡片oItem为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_O_ITEM_NULL.getCode(), "订单卡片oItem为空");
         }
         JSONArray objItem = oItem.getJSONArray("objItem");
         if (null == objItem) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ORDER_O_ITEM_OBJ_ITEM_NULL.getCode(), "订单卡片oItem内objItem为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_O_ITEM_OBJ_ITEM_NULL.getCode(), "订单卡片oItem内objItem为空");
         }
         JSONObject oStock = order.getOStock();
         if (null == oStock) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ORDER_O_STOCK_NULL.getCode(), "订单卡片oStock为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_O_STOCK_NULL.getCode(), "订单卡片oStock为空");
         }
         JSONArray objData = oStock.getJSONArray("objData");
         if (null == objData) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ORDER_O_STOCK_OBJ_DATA_NULL.getCode(), "订单卡片oStock内objData为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_O_STOCK_OBJ_DATA_NULL.getCode(), "订单卡片oStock内objData为空");
         }
         try {
             JSONObject objDataSon = objData.getJSONObject(index);
@@ -878,7 +878,7 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
             // 抛出操作成功异常
             return retResult.ok(CodeEnum.OK.getCode(), grpUNum);
         } catch (Exception ex) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_UNKNOWN.getCode(), "未知异常");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_UNKNOWN.getCode(), "未知异常");
         }
     }
 
@@ -897,21 +897,21 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
 //        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
 //        // 判断asset编号为空
 //        if (null == assetId) {
-//            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_ID_NULL.getCode(), "资产编号为空");
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_ID_NULL.getCode(), "资产编号为空");
 //        }
 //        // 根据asset编号获取asset信息
 //        Asset asset = coupaUtil.getAssetById(assetId, Collections.singletonList(timeCard));
         Asset asset = qt.getConfig(id_C,"a-chkin",timeCard);
         // 判断asset为空
         if (null == asset) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_NULL.getCode(), "资产为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_NULL.getCode(), "资产为空");
         }
         // 获取aArrange2卡片信息
 //        JSONObject aArrange = asset.getAArrange2();
         JSONObject aArrange = getAArrangeNew(asset);
         // 判断卡片为空
         if (null == aArrange || null == aArrange.getJSONObject("objTask")) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_ARRANGE_NULL.getCode(), "资产Arrange为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_ARRANGE_NULL.getCode(), "资产Arrange为空");
         }
         // 获取卡片的任务信息
         JSONObject objTask = aArrange.getJSONObject("objTask");

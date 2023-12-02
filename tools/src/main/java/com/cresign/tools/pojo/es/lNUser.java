@@ -52,6 +52,8 @@ public class lNUser implements Serializable {
 
     private String id_U;
 
+    private String id_C;
+
     private JSONObject wrdN;
 
     private JSONObject wrddesc;

@@ -49,6 +49,8 @@ public class lBUser implements Serializable {
 
     private String id_U;
 
+    private String id_C;
+
     private String id_CB;
 
     private JSONObject wrdN;

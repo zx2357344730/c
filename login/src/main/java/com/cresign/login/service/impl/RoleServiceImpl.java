@@ -2,7 +2,6 @@ package com.cresign.login.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.RoleService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
@@ -10,6 +9,7 @@ import com.cresign.tools.authFilt.AuthCheck;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.po.Asset;
@@ -71,7 +71,7 @@ public class RoleServiceImpl implements RoleService {
         //authFilterService.getUserUpdateAuth(id_U,id_C,"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
         if (grpU.equals("1099") && !(listType.equals("lSProd")|| listType.equals("lSInfo"))) {
-            throw new ErrorResponseException(HttpStatus.FORBIDDEN, LoginEnum.GRP_NOT_AUTH.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.FORBIDDEN, ErrEnum.GRP_NOT_AUTH.getCode(), null);
 
         }
 
@@ -255,7 +255,7 @@ public class RoleServiceImpl implements RoleService {
 
         // 没有设置职位权限
         if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU)) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ROLE_NOT_SET.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ROLE_NOT_SET.getCode(), null);
         }
 
 
@@ -311,7 +311,7 @@ public class RoleServiceImpl implements RoleService {
         System.out.println("asset"+asset);
         // 没有设置职位权限
         if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU)) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ROLE_NOT_SET.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ROLE_NOT_SET.getCode(), null);
         }
 
         // 复制的组别数据
@@ -376,7 +376,7 @@ public class RoleServiceImpl implements RoleService {
         System.out.println("asset"+asset);
         // 没有设置职位权限
         if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU)) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ROLE_NOT_SET.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ROLE_NOT_SET.getCode(), null);
         }
 
         // 复制的组别数据

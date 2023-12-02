@@ -3,7 +3,7 @@ package com.cresign.action.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.action.common.ActionEnum;
+//import com.cresign.action.common.ActionEnum;
 import com.cresign.action.service.FlowNewService;
 import com.cresign.action.utils.DgCheckUtil;
 import com.cresign.action.utils.TaskObj;
@@ -16,6 +16,7 @@ import com.cresign.tools.dbTools.DoubleUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.es.lSBOrder;
@@ -76,14 +77,14 @@ public class FlowNewServiceImpl implements FlowNewService {
         // 判断订单是否为空
         if (null == salesOrderData) {
             // 返回为空错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
 
         if (!salesOrderData.getInfo().getId_C().equals(myCompId)) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
         }
         if (salesOrderData.getOItem().getJSONArray("allProdId") == null){
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "需要检查所有零件");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "需要检查所有零件");
         }
         
         
@@ -100,10 +101,10 @@ public class FlowNewServiceImpl implements FlowNewService {
         }
         if (null != salesOrderData.getAction().getString("isDg")) {
             // 返回为空错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经被递归了");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经被递归了");
         }
         if (salesOrderData.getInfo().getLST() != 7) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ORDER_NEED_FINAL.getCode(), "需要两方确认");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_NEED_FINAL.getCode(), "需要两方确认");
         }
 
         // 转换oItem为list
@@ -163,7 +164,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 
         // 判断递归结果是否为空
         if (objActionCollection.size() == 0) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
         }
         // **System.out.println(JSON.toJSONString(casItemData));
 
@@ -362,11 +363,11 @@ public class FlowNewServiceImpl implements FlowNewService {
         // 判断订单是否为空
         if (null == salesOrderData) {
             // 返回为空错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
 
         if (!salesOrderData.getInfo().getId_C().equals(myCompId)) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
         }
         HashSet<String> id_Ps = getCheckOrderAllId_P2(salesOrderData.getOItem().getJSONArray("objItem"), myCompId);
 
@@ -1452,10 +1453,10 @@ public class FlowNewServiceImpl implements FlowNewService {
 //            checkUtilCore(pidList, id_P, myCompId, nextPart, isRecurred, isEmpty, stat, id_Ps);
 //
 //            if (isRecurred.size() > 0) {
-//                throw new ErrorResponseException(HttpStatus.OK, com.cresign.tools.config.async.ActionEnum.ERR_PROD_RECURRED.getCode(), id_P);
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), id_P);
 //            }
 //            if (isEmpty.size() > 0) {
-//                throw new ErrorResponseException(HttpStatus.OK, com.cresign.tools.config.async.ActionEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
 //            }
 //        }
 //    }
@@ -1488,10 +1489,10 @@ public class FlowNewServiceImpl implements FlowNewService {
             checkUtilCore(pidList, id_P, myCompId, nextPart, isRecurred, isEmpty, stat, id_Ps);
 
             if (isRecurred.size() > 0) {
-                throw new ErrorResponseException(HttpStatus.OK, com.cresign.tools.config.async.ActionEnum.ERR_PROD_RECURRED.getCode(), id_P);
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), id_P);
             }
             if (isEmpty.size() > 0) {
-                throw new ErrorResponseException(HttpStatus.OK, com.cresign.tools.config.async.ActionEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
             }
         }
     }

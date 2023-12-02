@@ -2,13 +2,13 @@ package com.cresign.chat.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.client.DetailsClient;
-import com.cresign.chat.common.ChatEnum;
 import com.cresign.chat.config.websocket.WebSocketServerPi;
 import com.cresign.chat.service.LogService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
@@ -51,9 +51,6 @@ public class LogServiceImpl  implements LogService {
 
     /**
      * 推送
-     * @param clientId	推送id
-     * @param title	推送标题
-     * @param body	推送内容
      * @author tang
      * @ver 1.0.0
      * @date 2021/7/12 14:47
@@ -163,7 +160,7 @@ public class LogServiceImpl  implements LogService {
         if (bindingGpio(bindingInfo, true)) {
             return retResult.ok(CodeEnum.OK.getCode(), "绑定gpio-请求成功!");
         }
-        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_IO_ALREADY_BINDED.getCode(), "gpio已经被绑定");
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_IO_ALREADY_BINDED.getCode(), "gpio已经被绑定");
     }
 
     @Override
@@ -172,7 +169,7 @@ public class LogServiceImpl  implements LogService {
         if (bindingGpio(bindingInfo, false)) {
             return retResult.ok(CodeEnum.OK.getCode(), "解绑gpIo-请求成功!");
         }
-        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_IO_ALREADY_UNBIND.getCode(), "gpIo已经被解绑");
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_IO_ALREADY_UNBIND.getCode(), "gpIo已经被解绑");
     }
 
     private boolean bindingGpio(JSONObject bindingInfo,boolean isBind){

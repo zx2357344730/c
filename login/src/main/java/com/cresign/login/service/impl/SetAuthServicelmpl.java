@@ -3,7 +3,6 @@ package com.cresign.login.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.SetAuthService;
 import com.cresign.login.utils.Oauth;
 import com.cresign.tools.advice.RetResult;
@@ -12,6 +11,7 @@ import com.cresign.tools.authFilt.AuthCheck;
 import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.lSUser;
 import com.cresign.tools.pojo.po.Asset;
@@ -57,7 +57,7 @@ public class SetAuthServicelmpl implements SetAuthService {
         JSONObject rolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
 
         if (rolex == null){
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGIN_NOTFOUND_USER.getCode(), null);
         }
         // 用户的role权限
         String grpU = rolex.getString("grpU");
@@ -77,7 +77,7 @@ public class SetAuthServicelmpl implements SetAuthService {
         if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU))
 //        if (!qt.isNotNull(asset.getRole(), qt.setArray("role.objData."+ grpU + "."+listType)))
         {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ROLE_NOT_SET.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ROLE_NOT_SET.getCode(), null);
         }
         JSONArray batchArray = new JSONArray();
 
@@ -100,7 +100,7 @@ public class SetAuthServicelmpl implements SetAuthService {
 
 //
 //        if (ObjectUtils.isEmpty(batchArray)) {
-//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null);
 //        }
 
 //        // 最终返回batch
@@ -128,7 +128,7 @@ public class SetAuthServicelmpl implements SetAuthService {
         JSONObject rolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
 
         if (rolex == null){
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGIN_NOTFOUND_USER.getCode(), null);
         }
         // 用户的role权限
         String grpU = rolex.getString("grpU");
@@ -139,14 +139,14 @@ public class SetAuthServicelmpl implements SetAuthService {
 
         // 没有设置职位权限
         if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU)) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ROLE_NOT_SET.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ROLE_NOT_SET.getCode(), null);
         }
 
         // 返回的card列表数据
         JSONObject cardArray = asset.getRole().getJSONObject("objData").getJSONObject(grpU).getJSONObject(listType).getJSONObject(grp).getJSONObject("card");
 
         if (ObjectUtils.isEmpty(cardArray)) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null);
         }
 
         // 最终返回batch
@@ -255,7 +255,7 @@ public class SetAuthServicelmpl implements SetAuthService {
 //            UserInfo info = user.getInfo();
 //            Comp compInfo = qt.getMDContent(id_C, "info", Comp.class);
 //            if (null == compInfo || null == compInfo.getInfo()) {
-//                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null);
 //            }
 //            String thisGrpU;
 //            if (null == es || es.size() == 0) {
@@ -271,7 +271,7 @@ public class SetAuthServicelmpl implements SetAuthService {
 //                        ,compInfo.getInfo().getPic(),compInfo.getInfo().getWrdN());
 //            }
 //
-////            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+////            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null);
 //            JSONObject result = new JSONObject();
 //            result.put("grpU", thisGrpU);
 //            result.put("dep", "1000");
@@ -328,11 +328,11 @@ public class SetAuthServicelmpl implements SetAuthService {
             Comp compInfo = qt.getMDContent(id_C, "info", Comp.class);
             Asset asset = qt.getConfig(id_C, "a-auth", "role");
             if (null == asset || null == asset.getRole()) {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.ASSET_NOT_FOUND.getCode(), null);
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), null);
             }
             String thisGrpU;
             if (null == compInfo || null == compInfo.getInfo()) {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null);
             }
             if (null == es || es.size() == 0) {
                 thisGrpU = "1099";
@@ -347,7 +347,7 @@ public class SetAuthServicelmpl implements SetAuthService {
                         ,compInfo.getInfo().getPic(),compInfo.getInfo().getWrdN());
             }
 
-//            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.COMP_NOT_FOUND.getCode(), null);
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null);
             JSONObject result = new JSONObject();
             result.put("grpU", thisGrpU);
             result.put("dep", "1000");
@@ -415,7 +415,7 @@ public class SetAuthServicelmpl implements SetAuthService {
             JSONObject esInfo = es.getJSONObject(0);
             return retResult.ok(CodeEnum.OK.getCode(), esInfo.getString("id_APP"));
         }
-        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(), null);
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGIN_NOTFOUND_USER.getCode(), null);
     }
 
 
@@ -426,7 +426,7 @@ public class SetAuthServicelmpl implements SetAuthService {
 
         if (one == null)
         {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGIN_NOTFOUND_USER.getCode(), null);
         }
         // 最终返回数据
         JSONArray result = new JSONArray();

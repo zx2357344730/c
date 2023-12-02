@@ -4,7 +4,6 @@ package com.cresign.action.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.action.common.ActionEnum;
 import com.cresign.action.service.FlowService;
 import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.advice.RetResult;
@@ -15,6 +14,7 @@ import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.es.lSBOrder;
@@ -65,13 +65,13 @@ public class FlowServiceImpl implements FlowService {
             // 判断订单是否为空
             if (null == salesOrderData) {
                 // 返回为空错误信息
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
             }
 
 
         if (!salesOrderData.getInfo().getId_C().equals(myCompId))
             {
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
             }
 
             for (int i = 0; i < salesOrderData.getOItem().getJSONArray("objItem").size(); i++)
@@ -95,11 +95,11 @@ public class FlowServiceImpl implements FlowService {
 
                 if (isRecurred.size() > 0)
                 {
-                    throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), id_P);
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), id_P);
                 }
                 if (isEmpty.size() > 0)
                 {
-                    throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
                 }
             }
 
@@ -112,11 +112,11 @@ public class FlowServiceImpl implements FlowService {
             }
             if (null != salesOrderData.getAction().getString("isDg")) {
                 // 返回为空错误信息
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经被递归了");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经被递归了");
             }
             if (salesOrderData.getInfo().getLST() != 7)
             {
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ORDER_NEED_FINAL.getCode(), "需要两方确认");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_NEED_FINAL.getCode(), "需要两方确认");
             }
 
             // 转换oItem为list
@@ -177,7 +177,7 @@ public class FlowServiceImpl implements FlowService {
 
         // 判断递归结果是否为空
         if (objActionCollection.size() == 0){
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
         }
 
 
@@ -405,13 +405,13 @@ public class FlowServiceImpl implements FlowService {
         // 判断订单是否为空
         if (null == salesOrderData) {
             // 返回为空错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
 
 
         if (!(salesOrderData.getInfo().getId_C().equals(myCompId) && salesOrderData.getInfo().getId_CB().equals(myCompId)))
         {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
         }
 
         String id_P = salesOrderData.getOItem().getJSONArray("objItem").getJSONObject(index).getString("id_P");
@@ -431,11 +431,11 @@ public class FlowServiceImpl implements FlowService {
 
         if (isRecurred.size() > 0)
         {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), id_P);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), id_P);
         }
         if (isEmpty.size() > 0)
         {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
         }
 
 
@@ -504,7 +504,7 @@ public class FlowServiceImpl implements FlowService {
 
         // 判断递归结果是否为空
         if (objActionCollection.size() == 0){
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RECURSION_RESULT_IS_NULL.getCode(), "递归结果为空");
         }
 
         ///TODO KEV setup Dep.objlBProd + objlSProd for grpP, grpO, grpA, logType, logRef for B not S
@@ -1938,7 +1938,7 @@ public class FlowServiceImpl implements FlowService {
             HashSet<String> setId_P = new HashSet();
 
             if (stat.getInteger("count") > stat.getInteger("allCount")) {
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), "产品需要重新检查");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), "产品需要重新检查");
             }
             stat.put("count", stat.getInteger("count") + 1);
             //System.out.println("stat" + stat);
@@ -2005,7 +2005,7 @@ public class FlowServiceImpl implements FlowService {
         HashSet<String> setid_I = new HashSet();
 
         if (stat.getInteger("count") > stat.getInteger("allCount")) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), "产品需要重新检查");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), "产品需要重新检查");
         }
         stat.put("count", stat.getInteger("count") + 1);
 
@@ -2207,20 +2207,20 @@ public class FlowServiceImpl implements FlowService {
         Prod prod = qt.getMDContent(id_P, qt.strList("info","part"), Prod.class);
         if (null == prod) {
             // 返回错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
         }
 
         JSONObject part = prod.getPart();
         if (null == part) {
             // 返回错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NO_PART.getCode(), "产品无零件");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NO_PART.getCode(), "产品无零件");
         }
         
         // 获取prod的part信息
         JSONArray partItem = prod.getPart().getJSONArray("objItem");
         if (null == partItem || partItem.size() == 0) {
             // 返回错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NO_PART.getCode(), "产品无零件");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NO_PART.getCode(), "产品无零件");
         }
         JSONObject stat = new JSONObject();
         stat.put("count", 1);
@@ -2232,7 +2232,7 @@ public class FlowServiceImpl implements FlowService {
         if (stat.getInteger("count") < stat.getInteger("allCount"))
         {
             //System.out.println("it's less than that"+ stat.getInteger("count"));
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
         }
 
         return retResult.ok(CodeEnum.OK.getCode(), partItem);
@@ -2253,7 +2253,7 @@ public class FlowServiceImpl implements FlowService {
                 JSONObject thisItem = partItem.getJSONObject(item);
                 if (stat.getInteger("count") > stat.getInteger("allCount")) {
 
-                    throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
                 }
                 stat.put("count", stat.getInteger("count") + 1);
 
@@ -2345,21 +2345,21 @@ public class FlowServiceImpl implements FlowService {
 //            // 判断产品为空
 //            if (null == prod) {
 //                // 返回错误信息
-//                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
 //            }
 //            // 获取产品零件信息
 //            JSONObject part = prod.getPart();
 //            // 判断产品零件信息为空
 //            if (null == part) {
 //                // 返回错误信息
-//                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PART_IS_NULL.getCode(), "0");
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PART_IS_NULL.getCode(), "0");
 //            }
 //            // 获取prod的part信息
 //            JSONArray partItem = prod.getPart().getJSONArray("objItem");
 //            // 判断产品零件信息为空
 //            if (null == partItem || partItem.size() == 0) {
 //                // 返回错误信息
-//                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PART_IS_NULL.getCode(), null);
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PART_IS_NULL.getCode(), null);
 //            }
 //            // 抛出操作成功异常
 //            return retResult.ok(CodeEnum.OK.getCode(), "1");
@@ -2380,7 +2380,7 @@ public class FlowServiceImpl implements FlowService {
 
         if (orderParent == null)
         {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
         JSONArray casList;
 
@@ -2510,20 +2510,20 @@ public class FlowServiceImpl implements FlowService {
         Info info = qt.getMDContent(id_I, qt.strList("info","subInfo"), Info.class);
         if (null == info) {
             // 返回错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NOT_EXIST.getCode(), "产品不存在");
         }
 
         JSONObject subInfo = info.getSubInfo();
         if (null == subInfo) {
             // 返回错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NO_PART.getCode(), "产品无零件");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NO_PART.getCode(), "产品无零件");
         }
 
         // 获取prod的part信息
         JSONArray infoItem = info.getSubInfo().getJSONArray("objItem");
         if (null == infoItem || infoItem.size() == 0) {
             // 返回错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NO_PART.getCode(), "产品无零件");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NO_PART.getCode(), "产品无零件");
         }
         JSONObject stat = new JSONObject();
         stat.put("count", 1);
@@ -2535,7 +2535,7 @@ public class FlowServiceImpl implements FlowService {
         if (stat.getInteger("count") < stat.getInteger("allCount"))
         {
             //System.out.println("it's less than that"+ stat.getInteger("count"));
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
         }
 
         return retResult.ok(CodeEnum.OK.getCode(), infoItem);
@@ -2556,7 +2556,7 @@ public class FlowServiceImpl implements FlowService {
             JSONObject thisItem = infoItem.getJSONObject(item);
             if (stat.getInteger("count") > stat.getInteger("allCount")) {
 
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_NO_RECURSION_PART.getCode(), "产品需要更新");
             }
             stat.put("count", stat.getInteger("count") + 1);
 

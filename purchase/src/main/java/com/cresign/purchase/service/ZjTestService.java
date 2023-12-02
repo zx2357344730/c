@@ -42,5 +42,13 @@ public interface ZjTestService {
             , String subType, String zcnDesc, JSONObject data,int imp);
     ApiResponse applyForAgreeWith(String id_U, String id_C, String id, String logType
             , String subType, String zcnDesc, JSONObject data,int imp);
-    ApiResponse statisticsChKin(String id_C, JSONArray sumDates);
+
+    ApiResponse addBlankCompNew(JSONObject tokData, JSONObject wrdN, JSONObject wrddesc,
+                                String pic, String ref);
+
+    ApiResponse removeUser(String id_U);
+
+    ApiResponse genChkinCode(String id_C);
+
+    ApiResponse scanChkinCode(String id_U,String token);
 }

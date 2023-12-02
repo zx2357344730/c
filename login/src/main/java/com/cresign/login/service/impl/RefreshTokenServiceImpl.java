@@ -1,7 +1,6 @@
 package com.cresign.login.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.RefreshTokenService;
 import com.cresign.login.utils.LoginResult;
 import com.cresign.login.utils.Oauth;
@@ -9,6 +8,7 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.User;
 import org.apache.commons.lang3.StringUtils;
@@ -67,7 +67,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
                 return retResult.ok(CodeEnum.OK.getCode(), allResult);
             }
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.REFRESHTOKEN_NOT_FOUND.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.REFRESHTOKEN_NOT_FOUND.getCode(), null);
         }
 
         throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
@@ -85,7 +85,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                     qt.delRD(clientType + "RefreshToken", refreshToken);
 
                 } catch(Exception e) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGOUT_ERROR.getCode(), null);
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGOUT_ERROR.getCode(), null);
                 }
                 return retResult.ok(CodeEnum.OK.getCode(), "");
             }
@@ -133,13 +133,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                     }
                     catch (Exception e)
                     {
-                        return retResult.ok( LoginEnum.JWT_USER_OVERDUE.getCode(), "");
+                        return retResult.ok( ErrEnum.JWT_USER_OVERDUE.getCode(), "");
                     }
 
             }
 //            }
         }
-        return retResult.ok( LoginEnum.JWT_USER_OVERDUE.getCode(), "");
+        return retResult.ok( ErrEnum.JWT_USER_OVERDUE.getCode(), "");
     }
 
 //    @Override

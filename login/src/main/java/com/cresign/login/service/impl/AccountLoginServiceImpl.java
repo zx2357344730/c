@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.client.WSFilterClient;
-import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.AccountLoginService;
 import com.cresign.login.utils.LoginResult;
 import com.cresign.tools.advice.RetResult;
@@ -13,6 +12,7 @@ import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.uuid.UUID19;
@@ -283,7 +283,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
         Boolean hasKey = qt.hasRDKey(SCANCODE_LOGINCOMP, token);
 
         if (!hasKey) {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_CODE_OVERDUE.getCode(),null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGIN_CODE_OVERDUE.getCode(),null);
         }
 
         // 获取到整个hash

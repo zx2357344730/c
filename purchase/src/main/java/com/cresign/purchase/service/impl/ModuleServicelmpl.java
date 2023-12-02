@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.purchase.common.ChatEnum;
-import com.cresign.purchase.enumeration.PurchaseEnum;
 import com.cresign.purchase.service.ModuleService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
@@ -12,6 +11,7 @@ import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.es.lBProd;
@@ -955,7 +955,7 @@ public class ModuleServicelmpl implements ModuleService {
             result.put("id_U",id_U);
             result.put("desc","用户信息为空");
             resultArr.add(result);
-            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.REDIS_ORDER_NO_HAVE.getCode(), "");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.REDIS_ORDER_NO_HAVE.getCode(), "");
         }
         JSONObject rolexData = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
 
@@ -1065,7 +1065,7 @@ public class ModuleServicelmpl implements ModuleService {
                                 {
                                     if (objMod.getJSONObject(modKey).getInteger("wn0buyUser").equals(objMod.getJSONObject(modKey).getJSONArray("id_U").size()))
                                     {
-                                        throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.NO_CHARGE_USER.getCode(), "");
+                                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.NO_CHARGE_USER.getCode(), "");
                                     }
                                     String [] compare2 = modKey.split("-"); // a-core-2 splited[1] = core
                                     // looped thru control and then I found same "core" and id_U is also in it
@@ -1148,7 +1148,7 @@ public class ModuleServicelmpl implements ModuleService {
         User user = qt.getMDContent(id_U, "rolex", User.class);
         if (null == user || user.getRolex() == null ||
                 user.getRolex().getJSONObject("objComp").getJSONObject(id_C) == null) {
-            throw new ErrorResponseException(HttpStatus.OK, PurchaseEnum.REDIS_ORDER_NO_HAVE.getCode(), "");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.REDIS_ORDER_NO_HAVE.getCode(), "");
         }
         JSONObject rolexData = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
         // this ONLY reset the status

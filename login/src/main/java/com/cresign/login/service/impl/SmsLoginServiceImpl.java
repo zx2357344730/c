@@ -3,7 +3,6 @@ package com.cresign.login.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.SmsLoginService;
 import com.cresign.login.utils.LoginResult;
 import com.cresign.login.utils.RegisterUserUtils;
@@ -12,10 +11,7 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
-import com.cresign.tools.enumeration.CodeEnum;
-import com.cresign.tools.enumeration.DateEnum;
-import com.cresign.tools.enumeration.SMSTemplateEnum;
-import com.cresign.tools.enumeration.SMSTypeEnum;
+import com.cresign.tools.enumeration.*;
 import com.cresign.tools.enumeration.manavalue.ClientEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
@@ -91,7 +87,7 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 
         } catch (RuntimeException  e) {
 
-            throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, LoginEnum.SMS_SEND_CODE_ERROR.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, ErrEnum.SMS_SEND_CODE_ERROR.getCode(), null);
         }
         JSONObject result = new JSONObject();
         result.put("t_type", 1);
@@ -129,13 +125,13 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 
                 String id_U = qt.getId_U(phone);
                 if (id_U.equals("")) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                             LOGIN_NOTFOUND_USER.getCode(),null);
                 }
 
                 User user = qt.getMDContent(id_U,qt.strList("info","rolex"),User.class);
                 if (ObjectUtils.isEmpty(user)) {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.LOGIN_NOTFOUND_USER.getCode(), null);
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGIN_NOTFOUND_USER.getCode(), null);
                 }
 
                 // 返回json数据给前端
@@ -143,12 +139,12 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 
                 return retResult.ok(CodeEnum.OK.getCode(), result);
             } else {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.SMS_CODE_NOT_CORRECT.getCode(), null);
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.SMS_CODE_NOT_CORRECT.getCode(), null);
 
             }
 
         } else {
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.SMS_CODE_NOT_FOUND.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.SMS_CODE_NOT_FOUND.getCode(), null);
         }
 
     }
@@ -166,7 +162,7 @@ public class SmsLoginServiceImpl implements SmsLoginService {
             sms.sendSMS(phones, 6, SMSTemplateEnum.REGISTER.getTemplateId(), SMSTypeEnum.REGISTER.getSmsType());
 
         } catch (RuntimeException  e) {
-            throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, LoginEnum.SMS_SEND_CODE_ERROR.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, ErrEnum.SMS_SEND_CODE_ERROR.getCode(), null);
         }
         JSONObject result = new JSONObject();
         result.put("t_type", 1);
@@ -190,7 +186,7 @@ public class SmsLoginServiceImpl implements SmsLoginService {
                     String id_U = qt.getId_U(phone);
                     boolean isRegister = true;
                     if (id_U.equals("")) {
-//                        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+//                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 //                                LOGIN_NOTFOUND_USER.getCode(),null);
                         isRegister = false;
                     }
@@ -358,12 +354,12 @@ public class SmsLoginServiceImpl implements SmsLoginService {
                     return retResult.ok(CodeEnum.OK.getCode(), null);
 
                 } else {
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                             SMS_CODE_NOT_FOUND.getCode(), null);
                 }
 
             } else {
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                         SMS_CODE_NOT_FOUND.getCode(), null);
             }
 

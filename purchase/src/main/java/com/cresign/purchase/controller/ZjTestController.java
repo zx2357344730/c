@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.websocket.server.PathParam;
+import java.io.IOException;
 
 /**
  * @author tang
@@ -293,13 +294,52 @@ public class ZjTestController {
     }
 
     @SecurityParameter
-    @PostMapping("/v1/statisticsChKin")
-    public ApiResponse statisticsChKin(@RequestBody JSONObject reqJson) {
+    @PostMapping("/v1/addBlankComp")
+    public ApiResponse addBlankComp(@RequestBody JSONObject reqJson) throws IOException {
+        try {
+            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+
+            return zjService.addBlankCompNew(
+                    tokData,
+                    reqJson.getJSONObject("wrdN"),
+                    reqJson.getJSONObject("wrddesc"),
+                    reqJson.getString("pic"),
+                    reqJson.getString("ref")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ModuleController.addBlankComp", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/genChkinCode")
+    public ApiResponse genChkinCode() {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.genChkinCode( tokData.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.genChkinCode", e);
+        }
+    }
+    @SecurityParameter
+    @PostMapping("/v1/scanChkinCode")
+    public ApiResponse scanChkinCode(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.scanChkinCode(tokData.getString("id_U"), reqJson.getString("token"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.scanChkinCode", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/removeUser")
+    public ApiResponse removeUser(@RequestBody JSONObject resJson) {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
-            return zjService.statisticsChKin(reqJson.getString("id_C"),reqJson.getJSONArray("sumDates"));
+            return zjService.removeUser(resJson.getString("id_U"));
         } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "ZjTestController.statisticsChKin", e);
+            return getUserToken.err(new JSONObject(), "ZjTestController.removeUser", e);
         }
     }
 }

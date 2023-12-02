@@ -3,7 +3,6 @@ package com.cresign.login.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.login.enumeration.SearchEnum;
 import com.cresign.login.service.RedirectService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
@@ -13,6 +12,7 @@ import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.lBUser;
 import com.cresign.tools.pojo.po.*;
@@ -170,7 +170,7 @@ public class RedirectServiceImpl implements RedirectService {
                 String code_token = qrShareCode.getString("token");
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                 if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-                    throw new ErrorResponseException(HttpStatus.OK, SearchEnum.PROD_CODE_IS_EXIT.getCode(), code_token);
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_CODE_IS_EXIT.getCode(), code_token);
                 }
             }
         }
@@ -243,7 +243,7 @@ public class RedirectServiceImpl implements RedirectService {
                 String code_token = qrShareCode.getString("token");
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                 if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-                    throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
             }
@@ -319,7 +319,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
                 String code_token = qrShareCode.getString("token");
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                 if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-                    throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
             }
@@ -392,7 +392,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
                 String code_token = qrShareCode.getString("token");
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                 if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-                    throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
             }
@@ -525,7 +525,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 //        Boolean hasKey = redisTemplate0.hasKey(keyName);
 
         if (!qt.hasRDKey(SCANCODE_JOINCOMP, token)) {
-            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                     JOIN_COMP_CODE_OVERDUE.getCode(),null);
         }
 
@@ -570,7 +570,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 //                redisTemplate0.delete(keyName);
                 qt.delRD(SCANCODE_JOINCOMP, token);
 
-                throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                         JOIN_COMP_CODE_OVERDUE.getCode(), null);
             } else {
                 System.out.println("进来 used_count < count");
@@ -665,7 +665,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
         Comp compOne = qt.getMDContent(entries.get("id_C").toString(), "info", Comp.class);
         if (ObjectUtils.isEmpty(compOne)) {
-            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.COMP_NOT_FOUND.getCode(), null) ;
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null) ;
         }
 
         // 判断用户存不存在
@@ -677,7 +677,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
         // 不存在则返回出去
         if (null == userOne) {
-            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_IS_NO_FOUND.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_IS_NO_FOUND.getCode(), null);
         }
 //
 //        Query userQuery = new Query();
@@ -687,7 +687,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 //        User userOne = mongoTemplate.findOne(userQuery, User.class);
 
         if (null != userOne.getRolex().getJSONObject("objComp").getJSONObject(entries.get("id_C").toString())) {
-            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.USER_JOIN_IS_HAVE.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_JOIN_IS_HAVE.getCode(), null);
         }
 
         JSONObject rolex = new JSONObject(3);
@@ -745,7 +745,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
             return retResult.ok(CodeEnum.OK.getCode(), null);
 
         }
-        throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                 USER_JOIN_IS_HAVE.getCode(), null);
     }
 
@@ -758,7 +758,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 //        Boolean hasKey = redisTemplate0.hasKey(keyName);
         Boolean hasKey = qt.hasRDKey(SCANCODE_SHAREPROD, token);
         if (!hasKey) {
-            throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 PROD_CODE_OVERDUE.getCode(),null);
         }
 //        Map<Object, Object> entries = redisTemplate0.opsForHash().entries(keyName);
@@ -811,7 +811,7 @@ PROD_CODE_OVERDUE.getCode(),null);
 
 //                redisTemplate0.delete(keyName);
                 qt.delRD(SCANCODE_SHAREPROD, token);
-                throw new ErrorResponseException(HttpStatus.OK, SearchEnum.
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 PROD_CODE_OVERDUE.getCode(), null);
             } else {
                 System.out.println("进来 used_count < count");
@@ -1140,7 +1140,7 @@ PROD_CODE_OVERDUE.getCode(), null);
         //用户对象不存证明不是这家公司的员工
         if (user == null){
 
-            throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, SearchEnum.USER_IS_NO_FOUND.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, ErrEnum.USER_IS_NO_FOUND.getCode(), null);
 
         }
 

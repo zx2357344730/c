@@ -3,12 +3,12 @@ package com.cresign.action.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.action.common.ActionEnum;
 import com.cresign.action.service.TimeZjService;
 import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Order;
@@ -59,36 +59,36 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //        Asset asset = coupaUtil.getAssetById(coverMoveId_A, Arrays.asList(timeCard,"info"));
         Asset asset = qt.getMDContent(coverMoveId_A,qt.strList(timeCard,"info"), Asset.class);
         if (null == asset) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_NULL.getCode(), "被移动的资产为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_NULL.getCode(), "被移动的资产为空");
         }
         AssetInfo info = asset.getInfo();
         if (null == info) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_INFO_NULL.getCode(), "资产内Info为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_INFO_NULL.getCode(), "资产内Info为空");
         }
         if (!info.getId_C().equals(id_C)) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ID_C_NO_MATCHING.getCode(), "公司编号不匹配");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ID_C_NO_MATCHING.getCode(), "公司编号不匹配");
         }
 //        JSONObject aArrange = asset.getAArrange2();
         JSONObject aArrange = getAArrangeNew(asset);
         if (null == aArrange) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_ARRANGE_NULL.getCode(), "被移动的资产Arrange为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_ARRANGE_NULL.getCode(), "被移动的资产Arrange为空");
         }
         JSONObject objTask = aArrange.getJSONObject("objTask");
         if (null == objTask) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_ARRANGE_OBJ_TASK_NULL.getCode(), "被移动的资产Arrange内objTask为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_ARRANGE_OBJ_TASK_NULL.getCode(), "被移动的资产Arrange内objTask为空");
         }
         // 根据asset编号获取asset的时间处理卡片信息
 //        Asset assetMove = coupaUtil.getAssetById(moveId_A, Arrays.asList(timeCard,"info"));
         Asset assetMove = qt.getMDContent(moveId_A,qt.strList(timeCard,"info"), Asset.class);
         if (null == assetMove) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_NULL.getCode(), "移动的资产为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_NULL.getCode(), "移动的资产为空");
         }
         AssetInfo infoNew = assetMove.getInfo();
         if (null == infoNew) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_INFO_NULL.getCode(), "移动的资产内Info为空");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_INFO_NULL.getCode(), "移动的资产内Info为空");
         }
         if (!infoNew.getId_C().equals(id_C)) {
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ID_C_NO_MATCHING.getCode(), "移动的公司编号不匹配");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ID_C_NO_MATCHING.getCode(), "移动的公司编号不匹配");
         }
         // 获取时间处理卡片信息
 //        JSONObject aArrangeMove = assetMove.getAArrange2();
@@ -98,7 +98,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         } else {
             JSONObject objTaskNew = aArrangeMove.getJSONObject("objTask");
             if (null != objTaskNew) {
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_ASSET_EXISTS_NULL.getCode(), "资产内已存在");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_EXISTS_NULL.getCode(), "资产内已存在");
             }
         }
         // 添加信息
@@ -133,7 +133,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         // 判断订单是否为空
         if (null == salesOrderData || null == salesOrderData.getInfo() || null == salesOrderData.getAction()) {
             // 返回为空错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
         if (null != salesOrderData.getInfo().getId_OP()) {
             id_O = salesOrderData.getInfo().getId_OP();
@@ -142,7 +142,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             // 判断订单是否为空
             if (null == salesOrderData || null == salesOrderData.getInfo() || null == salesOrderData.getAction()) {
                 // 返回为空错误信息
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "父订单不存在");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "父订单不存在");
             }
         }
         // 存储部门对应组别的职位总人数
@@ -420,7 +420,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         if (null == salesOrderData || null == salesOrderData.getAction() || null == salesOrderData.getOItem()
                 || null == salesOrderData.getCasItemx()) {
             // 返回为空错误信息
-            throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
         // 定义，存储进入未操作到的地方记录
         JSONObject recordNoOperation = new JSONObject();

@@ -5,7 +5,44 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="128c9a26-d44c-4e41-b0e6-dabc284dd13b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/HrController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/HrService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/HrServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/common/ActionEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/common/ActionEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowNewServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowNewServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceEmptyInsertImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceEmptyInsertImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceImplX.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceImplX.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceNewImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceNewImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/common/ChatEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/common/ChatEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/service/impl/LogServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/service/impl/LogServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/enumeration/LoginEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/enumeration/LoginEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/enumeration/SearchEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/enumeration/SearchEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/AccountLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/AccountLoginServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/FaceBookLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/FaceBookLoginServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/LinkedinLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/LinkedinLoginServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/RedirectServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/RedirectServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/RefreshTokenServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/RefreshTokenServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/RoleServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/RoleServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SetAuthServicelmpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SetAuthServicelmpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SmsLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SmsLoginServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/WxLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/WxLoginServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/utils/RegisterUserUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/utils/RegisterUserUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ZjTestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ZjTestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/CompEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/CompEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/DetailsEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/DetailsEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/LoginEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/LoginEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/ModuleEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/ModuleEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/PurchaseEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/PurchaseEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/SmsEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/enumeration/SmsEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/ZjTestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/ZjTestService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ModuleServicelmpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ModuleServicelmpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ZjTestServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ZjTestServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/resources/bootstrap.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/enumeration/ErrEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/enumeration/ErrEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/es/lBUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/es/lBUser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/es/lNUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/es/lNUser.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,14 +99,14 @@
       <recent name="D:\KaiFaShuJu\GitHubDesktop\tang\G_x_Java\5\ccpl" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.cresign.purchase.controller" />
+      <recent name="com.cresign.purchase.service.impl" />
+      <recent name="com.cresign.purchase.service" />
       <recent name="com.cresign.action.utils" />
       <recent name="com.cresign.tools.dbTools" />
-      <recent name="com.cresign.tools.config.async" />
-      <recent name="com.cresign.chat.utils" />
-      <recent name="com.cresign.login.utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.LoginApp">
+  <component name="RunManager" selected="Application.PurchaseApp">
     <configuration name="ActionApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.cresign.action.ActionApp" />
       <module name="action" />
@@ -164,10 +201,10 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.LoginApp" />
-        <item itemvalue="Application.GatewayApp" />
         <item itemvalue="Application.PurchaseApp" />
+        <item itemvalue="Application.GatewayApp" />
         <item itemvalue="Application.ActionApp" />
+        <item itemvalue="Application.LoginApp" />
         <item itemvalue="Application.Chat2App" />
       </list>
     </recent_temporary>

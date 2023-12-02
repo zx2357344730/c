@@ -1,14 +1,20 @@
 package com.cresign.login.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.es.lNUser;
+import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.InitJava;
 import com.cresign.tools.pojo.po.User;
+import com.cresign.tools.pojo.po.compCard.CompInfo;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -46,6 +52,7 @@ public class RegisterUserUtils {
 
             // objectId
             String addID = qt.GetObjectId();
+            String compId = qt.GetObjectId();
 
             User addUser = new User();
 
@@ -70,8 +77,25 @@ public class RegisterUserUtils {
                     infoJson.getWrdNReal(),null, infoJson.getPic(), ""
                     ,"", infoJson.getCem(), infoJson.getMbn(),infoJson.getCnty()
                     , infoJson.getDefNG(), 0);
+            lnuser.setId_C(compId);
 
             qt.addES("lnuser", lnuser);
+
+            Comp comp = new Comp();
+            CompInfo infoComp = new CompInfo();
+            infoComp.setTmk(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+            infoComp.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+            infoComp.setId_C(compId);
+            infoComp.setRef(addID+"Comp");
+            JSONObject wrdN = new JSONObject();
+            wrdN.put("cn",addID+"-公司");
+            infoComp.setWrdN(wrdN);
+            JSONArray view = new JSONArray();
+            view.add("info");
+            comp.setInfo(infoComp);
+            comp.setView(view);
+            comp.setId(compId);
+            qt.addMD(comp);
             // 查询公司
 //            Query compQuery = new Query(new Criteria("_id").is("5f2a2502425e1b07946f52e9"));
 //            compQuery.fields().include("info");

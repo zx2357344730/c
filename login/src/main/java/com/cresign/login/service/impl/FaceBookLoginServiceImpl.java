@@ -2,7 +2,6 @@ package com.cresign.login.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.login.enumeration.LoginEnum;
 import com.cresign.login.service.FaceBookLoginService;
 import com.cresign.login.utils.RegisterUserUtils;
 import com.cresign.tools.advice.RetResult;
@@ -11,6 +10,7 @@ import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.enumeration.SMSTypeEnum;
 import com.cresign.tools.enumeration.manavalue.ClientEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -86,7 +86,7 @@ public class FaceBookLoginServiceImpl implements FaceBookLoginService {
 //
 //
 //        }
-        throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 WX_NOT_BIND.getCode(), null);
       }
 
@@ -110,7 +110,7 @@ WX_NOT_BIND.getCode(), null);
 //                }
                 if (null == es || es.size() == 0) {
 
-                    throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                             REGISTER_USER_IS_HAVE.getCode(), null);
                 }
 
@@ -185,13 +185,13 @@ WX_NOT_BIND.getCode(), null);
 
             } else {
 
-                throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 SMS_CODE_NOT_CORRECT.getCode(), null);
             }
 
         } else {
 
-            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 SMS_CODE_NOT_FOUND.getCode(), null);
         }
     }
