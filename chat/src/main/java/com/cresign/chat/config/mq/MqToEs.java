@@ -34,7 +34,7 @@ public class MqToEs implements RocketMQListener<String> {
         // 转换为json信息
         JSONObject json = JSONObject.parseObject(s);
         qt.addES(json.getString("logType"), json);
-        System.out.println("es:从mq 拿数据写入完成");
+        qt.errPrint("es:从mq 拿数据写入完成", json.getString("zcndesc"));
     }
 
 }

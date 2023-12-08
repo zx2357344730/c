@@ -2742,7 +2742,7 @@ public class ActionServiceImpl implements ActionService {
         allAction.add(unitAction);
 
         this.updateRefOP(myCompId,myCompId,
-                id_FC, id_FQ, probData.getString("id_OP"), "grpask",
+                id_FQ, "", probData.getString("id_OP"), "grpTask",
                 unitAction.getWrdNP(), index, true );
 
 
