@@ -10,21 +10,12 @@ import com.cresign.login.utils.wxlogin.applets.WXAesCbcUtil;
 import com.cresign.login.utils.wxlogin.web.WxAuthUtil;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
-import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.ErrEnum;
-import com.cresign.tools.enumeration.SMSTypeEnum;
-import com.cresign.tools.enumeration.manavalue.ClientEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
-import com.cresign.tools.pojo.es.lBUser;
-import com.cresign.tools.pojo.es.lNUser;
-import com.cresign.tools.pojo.po.Comp;
 import com.cresign.tools.pojo.po.User;
-import com.cresign.tools.pojo.po.compCard.CompInfo;
-import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.cresign.tools.request.HttpClientUtil;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -153,6 +143,10 @@ public class WxLoginServiceImpl implements WxLoginService {
         // 如果绑定了公众号则有unionid，如果没有绑定则用openid
         String unionid = wxResult.getString("unionid");
 
+        if (unionid == null)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.WX_NOT_BIND.getCode(),unionid);
+        }
 
         JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", unionid));
         if (null == es || es.size() == 0) {

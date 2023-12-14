@@ -35,7 +35,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -2742,7 +2741,7 @@ public class ActionServiceImpl implements ActionService {
         allAction.add(unitAction);
 
         this.updateRefOP(myCompId,myCompId,
-                id_FQ, "", probData.getString("id_OP"), "grpTask",
+                id_FQ, "", probData.getString("id_OP"), probData.getString("refOP"),
                 unitAction.getWrdNP(), index, true );
 
 

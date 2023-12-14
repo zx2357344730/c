@@ -9,6 +9,7 @@ import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.enumeration.ToolEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.lBAsset;
+import com.cresign.tools.pojo.es.lBProd;
 import com.cresign.tools.pojo.es.lSAsset;
 import com.cresign.tools.pojo.po.*;
 import com.cresign.tools.pojo.po.assetCard.AssetAStock;
@@ -1253,12 +1254,17 @@ public class DbUtils {
 //                                }
 //                            }
                         }
+                        else if (val.startsWith("##")) {
+                            scriptEngineVar(val, jsonVars);
+                        }
                     }
                     String[] keySplit = key.split("\\.");
                     System.out.println("keySplit.length=" + keySplit.length);
                     System.out.println("jsonParam=" + jsonParam);
                     Object val = jsonParam.get("val");
-                    if (keySplit.length == 1) {
+                    if (key.equals("")) {
+                        jsonParams.putAll(jsonParam.getJSONObject("val"));
+                    } else if (keySplit.length == 1) {
                         jsonParams.put(key, val);
                     } else if (keySplit.length == 2) {
                         if (jsonParams.getJSONObject(keySplit[0]) != null) {
@@ -2448,7 +2454,6 @@ public class DbUtils {
             String id_C = jsonLsasset.getJSONObject("tokData").getString("id_C");
             setAuthId.add(qt.getId_A(id_C, "a-auth"));
         }
-        //TODO RACH make a new should(must[]) @ filterBuilder
         for (int i = 0; i < arrayLbasset.size(); i++) {
             JSONObject jsonLbasset = arrayLbasset.getJSONObject(i);
             String id_A = jsonLbasset.getString("id_A");
@@ -2477,7 +2482,6 @@ public class DbUtils {
         JSONObject allProdObj = qt.list2Obj(prods, "id");
 
         List<Asset> auths = qt.getMDContentMany(setAuthId, Arrays.asList("info", "def"), Asset.class);
-        System.out.println("auths=" + auths);
         JSONObject allAuthObj = new JSONObject();
         for (Asset auth : auths) {
             allAuthObj.put(auth.getInfo().getId_C(), auth);
@@ -2493,8 +2497,8 @@ public class DbUtils {
                 jsonLsasset.put("jsonLsa", jsonLsas.getJSONObject(id_A));
                 jsonLsasset.put("jsonAsset", allAssetObj.getJSONObject(id_A));
             }
-            jsonLsasset.put("jsonProd", allProdObj.getJSONObject(id_P));
-            jsonLsasset.put("lUT", allAuthObj.getJSONObject(id_C).getJSONObject("def").getJSONArray("lUT").getInteger(0));
+            JSONObject jsonProd = allProdObj.getJSONObject(id_P);
+            jsonLsasset.put("jsonProd", jsonProd);
 
             String defKey = null;
             //id_C相同id_CB不同：lSProd
@@ -2503,21 +2507,44 @@ public class DbUtils {
             } else {
                 defKey = "objlBP";
             }
-            if (allProdObj.getJSONObject(id_P) == null || allAssetObj.getJSONObject(id_C) == null) {
-                jsonLsasset.put("grp", "");
+
+
+            if (jsonProd == null) {
+                jsonLsasset.put("grp", "1000");
+                jsonLsasset.put("lUT", 0);
+                jsonLsasset.put("lCR", 0);
             } else {
-                String grpP = allProdObj.getJSONObject(id_P).getJSONObject("info").getString("grp");
-                JSONObject jsonDef = allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
-                if (grpP == null || grpP.isEmpty() || jsonDef.getJSONObject(grpP) == null) {
-                    jsonLsasset.put("grp", "1000");
-                } else {
-                    jsonLsasset.put("grp", jsonDef.getJSONObject(grpP).getString("grpA"));
+                JSONObject info = jsonProd.getJSONObject("info");
+                String grpP =  info.getString("grp");
+
+                if (defKey.equals("oblBP"))
+                {
+                    grpP = qt.getESItem("lBProd", info.getString("id_P"), lBProd.class).getGrpB();
                 }
-                if (allAssetObj.getJSONObject(id_C) == null &&
-                        allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey) == null) {
-                    jsonLsasset.put("grp", "");
+
+                Integer lUT = info.getInteger("lUT");
+                Integer lCR = info.getInteger("lCR");
+                if (allAuthObj.getJSONObject(id_C) != null) {
+                    JSONObject def = allAuthObj.getJSONObject(id_C).getJSONObject("def");
+                    if (grpP == null || grpP.isEmpty() || def.getJSONObject(defKey).getJSONObject(grpP) == null) {
+                        jsonLsasset.put("grp", "1000");
+                    } else {
+                        jsonLsasset.put("grp", def.getJSONObject(defKey).getJSONObject(grpP).getString("grpA"));
+                    }
                 } else {
-                    allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
+                    jsonLsasset.put("grp", "1000");
+                }
+
+
+                if (lUT == null) {
+                    jsonLsasset.put("lUT", 0);
+                } else {
+                    jsonLsasset.put("lUT", lUT);
+                }
+                if (lCR == null) {
+                    jsonLsasset.put("lCR", 0);
+                } else {
+                    jsonLsasset.put("lCR", lCR);
                 }
             }
         }
@@ -2534,8 +2561,8 @@ public class DbUtils {
                     jsonLbasset.put("jsonLba", jsonLsas.getJSONObject(id_A));
                 }
             }
-            jsonLbasset.put("jsonProd", allProdObj.getJSONObject(id_P));
-            jsonLbasset.put("lUT", allAuthObj.getJSONObject(id_C).getJSONObject("def").getJSONArray("lUT").getInteger(0));
+            JSONObject jsonProd = allProdObj.getJSONObject(id_P);
+            jsonLbasset.put("jsonProd", jsonProd);
 
             String defKey = null;
             //id_C相同id_CB不同：lSProd
@@ -2547,22 +2574,28 @@ public class DbUtils {
             if (allProdObj.getJSONObject(id_P) == null || allAssetObj.getJSONObject(id_C) == null) {
                 jsonLbasset.put("grp", "");
             } else {
-                String grpP = allProdObj.getJSONObject(id_P).getJSONObject("info").getString("grp");
-                JSONObject jsonDef = allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
-                if (grpP == null || grpP.isEmpty() || jsonDef.getJSONObject(grpP) == null) {
+                JSONObject info = jsonProd.getJSONObject("info");
+                String grpP = info.getString("grp");
+                Integer lUT = info.getInteger("lUT");
+                Integer lCR = info.getInteger("lCR");
+                JSONObject def = allAssetObj.getJSONObject(id_C).getJSONObject("def");
+                if (grpP == null || grpP.isEmpty() || def.getJSONObject(defKey).getJSONObject(grpP) == null) {
                     jsonLbasset.put("grp", "1000");
                 } else {
-                    jsonLbasset.put("grp", jsonDef.getJSONObject(grpP).getString("grpA"));
+                    jsonLbasset.put("grp", def.getJSONObject(defKey).getJSONObject(grpP).getString("grpA"));
                 }
-                if (allAssetObj.getJSONObject(id_C) == null &&
-                        allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey) == null) {
-                    jsonLbasset.put("grp", "");
+                if (lUT == null || def.getJSONArray("lUT").getInteger(lUT) == null) {
+                    jsonLbasset.put("lUT", 0);
                 } else {
-                    allAssetObj.getJSONObject(id_C).getJSONObject("def").getJSONObject(defKey);
+                    jsonLbasset.put("lUT", lUT);
+                }
+                if (lCR == null || def.getJSONArray("lCR").getInteger(lCR) == null) {
+                    jsonLbasset.put("lCR", 0);
+                } else {
+                    jsonLbasset.put("lCR", lCR);
                 }
             }
         }
-
         System.out.println("arraylsasset=" + arrayLsasset);
         System.out.println("arrayLbasset=" + arrayLbasset);
 
@@ -2776,7 +2809,8 @@ public class DbUtils {
                                     "id", id_A,
                                     "update", jsonUpdate);
 
-                            qt.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
+                            qt.upJson(jsonLsa,
+                                    //"wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
                                     "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
                                     "locSpace", arrayResultLocSpace,
                                     "spaceQty", arrayResultSpaceQty,
@@ -2903,27 +2937,6 @@ public class DbUtils {
                     jsonBulkLsasset = qt.setJson("type", "insert",
                             "insert", lsasset);
 
-//                    if (isLsa) {
-//                        lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_P, jsonOItem.getJSONObject("wrdN"),
-//                                jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-//                                jsonOItem.getString("pic"), assetChgObj.getInteger("lAT"), wn2qty, wn4price);
-//                        lsasset.setLocAddr(locAddr);
-//                        lsasset.setLocSpace(arrayUpdateLocSpace);
-//                        lsasset.setSpaceQty(arrayUpdateSpaceQty);
-//
-//                        jsonBulkLsasset = qt.setJson("type", "insert",
-//                                "insert", lsasset);
-//                    } else {
-//                        lBAsset lbasset = new lBAsset(id_A, id_C, id_C, id_CB, id_P, jsonOItem.getJSONObject("wrdN"),
-//                                jsonOItem.getJSONObject("wrddesc"), "1030", jsonOItem.getString("ref"),
-//                                jsonOItem.getString("pic"), assetChgObj.getInteger("lAT"), wn2qty, wn4price);
-//                        lbasset.setLocAddr(locAddr);
-//                        lbasset.setLocSpace(arrayUpdateLocSpace);
-//                        lbasset.setSpaceQty(arrayUpdateSpaceQty);
-//
-//                        jsonBulkLsasset = qt.setJson("type", "insert",
-//                                "insert", lbasset);
-//                    }
                 }
                 listBulkAsset.add(jsonBulkAsset); // insert asset(MD)
                 listBulkLsasset.add(jsonBulkLsasset); //insert lSAsset(ES)
@@ -3031,20 +3044,15 @@ public class DbUtils {
                 log.setLogData_money(id_A, "", wn2qty);
                 System.out.println("moneyflow=" + JSON.toJSON(log));
 
-
-//                // send 1 log for Asset out ( should be in setStock)
-//                LogFlow log = new LogFlow(tokData, jsonOItem, order.getAction(),
-//                        order.getInfo().getId_CB(), id_O, index, "assetflow", "stoChg",
-//                        jsonOItem.getJSONObject("wrdN").getString("cn")+"出仓了" + abs(wn2qtySum), 3);
-//
-//                Double logPrice = order.getOItem().getJSONArray("objItem").getJSONObject(index).getDouble("wn4price");
-////        Integer logStatus = order.getAction().getJSONArray("objAction").getJSONObject(index).getInteger("bcdStatus");
-//                log.setLogData_assetflow(abs(wn2qtySum), logPrice, jsonFromHit.getString("id_A"), jsonFromHit.getString("grp"));
-//
                 ws.sendWS(log);
             }
         }
     }
+
+//    public Object createAsset() {
+//
+//        return null;
+//    }
 
 
     public void setBulkInsert(List<JSONObject> listBulk, Object obj) {
@@ -3064,38 +3072,38 @@ public class DbUtils {
         listBulk.add(jsonBulk);
     }
 
-    public boolean getUserByIdAndInfo(String id_U,JSONObject info){
-        User user = qt.getMDContent(id_U, "info", User.class);
-        if (null == user || null == user.getInfo()) {
-            return false;
-        }
-        JSONObject userInfo = JSON.parseObject(JSON.toJSONString(user.getInfo()));
-        JSONArray keys = JSONArray.parseArray(JSON.toJSONString(info.keySet()));
-        boolean mongodbUser = true;
-        for (int i = 0; i < keys.size(); i++) {
-            if (!userInfo.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
-                mongodbUser = false;
-                break;
-            }
-        }
-        JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
-        boolean esLnUser = true;
-        for (int i = 0; i < keys.size(); i++) {
-            if (!userLn.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
-                esLnUser = false;
-                break;
-            }
-        }
-        JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
-        boolean esLbUser = true;
-        for (int i = 0; i < keys.size(); i++) {
-            if (!userLb.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
-                esLbUser = false;
-                break;
-            }
-        }
-        return mongodbUser || esLnUser || esLbUser;
-    }
+//    public boolean getUserByIdAndInfo(String id_U,JSONObject info){
+//        User user = qt.getMDContent(id_U, "info", User.class);
+//        if (null == user || null == user.getInfo()) {
+//            return false;
+//        }
+//        JSONObject userInfo = JSON.parseObject(JSON.toJSONString(user.getInfo()));
+//        JSONArray keys = JSONArray.parseArray(JSON.toJSONString(info.keySet()));
+//        boolean mongodbUser = true;
+//        for (int i = 0; i < keys.size(); i++) {
+//            if (!userInfo.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
+//                mongodbUser = false;
+//                break;
+//            }
+//        }
+//        JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
+//        boolean esLnUser = true;
+//        for (int i = 0; i < keys.size(); i++) {
+//            if (!userLn.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
+//                esLnUser = false;
+//                break;
+//            }
+//        }
+//        JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
+//        boolean esLbUser = true;
+//        for (int i = 0; i < keys.size(); i++) {
+//            if (!userLb.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
+//                esLbUser = false;
+//                break;
+//            }
+//        }
+//        return mongodbUser || esLnUser || esLbUser;
+//    }
 
 
     /*  Order -> order, =>
@@ -3260,5 +3268,111 @@ public class DbUtils {
 //     //   qt.setMDContent(data.getId(), savingData, Order.class);
 //      //  qt.setES(listType,qt.setESFilt("id", data.getId()), listCol);
 //
+//    }
+
+//    public ApiResponse tempa(String id_U, String id_C, String id, String listType, String grp) {
+//        if ("lSProd".equals(listType) || "lBProd".equals(listType)) {
+//            Prod prod = qt.getMDContent(id, "", Prod.class);
+//            JSONObject jsonCopy = copyUtil(id_U, id, id_C, grp, listType);
+//            JSONObject listProd = jsonCopy.getJSONObject("es");
+//            String copyId = jsonCopy.getJSONObject("mongo").getString("id");
+//            JSONObject mapResult = this.tempaCOUPA(prod.getTempa(), listProd, listType);
+//
+//            qt.setMDContent(copyId, mapResult.getJSONObject("mongo"), Prod.class);
+//            qt.errPrint("mapres", mapResult);
+//            qt.setES(listType, qt.setESFilt("id_P", copyId), mapResult.getJSONObject("es"));
+//            return retResult.ok(CodeEnum.OK.getCode(), null);
+//        }
+//        else if ("lSOrder".equals(listType) || "lBOrder".equals(listType)) {
+//            Order order = qt.getMDContent(id, "", Order.class);
+//            JSONObject jsonCopy = copyUtil(id_U, id, id_C, grp, listType);
+//            JSONObject listOrder = jsonCopy.getJSONObject("es");
+//            String copyId = jsonCopy.getJSONObject("mongo").getString("id");
+//            JSONObject mapResult = this.tempaCOUPA(order.getTempa(), listOrder, listType);
+//
+//            qt.setMDContent(copyId, mapResult.getJSONObject("mongo"), Order.class);
+//            qt.setES("lSBOrder", qt.setESFilt("id_O", copyId), mapResult.getJSONObject("es"));
+//            return retResult.ok(CodeEnum.OK.getCode(), null);
+//        }
+////        else if ("lSAsset".equals(listType) || "lBAsset".equals(listType)) {
+////            Asset asset = qt.getMDContent(id, "", Asset.class);
+////            JSONObject jsonCopy = copyUtil(id_U, id, id_C, grp, listType);
+////            JSONObject listOrder = jsonCopy.getJSONObject("es");
+////            String copyId = jsonCopy.getJSONObject("mongo").getString("id");
+////            JSONObject mapResult = this.tempaCOUPA(asset.getTempa(), listOrder, listType);
+////
+////            qt.setMDContent(copyId, mapResult.getJSONObject("mongo"), Order.class);
+////            qt.setES(listType, qt.setESFilt("id_A", copyId), mapResult.getJSONObject("es"));
+////            return retResult.ok(CodeEnum.OK.getCode(), null);
+////        }
+//        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_FOUND.getCode(), null);
+//    }
+//
+//    private JSONObject tempaCOUPA(JSONObject jsonTempa, JSONObject jsonEs, String listType) {
+//        JSONArray arrayData = jsonTempa.getJSONArray("objData");
+//        JSONObject jsonVar = jsonTempa.getJSONObject("objVar");
+//        jsonEs.remove("grpT");
+//        Init init = qt.getInitData("cn");
+//
+//        JSONObject jsonCol = init.getCol().getJSONObject(listType);
+////        Update update = new Update();
+//        JSONObject upKevVal = new JSONObject();
+//        for (int i = 0; i < arrayData.size(); i++) {
+//            JSONObject jsonData = arrayData.getJSONObject(i);
+//            String key = jsonData.getString("key");
+//            JSONArray arrayIndex = jsonData.getJSONArray("index");
+//
+//            /////////////*************////////////
+//            Object value = dbu.scriptEngineVar(jsonData.getString("value"), jsonVar);
+//            jsonData.put("value", value);
+//            qt.errPrint("key+", jsonData, key, value);
+//
+//            if (key.equals("info.grp")) {
+//                JSONArray arrayGrpTarget = jsonTempa.getJSONArray("grpT");
+//                if (!arrayGrpTarget.contains(key)) {
+//                    throw new ErrorResponseException(HttpStatus.OK, FileEnum.PROD_NOT_FOUND.getCode(), null); //GRP_NOT_MATCH
+//                }
+//            }
+//
+//            if (arrayIndex == null) {
+////                update.set(key, value);
+//
+//                String[] keySplit = key.split("\\.");
+//                String colKey = keySplit[keySplit.length - 1];
+//
+//                if (colKey.startsWith("wrd"))
+//                {
+//                    key = key + ".cn";
+//                    qt.upJson(upKevVal, key, value);
+//                    if (jsonCol.getJSONObject(colKey) != null) {
+//                        jsonEs.put(colKey, qt.setJson("cn", value));
+//                    }
+//
+//                } else {
+//                    qt.upJson(upKevVal, key, value);
+//                    if (jsonCol.getJSONObject(colKey) != null) {
+//                        jsonEs.put(colKey, value);
+//                    }
+//                }
+//
+//            } else {
+//                int keyIndexOf = key.indexOf("$");
+//                String keyPrefix = key.substring(0, keyIndexOf);
+//                String keySuffix = key.substring(keyIndexOf + 1, key.length());
+//                if (keySuffix.startsWith("wrd"))
+//                {
+//                    keySuffix = keySuffix + ".cn";
+//                }
+//                for (int j = 0; j < arrayIndex.size(); j++) {
+//                    Integer index = arrayIndex.getInteger(j);
+//                    qt.upJson(upKevVal, keyPrefix +"."+ index+ "." + keySuffix, value);
+//                }
+//            }
+//        }
+////        Map<String, Object> mapResult = new HashMap<>();
+//        JSONObject mapResult = new JSONObject();
+//        mapResult.put("mongo", upKevVal);
+//        mapResult.put("es", jsonEs);
+//        return mapResult;
 //    }
 }

@@ -3,11 +3,16 @@ package com.cresign.tools.advice;
 
 import org.apache.commons.codec.binary.Base64;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
@@ -188,6 +193,36 @@ public class RsaUtilF {
 
         //分段进行加密操作
         return encryptAndDecryptOfSubsection(data, cipher, MAX_ENCRYPT_BLOCK);
+    }
+
+    public static String encryptJson(String json, String publicKey) throws Exception {
+        //base64编码的公钥
+        byte[] decoded = Base64.decodeBase64(publicKey);
+        RSAPublicKey pubKey = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(decoded));
+        //RSA加密
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+        String outStr = Base64.encodeBase64String(cipher.doFinal(json.getBytes("UTF-8")));
+        return outStr;
+    }
+
+    public static String decryptJson(String json, String privateKey) {
+        //64位解码加密后的字符串
+        byte[] inputByte;
+        String outStr = "";
+        try {
+            inputByte = Base64.decodeBase64(json.getBytes("UTF-8"));
+            //base64编码的私钥
+            byte[] decoded = Base64.decodeBase64(privateKey);
+            RSAPrivateKey priKey = (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decoded));
+            //RSA解密
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.DECRYPT_MODE, priKey);
+            outStr = new String(cipher.doFinal(inputByte));
+        } catch (UnsupportedEncodingException | NoSuchPaddingException | InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | IllegalBlockSizeException | BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return outStr;
     }
 
 //    /**
