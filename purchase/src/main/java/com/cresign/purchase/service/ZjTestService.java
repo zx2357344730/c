@@ -1,5 +1,6 @@
 package com.cresign.purchase.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.pojo.po.LogFlow;
@@ -55,6 +56,6 @@ public interface ZjTestService {
 
     ApiResponse delLBUser(String id_U,String id_C);
 
-    ApiResponse testEx(String id_C,String fileName,String id_U
-            ,int subTypeStatus,String year,String month,JSONArray arrField);
+    ApiResponse testEx(String id_C, String fileName, String id_U
+            , int subTypeStatus, String year, String month, JSONArray arrField);
 }
