@@ -59,7 +59,6 @@ public class HrServiceImpl implements HrService {
     @Override
     public ApiResponse statisticsChKin(String id_C, JSONArray id_Us, JSONArray sumDates, int chkInMode
             , boolean isAllSpecialTime, boolean isAutoCardReplacement, boolean isSumSpecialTime) {
-//        String date = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         Asset asset = qt.getConfig(id_C, "a-chkin", "chkin");
         if (null == asset || null == asset.getChkin()) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
@@ -125,19 +124,6 @@ public class HrServiceImpl implements HrService {
                     System.out.println("testSpecialTime1:");
                     System.out.println(JSON.toJSONString(testSpecialTime1));
                 }
-//                for (int j = 0; j < sumDates.size(); j++) {
-//                    String thisDate = sumDates.getString(j);
-//                    JSONArray chkInEs = qt.getES("chkin", qt.setESFilt("id_U", id_U,"data.theSameDay",thisDate));
-//                    if (null == chkInEs || chkInEs.size() == 0) {
-//                        continue;
-//                    }
-//                    // 获取用户的long上班时间
-//                    JSONArray userDates1 = getUserDates(chkInEs);
-//                    // 调用全部是特殊时间的处理方法
-//                    JSONObject testSpecialTime1 = testSpecialTime(userDates1, teDur,thisDate);
-//                    System.out.println("testSpecialTime1:");
-//                    System.out.println(JSON.toJSONString(testSpecialTime1));
-//                }
                 return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
             }
             // 判断打卡类型为正常固定班
@@ -154,24 +140,6 @@ public class HrServiceImpl implements HrService {
                     System.out.println("testChkInSum1:");
                     System.out.println(JSON.toJSONString(testChkInSum1));
                 }
-//                for (int j = 0; j < sumDates.size(); j++) {
-//                    String thisDate = sumDates.getString(j);
-//                    // 获取日期格式化后的正常上班时间集合
-//                    JSONArray normalWorkTime = getArrTime(arrTime, thisDate);
-//                    JSONArray chkInEs = qt.getES("chkin", qt.setESFilt("id_U", id_U,"data.theSameDay",thisDate));
-//                    System.out.println("chkInEs:");
-//                    System.out.println(JSON.toJSONString(chkInEs));
-//                    if (null == chkInEs || chkInEs.size() == 0) {
-//                        continue;
-//                    }
-//                    // 获取用户的long上班时间
-//                    JSONArray userDates1 = getUserDates(chkInEs);
-//                    // 调用正常统计用户打卡时间方法
-//                    JSONObject testChkInSum1 = testChkInSum(normalWorkTime, userDates1, id_U, teDur
-//                            , isAutoCardReplacement, isSumSpecialTime, ovt, tPre, tPost, tLate, tAbsent,thisDate,chkType,id_C);
-//                    System.out.println("testChkInSum1:");
-//                    System.out.println(JSON.toJSONString(testChkInSum1));
-//                }
                 return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
                 // 判断打卡类型为首尾固定班
             } else if (chkInMode == 1) {
@@ -186,21 +154,6 @@ public class HrServiceImpl implements HrService {
                     System.out.println("testChkInSumHeadTail1:");
                     System.out.println(JSON.toJSONString(testChkInSumHeadTail1));
                 }
-//                for (int j = 0; j < sumDates.size(); j++) {
-//                    String thisDate = sumDates.getString(j);
-//                    // 获取日期格式化后的正常上班时间集合
-//                    JSONArray normalWorkTime = getArrTime(arrTime, thisDate);
-//                    JSONArray chkInEs = qt.getES("chkin", qt.setESFilt("id_U", id_U,"data.theSameDay",thisDate));
-//                    if (null == chkInEs || chkInEs.size() == 0) {
-//                        continue;
-//                    }
-//                    JSONArray userDates1 = getUserDates(chkInEs);
-//                    // 调用首尾统计用户打卡时间方法
-//                    JSONObject testChkInSumHeadTail1 = testChkInSumHeadTail(normalWorkTime, userDates1, id_U, teDur
-//                            , isAutoCardReplacement, isSumSpecialTime, ovt, tPre, tPost, tLate, tAbsent,thisDate,chkType,id_C);
-//                    System.out.println("testChkInSumHeadTail1:");
-//                    System.out.println(JSON.toJSONString(testChkInSumHeadTail1));
-//                }
                 return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
             }
         }
@@ -233,8 +186,8 @@ public class HrServiceImpl implements HrService {
         JSONObject grpInfo = depInfo.getJSONObject(userLBUserInfo.getString("grpU"));
         // 获取默认班日( 0（1到5），1(1到6)，2（大小周），3（按月放假天）)
         String dayType = grpInfo.getString("dayType");
-        // 按月放假天数
-        int dayOff = grpInfo.getInteger("dayOff");
+//        // 按月放假天数
+//        int dayOff = grpInfo.getInteger("dayOff");
         // 必须打卡日期
         JSONArray dayMust = grpInfo.getJSONArray("dayMust");
         // 无须打卡日期
@@ -272,17 +225,25 @@ public class HrServiceImpl implements HrService {
                 JSONObject data = logFlow.getData();
                 dates.put(data.getString("theSameDay"),jsonObject.getJSONObject("data").getJSONObject("chkInData"));
             }
-//            int[] thisYearAndMonth = getThisYearAndMonth();
-//            JSONArray thisMonth = getThisMonth(thisYearAndMonth[0], thisYearAndMonth[1]);
+            // 调用方法获取指定年和月的一个月所有日期
             JSONArray thisMonth = getThisMonth(year, month);
+            // 每天打卡记录存储
             JSONObject userChkInData = new JSONObject();
+            // 当月总打卡记录存储
             JSONObject userChkInMonthData = new JSONObject();
+            // 所有上班时间
             long totalTimeAll = 0;
+            // 所有早退时间
             long earlyTimeAll = 0;
+            // 所有迟到时间
             long lateTimeAll = 0;
+            // 所有缺勤时间
             long absenceTimeAll = 0;
+            // 总缺勤数
             long absenteeismSum = 0;
+            // 所有公司每天天需要上班的总时间
             long ordinaryWorkTimeAll = 0;
+            // 所有加班时间
             long overtimeAll = 0;
             for (int i = 0; i < thisMonth.size(); i++) {
                 String thisDate = thisMonth.getString(i);
@@ -912,10 +873,6 @@ public class HrServiceImpl implements HrService {
                         // 添加为零时间到正常上班时间分段集合
                         originList.add(0L);
                     }
-//                    // 添加为零时间到正常上班时间集合
-//                    originTimeList.add(0L);
-//                    // 添加为零时间到正常上班时间分段集合
-//                    originList.add(0L);
                     // 遍历范围时间集合
                     for (int i = 0; i < upperBelowBetween.size(); i++) {
                         long betweenTime = upperBelowBetween.getLong(i);
@@ -982,10 +939,6 @@ public class HrServiceImpl implements HrService {
                         // 添加为零时间到正常上班时间分段集合
                         originList.add(0L);
                     }
-//                    // 添加为零时间到正常上班时间集合
-//                    originTimeList.add(0L);
-//                    // 添加为零时间到正常上班时间分段集合
-//                    originList.add(0L);
                     // 获取中间下班时间
                     Long centreTime1 = upperBelowBetween.getLong(1);
                     // 获取中间上班时间
@@ -1387,22 +1340,17 @@ public class HrServiceImpl implements HrService {
             data.put("theSameDay",theSameDay);
             data.put("chkInData",chkInData);
             LocalDate date = getDate(theSameDay);
-            data.put("month",date.getMonthValue());
-            data.put("year",date.getYear());
+            data.put("month",(date.getMonthValue())+"");
+            data.put("year",(date.getYear())+"");
         } else {
-            data.put("month",month);
-            data.put("year",year);
+            data.put("month",month+"");
+            data.put("year",year+"");
             data.put("chkInData",chkInData);
         }
         if (null != chkType) {
             data.put("chkType",chkType);
         }
         logFlow.setData(data);
-//        JSONArray id_Us = getUsersById_Q(id_C, id, id_U);
-//        if (null != id_Us) {
-//            logFlow.setId_Us(id_Us);
-//            ws.sendWS(logFlow);
-//        }
         logFlow.setId_Us(qt.setArray(id_U));
         ws.sendWS(logFlow);
     }

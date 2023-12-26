@@ -47,6 +47,12 @@ public class Comp {
 
     private Integer bcdNet ;
 
+    /**
+     * 合同记录
+     * zj+
+     */
+    private JSONObject contract;
+
     private Integer tvs = 1;
 
 }

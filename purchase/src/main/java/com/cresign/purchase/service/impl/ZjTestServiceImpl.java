@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.purchase.service.ZjTestService;
+import com.cresign.purchase.utils.ExcelUtils;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.CosUpload;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
@@ -18,8 +20,11 @@ import com.cresign.tools.pojo.es.lNComp;
 import com.cresign.tools.pojo.es.lNUser;
 import com.cresign.tools.pojo.es.lSBComp;
 import com.cresign.tools.pojo.po.*;
+import com.cresign.tools.pojo.po.compCard.CompInfo;
+import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.cresign.tools.uuid.UUID19;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -28,6 +33,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -53,6 +60,8 @@ public class ZjTestServiceImpl implements ZjTestService {
     private MongoTemplate mongoTemplate;
     @Autowired
     private HttpServletResponse response;
+    @Autowired
+    private CosUpload cos;
     private static final String sharePrefix = "share";
 
     @Override
@@ -397,9 +406,7 @@ public class ZjTestServiceImpl implements ZjTestService {
 //        String shareId = (uuid+"").replace("-","");
         String shareId = (uuid+"").replace("-","");
         System.out.println(shareId);
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("shareId",shareId);
-        System.out.println(JSON.toJSONString(jsonObject));
+//        System.out.println(JSON.toJSONString(jsonObject));
         boolean isSetRd = true;
         if (null == tdur) {
             tdur = (long)(86400*2);
@@ -413,7 +420,7 @@ public class ZjTestServiceImpl implements ZjTestService {
             data.put("shareId",shareId);
             qt.addES("linkflow",data);
         }
-        return retResult.ok(CodeEnum.OK.getCode(), jsonObject);
+        return retResult.ok(CodeEnum.OK.getCode(), shareId);
     }
 
     @Override
@@ -587,6 +594,8 @@ public class ZjTestServiceImpl implements ZjTestService {
                 shareId = UUID.randomUUID().toString().replace("-","");
                 qt.setES("lNComp",qt.setESFilt("_id",object.getString("id_ES")),qt.setJson("qr",shareId));
             }
+//            JSONObject result = new JSONObject();
+//            result.put("shareId",shareId);
             return retResult.ok(CodeEnum.OK.getCode(), shareId);
         }
         throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
@@ -603,6 +612,8 @@ public class ZjTestServiceImpl implements ZjTestService {
                 shareId = UUID.randomUUID().toString().replace("-","");
                 qt.setES("lBProd",qt.setESFilt("_id",object.getString("id_ES")),qt.setJson("qr",shareId));
             }
+//            JSONObject result = new JSONObject();
+//            result.put("shareId",shareId);
             return retResult.ok(CodeEnum.OK.getCode(), shareId);
         }
         throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
@@ -619,6 +630,8 @@ public class ZjTestServiceImpl implements ZjTestService {
                 shareId = UUID.randomUUID().toString().replace("-","");
                 qt.setES("lBInfo",qt.setESFilt("_id",object.getString("id_ES")),qt.setJson("qr",shareId));
             }
+//            JSONObject result = new JSONObject();
+//            result.put("shareId",shareId);
             return retResult.ok(CodeEnum.OK.getCode(), shareId);
         }
         throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
@@ -774,7 +787,6 @@ public class ZjTestServiceImpl implements ZjTestService {
         qt.addES("lncomp", lncomp);
         qt.addES("lsbcomp", lsbcomp);
 
-
         //a-auth
         JSONObject authObject = newSpace.getJSONObject("a-auth");
 
@@ -791,7 +803,6 @@ public class ZjTestServiceImpl implements ZjTestService {
             userFlowData.put("imp", 3);
             flowList.getJSONObject(i).getJSONArray("objUser").add(userFlowData);
         }
-
 
         //调用
         JSONObject asset = this.createAsset(new_id_C, qt.GetObjectId(), "a-auth", authObject);
@@ -928,7 +939,9 @@ public class ZjTestServiceImpl implements ZjTestService {
         JSONArray lNUser = qt.getES("lNUser", qt.setESFilt("id_U", "exact",id_U));
         if (null != lNUser && lNUser.size() > 0) {
             String id_C = lNUser.getJSONObject(0).getString("id_C");
-            qt.delES("lsbComp",qt.setESFilt("id_C","exact",id_C));
+            if (null != id_C && !"".equals(id_C)) {
+                qt.delES("lsbComp",qt.setESFilt("id_C","exact",id_C));
+            }
         }
         qt.delES("lNUser",qt.setESFilt("id_U","exact",id_U));
         return retResult.ok(CodeEnum.OK.getCode(), "删除成功");
@@ -999,6 +1012,281 @@ public class ZjTestServiceImpl implements ZjTestService {
         logFlow.setData(data);
         ws.sendWS(logFlow);
         return retResult.ok(CodeEnum.OK.getCode(), "打卡成功");
+    }
+
+    @Override
+    public ApiResponse getOnLine(String id_U) {
+        JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, id_U); // appID? /mqKey
+        // 判断redis信息为空
+        if (null == rdInfo) {
+            throw new ErrorResponseException(HttpStatus.FORBIDDEN, ErrEnum.ERR_GET_DATA_NULL.getCode(), null);
+        }
+        JSONObject result = new JSONObject();
+        for (String cli : rdInfo.keySet()) {
+            JSONObject cliInfo = rdInfo.getJSONObject(cli);
+            if (null != cliInfo && cliInfo.containsKey("wsData")) {
+                result.put(cli,"true");
+            } else {
+                result.put(cli,"false");
+            }
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), result);
+    }
+
+    @Override
+    public ApiResponse delLBUser(String id_U,String id_C) {
+        qt.delES("lBUser",qt.setESFilt("id_U",id_U,"id_C",id_C));
+        User user = qt.getMDContent(id_U, "rolex", User.class);
+        if (user == null || null == user.getRolex()) {
+            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), null);
+        }
+        JSONObject rolex = user.getRolex();
+        JSONObject objComp = rolex.getJSONObject("objComp");
+        objComp.remove(id_C);
+        qt.setMDContent(id_U,qt.setJson("rolex"), User.class);
+        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+    }
+
+    @Override
+    public ApiResponse testEx(String id_C,String fileName,String id_U
+            ,int subTypeStatus,String year,String month,JSONArray arrField) {
+        /*
+         {
+            "filtKey": "id_C",
+            "method": "eq",
+            "filtVal": ""
+         }
+         */
+
+        /*
+    [
+        {
+            "isEx": true,
+            "field": "wrdN",
+            "txt": "名称",
+            "valType": "lang",
+            "isWarp": true
+        },
+        {
+            "isEx": true,
+            "field": "wrddesc",
+            "txt": "描述",
+            "valType": "lang",
+            "isWarp": true
+        },
+        {
+            "isEx": true,
+            "field": "ref",
+            "txt": "编号",
+            "valType": "String",
+            "isWarp": true
+        },
+        {
+            "isEx": true,
+            "field": "tmd",
+            "txt": "更新日期",
+            "valType": "String",
+            "isWarp": true
+        }
+    ]
+         */
+//        String id_C = "6076a1c7f3861e40c87fd294";
+//        String fileName = "chkin统计表";
+        JSONObject exData = getExData(id_C, id_U, subTypeStatus, year, month, arrField);
+        try {
+            File excel = ExcelUtils.createExcel2(exData.getJSONArray("arrayField"), exData.getJSONArray("arrayExcel"), new JSONArray(), new JSONArray());
+            // 上传到cfiles桶
+//            cos.uploadCFiles()
+            // 上传到cresign桶
+            JSONObject jsonUpload = cos.uploadCresignStat(excel,  "Chkin/" + DateUtils.getDateNow(DateEnum.DATE_FOLDER.getDate()) + "/", fileName + DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
+            qt.checkCapacity(id_C, jsonUpload.getLong("size"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    public JSONObject getExData(String id_C,String id_U,int subTypeStatus,String year,String month,JSONArray arrField) {
+        String subType;
+        if (subTypeStatus == 1) {
+            subType = "monthChkin";
+        } else {
+            subType = "dayChkin";
+        }
+        JSONArray filterArray = qt.setESFilt("id_C",id_C,"id_U",id_U
+                ,"subType",subType,"data.year",year,"data.month",month);
+        JSONArray arrayEs = qt.getES("usageflow", filterArray);
+        JSONArray arrayField = new JSONArray();
+        JSONObject fieldObj;
+        for (int i = 0; i < arrField.size(); i++) {
+            JSONObject arrObj = arrField.getJSONObject(i);
+            fieldObj = new JSONObject();
+            fieldObj.put("isEx",true);
+            fieldObj.put("field",arrObj.getString("field"));
+            fieldObj.put("txt",arrObj.getString("txt"));
+            fieldObj.put("valType",arrObj.getString("valType"));
+            fieldObj.put("isWarp",true);
+            fieldObj.put("maxWidth",20000);
+            fieldObj.put("align","center");
+            arrayField.add(fieldObj);
+        }
+        System.out.println("arrayEs:");
+        System.out.println(JSON.toJSONString(arrayEs));
+        JSONArray arrayResult = new JSONArray();
+        for (int i = 0; i < arrayEs.size(); i++) {
+            JSONObject jsonEs = arrayEs.getJSONObject(i);
+            JSONArray arrayRow = new JSONArray();
+            for (int j = 0; j < arrayField.size(); j++) {
+                JSONObject jsonField = arrayField.getJSONObject(j);
+                String field = jsonField.getString("field");
+                String valType = jsonField.getString("valType");
+
+                switch (valType) {
+                    case "String":
+                        if (jsonEs == null || jsonEs.getString(field) == null) {
+                            arrayRow.add("");
+                        } else {
+                            arrayRow.add(jsonEs.getString(field));
+                        }
+                        break;
+                    case "Integer":
+                        if (jsonEs == null || jsonEs.getInteger(field) == null) {
+                            arrayRow.add(0);
+                        } else {
+                            arrayRow.add(jsonEs.getInteger(field));
+                        }
+                        break;
+                    case "Double":
+                        if (jsonEs == null || jsonEs.getDouble(field) == null) {
+                            arrayRow.add(0.0);
+                        } else {
+                            arrayRow.add(jsonEs.getDouble(field));
+                        }
+                        break;
+                    case "Long":
+                        if (jsonEs == null || jsonEs.getLong(field) == null) {
+                            arrayRow.add(0L);
+                        } else {
+                            arrayRow.add(jsonEs.getLong(field));
+                        }
+                        break;
+                    case "lang":
+                        if (jsonEs == null || jsonEs.getJSONObject(field) == null || jsonEs.getJSONObject(field).getString("cn") == null) {
+                            arrayRow.add("");
+                        } else {
+                            arrayRow.add(jsonEs.getJSONObject(field).getString("cn"));
+                        }
+                        break;
+                    case "logData":
+                        if (jsonEs == null || jsonEs.getJSONObject("data") == null || jsonEs.getJSONObject("data").getString(field) == null) {
+                            arrayRow.add("");
+                        } else {
+                            arrayRow.add(""+jsonEs.getJSONObject("data").getString(field)+"  ");
+                        }
+                        break;
+                    case "chkInData":
+                        if (jsonEs == null || jsonEs.getJSONObject("data") == null
+                                || jsonEs.getJSONObject("data").getJSONObject("chkInData") == null
+                                || jsonEs.getJSONObject("data").getJSONObject("chkInData").getString(field) == null) {
+                            arrayRow.add("");
+                        } else {
+                            switch (field) {
+                                // 总要求上班时间
+                                case "teDur":
+                                // 总上班时间
+                                case "taAll":
+                                // 普通上班时间
+                                case "taDur":
+                                // 加班时间
+                                case "taOver": {
+                                    Long fieldVal = jsonEs.getJSONObject("data").getJSONObject("chkInData").getLong(field);
+                                    arrayRow.add("" + (fieldVal / 60 / 60) + "(小时)");
+                                    break;
+                                }
+                                // 缺勤时间
+                                case "taMiss":
+                                // 早退时间
+                                case "taPre":
+                                // 特殊上班时间
+                                case "taExtra":
+                                // 迟到时间
+                                case "taLate": {
+                                    Long fieldVal = jsonEs.getJSONObject("data").getJSONObject("chkInData").getLong(field);
+                                    arrayRow.add("" + (fieldVal / 60) + "(分钟)");
+                                    break;
+                                }
+                                // 特殊上班开始时间集合
+                                case "taPex":
+                                // 特殊上班结束时间集合
+                                case "taNex":
+                                // 正常上班时间
+                                case "arrTime": {
+                                    JSONArray fieldArr = jsonEs.getJSONObject("data").getJSONObject("chkInData").getJSONArray(field);
+                                    if (null != fieldArr && fieldArr.size() > 0) {
+                                        JSONArray timeToStr = getTimeToStr(fieldArr);
+                                        StringBuilder timeStr = new StringBuilder();
+                                        for (int v = 0; v < timeToStr.size(); v++) {
+                                            String val = timeToStr.getString(v);
+                                            String[] sp = val.split(" ");
+                                            if (v >= timeToStr.size() - 1) {
+                                                timeStr.append(sp[1]);
+                                            } else {
+                                                timeStr.append(sp[1]).append(",");
+                                            }
+                                        }
+                                        arrayRow.add("" + timeStr + "");
+                                    } else {
+                                        arrayRow.add("    无    ");
+                                    }
+                                    break;
+                                }
+                                // 是否旷工
+                                case "isAEM": {
+                                    boolean fieldVal = jsonEs.getJSONObject("data").getJSONObject("chkInData").getBoolean(field);
+                                    arrayRow.add("" + (fieldVal ? "是" : "否") + "    ");
+                                    break;
+                                }
+                                default:
+                                    arrayRow.add("" + jsonEs.getJSONObject("data").getJSONObject("chkInData").getString(field) + "    ");
+                                    break;
+                            }
+                        }
+                        break;
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + valType);
+                }
+            }
+            arrayResult.add(arrayRow);
+        }
+        JSONObject jsonResult = new JSONObject();
+        jsonResult.put("arrayExcel", arrayResult);
+        jsonResult.put("arrayField", arrayField);
+        return jsonResult;
+    }
+    /**
+     * 将long时间转换成字符串时间
+     * @param timeList  long时间集合
+     * @return  转换后的字符串时间集合
+     */
+    public JSONArray getTimeToStr(JSONArray timeList){
+        JSONArray correctWorkDateStr = new JSONArray();
+        for (int i = 0; i < timeList.size(); i++) {
+            correctWorkDateStr.add(getDeDate(timeList.getLong(i)));
+        }
+        return correctWorkDateStr;
+    }
+    /**
+     * 将date转换成字符串时间
+     * @param date  long时间
+     * @return  字符串时间
+     */
+    public String getDeDate(long date){
+        if (date == 0) {
+            return "0";
+        }
+        Date dateNew = new Date(date*1000);
+        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate());
+        return sdf.format(dateNew);
     }
 
     public LocalDate getDate(String dateStr){

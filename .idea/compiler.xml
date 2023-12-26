@@ -19,6 +19,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="action" options="-parameters" />
+      <module name="ccpl" options="-parameters" />
       <module name="chat" options="-parameters" />
       <module name="gateway" options="-parameters" />
       <module name="login" options="-parameters" />

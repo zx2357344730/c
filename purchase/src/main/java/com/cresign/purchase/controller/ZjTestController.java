@@ -342,4 +342,39 @@ public class ZjTestController {
             return getUserToken.err(new JSONObject(), "ZjTestController.removeUser", e);
         }
     }
+
+    @SecurityParameter
+    @PostMapping("/v1/getOnLine")
+    public ApiResponse getOnLine() {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.getOnLine(tokData.getString("id_U"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getOnLine", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/delLBUser")
+    public ApiResponse delLBUser(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.delLBUser(resJson.getString("id_U"), resJson.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.delLBUser", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/testEx")
+    public ApiResponse testEx(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.testEx(tokData.getString("id_C"), resJson.getString("fileName")
+                    , tokData.getString("id_U"), resJson.getInteger("subTypeStatus"), resJson.getString("year")
+                    , resJson.getString("month"),resJson.getJSONArray("arrField") );
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.testEx", e);
+        }
+    }
 }

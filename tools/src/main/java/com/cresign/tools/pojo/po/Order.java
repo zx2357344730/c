@@ -81,6 +81,12 @@ public class Order {
 
     private JSONObject tempa;
 
+    /**
+     * 劳动合同
+     * zj+
+     */
+    private JSONObject work;
+
     private Integer tvs = 1;
 
 }

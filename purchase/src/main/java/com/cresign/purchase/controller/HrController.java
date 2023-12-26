@@ -33,6 +33,11 @@ public class HrController {
     @Autowired
     private HrService hrService;
 
+    /**
+     * 根据统计日期统计打卡时间
+     * @param reqJson 请求参数
+     * @return  返回结果
+     */
     @SecurityParameter
     @PostMapping("/v1/statisticsChKin")
     public ApiResponse statisticsChKin(@RequestBody JSONObject reqJson) {
@@ -47,6 +52,11 @@ public class HrController {
         }
     }
 
+    /**
+     * 按月统计打卡信息
+     * @param reqJson 请求参数
+     * @return  统计结果
+     */
     @SecurityParameter
     @PostMapping("/v1/statisticsChKinMonth")
     public ApiResponse statisticsChKinMonth(@RequestBody JSONObject reqJson) {

@@ -51,4 +51,11 @@ public interface ZjTestService {
     ApiResponse genChkinCode(String id_C);
 
     ApiResponse scanChkinCode(String id_U,String token);
+
+    ApiResponse getOnLine(String id_U);
+
+    ApiResponse delLBUser(String id_U,String id_C);
+
+    ApiResponse testEx(String id_C,String fileName,String id_U
+            ,int subTypeStatus,String year,String month,JSONArray arrField);
 }
