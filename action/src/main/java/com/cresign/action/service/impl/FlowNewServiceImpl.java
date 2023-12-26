@@ -3,7 +3,6 @@ package com.cresign.action.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-//import com.cresign.action.common.ActionEnum;
 import com.cresign.action.service.FlowNewService;
 import com.cresign.action.utils.DgCheckUtil;
 import com.cresign.action.utils.TaskObj;
@@ -787,7 +786,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                 objOItem.setGrp("");
             }
 
-            objOItem.setWn2qtyneed(upperOItem.getWn2qtyneed() * partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"));
+            objOItem.setWn2qtyneed(dbb.multiply(upperOItem.getWn2qtyneed(),partArray.getJSONObject(partIndex).getDouble("wn4qtyneed")));
 
             objAction = new OrderAction(100, 0, 1, partInfo.getInteger("bmdpt"),
                     id_OParent, upperAction.getRefOP(), partInfo.getString("id_P"), newOrderId, newOrderIndex, objOItem.getRKey(), 0
@@ -1297,7 +1296,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 
             Integer ind = mergeJ.getInteger(unitOItem.getId_P());
             OrderODate oDa = oDates.get(ind);
-            oDa.setWn2qtyneed(oDa.getWn2qtyneed() + currentQty);
+            oDa.setWn2qtyneed(dbb.add(oDa.getWn2qtyneed(),currentQty));
             oDates.set(ind, oDa);
 
 //            // **System.out.println(id_OP + finO);

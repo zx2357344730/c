@@ -25,6 +25,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Map;
 
 /**
@@ -661,6 +662,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
         /*
           1. 先检查公司是否存在
           2. 将用户加入公司
+          type: 0 = joinComp, 1 = joinVisitor
          */
 
         Comp compOne = qt.getMDContent(entries.get("id_C").toString(), "info", Comp.class);
@@ -709,34 +711,28 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
         JSONArray searchResult = qt.getES("lbuser", qt.setESFilt("id_CB", entries.get("id_C"), "id_U", join_user ),1);
 
-        if (searchResult.size() == 0) {
-
-            // 查询要加入公司的数据
-//            Query joinCompQ = new Query(new Criteria("_id").is(entries.get("id_C")));
-//            joinCompQ.fields().include("info");
-//            Comp compOne = mongoTemplate.findOne(joinCompQ, Comp.class);
-            //JSONObject compOne = (JSONObject) JSON.toJSON(mongoTemplate.findOne(joinCompQ, Comp.class));
-
-            lBUser addLBUser = new lBUser(join_user, entries.get("id_C").toString(), userJson.getInfo().getWrdN(),
-                    compOne.getInfo().getWrdN(), userJson.getInfo().getWrdNReal(),userJson.getInfo().getWrddesc(), "1009",
-                    userJson.getInfo().getMbn(), "", userJson.getInfo().getId_WX(), userJson.getInfo().getPic(),"1000");
-
-            qt.addES("lbuser",qt.toJson(addLBUser));
-
-            //在这里发switchComp 的日志
-            JSONObject data = qt.setJson("type", "addComp");
-            LogFlow log = new LogFlow();
-            log.setSysLog(entries.get("id_C").toString(), "mut_switch", "加入新公司", 3, qt.setJson("cn", "系统权限更新"));
-            log.setId_Us(qt.setArray(join_user));
-            log.setData(data);
-            ws.sendWS(log);
-
-
-            return retResult.ok(CodeEnum.OK.getCode(), null);
-
+        if (searchResult.size() > 0)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_JOIN_IS_HAVE.getCode(), null);
         }
-        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-                USER_JOIN_IS_HAVE.getCode(), null);
+
+        lBUser addLBUser = new lBUser(join_user, entries.get("id_C").toString(), userJson.getInfo().getWrdN(),
+                compOne.getInfo().getWrdN(), userJson.getInfo().getWrdNReal(),userJson.getInfo().getWrddesc(), "1009",
+                userJson.getInfo().getMbn(), "", userJson.getInfo().getId_WX(), userJson.getInfo().getPic(),"1000");
+
+        qt.addES("lbuser",qt.toJson(addLBUser));
+
+        //在这里发switchComp 的日志
+        JSONObject data = qt.setJson("type", "addComp");
+        LogFlow log = new LogFlow();
+        log.setSysLog(entries.get("id_C").toString(), "mut_switch", "加入新公司", 3, qt.setJson("cn", "系统权限更新"));
+        log.setId_Us(qt.setArray(join_user));
+        log.setData(data);
+        ws.sendWS(log);
+
+
+        return retResult.ok(CodeEnum.OK.getCode(), null);
+
     }
 
 

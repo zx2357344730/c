@@ -205,13 +205,15 @@ public class UsageServiceImpl implements UsageService {
         objType.put(type, new JSONArray());
         initCookie.put(id_C, objType);
 
-
-        //TODO KEV  checknull and init mechanism
         if (user.getCookiex() == null)
         {
             qt.setMDContent(id_U, qt.setJson("cookiex", initCookie), User.class);
+            return retResult.ok(CodeEnum.OK.getCode(), new JSONArray());
+
         } else if (user.getCookiex().getJSONObject(id_C) == null){
             qt.setMDContent(id_U, qt.setJson("cookiex."+ id_C, objType), User.class);
+            return retResult.ok(CodeEnum.OK.getCode(), new JSONArray());
+
         } else if (user.getCookiex().getJSONObject(id_C).getJSONArray(type) == null)
         {
             qt.setMDContent(id_U, qt.setJson("cookiex."+ id_C + "." + type, new JSONArray()), User.class);

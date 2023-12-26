@@ -3,21 +3,14 @@ package com.cresign.tools.dbTools;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.common.Constants;
-import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.pojo.po.LogFlow;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,16 +23,16 @@ import java.util.regex.Pattern;
 @Service
 public class Ut {
 
-    public static final String DEF_CHATSET = "UTF-8";
-    public static final int DEF_CONN_TIMEOUT = 30000;
-    public static final int DEF_READ_TIMEOUT = 30000;
+//    public static final String DEF_CHATSET = "UTF-8";
+//    public static final int DEF_CONN_TIMEOUT = 30000;
+//    public static final int DEF_READ_TIMEOUT = 30000;
     /**
      * 定义正则表达式
      */
     private static final Pattern NUMBER_PATTERN = Pattern.compile("-?[0-9]+(\\.[0-9]+)?");
 
-    @Autowired
-    private  MongoTemplate mongoTemplate;
+//    @Autowired
+//    private  MongoTemplate mongoTemplate;
 
     /**
      * 判断数字integer是否为空
@@ -49,9 +42,9 @@ public class Ut {
      * @ver 1.0.0
      * ##Updated: 2020/9/15 10:59
      */
-    public static int isNull(Integer integer){
-        return integer==null?0:integer;
-    }
+//    public static int isNull(Integer integer){
+//        return integer==null?0:integer;
+//    }
 
     /**
      * 判断字符串是否为空，是返回true
@@ -65,13 +58,13 @@ public class Ut {
         return null == name || Constants.STRING_EMPTY.equals(name) || name.length() == 0;
     }
 
-    private String nullFix(String str){
-        if (null == str) {
-            return "";
-        } else {
-            return str;
-        }
-    }
+//    private String nullFix(String str){
+//        if (null == str) {
+//            return "";
+//        } else {
+//            return str;
+//        }
+//    }
 
 
     /**
@@ -221,17 +214,17 @@ public class Ut {
      * @updated 2020/11/16 22:23
      * @return java.lang.String
      */
-    public static String urlencode(Map<String,Object>data) {
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry i : data.entrySet()) {
-            try {
-                sb.append(i.getKey()).append("=").append(URLEncoder.encode(i.getValue()+"","UTF-8")).append("&");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
-        return sb.toString();
-    }
+//    public static String urlencode(Map<String,Object>data) {
+//        StringBuilder sb = new StringBuilder();
+//        for (Map.Entry i : data.entrySet()) {
+//            try {
+//                sb.append(i.getKey()).append("=").append(URLEncoder.encode(i.getValue()+"","UTF-8")).append("&");
+//            } catch (UnsupportedEncodingException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        return sb.toString();
+//    }
 
 
     /**
@@ -255,11 +248,11 @@ public class Ut {
      * @ver 1.0.0
      * ##Updated: 2020/8/6 11:19
      */
-    public static String trimZero(String s) {
-        BigDecimal value = new BigDecimal(s);
-        BigDecimal noZeros = value.stripTrailingZeros();
-        return noZeros.toPlainString();
-    }
+//    public static String trimZero(String s) {
+//        BigDecimal value = new BigDecimal(s);
+//        BigDecimal noZeros = value.stripTrailingZeros();
+//        return noZeros.toPlainString();
+//    }
 
 
     /**
@@ -298,9 +291,9 @@ public class Ut {
      * @ver 1.0.0
      * ##Updated: 2020/8/6 11:20
      */
-    public static int getMathRandom(int shu){
-        return (int)(Math.random()*shu);
-    }
+//    public static int getMathRandom(int shu){
+//        return (int)(Math.random()*shu);
+//    }
 
 
 
@@ -402,21 +395,21 @@ public class Ut {
         }
         return 0;
     }
-
-    /**
-     * 将obj转换成double
-     * @param obj	需要转换的数值
-     * @return java.lang.Double  返回结果: 结果
-     * @author tang
-     * @ver 1.0.0
-     * ##Updated: 2020/8/6 11:29
-     */
-    public static Double objToDouble(Object obj) {
-        if (obj != null) {
-            return Double.parseDouble(obj.toString());
-        }
-        return 0.0;
-    }
+//
+//    /**
+//     * 将obj转换成double
+//     * @param obj	需要转换的数值
+//     * @return java.lang.Double  返回结果: 结果
+//     * @author tang
+//     * @ver 1.0.0
+//     * ##Updated: 2020/8/6 11:29
+//     */
+//    public static Double objToDouble(Object obj) {
+//        if (obj != null) {
+//            return Double.parseDouble(obj.toString());
+//        }
+//        return 0.0;
+//    }
 
 
 
@@ -445,19 +438,19 @@ public class Ut {
 //        }
 //    }
 
-    /**
-     * 对list集合进行排序
-     * @param list	集合
-     * @return void  返回结果: 结果
-     * @author tang
-     * @ver 1.0.0
-     * ##Updated: 2020/8/6 11:32
-     */
-    public static void listSort(List<LogFlow> list) {
-
-        sortIs(Constants.INT_ONE, list, DateEnum.DATE_TIME_FULL.getDate());
-
-    }
+//    /**
+//     * 对list集合进行排序
+//     * @param list	集合
+//     * @return void  返回结果: 结果
+//     * @author tang
+//     * @ver 1.0.0
+//     * ##Updated: 2020/8/6 11:32
+//     */
+//    public static void listSort(List<LogFlow> list) {
+//
+//        sortIs(Constants.INT_ONE, list, DateEnum.DATE_TIME_FULL.getDate());
+//
+//    }
 
     /**
      * 将list根据dateType按照is进行排序
@@ -547,38 +540,38 @@ public class Ut {
      * @ver 1.0.0
      * ##Updated: 2020/8/6 11:33
      */
-    public static void listSort2(List<LogFlow> list) {
-        sortIs(Constants.INT_TWO, list, DateEnum.DATE_TIME_FULL.getDate());
-    }
-
-    /**
-     * 对list集合进行排序
-     * @param list	集合
-     * @return void  返回结果: 结果
-     * @author tang
-     * @ver 1.0.0
-     * ##Updated: 2020/8/6 11:33
-     */
-    public static void listSortOb(List<String> list) {
-
-        //重写原list的排序方法
-        list.sort((o1, o2) -> {
-
-            //捕捉异常
-            try {
-
-                return o2.compareTo(o1);
-
-            } catch (Exception e /*捕捉所有异常*/) {
-
-                //抛出异常信息
-                e.printStackTrace();
-            }
-
-            //返回结果
-            return 0;
-        });
-    }
+//    public static void listSort2(List<LogFlow> list) {
+//        sortIs(Constants.INT_TWO, list, DateEnum.DATE_TIME_FULL.getDate());
+//    }
+//
+//    /**
+//     * 对list集合进行排序
+//     * @param list	集合
+//     * @return void  返回结果: 结果
+//     * @author tang
+//     * @ver 1.0.0
+//     * ##Updated: 2020/8/6 11:33
+//     */
+//    public static void listSortOb(List<String> list) {
+//
+//        //重写原list的排序方法
+//        list.sort((o1, o2) -> {
+//
+//            //捕捉异常
+//            try {
+//
+//                return o2.compareTo(o1);
+//
+//            } catch (Exception e /*捕捉所有异常*/) {
+//
+//                //抛出异常信息
+//                e.printStackTrace();
+//            }
+//
+//            //返回结果
+//            return 0;
+//        });
+//    }
 
 
     /**
@@ -588,45 +581,45 @@ public class Ut {
      //     * @param find     查询结果
      //     * @return Jevon
      //     */
-    public List<Object> contentMap(String listType, List<Object> find) {
-        List<Object> contentList = new LinkedList<>();
-
-        for (int i = 0; i < find.size(); i++){
-
-            //  把id的数据换成id_P的数据
-            JSONObject contentMap = (JSONObject) JSONObject.toJSON(find.get(i));
+//    public List<Object> contentMap(String listType, List<Object> find) {
+//        List<Object> contentList = new LinkedList<>();
 //
-//            if (contentMap.getJSONObject("wrdN") != null){
-//                contentMap.put("wrdN", contentMap.getJSONObject("wrdN").getString(request.getHeader("lang")));
-//            } if (contentMap.getJSONObject("wrddesc") != null){
-//                contentMap.put("wrddesc", contentMap.getJSONObject("wrddesc").getString(request.getHeader("lang")));
-//            } if (null != contentMap.getJSONObject("wrdNC")) {
-//                contentMap.put("wrdNC", contentMap.getJSONObject("wrdNC").getString(request.getHeader("lang")));
-//            }  if (null != contentMap.getJSONObject("wrdNCB")){
-//                contentMap.put("wrdNCB", contentMap.getJSONObject("wrdNCB").getString(request.getHeader("lang")));
+//        for (int i = 0; i < find.size(); i++){
+//
+//            //  把id的数据换成id_P的数据
+//            JSONObject contentMap = (JSONObject) JSONObject.toJSON(find.get(i));
+////
+////            if (contentMap.getJSONObject("wrdN") != null){
+////                contentMap.put("wrdN", contentMap.getJSONObject("wrdN").getString(request.getHeader("lang")));
+////            } if (contentMap.getJSONObject("wrddesc") != null){
+////                contentMap.put("wrddesc", contentMap.getJSONObject("wrddesc").getString(request.getHeader("lang")));
+////            } if (null != contentMap.getJSONObject("wrdNC")) {
+////                contentMap.put("wrdNC", contentMap.getJSONObject("wrdNC").getString(request.getHeader("lang")));
+////            }  if (null != contentMap.getJSONObject("wrdNCB")){
+////                contentMap.put("wrdNCB", contentMap.getJSONObject("wrdNCB").getString(request.getHeader("lang")));
+////            }
+//
+//            if (listType.equals("lBProd") || listType.equals("lSProd")) {
+//                contentMap.put("id", contentMap.get("id_P"));
+//            } else if (listType.equals("lBInfo") || listType.equals("lSInfo") ) {
+//                contentMap.put("id", contentMap.get("id_I"));
+//            } else if (listType.equals("lBOrder") || listType.equals("lSOrder") ) {
+//                contentMap.put("id", contentMap.get("id_O"));
+//            } else if (listType.equals("lBComp")) {
+//                contentMap.put("id", contentMap.get("id_C"));
+//            } else if (listType.equals("lBUser") || listType.equals("lSUser") ) {
+//                contentMap.put("id", contentMap.get("id_U"));
+//            } else if (listType.equals("lSComp")) {
+//                contentMap.put("id", contentMap.get("id_CB"));
+//            } else if (listType.equals("lSAsset") || listType.equals("lBAsset") ) {
+//                contentMap.put("id", contentMap.get("id_A"));
 //            }
-
-            if (listType.equals("lBProd") || listType.equals("lSProd")) {
-                contentMap.put("id", contentMap.get("id_P"));
-            } else if (listType.equals("lBInfo") || listType.equals("lSInfo") ) {
-                contentMap.put("id", contentMap.get("id_I"));
-            } else if (listType.equals("lBOrder") || listType.equals("lSOrder") ) {
-                contentMap.put("id", contentMap.get("id_O"));
-            } else if (listType.equals("lBComp")) {
-                contentMap.put("id", contentMap.get("id_C"));
-            } else if (listType.equals("lBUser") || listType.equals("lSUser") ) {
-                contentMap.put("id", contentMap.get("id_U"));
-            } else if (listType.equals("lSComp")) {
-                contentMap.put("id", contentMap.get("id_CB"));
-            } else if (listType.equals("lSAsset") || listType.equals("lBAsset") ) {
-                contentMap.put("id", contentMap.get("id_A"));
-            }
-
-            contentList.add(contentMap);
-        }
-
-        return contentList;
-    }
+//
+//            contentList.add(contentMap);
+//        }
+//
+//        return contentList;
+//    }
 
 //    /**
 //     * 检查公司ref是否唯一

@@ -3,8 +3,6 @@ package com.cresign.login.service;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 
-import java.io.IOException;
-
 /**
  * ##description:
  * @author JackSon

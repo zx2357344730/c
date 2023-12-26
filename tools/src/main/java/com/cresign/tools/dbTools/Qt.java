@@ -593,29 +593,29 @@ public class Qt {
     public void errPrint(String title, Exception e, Object... vars)
     {
 
-        try {
-            System.out.println("****[" + title + "]****");
-            for (Object item : vars) {
-                if (item == null) {
-                    System.out.println("....null");
-                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
-                    System.out.println(this.toJArray(item));
-                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
-                        item.getClass().toString().startsWith("class java.util")) {
-                    System.out.println(this.toJson(item));
-                } else {
-                    System.out.println(item);
-                }
-            }
-            System.out.println("*****[End]*****");
-
-            if (e != null)
-                e.printStackTrace();
-        }
-        catch (Exception ex)
-        {
-            System.out.println("****" + title + " is NULL ****");
-        }
+//        try {
+//            System.out.println("****[" + title + "]****");
+//            for (Object item : vars) {
+//                if (item == null) {
+//                    System.out.println("....null");
+//                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
+//                    System.out.println(this.toJArray(item));
+//                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
+//                        item.getClass().toString().startsWith("class java.util")) {
+//                    System.out.println(this.toJson(item));
+//                } else {
+//                    System.out.println(item);
+//                }
+//            }
+//            System.out.println("*****[End]*****");
+//
+//            if (e != null)
+//                e.printStackTrace();
+//        }
+//        catch (Exception ex)
+//        {
+//            System.out.println("****" + title + " is NULL ****");
+//        }
     }
 
     public void errPrint(String title, Object... vars)
@@ -1221,6 +1221,67 @@ public class Qt {
         return result;
     }
 
+    public JSONObject listTypeSetter(String listType)
+    {
+        switch (listType) {
+            case "lBProd":
+               return setJson("idCol", "id_P", "compCol", "id_CB", "indexType", listType,
+                    "group", "grpB", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+            case "lSProd":
+                return setJson("idCol", "id_P", "compCol", "id_C", "indexType", listType,
+                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+            case "lBUser":
+                return setJson("idCol", "id_U", "compCol", "id_CB", "indexType", listType,
+                        "group", "grpU", "ref", "refU", "pic", "pic", "wrdN", "wrdN");
+            case "lSUser":
+                return setJson("idCol", "id_U", "compCol", "id_C", "indexType", listType,
+                        "group", "grp", "ref", "refU", "pic", "pic", "wrdN", "wrdN");
+
+            case "lBInfo":
+                return setJson("idCol", "id_I", "compCol", "id_CB", "indexType", listType,
+                        "group", "grpB", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+            case "lSInfo":
+                return setJson("idCol", "id_I", "compCol", "id_C", "indexType", listType,
+                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+
+            case "lBComp":
+                return setJson("idCol", "id_C", "compCol", "id_CB", "indexType", "lSBComp",
+                        "group", "grpB", "ref", "refCB", "pic", "picCB", "wrdN", "wrdNCB");
+            case "lSComp":
+                return setJson("idCol", "id_CB", "compCol", "id_C", "indexType", "lSBComp",
+                        "group", "grp", "ref", "refC", "pic", "picC", "wrdN", "wrdNC");
+
+            case "lBOrder":
+                return setJson("idCol", "id_O", "compCol", "id_CB", "indexType", "lSBOrder",
+                        "group", "grpB", "ref", "refB", "pic", "pic", "wrdN", "wrdN");
+
+            case "lSOrder":
+                return setJson("idCol", "id_O", "compCol", "id_C", "indexType", "lSBOrder",
+                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+
+            case "lNComp":
+                return setJson("idCol", "none", "compCol", "none", "indexType", "lNComp",
+                        "group", "", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+
+            case "lNUser":
+                return setJson("idCol", "id_U", "compCol", "none", "indexType", "lNUser",
+                        "group", "", "ref", "refU", "pic", "pic", "wrdN", "wrdN");
+
+            case "lBAsset":
+                return setJson("idCol", "id_A", "compCol", "id_CB", "indexType", listType,
+                        "group", "grpB", "ref", "refB", "pic", "pic", "wrdN", "wrdN");
+
+            case "lSAsset":
+                return setJson("idCol", "id_A", "compCol", "id_C", "indexType", listType,
+                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+
+            default: // either lSAsset & lSProd
+                return setJson("idCol", "none", "compCol", "none", "indexType", listType,
+                        "group", "grpB", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+
+        }
+    }
+
 
     //ES////////////////////////////////////////////-------------------------------
 
@@ -1246,6 +1307,18 @@ public class Qt {
             e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
         }
+    }
+
+    public <T> T getESItem(String index, String id, Class<T> classType)
+    {
+        JSONArray listProdES = this.getES(index, this.setESFilt("id_P", id));
+        if (listProdES.size() != 1)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_DATA_NULL.getCode(), "");
+        }
+
+        T prodES = JSONObject.parseObject(JSON.toJSONString(listProdES.getJSONObject(0)), classType);
+        return prodES;
     }
 
     public JSONArray getES(String index, JSONArray filterArray) {
