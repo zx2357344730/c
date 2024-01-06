@@ -58,4 +58,33 @@ public interface ZjTestService {
 
     ApiResponse testEx(String id_C, String fileName, String id_U
             , int subTypeStatus, String year, String month, JSONArray arrField);
+
+    ApiResponse addCompSpace(String id_U,String id_C, JSONObject wrdN, JSONObject wrddesc, String pic, String ref);
+
+    ApiResponse addWorkContract(String id_U,String id_CB,int money,int year
+            ,JSONObject contJ,JSONObject contY,String grpB,String dep);
+
+    ApiResponse sumTimeChkIn(String id_C,String id_U,int subTypeStatus,int year,JSONArray monthArr);
+
+    ApiResponse getEsShow(String index,JSONObject keyVal,int size);
+
+    ApiResponse delEs(String index,String id_ES);
+
+    ApiResponse addOItemAllow(String id_O,String wrdN,String ref,double allow,double pr,double wn4pr);
+
+    ApiResponse sumOItemAllow(String id_O);
+
+    ApiResponse setOItem(String id_O,int index,JSONObject keyVal);
+
+    ApiResponse activeOffline(String id_U,String client);
+
+    ApiResponse allowLogin(String id_U,String client);
+
+    ApiResponse requestLogin(String id_U, String clientOld);
+
+    ApiResponse updatePartAll(String id_P,double wn4pr,long teDur,long tePrep);
+
+    ApiResponse updateAllObjItemByArrP();
+
+    ApiResponse updateAllObjItemByTime();
 }

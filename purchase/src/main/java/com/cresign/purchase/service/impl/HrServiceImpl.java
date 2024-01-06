@@ -235,85 +235,136 @@ public class HrServiceImpl implements HrService {
             long totalTimeAll = 0;
             // 所有早退时间
             long earlyTimeAll = 0;
+            // 所有早退次数
+            int earlySumAll = 0;
             // 所有迟到时间
             long lateTimeAll = 0;
+            // 所有迟到次数
+            int lateSumAll = 0;
             // 所有缺勤时间
             long absenceTimeAll = 0;
+            // 总缺旷工勤数
+            long AEMSum = 0;
             // 总缺勤数
-            long absenteeismSum = 0;
+            long missSumAll = 0;
             // 所有公司每天天需要上班的总时间
             long ordinaryWorkTimeAll = 0;
             // 所有加班时间
             long overtimeAll = 0;
+            // 所有特殊上班时间
+            long taExtraAll = 0;
             for (int i = 0; i < thisMonth.size(); i++) {
+                // 获取当前for循环日期
                 String thisDate = thisMonth.getString(i);
+                // 定义一开始，需要打卡
                 boolean isMiss = false;
+                // 遍历无需打卡日期列表
                 for (int j = 0; j < dayMiss.size(); j++) {
+                    // 获取当前循环无需打卡日期
                     String missDate = dayMiss.getString(j);
+                    // 判断等于当前循环日期
                     if (thisDate.equals(missDate)) {
+                        // 设置为，无需打卡
                         isMiss = true;
                         break;
                     }
                 }
+                // 判断无需打卡
                 if (isMiss) {
+                    // 开始下一次循环
                     continue;
                 }
+                // 定义不必须打卡
                 boolean isMust = false;
+                // 遍历必须打卡日期列表
                 for (int j = 0; j < dayMust.size(); j++) {
+                    // 获取当前必须打卡日期
                     String mustDate = dayMust.getString(j);
+                    // 判断日期等于当前循环日期
                     if (thisDate.equals(mustDate)) {
+                        // 设置为必须打卡
                         isMust = true;
                         break;
                     }
                 }
+                // 定义设置为不打卡
                 boolean isContinue = false;
+                // 判断是必需打卡
                 if (isMust) {
+                    // 设置为要打卡
                     isContinue = true;
                 } else {
+                    // 判断默认班日类型为0
                     if (dayType.equals("0")) {
+                        // 获取当前日期的星期
                         int week = dateToWeek(thisDate);
+                        // 判断不是星期天和星期六
                         if (week != 0 && week != 6) {
+                            // 设置为要打卡
                             isContinue = true;
                         }
+                    // 判断默认班日类型为1
                     } else if (dayType.equals("1")) {
+                        // 获取当前日期的星期
                         int week = dateToWeek(thisDate);
+                        // 判断不是星期天
                         if (week != 0) {
+                            // 设置为要打卡
                             isContinue = true;
                         }
                     }
                 }
+                // 判断要打卡
                 if (isContinue) {
                     JSONObject userChkInInfo = dates.getJSONObject(thisDate);
+                    JSONObject thisChkInInfo = new JSONObject();
                     if (null == userChkInInfo) {
+                        AEMSum++;
+                        thisChkInInfo.put("isAEM",true);
+                        userChkInData.put(thisDate,thisChkInInfo);
                         continue;
                     }
                     System.out.println("userChkInInfo:"+thisDate);
                     System.out.println(JSON.toJSONString(userChkInInfo));
-                    JSONObject thisChkInInfo = new JSONObject();
+//                    JSONObject thisChkInInfo = new JSONObject();
                     thisChkInInfo.put("arrTime",userChkInInfo.getJSONArray("arrTime"));
-                    Long taAll = userChkInInfo.getLong("taAll");
+                    long taAll = userChkInInfo.getLong("taAll");
                     totalTimeAll+=taAll;
                     thisChkInInfo.put("taAll",taAll);
-                    Long taOver = userChkInInfo.getLong("taOver");
+                    long taOver = userChkInInfo.getLong("taOver");
                     overtimeAll+=taOver;
                     thisChkInInfo.put("taOver",taOver);
-                    Long taLate = userChkInInfo.getLong("taLate");
+                    long taLate = userChkInInfo.getLong("taLate");
                     lateTimeAll+=taLate;
                     thisChkInInfo.put("taLate",taLate);
-                    Long taPre = userChkInInfo.getLong("taPre");
+                    int taLateSum = userChkInInfo.getInteger("taLateSum");
+                    lateSumAll+=taLateSum;
+                    thisChkInInfo.put("taLateSum",taLateSum);
+                    long taPre = userChkInInfo.getLong("taPre");
                     earlyTimeAll+=taPre;
                     thisChkInInfo.put("taPre",taPre);
-                    Long taMiss = userChkInInfo.getLong("taMiss");
+                    int taPreSum = userChkInInfo.getInteger("taPreSum");
+                    earlySumAll+=taPreSum;
+                    thisChkInInfo.put("taPreSum",taPreSum);
+                    long taMiss = userChkInInfo.getLong("taMiss");
                     absenceTimeAll+=taMiss;
                     thisChkInInfo.put("taMiss",taMiss);
-                    Long taDur = userChkInInfo.getLong("taDur");
+                    int taMissSum = userChkInInfo.getInteger("taMissSum");
+                    missSumAll+=taMissSum;
+                    thisChkInInfo.put("taMissSum",taMissSum);
+                    long taDur = userChkInInfo.getLong("taDur");
                     ordinaryWorkTimeAll+=taDur;
                     thisChkInInfo.put("taDur",taDur);
-                    Boolean isAEM = userChkInInfo.getBoolean("isAEM");
+                    boolean isAEM = userChkInInfo.getBoolean("isAEM");
                     if (isAEM) {
-                        absenteeismSum++;
+                        AEMSum++;
                     }
                     thisChkInInfo.put("isAEM",isAEM);
+                    if (userChkInInfo.containsKey("taExtra")) {
+                        long taExtra = userChkInInfo.getLong("taExtra");
+                        taExtraAll+=taExtra;
+                        thisChkInInfo.put("taExtra",taExtra);
+                    }
                     userChkInData.put(thisDate,thisChkInInfo);
                 }
             }
@@ -321,9 +372,13 @@ public class HrServiceImpl implements HrService {
             userChkInMonthData.put("taPreAll",earlyTimeAll);
             userChkInMonthData.put("taLateAll",lateTimeAll);
             userChkInMonthData.put("taMissAll",absenceTimeAll);
-            userChkInMonthData.put("AEMSum",absenteeismSum);
+            userChkInMonthData.put("AEMSum",AEMSum);
             userChkInMonthData.put("taDurAll",ordinaryWorkTimeAll);
             userChkInMonthData.put("taOverAll",overtimeAll);
+            userChkInMonthData.put("earlySumAll",earlySumAll);
+            userChkInMonthData.put("lateSumAll",lateSumAll);
+            userChkInMonthData.put("taMissSumAll",missSumAll);
+            userChkInMonthData.put("taExtraAll",taExtraAll);
             result.put("userChkInData",userChkInData);
             result.put("userChkInMonthData",userChkInMonthData);
             sendMsg(id_C,id_U,"monthChkin",null,result,null,year,month);
@@ -406,8 +461,12 @@ public class HrServiceImpl implements HrService {
         JSONArray correctTimeList = new JSONArray();
         // 迟到时间
         long lateTime = 0;
+        // 迟到次数
+        int lateSum = 0;
         // 早退时间
         long earlyTime = 0;
+        // 早退次数
+        int earlySum = 0;
         for (int i = 0; i < normalWorkTime.size(); i+=2) {
             // 获取规定上班时间
             Long upper = normalWorkTime.getLong(i);
@@ -447,9 +506,11 @@ public class HrServiceImpl implements HrService {
             }
             long[] evenBetweenTime = getEvenBetweenTime(upperBelowBetween, originTimeList, originList
                     , correctTimeList, correctList, upper, below, isAutoCardReplacement
-                    , normalWorkList,lateTime,earlyTime);
+                    , normalWorkList,lateTime,earlyTime,lateSum,earlySum);
             lateTime = evenBetweenTime[0];
             earlyTime = evenBetweenTime[1];
+            lateSum = Integer.parseInt(evenBetweenTime[2]+"");
+            earlySum = Integer.parseInt(evenBetweenTime[3]+"");
             // 将正常分段时间添加到正常分段集合
             originTimeSegmentList.add(originList);
             // 将纠正分段时间添加到纠正分段集合
@@ -457,7 +518,7 @@ public class HrServiceImpl implements HrService {
         }
         return getSumChkInResult(id_U,id_C,correctTimeList,originTimeList,correctTimeSegmentList,originTimeSegmentList
                 ,normalWorkSegmentTime,ovt,lateTime,earlyTime,tLate,tAbsent,teDur,isSumSpecialTime
-                ,normalWorkTime,userDates,tPre,tPost,theSameDay,chkType);
+                ,normalWorkTime,userDates,tPre,tPost,theSameDay,chkType,lateSum,earlySum);
     }
 
     /**
@@ -489,8 +550,12 @@ public class HrServiceImpl implements HrService {
         JSONArray correctTimeList = new JSONArray();
         // 迟到时间
         long lateTime = 0;
+        // 迟到次数
+        int lateSum = 0;
         // 早退时间
         long earlyTime = 0;
+        // 早退次数
+        int earlySum = 0;
         for (int i = 0; i < normalWorkTime.size(); i+=2) {
             // 获取规定上班时间
             Long upper = normalWorkTime.getLong(i);
@@ -531,9 +596,11 @@ public class HrServiceImpl implements HrService {
             }
             long[] evenBetweenTime = getEvenBetweenTime(upperBelowBetweenNew, originTimeList, originList
                     , correctTimeList, correctList, upper, below, isAutoCardReplacement
-                    , normalWorkList,lateTime,earlyTime);
+                    , normalWorkList,lateTime,earlyTime,lateSum,earlySum);
             lateTime = evenBetweenTime[0];
             earlyTime = evenBetweenTime[1];
+            lateSum = Integer.parseInt(evenBetweenTime[2]+"");
+            earlySum = Integer.parseInt(evenBetweenTime[3]+"");
             // 将正常分段时间添加到正常分段集合
             originTimeSegmentList.add(originList);
             // 将纠正分段时间添加到纠正分段集合
@@ -541,7 +608,7 @@ public class HrServiceImpl implements HrService {
         }
         return getSumChkInResult(id_U,id_C,correctTimeList,originTimeList,correctTimeSegmentList,originTimeSegmentList
                 ,normalWorkSegmentTime,ovt,lateTime,earlyTime,tLate,tAbsent,teDur,isSumSpecialTime
-                ,normalWorkTime,userDates,tPre,tPost,theSameDay,chkType);
+                ,normalWorkTime,userDates,tPre,tPost,theSameDay,chkType,lateSum,earlySum);
     }
 
     /**
@@ -568,7 +635,8 @@ public class HrServiceImpl implements HrService {
             ,JSONArray correctTimeSegmentList
             ,JSONArray originTimeSegmentList,JSONArray normalWorkSegmentTime,JSONArray ovt
             ,long lateTime,long earlyTime,long tLate,long tAbsent,long teDur,boolean isSumSpecialTime
-            ,JSONArray normalWorkTime,JSONArray userDates,long tPre,long tPost,String theSameDay,String chkType){
+            ,JSONArray normalWorkTime,JSONArray userDates,long tPre,long tPost,String theSameDay
+            ,String chkType,int lateSum,int earlySum){
         System.out.println();
         System.out.println("-------------------- "+id_U+" --------------------");
         System.out.println("正常时间纠正 - correctTimeList:");
@@ -587,6 +655,8 @@ public class HrServiceImpl implements HrService {
         long overtime = 0;
         // 定义存储缺勤时间
         long absenceTime = 0;
+        // 存储缺勤次数
+        int absenceSum = 0;
         // 定义存储普通上班时间
         long ordinaryWorkTime;
         // 遍历纠正时间集合
@@ -634,6 +704,7 @@ public class HrServiceImpl implements HrService {
                 Long ownBelow = normalWork.getLong(1);
                 // 使用规定下标时间减去规定上班时间得到缺勤时间
                 absenceTime += ownBelow - ownUpper;
+                absenceSum++;
             }
         }
         // 遍历规定加班时间段
@@ -666,11 +737,13 @@ public class HrServiceImpl implements HrService {
         if (lateTime >= tLate) {
             // 设置为缺勤时间
             absenceTime += lateTime;
+            absenceSum++;
         }
         // 判断早退时间大于严重迟到时间
         if (earlyTime >= tLate) {
             // 设置为缺勤时间
             absenceTime += earlyTime;
+            absenceSum++;
         }
         // 判断缺勤时间大于矿工迟到时间，为true说明旷工，为false说明正常
         boolean isAbsenteeism = absenceTime >= tAbsent;
@@ -757,12 +830,18 @@ public class HrServiceImpl implements HrService {
         result.put("taDur",ordinaryWorkTime);
         // 添加迟到时间
         result.put("taLate",lateTime);
+        // 添加迟到次数
+        result.put("taLateSum",lateSum);
         // 添加早退时间
         result.put("taPre",earlyTime);
+        // 添加早退次数
+        result.put("taPreSum",earlySum);
         // 添加加班时间
         result.put("taOver",overtime);
         // 添加缺勤时间
         result.put("taMiss",absenceTime);
+        // 添加缺勤次数
+        result.put("taMissSum",absenceSum);
         // 添加公司规定一天需要上班的总时间
         result.put("teDur",teDur);
         sendMsg(id_C,id_U,"dayChkin",theSameDay,result,chkType,0,0);
@@ -784,9 +863,10 @@ public class HrServiceImpl implements HrService {
      */
     public long[] getEvenBetweenTime(JSONArray upperBelowBetween,JSONArray originTimeList
             ,JSONArray originList,JSONArray correctTimeList,JSONArray correctList,Long upper
-            ,Long below,boolean isAutoCardReplacement,JSONArray normalWorkList,long lateTime,long earlyTime){
+            ,Long below,boolean isAutoCardReplacement,JSONArray normalWorkList,long lateTime
+            ,long earlyTime,int lateSum,int earlySum){
         // 定义存储返回结果时间数组
-        long[] resultTime = new long[2];
+        long[] resultTime = new long[4];
         // 判断范围时间长度为偶数
         if (upperBelowBetween.size() % 2 == 0) {
             // 添加正常上班时间集合
@@ -802,6 +882,7 @@ public class HrServiceImpl implements HrService {
             } else {
                 // 迟到时间累加
                 lateTime += upperBelowBetween.getLong(0) - upper;
+                lateSum++;
                 // 添加正常上班时间到纠正时间集合
                 correctTimeList.add(upperBelowBetween.getLong(0));
                 // 添加正常上班时间到纠正时间分段集合
@@ -824,6 +905,7 @@ public class HrServiceImpl implements HrService {
             } else {
                 // 早退时间累加
                 earlyTime += below - upperBelowBetween.getLong(upperBelowBetween.size() - 1);
+                earlySum++;
                 // 添加正常下班时间到纠正时间集合
                 correctTimeList.add(upperBelowBetween.getLong(upperBelowBetween.size() - 1));
                 // 添加正常下班时间到纠正时间分段集合
@@ -864,6 +946,7 @@ public class HrServiceImpl implements HrService {
                     } else {
                         // 迟到时间累加
                         lateTime += upperBelowBetween.getLong(0) - upper;
+                        lateSum++;
                         // 添加为零上班时间到纠正时间集合
                         correctTimeList.add(0L);
                         // 添加为零上班时间到纠正时间分段集合
@@ -890,9 +973,15 @@ public class HrServiceImpl implements HrService {
                     // 获取中间上班时间
                     Long centreTime2 = upperBelowBetween.getLong(1);
                     // 使用中间上班时间减中间下班时间，得到中间时间差
-                    earlyTime += centreTime2 - centreTime1;
+                    long l = centreTime2 - centreTime1;
+                    if (l > 0) {
+                        earlyTime += centreTime2 - centreTime1;
+                        earlySum++;
+                    }
                     resultTime[0] = lateTime;
                     resultTime[1] = earlyTime;
+                    resultTime[2] = lateSum;
+                    resultTime[3] = earlySum;
                     return resultTime;
                 }
                 // 判断最后一个时间为下班时间
@@ -930,6 +1019,7 @@ public class HrServiceImpl implements HrService {
                     } else {
                         // 获取早退时间
                         earlyTime += below - upperBelowBetween.getLong(upperBelowBetween.size() - 1);
+                        earlySum++;
                         // 添加为零上班时间到纠正时间集合
                         correctTimeList.add(0L);
                         // 添加为零上班时间到纠正时间分段集合
@@ -944,9 +1034,14 @@ public class HrServiceImpl implements HrService {
                     // 获取中间上班时间
                     Long centreTime2 = upperBelowBetween.getLong(2);
                     // 使用中间上班时间减中间下班时间，得到中间时间差
-                    earlyTime += centreTime2 - centreTime1;
+                    long l = centreTime2 - centreTime1;
+                    if (l > 0) {
+                        earlyTime += centreTime2 - centreTime1;
+                        earlySum++;
+                    }
                 }
                 resultTime[1] = earlyTime;
+                resultTime[3] = earlySum;
                 return resultTime;
             } else {
                 // 获取单时间
@@ -1035,9 +1130,11 @@ public class HrServiceImpl implements HrService {
                         if (isUpper) {
                             // 获取迟到时间
                             lateTime += (oneTime - reverseTime);
+                            lateSum++;
                         } else {
                             // 获取早退时间
                             earlyTime += (reverseTime - oneTime);
+                            earlySum++;
                         }
                     }
                 }
@@ -1073,6 +1170,8 @@ public class HrServiceImpl implements HrService {
         }
         resultTime[0] = lateTime;
         resultTime[1] = earlyTime;
+        resultTime[2] = lateSum;
+        resultTime[3] = earlySum;
         return resultTime;
     }
 

@@ -1793,6 +1793,15 @@ public class Qt {
                         String joinStr = StringUtils.join((List<String>) conditionMap.get("filtVal"), " OR ");
                         queryBuilder.must(QueryBuilders.queryStringQuery(joinStr).field(conditionMap.getString("filtKey")));
                         break;
+                    case "containList":
+                        System.out.println("--containList:--");
+                        System.out.println(JSON.toJSONString(conditionMap.get("filtVal")));
+                        List<String> filtValList = new ArrayList<>();
+                        filtValList.add(conditionMap.getString("filtVal"));
+                        //设定条件  OR    contain：包含
+                        String joinStrList = StringUtils.join(filtValList, " OR ");
+                        queryBuilder.must(QueryBuilders.queryStringQuery(joinStrList).field(conditionMap.getString("filtKey")));
+                        break;
 //                        case "timeRange":
 //                            JSONArray filtList = conditionMap.getJSONArray("filtVal");
 //                            //.from（）是时间格式，.gte（）.lte（）  时间范围

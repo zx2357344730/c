@@ -377,4 +377,169 @@ public class ZjTestController {
             return getUserToken.err(new JSONObject(), "ZjTestController.testEx", e);
         }
     }
+
+    @SecurityParameter
+    @PostMapping("/v1/addCompSpace")
+    public ApiResponse addCompSpace(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.addCompSpace(resJson.getString("id_U"),resJson.getString("id_C")
+                    ,resJson.getJSONObject("wrdN"), resJson.getJSONObject("wrddesc")
+                    , resJson.getString("pic"), resJson.getString("ref") );
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.addCompSpace", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/addWorkContract")
+    public ApiResponse addWorkContract(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.addWorkContract(resJson.getString("id_U"), resJson.getString("id_CB")
+                    , resJson.getInteger("money"), resJson.getInteger("year")
+                    , resJson.getJSONObject("contJ"),resJson.getJSONObject("contY")
+                    ,resJson.getString("grpB"),resJson.getString("dep"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.addWorkContract", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/sumTimeChkIn")
+    public ApiResponse sumTimeChkIn(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.sumTimeChkIn(resJson.getString("id_C"), resJson.getString("id_U")
+                    , resJson.getInteger("subTypeStatus"), resJson.getInteger("year")
+                    , resJson.getJSONArray("monthArr"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.sumTimeChkIn", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getEsShow")
+    public ApiResponse getEsShow(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.getEsShow(resJson.getString("index"), resJson.getJSONObject("keyVal"),resJson.getInteger("size"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getEsShow", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/delEs")
+    public ApiResponse delEs(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.delEs(resJson.getString("index"),resJson.getString("id_ES"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.delEs", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/addOItemAllow")
+    public ApiResponse addOItemAllow(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.addOItemAllow(resJson.getString("id_O"), resJson.getString("wrdN")
+                    ,resJson.getString("ref"),resJson.getDouble("allow"),resJson.getDouble("pr")
+                    ,resJson.getDouble("wn4pr"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.addOItemAllow", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/sumOItemAllow")
+    public ApiResponse sumOItemAllow(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.sumOItemAllow(resJson.getString("id_O"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.sumOItemAllow", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/setOItem")
+    public ApiResponse setOItem(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.setOItem(resJson.getString("id_O"),resJson.getInteger("index")
+                    ,resJson.getJSONObject("keyVal"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.setOItem", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/activeOffline")
+    public ApiResponse activeOffline(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.activeOffline(tokData.getString("id_U"),resJson.getString("client"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.activeOffline", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/allowLogin")
+    public ApiResponse allowLogin(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.allowLogin(tokData.getString("id_U"),resJson.getString("client"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.allowLogin", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/requestLogin")
+    public ApiResponse requestLogin(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.requestLogin(resJson.getString("id_U"),resJson.getString("client"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.requestLogin", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/updatePartAll")
+    public ApiResponse updatePartAll(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.updatePartAll(resJson.getString("id_P"),resJson.getDouble("wn4pr")
+                    ,resJson.getLong("teDur"), resJson.getLong("tePrep"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.updatePartAll", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/updateAllObjItemByArrP")
+    public ApiResponse updateAllObjItemByArrP() {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.updateAllObjItemByArrP();
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.updateAllObjItemByArrP", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/updateAllObjItemByTime")
+    public ApiResponse updateAllObjItemByTime() {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.updateAllObjItemByTime();
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.updateAllObjItemByTime", e);
+        }
+    }
 }

@@ -547,6 +547,8 @@ public enum ErrEnum {
     LS_PROD_NOT_FOUND("051010"),
     //lBProd不存在
     LB_PROD_NOT_FOUND("051011"),
+    //lSBProd不存在
+    LSB_PROD_NOT_FOUND("051018"),
     //lSInfo不存在
     LS_INFO_NOT_FOUND("051012"),
     //lBInfo不存在

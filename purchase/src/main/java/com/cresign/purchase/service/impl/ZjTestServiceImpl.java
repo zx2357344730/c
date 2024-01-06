@@ -15,10 +15,7 @@ import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
-import com.cresign.tools.pojo.es.lBUser;
-import com.cresign.tools.pojo.es.lNComp;
-import com.cresign.tools.pojo.es.lNUser;
-import com.cresign.tools.pojo.es.lSBComp;
+import com.cresign.tools.pojo.es.*;
 import com.cresign.tools.pojo.po.*;
 import com.cresign.tools.pojo.po.compCard.CompInfo;
 import com.cresign.tools.pojo.po.orderCard.OrderInfo;
@@ -39,6 +36,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -713,12 +711,22 @@ public class ZjTestServiceImpl implements ZjTestService {
 
     @Override
     public ApiResponse addBlankCompNew(JSONObject tokData, JSONObject wrdN, JSONObject wrddesc, String pic, String ref) {
+
+
+        return retResult.ok(CodeEnum.OK.getCode(),addCompSp(tokData.getString("id_U"),tokData.getString("id_C")
+                ,wrdN,wrddesc,pic,ref));
+    }
+
+    private String addCompSp(String id_U,String id_C, JSONObject wrdN, JSONObject wrddesc, String pic, String ref){
         String new_id_C = qt.GetObjectId();
+        if (null == id_C || "".equals(id_C)) {
+            id_C = new_id_C;
+        }
 
         InitJava init = qt.getInitData();
         JSONObject newSpace = init.getNewSpace();
         Comp comp = qt.jsonTo(newSpace.getJSONObject("comp"), Comp.class);
-        String uid = tokData.getString("id_U");
+//        String uid = tokData.getString("id_U");
 
         //如果reqJson为空，则添加默认公司，否则从reqJson里面取公司基本信息
 
@@ -758,7 +766,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         mod1.put("a-core-3", val);
         rolex.put("modAuth", mod1);
 
-        qt.setMDContent(uid,qt.setJson("rolex.objComp."+new_id_C,rolex), User.class);
+        qt.setMDContent(id_U,qt.setJson("rolex.objComp."+new_id_C,rolex), User.class);
 
         //a-core
         JSONObject coreObject = newSpace.getJSONObject("a-core");
@@ -767,23 +775,23 @@ public class ZjTestServiceImpl implements ZjTestService {
         coreObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         // add me into control's a-core-3 as the only User
-        coreObject.getJSONObject("control").getJSONObject("objMod").getJSONObject("a-core-3").getJSONArray("id_U").add(uid);
+        coreObject.getJSONObject("control").getJSONObject("objMod").getJSONObject("a-core-3").getJSONArray("id_U").add(id_U);
         //调用
         this.createAsset(new_id_C, qt.GetObjectId() ,"a-core",coreObject);
 
-        User user = qt.getMDContent(uid, "info", User.class);
+        User user = qt.getMDContent(id_U, "info", User.class);
 
-        lBUser lbuser = new lBUser(uid,new_id_C,user.getInfo().getWrdN(),comp.getInfo().getWrdN(),
+        lBUser lbuser = new lBUser(id_U,new_id_C,user.getInfo().getWrdN(),comp.getInfo().getWrdN(),
                 user.getInfo().getWrdNReal(),user.getInfo().getWrddesc(),"1001",user.getInfo().getMbn(),
                 "",user.getInfo().getId_WX(),user.getInfo().getPic(),"1000");
 
         qt.addES( "lbuser", lbuser);
 
-        Comp cSeller = qt.getMDContent(tokData.getString("id_C"), "info", Comp.class);
+        Comp cSeller = qt.getMDContent(id_C, "info", Comp.class);
 
         lNComp lncomp = new lNComp(new_id_C,new_id_C,comp.getInfo().getWrdN(),comp.getInfo().getWrddesc(),comp.getInfo().getRef(),comp.getInfo().getPic());
 
-        lSBComp lsbcomp = new lSBComp(tokData.getString("id_C"),tokData.getString("id_C"),new_id_C,new_id_C, cSeller.getInfo().getWrdN(),cSeller.getInfo().getWrddesc(),
+        lSBComp lsbcomp = new lSBComp(id_C,id_C,new_id_C,new_id_C, cSeller.getInfo().getWrdN(),cSeller.getInfo().getWrddesc(),
                 comp.getInfo().getWrdN(),comp.getInfo().getWrddesc(),"1000","1000",comp.getInfo().getRef(),ref,cSeller.getInfo().getPic(),comp.getInfo().getPic());
         qt.addES("lncomp", lncomp);
         qt.addES("lsbcomp", lsbcomp);
@@ -799,7 +807,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         for (Integer i = 0; i < flowList.size(); i++)
         {
             JSONObject userFlowData = new JSONObject();
-            userFlowData.put("id_U", uid);
+            userFlowData.put("id_U", id_U);
             userFlowData.put("id_APP", user.getInfo().getId_APP());
             userFlowData.put("imp", 3);
             flowList.getJSONObject(i).getJSONArray("objUser").add(userFlowData);
@@ -808,8 +816,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         //调用
         JSONObject asset = this.createAsset(new_id_C, qt.GetObjectId(), "a-auth", authObject);
         System.out.println(JSON.toJSONString(asset));
-
-        return retResult.ok(CodeEnum.OK.getCode(),new_id_C);
+        return new_id_C;
     }
 
     private JSONObject createAsset(String id_C,String id ,String ref,JSONObject data) {
@@ -1102,9 +1109,11 @@ public class ZjTestServiceImpl implements ZjTestService {
             JSONObject jsonUpload = cos.uploadCresignStat(excel,  "Chkin/" + DateUtils.getDateNow(DateEnum.DATE_FOLDER.getDate()) + "/", fileName + DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
             qt.checkCapacity(id_C, jsonUpload.getLong("size"));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_FAILF.getCode(),e.getMessage());
         }
-        return null;
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                LOG_FAILF.getCode(),"");
     }
 
     public JSONObject getExData(String id_C,String id_U,int subTypeStatus,String year,String month,JSONArray arrField) {
@@ -1117,6 +1126,10 @@ public class ZjTestServiceImpl implements ZjTestService {
         JSONArray filterArray = qt.setESFilt("id_C",id_C,"id_U",id_U
                 ,"subType",subType,"data.year",year,"data.month",month);
         JSONArray arrayEs = qt.getES("usageflow", filterArray);
+        if (null == arrayEs || arrayEs.size() == 0) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_GET_DATA_NULL.getCode(),"");
+        }
         JSONArray arrayField = new JSONArray();
         JSONObject fieldObj;
         for (int i = 0; i < arrField.size(); i++) {
@@ -1292,5 +1305,648 @@ public class ZjTestServiceImpl implements ZjTestService {
 
     public LocalDate getDate(String dateStr){
         return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern(DateEnum.DATE_TIME_FULL.getDate()));
+    }
+
+    @Override
+    public ApiResponse addCompSpace(String id_U,String id_C, JSONObject wrdN, JSONObject wrddesc, String pic, String ref) {
+        JSONArray lNUser = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
+        if (null == lNUser || lNUser.size() == 0) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LN_USER_NOT_FOUND.getCode(),"");
+        }
+//        String compId = qt.GetObjectId();
+        JSONObject user = lNUser.getJSONObject(0);
+//        InitJava init = qt.getInitData();
+//        JSONObject newSpace = init.getNewSpace();
+//        Comp comp = qt.jsonTo(newSpace.getJSONObject("comp"), Comp.class);
+//        //如果reqJson为空，则添加默认公司，否则从reqJson里面取公司基本信息
+//        JSONObject wrdN = new JSONObject();
+//        wrdN.put("cn",id_U+"空间");
+//        //用户填写公司信息
+//        comp.getInfo().setWrdN(wrdN);
+//        JSONObject wrddesc = new JSONObject();
+//        wrddesc.put("cn","空间");
+//        comp.getInfo().setWrddesc(wrddesc);
+//        comp.getInfo().setPic("");
+//        comp.getInfo().setRef(id_U+"Ref");
+//
+//
+//        comp.getInfo().setId_CP(compId);
+//        comp.getInfo().setId_CM(compId);
+//        comp.getInfo().setId_C(compId);
+//        comp.getInfo().setTmk(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//        comp.getInfo().setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//        //真公司标志
+//        comp.setBcdNet(1);
+//        comp.setId(compId);
+//        JSONArray view = new JSONArray();
+//        view.add("info");
+//        view.add("contract");
+//        view.add("view");
+//        comp.setView(view);
+//        comp.setContract(new JSONObject());
+//        qt.addMD(comp);
+        String compId = addCompSp(id_U,id_C, wrdN,wrddesc,pic,ref);
+        qt.setES("lNUser",user.getString("id_ES"),qt.setJson("id_C",compId));
+//        Comp comp = new Comp();
+//        CompInfo infoComp = new CompInfo();
+//        infoComp.setTmk(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//        infoComp.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//        infoComp.setId_C(compId);
+//        infoComp.setRef(id_U+"Comp");
+//        JSONObject wrdN = new JSONObject();
+//        wrdN.put("cn",id_U+"-公司");
+//        infoComp.setWrdN(wrdN);
+
+        return retResult.ok(CodeEnum.OK.getCode(), compId);
+    }
+
+    @Override
+    public ApiResponse addWorkContract(String id_U,String id_CB,int money,int year
+            ,JSONObject contJ,JSONObject contY,String grpB,String dep) {
+        JSONArray lNUser = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
+        if (null == lNUser || lNUser.size() == 0) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LN_USER_NOT_FOUND.getCode(),"");
+        }
+        JSONObject user = lNUser.getJSONObject(0);
+        String id_C = user.getString("id_C");
+        Comp comp = qt.getMDContent(id_C, "", Comp.class);
+        if (null == comp || null == comp.getContract()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    COMP_NOT_FOUND.getCode(),"");
+        }
+        JSONObject contract = comp.getContract();
+        JSONObject objOrder = contract.getJSONObject("objOrder");
+        if (null == objOrder) {
+            objOrder = new JSONObject();
+        } else {
+            if (null != objOrder.getString("id_O")) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                        LOG_FAILF.getCode(),"");
+            }
+        }
+        String orderId = qt.GetObjectId();
+        objOrder.put("id_O",orderId);
+        objOrder.put("time",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        objOrder.put("id_U",id_U);
+        qt.setMDContent(id_C,qt.setJson("contract.objOrder",objOrder), Comp.class);
+        Order order = new Order();
+        order.setId(orderId);
+        OrderInfo orderInfo = new OrderInfo();
+        orderInfo.setId_C(id_C);
+        orderInfo.setId_CB(id_CB);
+        JSONObject orderNameCas = new JSONObject();
+        orderNameCas.put("cn",id_U+":合同");
+        orderInfo.setWrdN(orderNameCas);
+        JSONObject actionOrder = new JSONObject();
+        order.setAction(actionOrder);
+        JSONObject oItemOrder = new JSONObject();
+        order.setOItem(oItemOrder);
+        JSONObject workOrder = new JSONObject();
+        JSONObject objWork = new JSONObject();
+        objWork.put("id_U",id_U);
+        objWork.put("hourMoney",money);
+        objWork.put("contractYear",year);
+        objWork.put("time",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        objWork.put("contractContent","甲方：" +
+                "乙方：性别 ： 身份证号码：" +
+                "因原因，乙方向甲方申请中止劳动合同，经双方协商，订立本协议，以便共同遵守。" +
+                "一、劳动合同中止期限自 年月 日起至 年 月 日止，共计年 月。" +
+                "二、劳动合同中止期间，乙方不在甲方的工作时间不计算本企业的工作年限，乙方的任何行为均与甲方无关，乙方对自己的行为负责。" +
+                "三、劳动合同中止期间，乙方不享受甲方的工资、奖金、专业技术职务津贴等薪酬福利待遇。" +
+                "四、劳动合同中止期间，乙方的社会保险关系停止缴纳。" +
+                "五、因乙方离岗日期较长，甲方不再保留乙方的岗位。" +
+                "六、劳动合同中止期满，乙方愿意回甲方工作，须在一个月前提出申请，甲方可根据实际岗位需要对乙方进行考评，合适的予以安排上岗。" +
+                "七、劳动合同中止协议期满后一个月内，乙方未回原单位的，甲方可按自动离职予以处理。" +
+                "八、劳动合同中止期满，乙方若提出继续签订劳动合同中止协议，须经甲方同意后重新签订协议。" +
+                "九、本协议在履行期间，如遇政策调整等客观因素发生，变化时，可以依照相关政策执行。" +
+                "十、本协议自劳动合同中止期限之日起生效，在协议执行期间，双方不得随意变更或解除协议，本协议未尽事宜，应由双方根据国家的有关政策规定进行协商，作出补充规定。补充规定与本协议具有同等效力。" +
+                "十一、本协议一式两份，甲乙双方各执一份。");
+        objWork.put("contractJ",contJ);
+        objWork.put("contractY",contY);
+        objWork.put("grpB",grpB);
+        objWork.put("dep",dep);
+        workOrder.put("objWork",objWork);
+        order.setWork(workOrder);
+        qt.addMD(order);
+        // 创建lSBOrder订单
+        lSBOrder lsbOrder = new lSBOrder(id_C,id_CB,"","","",orderId, new JSONArray(),
+                "","",null,"1000","",4,0,orderNameCas,null,null);
+        qt.addES("lSBOrder",lsbOrder);
+        return retResult.ok(CodeEnum.OK.getCode(),"创建成功");
+    }
+
+    @Override
+    public ApiResponse sumTimeChkIn(String id_C,String id_U,int subTypeStatus,int year,JSONArray monthArr) {
+        JSONObject result = new JSONObject();
+        String subType;
+        if (subTypeStatus == 1) {
+            subType = "monthChkin";
+        } else {
+            subType = "dayChkin";
+        }
+        Comp comp = qt.getMDContent(id_C, "contract", Comp.class);
+        if (null == comp || null == comp.getContract()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_GET_DATA_NULL.getCode(),"");
+        }
+        JSONObject contract = comp.getContract();
+        JSONObject objOrder = contract.getJSONObject("objOrder");
+        String id_O = objOrder.getString("id_O");
+        Order order = qt.getMDContent(id_O, "work", Order.class);
+        if (null == order || null == order.getWork()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_GET_DATA_NULL.getCode(),"");
+        }
+        Asset asset = qt.getConfig(id_C, "a-chkin", "chkin");
+        if (null == asset || null == asset.getChkin()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_GET_DATA_NULL.getCode(),"");
+        }
+        JSONObject chkin = asset.getChkin();
+        JSONObject objChkin = chkin.getJSONObject("objChkin");
+        JSONObject work = order.getWork();
+        JSONObject objWork = work.getJSONObject("objWork");
+        // 一小时钱
+        double hourMoney = objWork.getDouble("hourMoney");
+        String grpB = objWork.getString("grpB");
+        String dep = objWork.getString("dep");
+        JSONObject chkDep = objChkin.getJSONObject(dep);
+        JSONObject chkGrpB = chkDep.getJSONObject(grpB);
+        // 迟到扣钱
+        Integer late = chkGrpB.getInteger("late");
+        // 缺勤扣钱
+        Integer miss = chkGrpB.getInteger("miss");
+        // 特殊上班钱倍率
+        double extra = chkGrpB.getDouble("extra");
+        // 早退扣钱
+        Integer pre = chkGrpB.getInteger("pre");
+        // 加班倍率
+        double overtime = chkGrpB.getDouble("overtime");
+        for (int m = 0; m < monthArr.size(); m++) {
+            JSONArray sumData = new JSONArray();
+            int month = monthArr.getInteger(m);
+            JSONArray filterArray = qt.setESFilt("id_C",id_C,"id_U",id_U
+                    ,"subType",subType,"data.year",year,"data.month",month);
+            JSONArray arrayEs = qt.getES("usageflow", filterArray);
+            if (null == arrayEs || arrayEs.size() == 0) {
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+//                        LOG_GET_DATA_NULL.getCode(),"");
+                result.put(m+"",sumData);
+                continue;
+            }
+
+//        // 特殊加班倍率
+//        double overtimeExtra = objWork.getDouble("overtimeExtra");
+
+//        int taDurMoneyAll = 0;
+//        double taOverMoneyAll = 0;
+//        int taMissMoneyAll = 0;
+//        int taPreMoneyAll = 0;
+//        double taExtraMoneyAll = 0;
+//        int taLateMoneyAll = 0;
+            double taDurMoney;
+            double taOverMoney;
+            int taMissMoney;
+            int taPreMoney;
+            double taExtraMoney;
+            int taLateMoney;
+            for (int i = 0; i < arrayEs.size(); i++) {
+                JSONObject obj = arrayEs.getJSONObject(i);
+                JSONObject data = new JSONObject();
+                // 获取当前月份
+                data.put("month",obj.getJSONObject("data").getString("month"));
+                // 获取当前年份
+                data.put("year",obj.getJSONObject("data").getString("year"));
+                if (subTypeStatus == 1) {
+                    JSONObject userChkInMonthData = obj.getJSONObject("data")
+                            .getJSONObject("chkInData").getJSONObject("userChkInMonthData");
+                    // 获取月普通上班时间
+                    Long taDurAll = userChkInMonthData.getLong("taDurAll");
+                    taDurMoney = Integer.parseInt(taDurAll+"") * hourMoney;
+                    // 获取月加班时间
+                    Long taOverAll = userChkInMonthData.getLong("taOverAll");
+                    taOverMoney = Integer.getInteger(taOverAll+"") * overtime;
+                    // 获取月缺勤次数
+                    Integer taMissSumAll = userChkInMonthData.getInteger("taMissSumAll");
+                    taMissMoney = taMissSumAll * miss;
+                    // 获取月早退次数
+                    Integer earlySumAll = userChkInMonthData.getInteger("earlySumAll");
+                    taPreMoney = earlySumAll * pre;
+                    // 获取月特殊上班时间
+                    Long taExtraAll = userChkInMonthData.getLong("taExtraAll");
+                    taExtraMoney = taExtraAll * extra;
+                    // 获取月迟到次数
+                    Integer lateSumAll = userChkInMonthData.getInteger("lateSumAll");
+                    taLateMoney = lateSumAll * late;
+                    // 获取当月旷工总数
+                    Integer aemSum = userChkInMonthData.getInteger("AEMSum");
+                    data.put("aemSum",aemSum);
+//                JSONObject monthData = new JSONObject();
+//                monthData.put("taDurMoney",taDurMoney);
+//                monthData.put("taOverMoney",taOverMoney);
+//                monthData.put("taMissMoney",taMissMoney);
+//                monthData.put("taPreMoney",taPreMoney);
+//                monthData.put("taExtraMoney",taExtraMoney);
+//                monthData.put("taLateMoney",taLateMoney);
+//                monthData.put("theSameDay",obj.getJSONObject("data").getString("theSameDay"));
+//                sumData.add(monthData);
+                } else {
+                    JSONObject chkInData = obj.getJSONObject("data").getJSONObject("chkInData");
+                    // 普通上班时间
+                    long taDur = chkInData.getLong("taDur");
+                    taDurMoney = Integer.parseInt(taDur+"") * hourMoney;
+                    // 加班时间
+                    long taOver = chkInData.getLong("taOver");
+                    taOverMoney = Integer.getInteger(taOver+"") * overtime;
+//                boolean isOvertimeExtra = chkInData.getBoolean("isOvertimeExtra");
+//                double taOverMoney;
+//                if (isOvertimeExtra) {
+//                    taOverMoney = Integer.getInteger(taOver+"") * overtimeExtra;
+//                } else {
+//                    taOverMoney = Integer.getInteger(taOver+"") * overtime;
+//                }
+                    // 缺勤次数
+                    int taMissSum = chkInData.getInteger("taMissSum");
+                    taMissMoney = taMissSum * miss;
+                    // 早退次数
+                    int taPreSum = chkInData.getInteger("taPreSum");
+                    taPreMoney = taPreSum * pre;
+                    // 特殊上班时间
+                    long taExtra = chkInData.getLong("taExtra");
+                    taExtraMoney = taExtra * extra;
+                    // 迟到次数
+                    int taLateSum = chkInData.getInteger("taLateSum");
+                    taLateMoney = taLateSum * late;
+                    // 是否旷工
+                    boolean isAEM = chkInData.getBoolean("isAEM");
+                    data.put("isAEM",isAEM);
+                    // 获取当前日期
+                    data.put("theSameDay",obj.getJSONObject("data").getString("theSameDay"));
+//                taDurMoneyAll += taDurMoney;
+//                taOverMoneyAll += taOverMoney;
+//                taMissMoneyAll += taMissMoney;
+//                taPreMoneyAll += taPreMoney;
+//                taExtraMoneyAll += taExtraMoney;
+//                taLateMoneyAll += taLateMoney;
+//                JSONObject dayData = new JSONObject();
+//                dayData.put("taDurMoney",taDurMoney);
+//                dayData.put("taOverMoney",taOverMoney);
+//                dayData.put("taMissMoney",taMissMoney);
+//                dayData.put("taPreMoney",taPreMoney);
+//                dayData.put("taExtraMoney",taExtraMoney);
+//                dayData.put("taLateMoney",taLateMoney);
+//                dayData.put("theSameDay",obj.getJSONObject("data").getString("theSameDay"));
+//                sumData.add(dayData);
+                }
+                data.put("taDurMoney",taDurMoney);
+                data.put("taOverMoney",taOverMoney);
+                data.put("taMissMoney",taMissMoney);
+                data.put("taPreMoney",taPreMoney);
+                data.put("taExtraMoney",taExtraMoney);
+                data.put("taLateMoney",taLateMoney);
+                double assembleMoney = (taDurMoney + taOverMoney + taExtraMoney);
+                data.put("assembleMoney",assembleMoney);
+                double assembleMinusMoney = (taMissMoney+taPreMoney+taLateMoney);
+                double money = assembleMoney - assembleMinusMoney;
+                data.put("money",money);
+                sumData.add(data);
+            }
+            result.put(m+"",sumData);
+        }
+        result.put("subTypeStatus",subTypeStatus);
+        return retResult.ok(CodeEnum.OK.getCode(), result);
+    }
+
+    @Override
+    public ApiResponse getEsShow(String index,JSONObject keyVal,int size) {
+        JSONArray array = new JSONArray();
+        for (String key : keyVal.keySet()) {
+            JSONObject json = new JSONObject();
+            json.put("filtKey", key);
+            json.put("method", "exact");
+            json.put("filtVal", keyVal.getString(key));
+            array.add(json);
+        }
+        JSONArray es = qt.getES(index, array);
+        if (null == es || es.size() == 0) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_FAILF.getCode(),"");
+        }
+        System.out.println("str------ es ------str");
+        for (int i = 0; i < es.size(); i++) {
+            JSONObject jsonObject = es.getJSONObject(i);
+            System.out.println(JSON.toJSONString(jsonObject));
+            if (i == size) {
+                break;
+            }
+        }
+        System.out.println("end------ es ------end");
+        return retResult.ok(CodeEnum.OK.getCode(),es);
+    }
+
+    @Override
+    public ApiResponse delEs(String index, String id_ES) {
+        qt.delES(index,id_ES);
+        return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
+    }
+
+    @Override
+    public ApiResponse addOItemAllow(String id_O, String wrdN, String ref, double allow,double pr, double wn4pr) {
+        Order order = qt.getMDContent(id_O, qt.strList("oItem", "work"), Order.class);
+        if (null == order || null == order.getOItem()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_FAILF.getCode(),"");
+        }
+        JSONObject oItem = order.getOItem();
+        JSONArray objAllow = oItem.getJSONArray("objAllow");
+        if (null == objAllow) {
+            objAllow = new JSONArray();
+        }
+        JSONObject allowSon = new JSONObject();
+        // 名称
+        allowSon.put("wrdN",wrdN);
+        // 类型
+        allowSon.put("ref",ref);
+        // 次数
+        allowSon.put("allow",allow);
+        // 单次钱
+        allowSon.put("pr",pr);
+        // 合计
+        allowSon.put("wn4pr",wn4pr);
+        objAllow.add(allowSon);
+        qt.setMDContent(id_O,qt.setJson("oItem.objAllow",objAllow), Order.class);
+        return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
+    }
+
+    @Override
+    public ApiResponse sumOItemAllow(String id_O) {
+        Order order = qt.getMDContent(id_O, "oItem", Order.class);
+        if (null == order || null == order.getOItem()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_FAILF.getCode(),"");
+        }
+        JSONObject oItem = order.getOItem();
+        JSONArray objAllow = oItem.getJSONArray("objAllow");
+        double zon = 0;
+        for (int i = 0; i < objAllow.size(); i++) {
+            JSONObject obj = objAllow.getJSONObject(i);
+            String ref = obj.getString("ref");
+            Double wn4pr = obj.getDouble("wn4pr");
+            if (ref.equals("k")) {
+                zon-=wn4pr;
+            } else {
+                zon+=wn4pr;
+            }
+        }
+        return retResult.ok(CodeEnum.OK.getCode(),zon);
+    }
+
+    @Override
+    public ApiResponse setOItem(String id_O, int index, JSONObject keyVal) {
+        Order order = qt.getMDContent(id_O, "oItem", Order.class);
+        if (null == order || null == order.getOItem()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_FAILF.getCode(),"");
+        }
+        JSONObject oItem = order.getOItem();
+        JSONArray objItem = oItem.getJSONArray("objItem");
+        JSONObject item = objItem.getJSONObject(index);
+        for (String s : keyVal.keySet()) {
+            JSONObject obj = keyVal.getJSONObject(s);
+            String type = obj.getString("type");
+            if ("int".equals(type)) {
+                item.put(s,obj.getInteger("val"));
+            } else if ("double".equals(type)) {
+                item.put(s,obj.getDouble("val"));
+            } else {
+                item.put(s,obj.getString("val"));
+            }
+        }
+        qt.setMDContent(id_O,qt.setJson("oItem.objItem."+index,item), Order.class);
+        return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
+    }
+
+    @Override
+    public ApiResponse activeOffline(String id_U,String client) {
+        // 获取redis信息
+        JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, id_U); // appID? /mqKey
+        // 判断redis信息为空
+        if (null == rdInfo) {
+            rdInfo = new JSONObject();
+        }
+        // 获取当前端信息
+        JSONObject cliInfo = rdInfo.getJSONObject(client);
+        // 判断端信息为空
+        if (null != cliInfo) {
+            JSONObject wsData = cliInfo.getJSONObject("wsData");
+            if (null != wsData) {
+                // 获取mq编号
+                String mqKeyOld = wsData.getString("mqKey");
+                // 判断不为空
+                if (null != mqKeyOld) {
+                    // 创建日志
+                    LogFlow logData = new LogFlow();
+                    logData.setId_U(id_U);
+                    logData.setId_Us(qt.setArray(id_U));
+                    logData.setLogType("msg");
+                    logData.setSubType("Offline");
+                    JSONObject data = new JSONObject();
+                    data.put("client",client);
+                    logData.setData(data);
+                    // 直接发送信息
+                    ws.sendMQ(mqKeyOld,logData);
+                    cliInfo.put("offlineType",1);
+                    rdInfo.put(client,cliInfo);
+                    qt.setRDSet(Ws.ws_mq_prefix,id_U,JSON.toJSONString(rdInfo),6000L);
+                    return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
+                }
+            }
+        }
+        return retResult.ok(CodeEnum.OK.getCode(),"已经是离线");
+    }
+
+    @Override
+    public ApiResponse allowLogin(String id_U, String client) {
+        // 获取redis信息
+        JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, id_U); // appID? /mqKey
+        // 判断redis信息为空
+        if (null == rdInfo) {
+            rdInfo = new JSONObject();
+        }
+        // 获取当前端信息
+        JSONObject cliInfo = rdInfo.getJSONObject(client);
+        // 判断端信息为空
+        if (null != cliInfo) {
+            cliInfo.put("offlineType",0);
+            rdInfo.put(client,cliInfo);
+            qt.setRDSet(Ws.ws_mq_prefix,id_U,JSON.toJSONString(rdInfo),6000L);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
+    }
+
+    @Override
+    public ApiResponse requestLogin(String id_U, String clientOld) {
+        // 获取redis信息
+        JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, id_U); // appID? /mqKey
+        // 判断redis信息为空
+        if (null == rdInfo) {
+            rdInfo = new JSONObject();
+        }
+        String client = "app";
+        // 获取当前端信息
+        JSONObject cliInfo = rdInfo.getJSONObject(client);
+        // 判断端信息为空
+        if (null != cliInfo) {
+            JSONObject wsData = cliInfo.getJSONObject("wsData");
+            if (null != wsData) {
+                // 获取mq编号
+                String mqKeyOld = wsData.getString("mqKey");
+                // 判断不为空
+                if (null != mqKeyOld) {
+                    // 创建日志
+                    LogFlow logData = new LogFlow();
+                    logData.setId_U(id_U);
+                    logData.setId_Us(qt.setArray(id_U));
+                    logData.setLogType("msg");
+                    logData.setSubType("requestLogin");
+                    JSONObject data = new JSONObject();
+                    data.put("client",client);
+                    data.put("requestClient",clientOld);
+                    logData.setData(data);
+                    // 直接发送信息
+                    ws.sendMQ(mqKeyOld,logData);
+                    return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
+                }
+            }
+        }
+        return retResult.ok(CodeEnum.OK.getCode(),"app已经离线");
+    }
+
+    @Override
+    public ApiResponse updatePartAll(String id_P,double wn4pr,long teDur,long tePrep) {
+//        String id_C = "6076a1c7f3861e40c87fd294";
+        JSONArray esP = qt.getES("lBProd", qt.setESFilt("arrP","containList", id_P));
+        if (null == esP || esP.size() == 0) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LB_PROD_NOT_FOUND.getCode(),"");
+        }
+//        System.out.println("esP:");
+//        System.out.println(JSON.toJSONString(esP));
+        for (int i = 0; i < esP.size(); i++) {
+            JSONObject obj = esP.getJSONObject(i);
+            if (obj.containsKey("arrP")) {
+                String id_PF = obj.getString("id_P");
+                JSONArray arrP = obj.getJSONArray("arrP");
+                int index = -1;
+                for (int j = 0; j < arrP.size(); j++) {
+                    String p = arrP.getString(j);
+                    if (p.equals(id_P)) {
+                        index = j;
+                    }
+                }
+                if (index != -1) {
+                    Prod prod = qt.getMDContent(id_PF, "part", Prod.class);
+                    if (null == prod || null == prod.getPart() || null == prod.getPart().getJSONArray("objItem")) {
+                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                                LOG_FAILF.getCode(),"");
+                    }
+                    JSONObject part = prod.getPart();
+                    JSONArray objItem = part.getJSONArray("objItem");
+                    JSONObject itemIndex = objItem.getJSONObject(index);
+                    itemIndex.put("wn4price",wn4pr);
+                    itemIndex.put("teDur",teDur);
+                    itemIndex.put("tePrep",tePrep);
+                    qt.setMDContent(id_PF,qt.setJson("part.objItem."+index,itemIndex), Prod.class);
+                }
+                System.out.println("lBProd:");
+                System.out.println(JSON.toJSONString(obj));
+            }
+        }
+//        JSONArray esP = qt.getES("lBProd", qt.setESFilt("id_P","exact", id_P));
+////        JSONArray esP = qt.getES("lBProd", qt.setESFilt("id_P", id_P));
+//        if (null == esP || esP.size() == 0) {
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+//                    LB_PROD_NOT_FOUND.getCode(),"");
+//        }
+////        qt.delES("lBProd","LbSub4sBaLRqu6aFP3nE");
+//        System.out.println("esP:");
+//        System.out.println(JSON.toJSONString(esP));
+
+//        JSONArray es = qt.getES("lSBProd", qt.setESFilt("id_C", id_C));
+////        JSONArray es = qt.getES("lSBProd", qt.setESFilt("id_P", id_P));
+//        if (null == es || es.size() == 0) {
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+//                    LB_PROD_NOT_FOUND.getCode(),"");
+//        }
+//        for (int i = 0; i < es.size(); i++) {
+//            JSONObject obj = es.getJSONObject(i);
+//            if (obj.containsKey("arrP")) {
+//                System.out.println("lSBProd:");
+//                System.out.println(JSON.toJSONString(obj));
+//            }
+//        }
+//        JSONObject lSBProd = es.getJSONObject(0);
+//        System.out.println("lSBProd:");
+//        System.out.println(JSON.toJSONString(lSBProd));
+
+        return retResult.ok(CodeEnum.OK.getCode(),"成功");
+    }
+
+    @Override
+    public ApiResponse updateAllObjItemByArrP() {
+        Criteria where = Criteria.where("part");
+        //创建查询对象
+        Query query = new Query();
+        query.addCriteria(where.ne(null));
+        query.fields().include("part");
+        List<Prod> prodList = mongoTemplate.find(query, Prod.class);
+        for (Prod prod : prodList) {
+            if (null != prod && null != prod.getPart()) {
+                JSONObject part = prod.getPart();
+                JSONArray objItem = part.getJSONArray("objItem");
+                JSONArray arrP = new JSONArray();
+                for (int j = 0; j < objItem.size(); j++) {
+                    JSONObject item = objItem.getJSONObject(j);
+                    arrP.add(item.getString("id_P"));
+                }
+                qt.setMDContent(prod.getId(), qt.setJson("part.arrP", arrP), Prod.class);
+                qt.setES("lBProd",qt.setESFilt("id_P", "exact",prod.getId()),qt.setJson("arrP",arrP));
+            }
+        }
+        return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
+    }
+
+    @Override
+    public ApiResponse updateAllObjItemByTime() {
+        Criteria where = Criteria.where("part");
+        //创建查询对象
+        Query query = new Query();
+        query.addCriteria(where.ne(null));
+        query.fields().include("part");
+        List<Prod> prodList = mongoTemplate.find(query, Prod.class);
+        for (Prod prod : prodList) {
+            if (null != prod && null != prod.getPart()) {
+                JSONObject part = prod.getPart();
+                JSONArray objItem = part.getJSONArray("objItem");
+                for (int j = 0; j < objItem.size(); j++) {
+                    JSONObject item = objItem.getJSONObject(j);
+                    if (!item.containsKey("teDur")) {
+                        item.put("teDur",0);
+                    }
+                    if (!item.containsKey("tePrep")) {
+                        item.put("tePrep",0);
+                    }
+                    if (!item.containsKey("wn4price")) {
+                        item.put("wn4price",0);
+                    }
+                    objItem.set(j,item);
+                }
+                qt.setMDContent(prod.getId(), qt.setJson("part.objItem", objItem), Prod.class);
+            }
+        }
+        return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
     }
 }
