@@ -775,7 +775,20 @@ public class ZjTestServiceImpl implements ZjTestService {
         coreObject.getJSONObject("info").put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
         // add me into control's a-core-3 as the only User
-        coreObject.getJSONObject("control").getJSONObject("objMod").getJSONObject("a-core-3").getJSONArray("id_U").add(id_U);
+
+        if (null == coreObject.getJSONObject("control")) {
+            JSONObject control = new JSONObject();
+            JSONObject objMod = new JSONObject();
+            JSONObject a_core = new JSONObject();
+            JSONArray id_UArr = new JSONArray();
+            id_UArr.add(id_U);
+            a_core.put("id_U",id_UArr);
+            objMod.put("a-core-3",a_core);
+            control.put("objMod",objMod);
+            coreObject.put("control",control);
+        } else {
+            coreObject.getJSONObject("control").getJSONObject("objMod").getJSONObject("a-core-3").getJSONArray("id_U").add(id_U);
+        }
         //调用
         this.createAsset(new_id_C, qt.GetObjectId() ,"a-core",coreObject);
 
@@ -1620,6 +1633,13 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(), result);
     }
 
+    /**
+     * 查询指定的es库的keyVal条件的所有内容，并且返回size条数
+     * @param index     指定的es库
+     * @param keyVal    查询条件
+     * @param size  返回条数
+     * @return  查询结果
+     */
     @Override
     public ApiResponse getEsShow(String index,JSONObject keyVal,int size) {
         JSONArray array = new JSONArray();
@@ -1647,6 +1667,12 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),es);
     }
 
+    /**
+     * 删除指定es库的id_ES的内容
+     * @param index 指定的es库
+     * @param id_ES es编号
+     * @return  删除结果
+     */
     @Override
     public ApiResponse delEs(String index, String id_ES) {
         qt.delES(index,id_ES);
@@ -1721,6 +1747,10 @@ public class ZjTestServiceImpl implements ZjTestService {
                 item.put(s,obj.getInteger("val"));
             } else if ("double".equals(type)) {
                 item.put(s,obj.getDouble("val"));
+            } else if ("long".equals(type)) {
+                item.put(s,obj.getLong("val"));
+            } else if ("boolean".equals(type)) {
+                item.put(s,obj.getBoolean("val"));
             } else {
                 item.put(s,obj.getString("val"));
             }
@@ -1729,6 +1759,12 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
     }
 
+    /**
+     * 下线指定端
+     * @param id_U  下线用户
+     * @param client    下线端
+     * @return  下线结果
+     */
     @Override
     public ApiResponse activeOffline(String id_U,String client) {
         // 获取redis信息
@@ -1758,8 +1794,10 @@ public class ZjTestServiceImpl implements ZjTestService {
                     logData.setData(data);
                     // 直接发送信息
                     ws.sendMQ(mqKeyOld,logData);
+                    // 设置为不能登录
                     cliInfo.put("offlineType",1);
                     rdInfo.put(client,cliInfo);
+                    // 保存到redis
                     qt.setRDSet(Ws.ws_mq_prefix,id_U,JSON.toJSONString(rdInfo),6000L);
                     return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
                 }
@@ -1768,6 +1806,12 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),"已经是离线");
     }
 
+    /**
+     * app端同意登录后，设置能登录接口
+     * @param id_U  请求用户
+     * @param client    需要登录端
+     * @return  请求结果
+     */
     @Override
     public ApiResponse allowLogin(String id_U, String client) {
         // 获取redis信息
@@ -1778,27 +1822,36 @@ public class ZjTestServiceImpl implements ZjTestService {
         }
         // 获取当前端信息
         JSONObject cliInfo = rdInfo.getJSONObject(client);
-        // 判断端信息为空
+        // 判断端信息不为空
         if (null != cliInfo) {
+            // 设置为可以登录
             cliInfo.put("offlineType",0);
             rdInfo.put(client,cliInfo);
+            // 保存到redis
             qt.setRDSet(Ws.ws_mq_prefix,id_U,JSON.toJSONString(rdInfo),6000L);
         }
         return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
     }
 
+    /**
+     * 请求app端登录接口
+     * @param id_U  请求用户
+     * @param clientOld 请求的端
+     * @return  请求结果
+     */
     @Override
     public ApiResponse requestLogin(String id_U, String clientOld) {
-        // 获取redis信息
+        // 获取redis在线信息
         JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, id_U); // appID? /mqKey
         // 判断redis信息为空
         if (null == rdInfo) {
             rdInfo = new JSONObject();
         }
+        // 设置接收请求端为app端
         String client = "app";
-        // 获取当前端信息
+        // 获取端信息
         JSONObject cliInfo = rdInfo.getJSONObject(client);
-        // 判断端信息为空
+        // 判断端信息不为空
         if (null != cliInfo) {
             JSONObject wsData = cliInfo.getJSONObject("wsData");
             if (null != wsData) {
@@ -1825,29 +1878,48 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),"app已经离线");
     }
 
+    /**
+     * 修改指定产品的价格，单人单件用时，准备时间，并且修改所有用到的part
+     * @param id_P  需要修改的产品
+     * @param wn4pr 产品新的价格
+     * @param teDur 产品单人单件用时
+     * @param tePrep    准备时间
+     * @return  处理结果
+     */
     @Override
     public ApiResponse updatePartAll(String id_P,double wn4pr,long teDur,long tePrep) {
-//        String id_C = "6076a1c7f3861e40c87fd294";
-        JSONArray esP = qt.getES("lBProd", qt.setESFilt("arrP","containList", id_P));
+        // 查询es包含当前产品的所有产品
+        JSONArray esP = qt.getES("lBProd", qt.setESFilt("arrP","contain", qt.setArray(id_P)));
         if (null == esP || esP.size() == 0) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                     LB_PROD_NOT_FOUND.getCode(),"");
         }
-//        System.out.println("esP:");
-//        System.out.println(JSON.toJSONString(esP));
+        System.out.println("esP:");
+        System.out.println(JSON.toJSONString(esP));
+        // 遍历产品
         for (int i = 0; i < esP.size(); i++) {
+            // 获取产品信息
             JSONObject obj = esP.getJSONObject(i);
+            // 判断arrP不为空
             if (obj.containsKey("arrP")) {
+                // 获取父产品id
                 String id_PF = obj.getString("id_P");
+                // 获取父产品的所有子产品id
                 JSONArray arrP = obj.getJSONArray("arrP");
+                // 获取当前产品在当前父产品的位置，默认不在
                 int index = -1;
+                // 遍历父产品的所有子产品id
                 for (int j = 0; j < arrP.size(); j++) {
                     String p = arrP.getString(j);
+                    // 判断等于，
                     if (p.equals(id_P)) {
+                        // 获取位置
                         index = j;
                     }
                 }
+                // 判断有位置
                 if (index != -1) {
+                    // 获取父产品信息
                     Prod prod = qt.getMDContent(id_PF, "part", Prod.class);
                     if (null == prod || null == prod.getPart() || null == prod.getPart().getJSONArray("objItem")) {
                         throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
@@ -1855,16 +1927,19 @@ public class ZjTestServiceImpl implements ZjTestService {
                     }
                     JSONObject part = prod.getPart();
                     JSONArray objItem = part.getJSONArray("objItem");
+                    // 更新父产品指定位置的当前产品信息
                     JSONObject itemIndex = objItem.getJSONObject(index);
                     itemIndex.put("wn4price",wn4pr);
                     itemIndex.put("teDur",teDur);
                     itemIndex.put("tePrep",tePrep);
+                    // 更新mongodb
                     qt.setMDContent(id_PF,qt.setJson("part.objItem."+index,itemIndex), Prod.class);
                 }
                 System.out.println("lBProd:");
                 System.out.println(JSON.toJSONString(obj));
             }
         }
+//        System.out.println();
 //        JSONArray esP = qt.getES("lBProd", qt.setESFilt("id_P","exact", id_P));
 ////        JSONArray esP = qt.getES("lBProd", qt.setESFilt("id_P", id_P));
 //        if (null == esP || esP.size() == 0) {
@@ -1895,6 +1970,10 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),"成功");
     }
 
+    /**
+     * 批量新增或修改mongodb的Prod内arrP，和es的lBProd的arrP字段
+     * @return 处理结果
+     */
     @Override
     public ApiResponse updateAllObjItemByArrP() {
         Criteria where = Criteria.where("part");
@@ -1919,6 +1998,10 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
     }
 
+    /**
+     * 批量新增或修改mongodb的Prod内part的objItem内的时间，准备时间，价格的默认值
+     * @return  请求结果
+     */
     @Override
     public ApiResponse updateAllObjItemByTime() {
         Criteria where = Criteria.where("part");
