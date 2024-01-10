@@ -440,7 +440,7 @@ public class ModuleServicelmpl implements ModuleService {
     @Override
     public ApiResponse modSetControl(String authComp, String id_C,JSONObject objModQ) {
 
-        if (!authComp.equals("61a5940b01902729e2576ead") || !authComp.equals("6141b6797e8ac90760913fd0"))
+        if (!authComp.equals("61a5940b01902729e2576ead") && !authComp.equals("6141b6797e8ac90760913fd0"))
         {
             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_MATCHING_MOD_REF.getCode(), "无匹配的modRef");
         }

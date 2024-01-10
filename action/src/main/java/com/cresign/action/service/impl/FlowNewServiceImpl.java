@@ -259,12 +259,18 @@ public class FlowNewServiceImpl implements FlowNewService {
                 }
             }
 
-//            grpO = "1000";
-//            grpOB = "1000";
-            String grpO = defResultSP.getString("grpO") != null ? defResultSP.getString("grpO") : "";
-            String grpOB = defResultBP.getString("grpO") != null ? defResultBP.getString("grpO") : "1000";
+            qt.errPrint("grpO", defResultBP, unitOItem.get(0).getGrpB(), unitOItem.get(0).getGrp());
+            String grpO = "1000";
+            String grpOB = "1000";
+            if (defResultSP.getJSONObject(unitOItem.get(0).getGrp()) != null && defResultSP.getJSONObject(unitOItem.get(0).getGrp()).getString("grpO") != null)
+            {
+               grpO = defResultSP.getJSONObject(unitOItem.get(0).getGrp()).getString("grpO");
+            }
 
-            // **System.out.print("got all ok");
+            if (defResultBP.getJSONObject(unitOItem.get(0).getGrpB()) != null && defResultBP.getJSONObject(unitOItem.get(0).getGrpB()).getString("grpO") != null)
+            {
+                grpOB = defResultBP.getJSONObject(unitOItem.get(0).getGrpB()).getString("grpO");
+            }
 
             if (id_OParent.equals(thisOrderId)) {
                 // make sales order Action
@@ -336,12 +342,11 @@ public class FlowNewServiceImpl implements FlowNewService {
                 // 新增订单
 //                qt.addMD(newPO);
                 addOrder.add(newPO);
-//                    qt.setES(....)
 //                // **System.out.println("sales order SAVED " + newPO.getInfo().getWrdN().getString("cn"));
 
 //              // 创建lSBOrder订单
                 lSBOrder lsbOrder = new lSBOrder(prodCompId, targetCompId, "", "", id_OParent, thisOrderId, arrayId_P,
-                        "", "", "", "1000", unitOItem.get(0).getPic(), 4, 0, orderNameCas, null, null);
+                        "", "", grpO, grpOB, unitOItem.get(0).getPic(), 4, 0, orderNameCas, null, null);
                 // 新增lsbOrder信息
                 qt.addES("lsborder", lsbOrder);
             }
@@ -353,6 +358,8 @@ public class FlowNewServiceImpl implements FlowNewService {
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "");
     }
+
+
 
     @Override
     public ApiResponse dgCheckOrder(String myCompId,String id_O) {

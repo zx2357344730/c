@@ -766,6 +766,8 @@ public class ActionServiceImpl implements ActionService {
                             throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
                         }
 
+                        orderAction.setBcdStatus(2);
+
                         message = taskName + "[已完成] " + msg;
                         isStateChg = true;
                         duraType = "allEnd";
@@ -790,7 +792,7 @@ public class ActionServiceImpl implements ActionService {
                     case 5: // 加入
                         id_Us.add(tokData.getString("id_U"));
                         orderAction.setId_Us(id_Us);
-                        message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功] " + taskName;
+                        message = tokData.getJSONObject("wrdNReal").getString("cn") + "[加入成功] " + orderOItem.getWrdN().getString("cn");
                         // set back status to original status
                         status = orderAction.getBcdStatus();
 
@@ -803,7 +805,7 @@ public class ActionServiceImpl implements ActionService {
                         id_Us.remove(tokData.getString("id_U"));
                         orderAction.setId_Us(id_Us);
 
-                        message = tokData.getJSONObject("wrdNU").getString("cn") + "[退出成功] " + taskName;
+                        message = tokData.getJSONObject("wrdNReal").getString("cn") + "[退出成功] " + orderOItem.getWrdN().getString("cn");
                         status = orderAction.getBcdStatus();
 
                         res.put("isJoin", 0);
@@ -917,7 +919,7 @@ public class ActionServiceImpl implements ActionService {
                     {
                         //removing it from flowControl RefOP
                         this.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
-                                id_FC, id_FS, orderAction.getId_OP(), orderAction.getRefOP(), orderAction.getWrdNP(), orderAction.getIndex(), false );
+                                id_FC, id_FS, orderAction.getId_OP(), orderAction.getRefOP(), orderAction.getWrdNP(), orderOItem.getId_O(), orderAction.getIndex(), false );
                     }
 
                     // Start making log with data
@@ -961,13 +963,38 @@ public class ActionServiceImpl implements ActionService {
 
 
                 mapKey.put("action.objAction." + index, orderAction);
-                qt.setMDContent(id_O, mapKey, Order.class);
 
                 if (null != listCol.getInteger("lST")) {
+                    // set oDate if card exists
+
+                    if (actData.getJSONObject("oDate") != null)
+                    {
+                        JSONObject oDate = actData.getJSONObject("oDate");
+                        String dateNow = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+
+                        if (listCol.getInteger("lST") == 8 ) {
+                            oDate.put("taStart", dateNow);
+                            listCol.put("taStart", dateNow);
+                        }
+                            else {
+                            oDate.put("taFin", dateNow);
+                            listCol.put("taFin", dateNow);
+                        }
+                        mapKey.put("oDate",oDate);
+                    }
                     qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
+                    // send a log to record order status change
+                    LogFlow usageLog = new LogFlow();
+                    usageLog.setUsageLog(tokData, "lSTchg", listCol.getInteger("lST") == 8 ? "订单开始执行" : "订单全部完成", 3, id_O,
+                            orderOItem.getId_CB().equals(tokData.getString("id_C")) ? "lBOrder" : "lSOrder", actData.getJSONObject("info").getJSONObject("wrdN"),"1000", "");
+                    ws.sendWS(usageLog);
                 }
 
-                // if Quest, send log + update OItem of myself = task = DG = above
+                //*** here we update id_O, then we update status of the order
+                qt.setMDContent(id_O, mapKey, Order.class);
+
+
+            // if Quest, send log + update OItem of myself = task = DG = above
                 // get upPrnt data, and find the prob, set that status of Prob to status
 
                 //*** Here we set oStock qty to 1 whenever noP task is completed
@@ -987,9 +1014,7 @@ public class ActionServiceImpl implements ActionService {
                         oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).put("wn2qtynow", 1.0);
                         JSONObject listCol2 = new JSONObject();
                         dbu.summOrder(oStockCheck, listCol2, qt.setArray("oStock"));
-//                        qt.saveMD(oStockCheck);
                         qt.setMDContent(id_O, qt.setJson("oStock", oStockCheck.getOStock()), Order.class);
-
                         qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
 
                         LogFlow log = new LogFlow(tokData, oStockCheck.getOItem(), oStockCheck.getAction(), "", id_O, index,
@@ -1002,9 +1027,6 @@ public class ActionServiceImpl implements ActionService {
                         ws.sendWS(log);
 
                     }
-                    //getOStock (if not null)
-                    //was 0.3 then set to 1
-                    //send log that I finished 0.7
                 }
 
                 if (orderAction.getBisactivate() == 7)
@@ -1475,7 +1497,7 @@ public class ActionServiceImpl implements ActionService {
                     this.updateRefOP(orderOItem1.getId_CB(), orderOItem1.getId_C(),
                             actData.getString("id_FC"),
                             actData.getString("id_FS"), orderAction1.getId_OP(), orderAction1.getRefOP(),
-                            orderAction1.getWrdNP(), sonIndex, true);
+                            orderAction1.getWrdNP(), sonId, sonIndex, true);
 
 
                     // Start making log with data
@@ -1529,7 +1551,7 @@ public class ActionServiceImpl implements ActionService {
                                 this.updateRefOP(orderOItem1.getId_CB(), orderOItem1.getId_C(),
                                         actData.getString("id_FC"),
                                         actData.getString("id_FS"), orderAction1.getId_OP(), orderAction1.getRefOP(),
-                                        orderAction1.getWrdNP(), nextIndex, true );
+                                        orderAction1.getWrdNP(), nextId, nextIndex, true );
 
                                 // Start making log with data
                                 LogFlow logL = new LogFlow("action", actData.getString("id_FC"),
@@ -1588,7 +1610,7 @@ public class ActionServiceImpl implements ActionService {
                         this.updateRefOP(unitOItemPrnt.getId_CB(), unitOItemPrnt.getId_C(),
                                 actData.getString("id_FC"),
                                 actData.getString("id_FS"), unitActionPrnt.getId_OP(), unitActionPrnt.getRefOP(),
-                                unitActionPrnt.getWrdNP(), indexPrnt, true );
+                                unitActionPrnt.getWrdNP(), idPrnt, indexPrnt, true );
 
 
                         // Start making log with data
@@ -1623,7 +1645,7 @@ public class ActionServiceImpl implements ActionService {
         //keep a record on all the orders that flow room currently managing, put into flowControl card
     //refOP{"refOP":{refOP, wrdN, index[], id_OP}}
     private void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
-                             String id_OP, String refOP, JSONObject wrdN, Integer index, Boolean isStart)
+                             String id_OP, String refOP, JSONObject wrdN, String id_O, Integer index, Boolean isStart)
     {
         if (id_CB == null)
             id_CB = "";
@@ -1636,6 +1658,7 @@ public class ActionServiceImpl implements ActionService {
 
         Asset assetB = qt.getConfig(id_CB, "a-auth", "flowControl");
         Asset assetS = qt.getConfig(id_CS, "a-auth", "flowControl");
+        String refInside = id_O + "_" + index;
 
         JSONObject refOPInfo = qt.setJson("refOP", refOP, "wrdN", wrdN, "index", new JSONArray(), "id_OP", id_OP);
 
@@ -1654,26 +1677,29 @@ public class ActionServiceImpl implements ActionService {
                     if (flowInfo.getJSONObject("refOP") == null)
                     {
                         flowInfo.put("refOP", new JSONObject());
+                        qt.errPrint("in refOPNull;");
                     }
 
-                    if (id_OP.equals(""))
-                    {
-                        flowInfo.getJSONObject("refOP").put("id_OP", flowInfo.getString("id_O"));
-                    }
+//                    if (id_OP.equals(""))
+//                    {
+//                        flowInfo.getJSONObject("refOP").put("id_OP", flowInfo.getString("id_O"));
+//                        refOPInfo.put("id_OP", flowInfo.getString("id_O"));
+//                    }
 
                     // case 2: refOP not exists
                     if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
                     {
                         flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
+                        qt.errPrint("in refOP not exist, new start");
                     }
 
                     // any case, add this index to index[]
-                    if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(index)) {
-                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(index);
-                        qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+                    if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
+                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
 
                     }
-
+                    qt.errPrint("idFC addIndex", flowInfo, id_FC, refOP, id_OP, refOPInfo, wrdN);
+                    qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
                     break;
 
                 } // removing now here:
@@ -1687,10 +1713,10 @@ public class ActionServiceImpl implements ActionService {
                             flowInfo.getJSONObject("refOP").remove(refOP);
                         } else
                         {
-                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(index);
+                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
                         }
 
-                        qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+                       qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
 
                         break;
 
@@ -1713,20 +1739,21 @@ public class ActionServiceImpl implements ActionService {
                     {
                         flowInfo.put("refOP", new JSONObject());
                     }
-                    if (id_OP.equals(""))
-                    {
-                        flowInfo.getJSONObject("refOP").put("id_OP", flowInfo.getString("id_O"));
-                    }
+//                    if (id_OP.equals(""))
+//                    {
+//                        flowInfo.getJSONObject("refOP").put("id_OP", flowInfo.getString("id_O"));
+//                    }
                     // case 2: refOP not exists
                     if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
                     {
                         flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
                     }
                     // any case, add this index to index[]
-                    if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(index)) {
-                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(index);
-                        qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+                    if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
+                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
                     }
+                    qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+
                     break;
 
                 } // removing now here:
@@ -1738,7 +1765,7 @@ public class ActionServiceImpl implements ActionService {
                             flowInfo.getJSONObject("refOP").remove(refOP);
                         } else
                         {
-                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(index);
+                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
                         }
                         qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
 
@@ -1948,7 +1975,7 @@ public class ActionServiceImpl implements ActionService {
         // 创建卡片信息存储集合
         // 调用方法并且获取请求结果
 //        Order order = coupaUtil.getOrderByListKey(oid, Arrays.asList("info", "oItem", "action"));
-        Order order = qt.getMDContent(oid, Arrays.asList("info", "oItem", "action"), Order.class);
+        Order order = qt.getMDContent(oid, Arrays.asList("info", "oItem", "action", "oDate"), Order.class);
 
         // 判断订单为空
         if (null == order || order.getOItem() == null || order.getAction() == null) {
@@ -1994,7 +2021,8 @@ public class ActionServiceImpl implements ActionService {
         try {
             id_FS = grpGroup.getJSONObject(oItemArray.getJSONObject(index).getString("grp")).getString("id_Flow");
         } catch (Exception e)
-        {}
+        {
+        }
 
         result.put("oItemArray", oItemArray);
         result.put("actionArray", actionArray);
@@ -2004,6 +2032,7 @@ public class ActionServiceImpl implements ActionService {
         result.put("id_FC", id_FC);
         result.put("id_FS", id_FS);
         result.put("info",qt.toJson(order.getInfo()));
+        result.put("oDate", order.getODate());
         result.put("size", oItemArray.size());
 
         //System.out.println(result);
@@ -2044,7 +2073,7 @@ public class ActionServiceImpl implements ActionService {
         qt.setMDContent(id_O, qt.setJson("action.objAction." + index, unitAction), Order.class);
 
         this.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
-                actData.getString("id_FC"), actData.getString("id_FS"), unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), index, true );
+                actData.getString("id_FC"), actData.getString("id_FS"), unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), id_O, index, true );
 
 //      String logType = actData.getJSONObject("grpBGroup").getJSONObject(unitOItem.getGrpB()).getString("logType");
 
@@ -2143,7 +2172,7 @@ public class ActionServiceImpl implements ActionService {
                                     String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
 
                                     this.updateRefOP(subOrderData.getJSONObject("info").getString("id_CB"), subOrderData.getJSONObject("info").getString("id_C"),
-                                            subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), subAction.getId_OP(), subAction.getRefOP(), subAction.getWrdNP(), subAction.getIndex(), true );
+                                            subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), subAction.getId_OP(), subAction.getRefOP(), subAction.getWrdNP(), subAction.getId_O(), subAction.getIndex(), true );
 
                                     LogFlow logLP = new LogFlow(logType, subOrderData.getString("id_FC"),
                                             subOrderData.getString("id_FS"), "stateChg",
@@ -2169,7 +2198,7 @@ public class ActionServiceImpl implements ActionService {
                             unitAction.setBcdStatus(0);
                             unitAction.setBisPush(1);
 
-                            qt.setMDContent(orderList.getJSONObject(i).getString("id_O"), qt.setJson("action.objAction." + j, unitAction), Order.class);
+//KKKK                            qt.setMDContent(orderList.getJSONObject(i).getString("id_O"), qt.setJson("action.objAction." + j, unitAction), Order.class);
 
                             JSONObject fcCheck = grpBGroup.getJSONObject(unitOItem.getGrpB());
                             JSONObject fsCheck = grpGroup.getJSONObject(unitOItem.getGrp());
@@ -2189,7 +2218,7 @@ public class ActionServiceImpl implements ActionService {
                             }
 
                             this.updateRefOP(myCompId, unitOItem.getId_C(),
-                                    id_FC, id_FS, unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getIndex(), true );
+                                    id_FC, id_FS, unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getId_O(), unitAction.getIndex(), true );
 
                             String msgText = "[" + unitAction.getRefOP()+"] " + unitOItem.getWrdN().get("cn") + " 准备开始";
                             LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
@@ -2273,7 +2302,8 @@ public class ActionServiceImpl implements ActionService {
                                 //System.out.println("unit " + subOItem.getGrpB() + subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
                                 String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
                                 this.updateRefOP(myCompId, subOItem.getId_C(),
-                                        subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), id_O, unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getSubParts().getJSONObject(k).getInteger("index"), true );
+                                        subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), id_O, unitAction.getRefOP(), unitAction.getWrdNP(),
+                                        unitAction.getSubParts().getJSONObject(k).getString("id_O"), unitAction.getSubParts().getJSONObject(k).getInteger("index"), true );
 
                                 LogFlow logLP = new LogFlow(logType, subOrderData.getString("id_FC"),
                                         subOrderData.getString("id_FS"), "stateChg",
@@ -2318,7 +2348,7 @@ public class ActionServiceImpl implements ActionService {
                         }
 
                         this.updateRefOP(myCompId, unitOItem.getId_C(),
-                                id_FC, id_FS, id_O, unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getIndex(), true );
+                                id_FC, id_FS, id_O, unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getId_O(), unitAction.getIndex(), true );
 
                         LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
                                 id_FC,
@@ -2408,7 +2438,7 @@ public class ActionServiceImpl implements ActionService {
         allAction.add(unitAction);
 
         this.updateRefOP(myCompId, myCompId,
-                id_FC, id_FS, id_O, "grpTask", oItemData.getJSONObject("wrdNP"), index, true );
+                id_FC, id_FS, id_O, "grpTask", oItemData.getJSONObject("wrdNP"), id_O, index, true );
 
 
         // Send a log
@@ -2563,7 +2593,7 @@ public class ActionServiceImpl implements ActionService {
         allAction.add(unitAction);
 
         this.updateRefOP(myCompId, myCompId,
-                id, id_FS, id_O, "grpTask", oItemData.getJSONObject("wrdNP"), index, true );
+                id, id_FS, id_O, "grpTask", oItemData.getJSONObject("wrdNP"), id_O, index, true );
 
         boolean isId_Us = null != id_Us && id_Us.size() > 0;
 
@@ -2658,6 +2688,7 @@ public class ActionServiceImpl implements ActionService {
      * 将新任务追加到保存MDB的最后一项
      * 发送日志
      * 返回probList，以便能够显示在我的屏幕上
+     * id_FC = prob 的FC, Id_FQ 是 本来的
      */
 
     @Override
@@ -2741,8 +2772,8 @@ public class ActionServiceImpl implements ActionService {
         allAction.add(unitAction);
 
         this.updateRefOP(myCompId,myCompId,
-                id_FQ, "", probData.getString("id_OP"), probData.getString("refOP"),
-                unitAction.getWrdNP(), index, true );
+                id_FC, "", orderAction.getId_OP(), orderAction.getRefOP(),
+                orderAction.getWrdNP(), id_O, index, true );
 
 
         LogFlow logProb = new LogFlow(logTypeProb,id_FC,
@@ -2899,7 +2930,6 @@ public class ActionServiceImpl implements ActionService {
 
     /**
      * 双方确认订单
-     * @param id_C	公司编号
      * @param id_O	订单编号
      * @return java.lang.String  返回结果: 结果
      * @author Kevin
@@ -2955,7 +2985,7 @@ public class ActionServiceImpl implements ActionService {
         //Writing update history
         LogFlow logUsage = new LogFlow();
         logUsage.setUsageLog(tokData, "confirm", desc, 2, id_O, listType,
-                qt.setJson("cn", desc), listType == "lBOrder" ? order.getInfo().getGrpB(): order.getInfo().getGrp());
+                qt.setJson("cn", desc), listType == "lBOrder" ? order.getInfo().getGrpB(): order.getInfo().getGrp(), "");
         ws.sendESOnly(logUsage);
 
         return order.getInfo().getLST();

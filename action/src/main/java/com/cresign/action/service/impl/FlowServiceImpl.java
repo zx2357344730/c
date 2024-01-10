@@ -2382,15 +2382,14 @@ public class FlowServiceImpl implements FlowService {
         {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
-        JSONArray casList;
+        JSONArray casList = orderParent.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
 
-        //TODO KEV this check is meaningless, you should never get casItemx.objOrder anymore
-        if (orderParent.getCasItemx().getJSONObject(id_C) == null)
-        {
-            casList = orderParent.getCasItemx().getJSONArray("objOrder");
-        } else {
-            casList = orderParent.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
-        }
+//        if (orderParent.getCasItemx().getJSONObject(id_C) == null)
+//        {
+//            casList = orderParent.getCasItemx().getJSONArray("objOrder");
+//        } else {
+//            casList = orderParent.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
+//        }
 
         JSONObject myOrder = new JSONObject();
         myOrder.put("id_O", id_O);
@@ -2415,7 +2414,7 @@ public class FlowServiceImpl implements FlowService {
                 // delete that order        // 删除订单
             if (!subOrderId.equals(id_O)) {
                 // 创建es删除请求
-                qt.delES("lsborder", qt.setESFilt("id_O", "exact",subOrderId));
+                qt.delES("lsborder", qt.setESFilt("id_O", subOrderId));
                 qt.delMD(subOrderId, Order.class);
             }
         }

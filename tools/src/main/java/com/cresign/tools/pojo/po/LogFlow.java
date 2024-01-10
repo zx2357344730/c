@@ -49,7 +49,7 @@ public class LogFlow {
         this.id_CS = oItem.getString("id_C");
         this.wrdN = oItem.getJSONObject("wrdN");
         this.imp = imp;
-        this.wrdNU = tokData.getJSONObject("wrdNU");
+        this.wrdNU = tokData.getJSONObject("wrdNReal");
         this.pic = oItem.getString("pic");
         this.lang = "cn";
         this.zcndesc = zcndesc;
@@ -79,7 +79,7 @@ public class LogFlow {
 //        wrdN.put("cn", zcndesc);
 //        this.wrdN = wrdN;
 //        this.imp = imp;
-//        this.wrdNU = tokData.getJSONObject("wrdNU");
+//        this.wrdNU = tokData.getJSONObject("wrdNReal");
 //        this.pic = "";
 //        this.lang = "cn";
 //        this.zcndesc = zcndesc;
@@ -207,7 +207,7 @@ public class LogFlow {
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
-    public void setUsageLog(JSONObject tokData, String updateType, String zcndesc, Integer imp, String id, String listType, JSONObject wrdN, String grp)
+    public void setUsageLog(JSONObject tokData, String updateType, String zcndesc, Integer imp, String id, String listType, JSONObject wrdN, String grp, String info)
     {
         this.id = "";
         this.id_FS = "";
@@ -227,7 +227,7 @@ public class LogFlow {
 
         this.wrdN = wrdN;
         this.imp = imp;
-        this.wrdNU = tokData.getJSONObject("wrdNU");
+        this.wrdNU = tokData.getJSONObject("wrdNReal");
         this.pic = tokData.getString("pic");
         this.lang = "cn";
         this.zcndesc = zcndesc;
@@ -237,6 +237,7 @@ public class LogFlow {
         data.put("id", id);
         data.put("listType", listType);
         data.put("grp", grp);
+        data.put("info", info);
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 

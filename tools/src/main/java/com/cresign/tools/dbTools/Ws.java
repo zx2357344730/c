@@ -290,7 +290,7 @@ public class Ws {
         }
     }
 
-    public void sendUsageFlow(JSONObject wrdN, String msg, String subType, String type) {
+    public void sendErrorToUsageflow(JSONObject wrdN, String msg, String subType, String type) {
         // set sys log format:
         LogFlow log = new LogFlow();
         log.setSysLog("6141b6797e8ac90760913fd0", subType, msg, 3, wrdN);

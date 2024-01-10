@@ -86,4 +86,5 @@ public class AssetAStock {
     private JSONArray procQty;
     private Integer lUT;
     private Integer lCR;
+    private String dep;
 }

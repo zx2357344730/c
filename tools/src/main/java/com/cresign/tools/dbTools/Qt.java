@@ -593,29 +593,29 @@ public class Qt {
     public void errPrint(String title, Exception e, Object... vars)
     {
 
-//        try {
-//            System.out.println("****[" + title + "]****");
-//            for (Object item : vars) {
-//                if (item == null) {
-//                    System.out.println("....null");
-//                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
-//                    System.out.println(this.toJArray(item));
-//                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
-//                        item.getClass().toString().startsWith("class java.util")) {
-//                    System.out.println(this.toJson(item));
-//                } else {
-//                    System.out.println(item);
-//                }
-//            }
-//            System.out.println("*****[End]*****");
-//
-//            if (e != null)
-//                e.printStackTrace();
-//        }
-//        catch (Exception ex)
-//        {
-//            System.out.println("****" + title + " is NULL ****");
-//        }
+        try {
+            System.out.println("****[" + title + "]****");
+            for (Object item : vars) {
+                if (item == null) {
+                    System.out.println("....null");
+                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
+                    System.out.println(this.toJArray(item));
+                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
+                        item.getClass().toString().startsWith("class java.util")) {
+                    System.out.println(this.toJson(item));
+                } else {
+                    System.out.println(item);
+                }
+            }
+            System.out.println("*****[End]*****");
+
+            if (e != null)
+                e.printStackTrace();
+        }
+        catch (Exception ex)
+        {
+            System.out.println("****" + title + " is NULL ****");
+        }
     }
 
     public void errPrint(String title, Object... vars)
@@ -929,11 +929,6 @@ public class Qt {
         }
 
     }
-
-//    abc
-//    {
-//         get inJava get "xxxx", id_I => getMD id_I, jsonInfo.xxx, Info.class return
-//    }
 
     public void addAllMD(Collection<?> collection) {
         // 新增order信息
@@ -1685,11 +1680,6 @@ public class Qt {
                     {
                         conditionMap.put("filtKey", filtKey + ".cn");
                     }
-                    if (filtKey.startsWith("ref"))
-                    {
-                        conditionMap.put("method", "prefix");
-                    }
-
                 }
 
                 switch (method) {
@@ -1702,7 +1692,14 @@ public class Qt {
                         break;
                     case "eq":
                         //模糊查询，必须匹配所有分词
-                        queryBuilder.must(QueryBuilders.matchPhraseQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
+                        if (conditionMap.getString("filtKey").startsWith("data.ref") || conditionMap.getString("filtKey").startsWith("ref") || conditionMap.getString("filtKey").startsWith("mbn"))
+                        {
+                            queryBuilder.must(QueryBuilders.prefixQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal").toString()));
+
+                        } else {
+                            queryBuilder.must(QueryBuilders.matchPhraseQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
+                        }
+
                         break;
                     case "prefix":
                         //前缀查询
@@ -1747,7 +1744,6 @@ public class Qt {
                         JSONArray arrayKey = conditionMap.getJSONArray("filtKey");
                         JSONArray arrayValue = conditionMap.getJSONArray("filtVal");
                         String value = StringUtils.join(arrayValue, " OR ");
-                        System.out.println("value=" + value);
                         QueryStringQueryBuilder queryStringQueryBuilder = QueryBuilders.queryStringQuery(value);
                         for (int j = 0; j < arrayKey.size(); j++) {
                             queryStringQueryBuilder = queryStringQueryBuilder.field(arrayKey.getString(j));
@@ -1755,18 +1751,32 @@ public class Qt {
                         queryBuilder.must(queryStringQueryBuilder);
                         break;
                     }
-                    case "shouldeq": {
+                    case "shPrefix": {
                         JSONArray arrayValue = conditionMap.getJSONArray("filtVal");
                         for (int j = 0; j < arrayValue.size(); j++) {
                             JSONObject jsonValue = arrayValue.getJSONObject(j);
-                            BoolQueryBuilder mustQuery = new BoolQueryBuilder();
+//                            BoolQueryBuilder mustQuery = new BoolQueryBuilder();
                             jsonValue.forEach((k, v) ->{
-                                mustQuery.must(QueryBuilders.termQuery(k, v));
+                                queryBuilder.should(QueryBuilders.prefixQuery(k, v.toString()));
+
                             });
-                            queryBuilder.should(mustQuery);
+//                            queryBuilder.should(mustQuery);
                         }
                         break;
                     }
+//                    case "shouldeq": {
+//                        JSONArray arrayValue = conditionMap.getJSONArray("filtVal");
+//                        for (int j = 0; j < arrayValue.size(); j++) {
+//                            JSONObject jsonValue = arrayValue.getJSONObject(j);
+//                            BoolQueryBuilder mustQuery = new BoolQueryBuilder();
+//                            jsonValue.forEach((k, v) ->{
+//                                mustQuery.must(QueryBuilders.termQuery(k, v));
+//
+//                            });
+//                            queryBuilder.should(mustQuery);
+//                        }
+//                        break;
+//                    }
                     case "nexact":
                         //精确查询，不分词
                         queryBuilder.mustNot(QueryBuilders.termQuery(conditionMap.getString("filtKey"), conditionMap.get("filtVal")));
@@ -1788,17 +1798,36 @@ public class Qt {
                         queryBuilder.mustNot(queryStringQueryBuilder);
                         break;
                     }
+                    case "containList":
+//
+                        List<String> filtValList = new ArrayList<>();
+                        filtValList.add(conditionMap.getString("filtVal"));
+                        //设定条件  OR    contain：包含
+                        String joinStrList = StringUtils.join(filtValList, " OR ");
+                        queryBuilder.must(QueryBuilders.queryStringQuery(joinStrList).field(conditionMap.getString("filtKey")));
+                        break;
                     case "contain":
                         //设定条件  OR    contain：包含
                         String joinStr = StringUtils.join((List<String>) conditionMap.get("filtVal"), " OR ");
                         queryBuilder.must(QueryBuilders.queryStringQuery(joinStr).field(conditionMap.getString("filtKey")));
                         break;
+//                        case "timeRange":
+//                            JSONArray filtList = conditionMap.getJSONArray("filtVal");
+//                            //.from（）是时间格式，.gte（）.lte（）  时间范围
+////                            queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey"))
+////                                    .from(DateEnum.DATE_TIME_FULL.getDate()).gte(filtList.get(0))
+////                                    .lte(filtList.get(1)));
+//
+//                            queryBuilder.must(QueryBuilders.rangeQuery(conditionMap.getString("filtKey"))
+//                                    .from(filtList.get(0), true).to(filtList.get(1),false));
+//                            break;
                     case "sheq": {
                         BoolQueryBuilder shouldQueryBuilder = new BoolQueryBuilder();
                         JSONArray arrayFiltKey = conditionMap.getJSONArray("filtKey");
                         for (int j = 0; j < arrayFiltKey.size(); j++) {
-                            if (arrayFiltKey.getString(j).startsWith("ref"))
+                            if (arrayFiltKey.getString(j).startsWith("data.ref") || arrayFiltKey.getString(j).startsWith("ref") || arrayFiltKey.getString(j).equals("mbn"))
                             {
+                                //special treatment using prefix
                                 shouldQueryBuilder.should(QueryBuilders.prefixQuery(arrayFiltKey.getString(j), conditionMap.get("filtVal").toString()));
 
                             } else {
