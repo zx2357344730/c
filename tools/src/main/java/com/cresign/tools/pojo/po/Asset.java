@@ -39,8 +39,6 @@ public class Asset {
 
     private JSONObject link00s;
 
-    private JSONObject chkin00s;
-
     private JSONObject menu;
 
     private JSONObject role;
