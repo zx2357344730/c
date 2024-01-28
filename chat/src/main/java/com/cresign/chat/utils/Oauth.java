@@ -38,7 +38,6 @@ public class Oauth {
      *@author           Kevin
      *@updated             2020/5/15 13:28
      */
-    //TODO KEV double check if this is same as login's
     public  String setToken(User user, String cid, String grpU, String dep,  String clientType){
 
             String token = "";
@@ -46,6 +45,7 @@ public class Oauth {
             JSONObject dataSet = new JSONObject();
             dataSet.put("id_U", user.getId());
             dataSet.put("wrdNU", user.getInfo().getWrdN());
+            dataSet.put("wrdNReal", user.getInfo().getWrdNReal());
             dataSet.put("pic", user.getInfo().getPic());
             dataSet.put("id_C", cid);
             dataSet.put("grpU", grpU);

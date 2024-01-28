@@ -47,6 +47,7 @@ public class Oauth {
             JSONObject dataSet = new JSONObject();
             dataSet.put("id_U", user.getId());
             dataSet.put("wrdNU", user.getInfo().getWrdN());
+            dataSet.put("wrdNReal", user.getInfo().getWrdNReal());
             dataSet.put("pic", user.getInfo().getPic());
             dataSet.put("id_C", cid);
             dataSet.put("grpU", grpU);

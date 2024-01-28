@@ -25,7 +25,6 @@ import org.springframework.stereotype.Component;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -74,7 +73,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @ver 1.0.0
      * @date 2022/6/22
      */
-    //TODO ZJ ???
     @Autowired
     public void setWebSocketUserServer(Qt qt, Ws ws,Oauth oauth) {
         WebSocketUserServer.qt = qt;
@@ -89,8 +87,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @ver 1.0.0
      * @updated 2020/8/5 9:14:20
      */
-    //TODO ZJ token no need
-    //rdInfo
+
     @OnOpen
     public void onOpen(Session session, @PathParam("uId") String uId,@PathParam("publicKey") String publicKey
             ,@PathParam("token") String token,@PathParam("client")String client,@PathParam("appId")String appId) {
@@ -245,7 +242,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
         error.printStackTrace(printWriter);
         String msg = "-Error: "+error;
         String msg2 = writer.toString().substring(0, 650);
-        ws.sendUsageFlow(qt.setJson("cn", msg), msg2, "wsError", "WS");
+        ws.sendErrorToUsageflow(qt.setJson("cn", msg), msg2, "wsError", "WS");
     }
     /**
      * 实现服务器主动推送 XXX only did aes encrypt on stringMap
@@ -253,46 +250,51 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      * @ver 1.0.0
      * @updated 2020/8/5 9:14:20
      */
-    //TODO ZJ 改名为encryptSendMsg
     private synchronized void encryptSendMsg(LogFlow logData,boolean isEncrypt,String frontEndPublicKey) {
-        JSONObject stringMap = new JSONObject();
-        if (isEncrypt) {
-            //每次响应之前随机获取AES的key，加密data数据
-            String key = AesUtil.getKey();
-            // 加密logContent数据
-            try {
+        try {
+            JSONObject stringMap = new JSONObject();
+            if (isEncrypt) {
+                //每次响应之前随机获取AES的key，加密data数据
+                String key = AesUtil.getKey();
+                // 加密logContent数据
+//            try {
                 // 根据key加密logContent数据
                 String data2 = AesUtil.encrypt(JSON.toJSONString(logData), key);
                 // 添加到返回map
-                stringMap.put("data",data2);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            stringMap.put("en",true);
-            //用前端的公钥来解密AES的key，并转成Base64
-            try {
+                stringMap.put("data", data2);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+                stringMap.put("en", true);
+                //用前端的公钥来解密AES的key，并转成Base64
+//            try {
                 // 使用前端公钥加密key
                 String aesKey = Base64.encodeBase64String(RsaUtil.encryptByPublicKey(key.getBytes()
-                                , frontEndPublicKey));
+                        , frontEndPublicKey));
                 // 添加加密数据到返回集合
-                stringMap.put("aesKey",aesKey);
-            } catch (Exception e) {
-                e.printStackTrace();
+                stringMap.put("aesKey", aesKey);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+            } else {
+                stringMap.put("key", "2");
+                stringMap.put("en", false);
             }
-        } else {
-            stringMap.put("key","2");
-            stringMap.put("en",false);
-        }
-        // 向前端推送log消息
-        try {
+            // 向前端推送log消息
+//        try {
             if (!this.session.isOpen()) {
                 System.out.println("消息发送失败，session 处于关闭状态:" + session.getId());
                 return;
             }
             // 发送返回数据 ******* send HERE
             this.session.getBasicRemote().sendText(JSON.toJSONString(stringMap));
-        } catch (IOException e) {
-            System.out.println("sendMessage出现错误");
+//        } catch (IOException e) {
+//            System.out.println("sendMessage出现错误");
+//        }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException("encrypt failed");
         }
     }
 
@@ -305,15 +307,14 @@ public class WebSocketUserServer implements RocketMQListener<String> {
      */
     @OnMessage
     public void onMessageWeb(String message){
-        try {
-            //TODO ZJ 1. id_Us -> 在我这个服务 - sendMessage / 不在就只要 ws.sendWS(log)
             JSONObject map = JSONObject.parseObject(message);
             System.out.println("收到ws消息:");
             System.out.println(map);
             if (null != map) {
                 String id = map.getString("id");
                 if ("2".equals(id)) {
-                    this.encryptSendMsg(null,false,null); //TODO ZJ 不加密干嘛用sendMessage
+                        this.encryptSendMsg(null, false, null);
+
                 } else {
                     JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, this.thisUser);
                     if (null == rdInfo || null == rdInfo.getJSONObject(this.thisClient)
@@ -325,13 +326,15 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                     JSONObject javaKey = wsData.getJSONObject("javaKey");
                     String frontEndPublicKey = wsData.getString("frontEndPublicKey");
                     // 调用解密并且发送信息方法
-                    LogFlow logData = RsaUtil.encryptionSend(map, javaKey.getString("private"));
+                    LogFlow logData = new LogFlow();
+                        logData = RsaUtil.encryptionSend(map, javaKey.getString("private"));
+
                     System.out.println(JSON.toJSONString(logData));
                     // 这个是特殊条件: subType == token
                     if (null!=logData.getSubType() && null!=logData.getLogType()
                             && "token".equals(logData.getSubType())
                             && "usageflow".equals(logData.getLogType())) {
-                        try {
+//                        try {
                             JSONObject data = logData.getData();
                             System.out.println("请求 RT2 api:");
                             String newToken = refreshToken2(logData.getId_U(), logData.getId_C(),data.getString("token")
@@ -366,10 +369,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                                 WebSocketUserServer.webSocketSet.get(logData.getId_U())
                                         .get(client).encryptSendMsg(logData,true,frontEndPublicKey);
                             }
-                        } catch (Exception e){
-                            System.out.println("这里出现异常:"+e.getMessage());
-                            e.printStackTrace();
-                        }
+//                        } catch (Exception e){
+//                            System.out.println("这里出现异常:"+e.getMessage());
+//                            e.printStackTrace();
+//                        }
                     } else
                     {
                         logData.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
@@ -423,10 +426,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                     }
                 }
             }
-        } catch (Exception ex){
-            System.out.println("接收消息:出现异常:"+ex.getMessage());
-            ex.printStackTrace();
-        }
+
     }
 
     /**

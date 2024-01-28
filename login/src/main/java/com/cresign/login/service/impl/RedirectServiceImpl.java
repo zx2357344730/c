@@ -44,15 +44,6 @@ public class RedirectServiceImpl implements RedirectService {
     public static final String HTTP_LOG = "https://www.cresign.cn/qrCodeTest?qrType=log&t=";
 
 
-//    @Autowired
-//    private MongoTemplate mongoTemplate;
-
-//    @Autowired
-//    private StringRedisTemplate redisTemplate0;
-
-//    @Autowired
-//    private RestHighLevelClient restHighLevelClient;
-
     @Autowired
     private RetResult retResult;
 
@@ -524,6 +515,10 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
 
 //        String keyName = SCANCODE_JOINCOMP + token;
 //        Boolean hasKey = redisTemplate0.hasKey(keyName);
+        if (join_user.equals("5f28bf314f65cc7dc2e60262"))
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_IS_NO_FOUND.getCode(), null);
+        }
 
         if (!qt.hasRDKey(SCANCODE_JOINCOMP, token)) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
@@ -664,6 +659,7 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
           2. 将用户加入公司
           type: 0 = joinComp, 1 = joinVisitor
          */
+
 
         Comp compOne = qt.getMDContent(entries.get("id_C").toString(), "info", Comp.class);
         if (ObjectUtils.isEmpty(compOne)) {

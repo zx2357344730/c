@@ -196,8 +196,6 @@ public class WxLoginController {
     @PostMapping("/v1/wxmp_register")
     public ApiResponse wxmpRegister(@RequestBody JSONObject reqJson) {
         try {
-            System.out.println("wxmpRegister:");
-            System.out.println(JSON.toJSONString(reqJson));
             return wxLoginService.wxmpRegister(
                     reqJson.getString("nickName"),
                     reqJson.getString("avatarUrl"),

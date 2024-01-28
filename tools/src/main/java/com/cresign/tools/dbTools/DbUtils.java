@@ -29,7 +29,6 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -221,29 +220,29 @@ public class DbUtils {
      * @Return org.elasticsearch.action.index.IndexResponse
      * @Card
      **/
-    //FIXED
-    public LogFlow getRecentLog(String id_O, Integer index, JSONObject tokData, String logType) throws IOException {
-        BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
-        queryBuilder.must(QueryBuilders.termQuery("id_C", tokData.getString("id_C")))
-                .must(QueryBuilders.termQuery("id_O", id_O))
-                .must(QueryBuilders.termQuery("index", index));
-
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.query(queryBuilder).from(0).size(1).sort("tmd", SortOrder.DESC);
-
-        SearchRequest searchRequest = new SearchRequest(logType);
-//        searchRequest.indices(logType);
-
-        searchRequest.source(sourceBuilder);
-
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        System.out.println("result");
-        System.out.println(id_O+" "+index+" "+tokData.getString("id_C"));
-
-        System.out.println(searchResponse.getHits().getHits());
-        SearchHit hit = searchResponse.getHits().getHits()[0];
+    public LogFlow getRecentLog(String id_O, Integer index, JSONObject tokData, String logType) {
+//        BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
+//        queryBuilder.must(QueryBuilders.termQuery("id_C", tokData.getString("id_C")))
+//                .must(QueryBuilders.termQuery("id_O", id_O))
+//                .must(QueryBuilders.termQuery("index", index));
+//
+//        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+//        sourceBuilder.query(queryBuilder).from(0).size(1).sort("tmd", SortOrder.DESC);
+//
+//        SearchRequest searchRequest = new SearchRequest(logType);
+////        searchRequest.indices(logType);
+//
+//        searchRequest.source(sourceBuilder);
+//
+//        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+//        System.out.println("result");
+//        System.out.println(id_O+" "+index+" "+tokData.getString("id_C"));
+//
+//        System.out.println(searchResponse.getHits().getHits());
+//        SearchHit[] hit = searchResponse.getHits().getHits();
+        JSONArray hits = qt.getES(logType, qt.setESFilt("id_C", tokData.getString("id_C"),"id_O", id_O, "index", index),1,1,"tmd","desc");
 //        Map<String, Object> newestLog = hit.getSourceAsMap();
-        if (hit == null)
+        if (hits.size() == 0)
         {
             Order thisOrder = qt.getMDContent(id_O, Arrays.asList("oItem", "info", "action"), Order.class);
             LogFlow newLog = new LogFlow(tokData, thisOrder.getOItem().getJSONArray("objItem").getJSONObject(index), thisOrder.getAction(),
@@ -251,7 +250,7 @@ public class DbUtils {
                     "", "", 3);
             return newLog;
         }
-        LogFlow newestLog = JSONObject.parseObject(hit.getSourceAsString(), LogFlow.class);
+        LogFlow newestLog = qt.jsonTo(hits.getJSONObject(0), LogFlow.class);
 //        newestLog.putAll(jsonLog);
         //Setup who and when
         newestLog.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
@@ -2515,11 +2514,13 @@ public class DbUtils {
                 jsonLsasset.put("lCR", 0);
             } else {
                 JSONObject info = jsonProd.getJSONObject("info");
+
                 String grpP =  info.getString("grp");
 
-                if (defKey.equals("oblBP"))
+                if (defKey.equals("objlBP"))
                 {
-                    grpP = qt.getESItem("lBProd", info.getString("id_P"), lBProd.class).getGrpB();
+                    grpP = qt.getESItem("lBProd", id_P, lBProd.class).getGrpB();
+
                 }
 
                 Integer lUT = info.getInteger("lUT");
@@ -2534,7 +2535,6 @@ public class DbUtils {
                 } else {
                     jsonLsasset.put("grp", "1000");
                 }
-
 
                 if (lUT == null) {
                     jsonLsasset.put("lUT", 0);
@@ -2606,37 +2606,37 @@ public class DbUtils {
         this.assetValueChange(order, arrayLsasset, listBulkAsset, listBulkLsasset, null, type, true);
         //处理arrayLbasset
         this.assetValueChange(order, arrayLbasset, listBulkAsset, listBulkLbasset, listBulkLsasset, type, false);
-        qt.errPrint("new", null, arrayLsasset, arrayLbasset, listBulkAsset, listBulkLsasset, listBulkLbasset);
+        qt.errPrint(" grp", null, arrayLsasset);
 
         qt.setMDContentMany(listBulkAsset, Asset.class);
         qt.setESMany("lSAsset", listBulkLsasset);
         qt.setESMany("lBAsset", listBulkLbasset);
     }
 
-    public JSONObject getAssetListByQuery(JSONArray arrayEs, HashSet setId_A) {
-        JSONObject jsonResult = new JSONObject();
-        for (int i = 0; i < arrayEs.size(); i++) {
-            JSONObject jsonEs = arrayEs.getJSONObject(i);
-            String locAddr = jsonEs.getString("locAddr");
-            //if (locAddr == null || locAddr.equals("")) {
-            if (jsonEs.getString("lAT").equals("2") || jsonEs.getString("lAT").equals("3") &&
-                    (locAddr != null || !locAddr.equals(""))) {
-
-                jsonResult.put(jsonEs.getString("id_C") + "-" +
-                                jsonEs.getString("id_CB") + "-" +
-                                jsonEs.getString("id_P") + "-" + locAddr
-                        , jsonEs);
-            } else {
-                jsonResult.put(jsonEs.getString("id_C") + "-" +
-                                jsonEs.getString("id_CB") + "-" +
-                                jsonEs.getString("id_P"),
-                        jsonEs);
-            }
-            setId_A.add(jsonEs.getString("id_A"));
-        }
-        System.out.println("jsonResult=" + jsonResult);
-        return jsonResult;
-    }
+//    public JSONObject getAssetListByQuery(JSONArray arrayEs, HashSet setId_A) {
+//        JSONObject jsonResult = new JSONObject();
+//        for (int i = 0; i < arrayEs.size(); i++) {
+//            JSONObject jsonEs = arrayEs.getJSONObject(i);
+//            String locAddr = jsonEs.getString("locAddr");
+//            //if (locAddr == null || locAddr.equals("")) {
+//            if (jsonEs.getString("lAT").equals("2") || jsonEs.getString("lAT").equals("3") &&
+//                    (locAddr != null || !locAddr.equals(""))) {
+//
+//                jsonResult.put(jsonEs.getString("id_C") + "-" +
+//                                jsonEs.getString("id_CB") + "-" +
+//                                jsonEs.getString("id_P") + "-" + locAddr
+//                        , jsonEs);
+//            } else {
+//                jsonResult.put(jsonEs.getString("id_C") + "-" +
+//                                jsonEs.getString("id_CB") + "-" +
+//                                jsonEs.getString("id_P"),
+//                        jsonEs);
+//            }
+//            setId_A.add(jsonEs.getString("id_A"));
+//        }
+//        System.out.println("jsonResult=" + jsonResult);
+//        return jsonResult;
+//    }
 
     public void assetValueChange(Order order, JSONArray arrayAssetChg, List<JSONObject> listBulkAsset, List<JSONObject> listBulkLsasset,
                           List<JSONObject> listBulkLbasset, String type, Boolean isLsa) {
@@ -2660,7 +2660,6 @@ public class DbUtils {
             JSONObject jsonBulkAsset = null;
             JSONObject jsonBulkLsasset = null;
             String id_A = null;
-            String grpA = "";
             //index不为空是产品，反之是金钱
             // basically depends on what arrayAssetChg is, it will update asset accordingly, so this array is very important instruction
             // type 1 = deduct/add qty by stocks
@@ -2694,7 +2693,6 @@ public class DbUtils {
                 {
                     JSONObject jsonLsa = assetChgObj.getJSONObject("jsonLsa");
                     id_A = jsonLsa.getString("id_A");
-                    grpA = jsonLsa.getString("grp");
                     JSONObject jsonAsset = assetChgObj.getJSONObject("jsonAsset");
                     JSONObject aStock = jsonAsset.getJSONObject("aStock");
                     JSONArray arrayLocSpace = aStock.getJSONArray("locSpace");
@@ -2945,7 +2943,7 @@ public class DbUtils {
                         order.getInfo().getId_CB(), id_O, index, "assetflow", "stoChg",
                         wrdN.getString("cn") + jsonLog.getString("zcndesc"),
                         jsonLog.getInteger("imp"));
-                log.setLogData_assetflow(wn2qty, wn4price, id_A, grpA);
+                log.setLogData_assetflow(wn2qty, wn4price, id_A, grp);
                 System.out.println("assetflow=" + JSON.toJSON(log));
                ws.sendWS(log);
             }
