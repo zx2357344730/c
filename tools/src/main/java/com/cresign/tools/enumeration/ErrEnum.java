@@ -570,6 +570,8 @@ public enum ErrEnum {
     ERR_PURCHASE_FAIL("05004"),
     ERR_KEY_IS_NULL("05005"),
     ERR_SHARE_NULL("05006"),
+    // 时间为空
+    ERR_TIME_NULL("05007"),
     ;
     /**
      * 异常状态码

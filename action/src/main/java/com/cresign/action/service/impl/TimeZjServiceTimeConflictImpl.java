@@ -66,7 +66,8 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
             , JSONObject actionIdO, JSONObject objTaskAll, JSONObject recordId_OIndexState, JSONObject storageTaskWhereTime
             , JSONObject allImageTotalTime, Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks
             , JSONObject onlyFirstTimeStamp, JSONObject newestLastCurrentTimestamp, JSONObject onlyRefState
-            , JSONObject recordNoOperation,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,boolean isComprehensiveHandle) {
+            , JSONObject recordNoOperation,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate
+            ,boolean isComprehensiveHandle,JSONObject depAllTime) {
         // 创建返回结果对象
         JSONObject result = new JSONObject();
 //        System.out.println("处理时间冲突方法-q");
@@ -77,7 +78,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                 , tasks, i, conflict,getTeS(random, grpB, dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                 ,random,grpB,dep,teDate,isGetTaskPattern,getCurrentTimeStampPattern,sho,csSta,randomAll,xbAndSbAll
                 ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle);
+                ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
 //        System.out.println("处理时间冲突方法-2-q");
         // 获取任务余剩时间
         zon = handleTimeConflictCoreInfo.getLong("zon");
@@ -100,7 +101,8 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                 teSB += 86400L;
                 // 调用获取任务综合信息方法
                 Map<String, Object> jumpDay = getJumpDay(random, grpB, dep, 1, teSB,isGetTaskPattern,task.getId_C()
-                        ,xbAndSbAll,objTaskAll,allImageTotalTime,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp);
+                        ,xbAndSbAll,objTaskAll,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
+                        ,newestLastCurrentTimestamp,depAllTime);
                 // 获取任务集合
                 List<Task> tasksInside = (List<Task>) jumpDay.get("tasks");
                 // 获取任务余剩时间
@@ -120,7 +122,8 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 , contrastTaskTwoNew, zonInside, tasksInside, j, conflict, teSB,random,grpB,dep
                                 ,teDate,isGetTaskPattern,0,sho,csSta
                                 ,randomAll,xbAndSbAll,objTaskAll,storageTaskWhereTime,allImageTotalTime
-                                ,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle);
+                                ,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState
+                                ,allImageTeDate,isComprehensiveHandle,depAllTime);
                         // 获取任务余剩时间
                         zonInside = handleTimeConflictCoreInfo.getLong("zon");
                         // 获取存储任务是否被处理完状态参数：storageTaskIsProcessedComplete == 0 任务没有被处理完、isJ == 1 任务已经被处理完了
@@ -186,7 +189,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                 ,getCurrentTimeStampPattern,sho,csSta,randomAll,xbAndSbAll,actionIdO,objTaskAll
                 ,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime
                 ,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState
-                ,recordNoOperation,tePFinish,clearStatus,thisInfo,allImageTeDate,isSetImage,endTime);
+                ,recordNoOperation,tePFinish,clearStatus,thisInfo,allImageTeDate,isSetImage,endTime,depAllTime);
         System.out.println("处理时间冲突方法-2h-H:"+tePFinish);
         result.put("zon",handleTimeConflictEndInfo.getLong("zon"));
         // 存储问题状态参数: isProblemState = 0 正常、isPd = 1 订单编号为空、isPd = 2 主生产部件
@@ -238,12 +241,14 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
             , int csSta, String randomAll, JSONObject xbAndSbAll, JSONObject objTaskAll
             , JSONObject storageTaskWhereTime, JSONObject allImageTotalTime
             , Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks, JSONObject onlyFirstTimeStamp
-            , JSONObject newestLastCurrentTimestamp, JSONObject onlyRefState,JSONObject allImageTeDate,boolean isComprehensiveHandle) {
+            , JSONObject newestLastCurrentTimestamp, JSONObject onlyRefState,JSONObject allImageTeDate
+            ,boolean isComprehensiveHandle,JSONObject depAllTime) {
         // 调用冲突处理核心方法
         JSONObject handleTimeConflictCoreInfo = handleTimeConflictCore(task, contrastTaskOne, contrastTaskTwo
                 , zon, tasks, j, conflict,teSB,random,grpB,dep,teDate,isGetTaskPattern,getCurrentTimeStampPattern
                 ,sho,csSta,randomAll,xbAndSbAll,objTaskAll,storageTaskWhereTime
-                ,allImageTotalTime,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle);
+                ,allImageTotalTime,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp
+                ,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
         // 获取任务余剩时间
         zon = handleTimeConflictCoreInfo.getLong("zon");
         // 获取存储任务是否被处理完状态参数：isJ2 == 0 任务没有被处理完、isJ2 == 1 任务已经被处理完了
@@ -270,7 +275,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                 // 调用获取任务综合信息方法
                 Map<String, Object> jumpDay = getJumpDay(random, grpB, dep, 1, teSBNew,isGetTaskPattern
                         ,task.getId_C(),xbAndSbAll,objTaskAll,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                        ,newestLastCurrentTimestamp);
+                        ,newestLastCurrentTimestamp,depAllTime);
                 // 获取任务集合
                 List<Task> tasksInside = (List<Task>) jumpDay.get("tasks");
                 // 获取任务余剩时间
@@ -289,7 +294,8 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         handleTimeConflictCoreInfo = handleTimeConflictCore(task, task1Xx, task2Xx, zonInside, tasksInside
                                 , k, conflict, teSBNew,random,grpB,dep,teDate,isGetTaskPattern,0,sho
                                 ,csSta,randomAll,xbAndSbAll,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks
-                                ,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle);
+                                ,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,allImageTeDate
+                                ,isComprehensiveHandle,depAllTime);
                         // 获取任务余剩时间
                         zonInside = handleTimeConflictCoreInfo.getLong("zon");
                         // 获取存储任务是否被处理完状态参数：isJ2 == 0 任务没有被处理完、isJ2 == 1 任务已经被处理完了
@@ -400,7 +406,8 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
             , int csSta, String randomAll, JSONObject xbAndSbAll, JSONObject objTaskAll
             , JSONObject storageTaskWhereTime, JSONObject allImageTotalTime
             , Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks, JSONObject onlyFirstTimeStamp
-            , JSONObject newestLastCurrentTimestamp, JSONObject onlyRefState,JSONObject allImageTeDate,boolean isComprehensiveHandle) {
+            , JSONObject newestLastCurrentTimestamp, JSONObject onlyRefState,JSONObject allImageTeDate
+            ,boolean isComprehensiveHandle,JSONObject depAllTime) {
 //        System.out.println("处理时间冲突核心方法-q");
         // 定义存储最后结束时间
         long tePFinish = 0;
@@ -1916,7 +1923,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     JSONObject handleTimeConflictEasyInfo = handleTimeConflictEasy(task, contrastTaskOneNew, contrastTaskTwoNew, zon, tasks, i, j, conflict, teSB
                                             , random, grpB, dep, teDate,isGetTaskPattern,1,sho,csSta,randomAll,xbAndSbAll
                                             ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle);
+                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
 //                                    System.out.println("进入这里X-X-1-1-h:");
 //                                    System.out.println(JSON.toJSONString(handleTimeConflictEasyInfo));
                                     // 获取任务余剩时间
@@ -2002,7 +2009,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                                 , contrastTaskTwoNew, zon, tasks, i, j, conflict, teSB, random, grpB, dep, teDate
                                                 ,isGetTaskPattern,1,sho,csSta,randomAll,xbAndSbAll
                                                 ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                                                ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle);
+                                                ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
                                         System.out.println("进入新的啊-h:");
 //                                        System.out.println(JSON.toJSONString(handleTimeConflictEasyInfo));
                                         tePFinish = handleTimeConflictEasyInfo.getLong("tePFinish");
@@ -2028,7 +2035,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             , contrastTaskTwoNew, zon, tasks, i, j, conflict, teSB, random, grpB, dep, teDate
                                             ,isGetTaskPattern,0,sho,csSta,randomAll,xbAndSbAll
                                             ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle);
+                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
                                     System.out.println("进入这里-X-1-h:");
                                     tePFinish = handleTimeConflictEasyInfo.getLong("tePFinish");
                                     endTime = handleTimeConflictEasyInfo.getLong("endTime");
@@ -2048,7 +2055,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             , contrastTaskTwoNew, zon, tasks, i, j, conflict, teSB, random, grpB, dep, teDate
                                             ,isGetTaskPattern,0,sho,csSta,randomAll,xbAndSbAll
                                             ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle);
+                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
                                     tePFinish = handleTimeConflictEasyInfo.getLong("tePFinish");
                                     endTime = handleTimeConflictEasyInfo.getLong("endTime");
                                     // 获取任务余剩时间
@@ -2070,7 +2077,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             , contrastTaskTwoNew, zon, tasks, i, j, conflict, teSB, random, grpB, dep, teDate
                                             ,isGetTaskPattern,0,sho,csSta,randomAll,xbAndSbAll
                                             ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle);
+                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
                                     tePFinish = handleTimeConflictEasyInfo.getLong("tePFinish");
                                     endTime = handleTimeConflictEasyInfo.getLong("endTime");
                                     // 获取任务余剩时间

@@ -2,6 +2,7 @@ package com.cresign.tools.dbTools;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.pojo.po.Prod;
 import com.cresign.tools.request.HttpClientUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,6 +59,49 @@ public class QtThread {
             List<T> thisList =  qt.getMDContentMany(queryIds , strList, classType);
             // 添加查询结果到list
             list.addAll(thisList);
+            future = new AsyncResult<>("success:");
+        } catch(IllegalArgumentException e){
+            future = new AsyncResult<>("error-IllegalArgumentException");
+        }
+        System.out.println("--- "+getThreadId()+" ---");
+        return future;
+    }
+
+    /**
+     * 开启多线程更新方法
+     * @param list  更新内容集合
+     * @param classType 查询的类型
+     * @return  线程处理结果
+     * @param <T>   查询类型
+     */
+    @Async
+    public <T> Future<String> threadUpMD(List<JSONObject> list, Class<T> classType){
+        System.out.println("开始:"+getThreadId());
+        Future<String> future;
+        try {
+            // 调用方法
+            qt.setMDContentMany2(list, classType);
+            future = new AsyncResult<>("success:");
+        } catch(IllegalArgumentException e){
+            future = new AsyncResult<>("error-IllegalArgumentException");
+        }
+        System.out.println("--- "+getThreadId()+" ---");
+        return future;
+    }
+
+    /**
+     * 开启多线程更新ES方法
+     * @param index ES的数据库
+     * @param list  更新内容集合
+     * @return  线程处理结果
+     */
+    @Async
+    public Future<String> threadESMany(String index,List<JSONObject> list){
+        System.out.println("开始:"+getThreadId());
+        Future<String> future;
+        try {
+            // 调用方法
+            qt.setESMany(index,list);
             future = new AsyncResult<>("success:");
         } catch(IllegalArgumentException e){
             future = new AsyncResult<>("error-IllegalArgumentException");

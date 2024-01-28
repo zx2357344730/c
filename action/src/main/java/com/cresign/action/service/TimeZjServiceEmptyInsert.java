@@ -70,7 +70,7 @@ public interface TimeZjServiceEmptyInsert {
             , JSONObject allImageTotalTime, Map<String,Map<String, Map<Long,List<Task>>>> allImageTasks
             , JSONObject onlyFirstTimeStamp, JSONObject newestLastCurrentTimestamp, JSONObject onlyRefState
             , JSONObject recordNoOperation,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate
-            ,JSONObject id_OAndIndexTaskInfo,boolean isInside,boolean isSetTasks);
+            ,JSONObject id_OAndIndexTaskInfo,boolean isInside,boolean isSetTasks,JSONObject depAllTime);
 
     /**
      * 空插和空插冲突处理方法
@@ -124,7 +124,7 @@ public interface TimeZjServiceEmptyInsert {
             ,Map<String,Map<String,Map<Long,List<Task>>>> allImageTasks,JSONObject onlyFirstTimeStamp
             ,JSONObject newestLastCurrentTimestamp,JSONObject onlyRefState,JSONObject recordNoOperation
             ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate
-            ,JSONObject id_OAndIndexTaskInfo,boolean isSetTasks);
+            ,JSONObject id_OAndIndexTaskInfo,boolean isSetTasks,JSONObject depAllTime);
 
     /**
      * 根据主订单和对应公司编号，删除时间处理信息

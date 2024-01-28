@@ -39,6 +39,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -454,108 +455,79 @@ public class Qt {
         return lists;
     }
 
-
+    /**
+     * 多线程一次性查询多个MongoDB id内容
+     * @param queryIds  id集合
+     * @param strList   需要的字段
+     * @param classType 查询的表
+     * @return  多个查询结果
+     * @param <T>   查询类型
+     */
     public <T> List<T> getMDContentFast(JSONArray queryIds,List<String> strList, Class<T> classType){
         int queryIdSize = queryIds.size();
-        // 创建存储返回结果集合
-        List<T> list = new ArrayList<>();
         // 判断id集合长度小于等于10
         if (queryIdSize <= 10) {
-//            this.mdManyUtilQuery(queryIds, list,strList,classType);
-            list = this.getMDContentMany(queryIds , strList, classType);
-            return list;
+            return this.getMDContentMany(queryIds , strList, classType);
         }
+        // 创建存储返回结果集合
+        List<T> list = new ArrayList<>();
         // 定义存储id集合需要拆分的数量
-        int splitNum;
-        // 判断id集合长度小于等于20
-        if (queryIdSize <= 20) {
-            // 拆分两次，也就是分配两个线程
-            splitNum = 2;
-        // 判断id集合长度小于等于30
-        } else if (queryIdSize <= 30) {
-            // 拆分三次，也就是分配三个线程
-            splitNum = 3;
-        // 判断id集合长度小于等于40
-        } else if (queryIdSize <= 40) {
-            // 拆分四次，也就是分配四个线程
-            splitNum = 4;
-        // 判断id集合长度小于等于50
-        } else if (queryIdSize <= 50) {
-            // 拆分五次，也就是分配五个线程
-            splitNum = 5;
-        // 否则id集合长度大于50
-        } else {
-            // 拆分六次，也就是分配六个线程
-            splitNum = 6;
-        }
+        int splitNum = getSplitNum(queryIdSize);
         List<List<String>> subList = getSubList(splitNum, queryIds, true, String.class);
         Future<String> future1 = qtThread.threadMD(subList.get(1), list,strList,classType);
         if (splitNum == 2) {
-            threadReturn(splitNum,future1,null,null,null,null,list,subList.get(0),strList,classType);
+//            threadReturn(splitNum,future1,null,null,null,null,list,subList.get(0),strList,classType);
+            // 添加查询结果到list
+            list.addAll(this.getMDContentMany(subList.get(0) , strList, classType));
+            threadReturnCore(splitNum,future1,null,null,null,null);
             return list;
         }
         Future<String> future2 = qtThread.threadMD(subList.get(2), list,strList,classType);
         if (splitNum == 3) {
-            threadReturn(splitNum,future1,future2,null,null,null,list,subList.get(0),strList,classType);
+//            threadReturn(splitNum,future1,future2,null,null,null,list,subList.get(0),strList,classType);
+            // 添加查询结果到list
+            list.addAll(this.getMDContentMany(subList.get(0) , strList, classType));
+            threadReturnCore(splitNum,future1,future2,null,null,null);
             return list;
         }
         Future<String> future3 = qtThread.threadMD(subList.get(3), list,strList,classType);
         if (splitNum == 4) {
-            threadReturn(splitNum,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
+//            threadReturn(splitNum,future1,future2,future3,null,null,list,subList.get(0),strList,classType);
+            // 添加查询结果到list
+            list.addAll(this.getMDContentMany(subList.get(0) , strList, classType));
+            threadReturnCore(splitNum,future1,future2,future3,null,null);
             return list;
         }
         Future<String> future4 = qtThread.threadMD(subList.get(4), list,strList,classType);
         if (splitNum == 5) {
-            threadReturn(splitNum,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
+//            threadReturn(splitNum,future1,future2,future3,future4,null,list,subList.get(0),strList,classType);
+            // 添加查询结果到list
+            list.addAll(this.getMDContentMany(subList.get(0) , strList, classType));
+            threadReturnCore(splitNum,future1,future2,future3,future4,null);
             return list;
         }
         Future<String> future5 = qtThread.threadMD(subList.get(5), list,strList,classType);
-        threadReturn(splitNum,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
+//        threadReturn(splitNum,future1,future2,future3,future4,future5,list,subList.get(0),strList,classType);
+        // 添加查询结果到list
+        list.addAll(this.getMDContentMany(subList.get(0) , strList, classType));
+        threadReturnCore(splitNum,future1,future2,future3,future4,future5);
         return list;
     }
 
 
-    public <T> void threadReturn(int splitNum,Future<String> future1
-            ,Future<String> future2,Future<String> future3
-            ,Future<String> future4,Future<String> future5,List<T> list
-            ,List<String> subListSon,List<String> strList, Class<T> classType){
-//        System.out.println("?");
-//        qtThread.mdManyUtilQuery(subListSon, list,strList,classType);
-        List<T> getResult = this.getMDContentMany(subListSon , strList, classType);
-        // 添加查询结果到list
-        list.addAll(getResult);
-//        System.out.println("- ! -");
-        while (true) {
-            // 判断拆分数量为2，并且线程1完成
-            if (splitNum == 2 && future1.isDone()) {
-                // 结束死循环
-                break;
-            // 判断拆分数量为3，并且线程1，线程2完成
-            } else if (splitNum == 3 && future1.isDone() && future2.isDone()) {
-                // 结束死循环
-                break;
-            // 判断拆分数量为4，并且线程1，线程2，线程3完成
-            } else if (splitNum == 4 && future1.isDone() && future2.isDone() && future3.isDone()) {
-                // 结束死循环
-                break;
-            // 判断拆分数量为5，并且线程1，线程2，线程3，线程4完成
-            } else if (splitNum == 5 && future1.isDone() && future2.isDone()
-                    && future3.isDone() && future4.isDone()) {
-                // 结束死循环
-                break;
-            // 否则拆分数量为6，
-            } else if (splitNum == 6 && future1.isDone() && future2.isDone()
-                    && future3.isDone() && future4.isDone()&& future5.isDone()){
-                // 判断线程1，线程2，线程3，线程4，线程5完成
-                if (future1.isDone() && future2.isDone() && future5.isDone()
-                        && future3.isDone() && future4.isDone()) {
-                    // 结束死循环
-                    break;
-                }
-            }
-        }
-        errPrint("结果集合大小:",list.size());
-    }
+//    public <T> void threadReturn(int splitNum,Future<String> future1
+//            ,Future<String> future2,Future<String> future3
+//            ,Future<String> future4,Future<String> future5,List<T> list
+//            ,List<String> subListSon,List<String> strList, Class<T> classType){
+////        System.out.println("?");
+////        qtThread.mdManyUtilQuery(subListSon, list,strList,classType);
+//        List<T> getResult = this.getMDContentMany(subListSon , strList, classType);
+//        // 添加查询结果到list
+//        list.addAll(getResult);
+////        System.out.println("- ! -");
+//        threadReturnCore(splitNum,future1,future2,future3,future4,future5);
+//        errPrint("结果集合大小:",list.size());
+//    }
 
     public List<?> getMDContentMany(HashSet setIds, String field, Class<?> classType) {
 
@@ -890,6 +862,86 @@ public class Qt {
             e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.SAVE_DB_ERROR.getCode(), e.toString());
         }
+    }
+
+    /**
+     * 多线程一次性更新多个MongoDB id内容
+     * @param upList  id集合
+     * @param classType 查询的表
+     * @param <T>   查询类型
+     */
+    public <T> void setMDContentFast(List<JSONObject> upList, Class<T> classType){
+        int upListSize = upList.size();
+        // 判断id集合长度小于等于10
+        if (upListSize <= 10) {
+            this.setMDContentMany2(upList, classType);
+            return;
+        }
+        // 定义存储id集合需要拆分的数量
+        int splitNum = getSplitNum(upListSize);
+        List<List<JSONObject>> subList = getSubList(splitNum, upList, true);
+        Future<String> future1 = qtThread.threadUpMD(subList.get(1),classType);
+        if (splitNum == 2) {
+            this.setMDContentMany2(subList.get(0), classType);
+            threadReturnCore(splitNum,future1,null,null,null,null);
+            return;
+        }
+        Future<String> future2 = qtThread.threadUpMD(subList.get(2),classType);
+        if (splitNum == 3) {
+            this.setMDContentMany2(subList.get(0), classType);
+            threadReturnCore(splitNum,future1,future2,null,null,null);
+            return;
+        }
+        Future<String> future3 = qtThread.threadUpMD(subList.get(3),classType);
+        if (splitNum == 4) {
+            this.setMDContentMany2(subList.get(0), classType);
+            threadReturnCore(splitNum,future1,future2,future3,null,null);
+            return;
+        }
+        Future<String> future4 = qtThread.threadUpMD(subList.get(4),classType);
+        if (splitNum == 5) {
+            this.setMDContentMany2(subList.get(0), classType);
+            threadReturnCore(splitNum,future1,future2,future3,future4,null);
+            return;
+        }
+        Future<String> future5 = qtThread.threadUpMD(subList.get(5),classType);
+        this.setMDContentMany2(subList.get(0), classType);
+        threadReturnCore(splitNum,future1,future2,future3,future4,future5);
+    }
+
+    /**
+     * 使用示例:
+        List<JSONObject> list = new ArrayList<>();
+        JSONObject obj = new JSONObject();
+        obj.put("id","6436140b17065250c9e1fc11");
+        obj.put("updateData",qt.setJson("info.test1","1"));
+        list.add(obj);
+        obj = new JSONObject();
+        obj.put("id","62f3645d7e441d76294d542e");
+        obj.put("updateData",qt.setJson("info.test1","2"));
+        list.add(obj);
+        qt.setMDContentMany2(list, Prod.class);
+     * @param list  更新的内容
+     * @param classType 更新的表
+     */
+    public void setMDContentMany2(List<JSONObject> list, Class<?> classType){
+        List<Pair<Query, Update>> updateList = new ArrayList<>(list.size());
+        BulkOperations operations = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, classType);
+        list.forEach(data -> {
+            JSONObject updateData = data.getJSONObject("updateData");
+            //如果query查询到有数据就更新
+            Query query = new Query(new Criteria("_id").is(data.getString("id")));
+            Update update = new Update();
+            //如果userId是主键，必须使用setOnInsert()
+            for (String s : updateData.keySet()) {
+                update.set(s,updateData.get(s));
+            }
+            Pair<Query, Update> updatePair = Pair.of(query, update);
+            updateList.add(updatePair);
+        });
+        operations.upsert(updateList);
+        BulkWriteResult result = operations.execute();
+        System.out.println(result);
     }
 
     public void delMD(String id,  Class<?> classType) {
@@ -1486,7 +1538,110 @@ public class Qt {
 
     }
 
+    public int getSplitNum(int upListSize){
+        // 定义存储id集合需要拆分的数量
+        int splitNum;
+        // 判断id集合长度小于等于20
+        if (upListSize <= 20) {
+            // 拆分两次，也就是分配两个线程
+            splitNum = 2;
+            // 判断id集合长度小于等于30
+        } else if (upListSize <= 30) {
+            // 拆分三次，也就是分配三个线程
+            splitNum = 3;
+            // 判断id集合长度小于等于40
+        } else if (upListSize <= 40) {
+            // 拆分四次，也就是分配四个线程
+            splitNum = 4;
+            // 判断id集合长度小于等于50
+        } else if (upListSize <= 50) {
+            // 拆分五次，也就是分配五个线程
+            splitNum = 5;
+            // 否则id集合长度大于50
+        } else {
+            // 拆分六次，也就是分配六个线程
+            splitNum = 6;
+        }
+        return splitNum;
+    }
 
+    /**
+     * 多线程一次性更新多个ES的upList内容
+     * @param index ES的数据库
+     * @param upList  id集合
+     */
+    public void setESManyFast(String index,List<JSONObject> upList){
+        int upListSize = upList.size();
+        // 判断id集合长度小于等于10
+        if (upListSize <= 10) {
+            this.setESMany(index,upList);
+            return;
+        }
+        // 定义存储id集合需要拆分的数量
+        int splitNum = getSplitNum(upListSize);
+        List<List<JSONObject>> subList = getSubList(splitNum, upList, true);
+        Future<String> future1 = qtThread.threadESMany(index,subList.get(1));
+        if (splitNum == 2) {
+            this.setESMany(index,subList.get(0));
+            threadReturnCore(splitNum,future1,null,null,null,null);
+            return;
+        }
+        Future<String> future2 = qtThread.threadESMany(index,subList.get(2));
+        if (splitNum == 3) {
+            this.setESMany(index,subList.get(0));
+            threadReturnCore(splitNum,future1,future2,null,null,null);
+            return;
+        }
+        Future<String> future3 = qtThread.threadESMany(index,subList.get(3));
+        if (splitNum == 4) {
+            this.setESMany(index,subList.get(0));
+            threadReturnCore(splitNum,future1,future2,future3,null,null);
+            return;
+        }
+        Future<String> future4 = qtThread.threadESMany(index,subList.get(4));
+        if (splitNum == 5) {
+            this.setESMany(index,subList.get(0));
+            threadReturnCore(splitNum,future1,future2,future3,future4,null);
+            return;
+        }
+        Future<String> future5 = qtThread.threadESMany(index,subList.get(5));
+        this.setESMany(index,subList.get(0));
+        threadReturnCore(splitNum,future1,future2,future3,future4,future5);
+    }
+
+    public void threadReturnCore(int splitNum,Future<String> future1
+            ,Future<String> future2,Future<String> future3
+            ,Future<String> future4,Future<String> future5){
+        while (true) {
+            // 判断拆分数量为2，并且线程1完成
+            if (splitNum == 2 && future1.isDone()) {
+                // 结束死循环
+                break;
+                // 判断拆分数量为3，并且线程1，线程2完成
+            } else if (splitNum == 3 && future1.isDone() && future2.isDone()) {
+                // 结束死循环
+                break;
+                // 判断拆分数量为4，并且线程1，线程2，线程3完成
+            } else if (splitNum == 4 && future1.isDone() && future2.isDone() && future3.isDone()) {
+                // 结束死循环
+                break;
+                // 判断拆分数量为5，并且线程1，线程2，线程3，线程4完成
+            } else if (splitNum == 5 && future1.isDone() && future2.isDone()
+                    && future3.isDone() && future4.isDone()) {
+                // 结束死循环
+                break;
+                // 否则拆分数量为6，
+            } else if (splitNum == 6 && future1.isDone() && future2.isDone()
+                    && future3.isDone() && future4.isDone()&& future5.isDone()){
+                // 判断线程1，线程2，线程3，线程4，线程5完成
+                if (future1.isDone() && future2.isDone() && future5.isDone()
+                        && future3.isDone() && future4.isDone()) {
+                    // 结束死循环
+                    break;
+                }
+            }
+        }
+    }
 
     public void setESMany(String logType, List<JSONObject> listBulk) {
         try {

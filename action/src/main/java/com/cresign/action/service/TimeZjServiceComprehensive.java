@@ -56,7 +56,8 @@ public interface TimeZjServiceComprehensive {
             , JSONObject allImageTotalTime, Map<String,Map<String, Map<Long, List<Task>>>> allImageTasks
             , JSONObject onlyFirstTimeStamp, JSONObject newestLastCurrentTimestamp, JSONObject onlyRefState
             , JSONObject recordNoOperation,Long tePFinish,JSONObject id_OAndIndexTaskInfo
-            ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,long endTime);
+            ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,long endTime
+            ,JSONObject depAllTime,String randomJiu);
 
 //    JSONObject timeComprehensiveHandleCopy(String id_oNext, Integer indONext, JSONObject timeConflictCopy
 //            , Integer isGetTaskPattern, Integer isEmptyInsert, JSONObject sho, String id_C
@@ -86,7 +87,7 @@ public interface TimeZjServiceComprehensive {
      */
     void taskLastHandle(JSONObject timeConflictCopy, String id_C, String randomAll, JSONObject objTaskAll, JSONObject storageTaskWhereTime
             , JSONObject allImageTotalTime, Map<String,Map<String, Map<Long, List<Task>>>> allImageTasks, JSONObject recordNoOperation
-            , String id_O, JSONArray objOrderList,JSONObject actionIdO,JSONObject allImageTeDate);
+            , String id_O, JSONArray objOrderList,JSONObject actionIdO,JSONObject allImageTeDate,JSONObject depAllTime);
 
     /**
      * 时间处理收尾（结束）方法 ( TimeZjServiceImplX.timeHandle()方法的，分割到该类 )
@@ -139,7 +140,7 @@ public interface TimeZjServiceComprehensive {
             , Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks
             , JSONObject onlyFirstTimeStamp, JSONObject newestLastCurrentTimestamp
             , JSONObject onlyRefState, JSONObject recordNoOperation,JSONObject clearStatus,JSONObject thisInfo
-            ,JSONObject allImageTeDate,boolean isSetEnd,long endTime);
+            ,JSONObject allImageTeDate,boolean isSetEnd,long endTime,JSONObject depAllTime);
 
     /**
      * 处理时间冲突收尾（结束）方法 ( TimeZjServiceTimeConflictImpl.handleTimeConflict()方法的，分割到该类 )
@@ -186,5 +187,6 @@ public interface TimeZjServiceComprehensive {
             , Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks
             , JSONObject onlyFirstTimeStamp, JSONObject newestLastCurrentTimestamp
             , JSONObject onlyRefState, JSONObject recordNoOperation,Long tePFinish
-            ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,JSONObject isSetImage,long endTime);
+            ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,JSONObject isSetImage,long endTime
+            ,JSONObject depAllTime);
 }

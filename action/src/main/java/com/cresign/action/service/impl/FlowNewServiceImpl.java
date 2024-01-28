@@ -980,6 +980,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             orderODate.setPriorItem(partInfo.getInteger("wn0prior"));
             orderODate.setTeStart(0L);
             orderODate.setTaFin(0L);
+            orderODate.setBmdpt(partInfo.getInteger("bmdpt"));
             // 判断层级为第一层并且序号为1
             if (timeHandleSerialNoIsOneInside == 1 && objOItem.getWn0prior() == 1) {
                 // 添加信息
@@ -997,8 +998,8 @@ public class FlowNewServiceImpl implements FlowNewService {
             // 添加信息
             orderODate.setCsSta(timeHandleSerialNoIsOneInside);
             // 设置订单时间操作信息
-            orderODate.setTeDur(partInfo.getLong("teDur") == null ? 120 : partInfo.getLong("teDur"));
-            orderODate.setTePrep(partInfo.getLong("tePrep") == null ? 60 : partInfo.getLong("tePrep"));
+            orderODate.setTeDur(partInfo.getLong("teDur") == null ? 0 : partInfo.getLong("teDur"));
+            orderODate.setTePrep(partInfo.getLong("tePrep") == null ? 0 : partInfo.getLong("tePrep"));
             // action里面的
             //++ZJ
             orderODate.setPriority(0);
@@ -1008,7 +1009,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             // 判断bmdpt等于部件
             if (objAction.getBmdpt() == 2) {
                 // 设置订单时间操作信息
-                orderODate.setTePrep(180L);
+                orderODate.setTePrep(partInfo.getLong("tePrep") == null ? 0 : partInfo.getLong("tePrep"));
                 orderODate.setTeDur(0L);
                 // 判断层级为第一层
                 if (timeHandleSerialNoIsOneInside == 1) {
@@ -1023,7 +1024,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 //            // **System.out.println("csTeJ:" + " - id_P:" + objOItem.getId_P() + " - id_PF:" + id_PF + " - dq:" + dq);
             // 添加信息
             orderODate.setId_O(objAction.getId_O());
-            orderODate.setId_C(myCompId);
+            orderODate.setId_C(partInfo.getString("id_C"));
             orderODate.setIndex(objAction.getIndex());
             orderODate.setGrpB(objOItem.getGrpB());
             oDates.add(orderODate);
@@ -1066,6 +1067,10 @@ public class FlowNewServiceImpl implements FlowNewService {
         JSONObject nowData = new JSONObject();
         nowData.put("objOrder", casItemData);
         casItemx.put(myCompId, nowData);
+        JSONObject java = new JSONObject();
+        java.put("oDates",oDates);
+        java.put("oTasks",oTasks);
+        casItemx.put("java",java);
 
         // 创建产品零件递归信息
         JSONObject salesOrder_Action = new JSONObject();

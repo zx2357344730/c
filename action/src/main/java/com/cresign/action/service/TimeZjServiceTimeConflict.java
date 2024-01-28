@@ -59,5 +59,6 @@ public interface TimeZjServiceTimeConflict {
             ,JSONObject recordId_OIndexState,JSONObject storageTaskWhereTime
             ,JSONObject allImageTotalTime,Map<String,Map<String,Map<Long,List<Task>>>> allImageTasks
             ,JSONObject onlyFirstTimeStamp,JSONObject newestLastCurrentTimestamp,JSONObject onlyRefState
-            ,JSONObject recordNoOperation,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,boolean isComprehensiveHandle);
+            ,JSONObject recordNoOperation,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate
+            ,boolean isComprehensiveHandle,JSONObject depAllTime);
 }

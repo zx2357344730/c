@@ -422,11 +422,12 @@ public class ZjTestController {
     @PostMapping("/v1/getEsShow")
     public ApiResponse getEsShow(@RequestBody JSONObject resJson) {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-        try {
+//        try {
             return zjService.getEsShow(resJson.getString("index"), resJson.getJSONObject("keyVal"),resJson.getInteger("size"));
-        } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "ZjTestController.getEsShow", e);
-        }
+//        }
+//        catch (Exception e) {
+//            return getUserToken.err(new JSONObject(), "ZjTestController.getEsShow", e);
+//        }
     }
 
     @SecurityParameter
@@ -469,7 +470,7 @@ public class ZjTestController {
     public ApiResponse setOItem(@RequestBody JSONObject resJson) {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
-            return zjService.setOItem(resJson.getString("id_O"),resJson.getInteger("index")
+            return zjService.setOItemExtraKey(resJson.getString("id_O"),resJson.getBoolean("isCover"),resJson.getJSONArray("indexArr")
                     ,resJson.getJSONObject("keyVal"));
         } catch (Exception e) {
             return getUserToken.err(new JSONObject(), "ZjTestController.setOItem", e);
@@ -540,6 +541,40 @@ public class ZjTestController {
             return zjService.updateAllObjItemByTime();
         } catch (Exception e) {
             return getUserToken.err(new JSONObject(), "ZjTestController.updateAllObjItemByTime", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/setPart")
+    public ApiResponse setPart(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.setPartExtraKey(resJson.getString("id_P"),resJson.getBoolean("isCover"),resJson.getJSONArray("indexArr")
+                    ,resJson.getJSONObject("keyVal"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.setPart", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/updatePartTime")
+    public ApiResponse updatePartTime(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.updatePartTime(resJson.getString("id_P"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.updatePartTime", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/addAsset")
+    public ApiResponse addAsset() {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.addAsset();
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.addAsset", e);
         }
     }
 }

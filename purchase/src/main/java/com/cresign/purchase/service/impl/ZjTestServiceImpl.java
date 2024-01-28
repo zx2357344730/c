@@ -23,6 +23,8 @@ import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.cresign.tools.uuid.UUID19;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -36,9 +38,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author tang
@@ -746,7 +746,6 @@ public class ZjTestServiceImpl implements ZjTestService {
         //真公司标志
         comp.setBcdNet(1);
         comp.setId(new_id_C);
-//        mongoTemplate.insert(comp);
         qt.addMD(comp);
 
         JSONObject rolex = new JSONObject(4);
@@ -787,7 +786,40 @@ public class ZjTestServiceImpl implements ZjTestService {
             control.put("objMod",objMod);
             coreObject.put("control",control);
         } else {
-            coreObject.getJSONObject("control").getJSONObject("objMod").getJSONObject("a-core-3").getJSONArray("id_U").add(id_U);
+            JSONObject control = coreObject.getJSONObject("control");
+            if (null == control.getJSONObject("objMod")) {
+                JSONObject objMod = new JSONObject();
+                JSONObject a_core = new JSONObject();
+                JSONArray id_UArr = new JSONArray();
+                id_UArr.add(id_U);
+                a_core.put("id_U",id_UArr);
+                objMod.put("a-core-3",a_core);
+                control.put("objMod",objMod);
+                coreObject.put("control",control);
+            } else {
+                JSONObject objMod = control.getJSONObject("objMod");
+                if (null == objMod.getJSONObject("a-core-3")) {
+                    JSONObject a_core = new JSONObject();
+                    JSONArray id_UArr = new JSONArray();
+                    id_UArr.add(id_U);
+                    a_core.put("id_U",id_UArr);
+                    objMod.put("a-core-3",a_core);
+                    control.put("objMod",objMod);
+                    coreObject.put("control",control);
+                } else {
+                    JSONObject a_core = objMod.getJSONObject("a-core-3");
+                    if (null == a_core.getJSONArray("id_U")) {
+                        JSONArray id_UArr = new JSONArray();
+                        id_UArr.add(id_U);
+                        a_core.put("id_U",id_UArr);
+                        objMod.put("a-core-3",a_core);
+                        control.put("objMod",objMod);
+                        coreObject.put("control",control);
+                    } else {
+                        coreObject.getJSONObject("control").getJSONObject("objMod").getJSONObject("a-core-3").getJSONArray("id_U").add(id_U);
+                    }
+                }
+            }
         }
         //调用
         this.createAsset(new_id_C, qt.GetObjectId() ,"a-core",coreObject);
@@ -868,8 +900,6 @@ public class ZjTestServiceImpl implements ZjTestService {
             asset.getInfo().setRef(ref);
             System.out.println("start making Asset");
 
-
-//            mongoTemplate.insert(asset);
             qt.addMD(asset);
             System.out.println("ok inserted  "+ id);
 
@@ -887,7 +917,9 @@ public class ZjTestServiceImpl implements ZjTestService {
 //            request.source(listObject, XContentType.JSON);
 //            restHighLevelClient.index(request, RequestOptions.DEFAULT);
 //
+            System.out.println();
             qt.addES("lSAsset", listObject);
+            System.out.println();
 //            if (infoObject.get("lAT").equals(2)){
 
 //                //拿info位置数组
@@ -975,9 +1007,6 @@ public class ZjTestServiceImpl implements ZjTestService {
      */
     @Override
     public ApiResponse genChkinCode(String id_C) {
-
-//        return retResult.ok(CodeEnum.OK.getCode(), "创建二维码成功");
-
         String QR_URL = "https://www.cresign.cn/qrCodeTest?qrType=qrChkIn&t=";
 //        String QR_URL = "http://127.0.0.1:8080/qrCodeTest?qrType=qrChkIn&t=";
         String token = UUID19.uuid();
@@ -1045,11 +1074,17 @@ public class ZjTestServiceImpl implements ZjTestService {
         JSONObject result = new JSONObject();
         for (String cli : rdInfo.keySet()) {
             JSONObject cliInfo = rdInfo.getJSONObject(cli);
-            if (null != cliInfo && cliInfo.containsKey("wsData")) {
-                result.put(cli,"true");
+            if (null != cliInfo) {
+                if (cliInfo.containsKey("wsData")) {
+                    result.put(cli,"true");
+                }
+                if (cliInfo.containsKey("offlineType")) {
+                    result.put("offlineType",rdInfo.getInteger("offlineType"));
+                }
             } else {
                 result.put(cli,"false");
             }
+
         }
         return retResult.ok(CodeEnum.OK.getCode(), result);
     }
@@ -1071,53 +1106,11 @@ public class ZjTestServiceImpl implements ZjTestService {
     @Override
     public ApiResponse testEx(String id_C,String fileName,String id_U
             ,int subTypeStatus,String year,String month,JSONArray arrField) {
-        /*
-         {
-            "filtKey": "id_C",
-            "method": "eq",
-            "filtVal": ""
-         }
-         */
-
-        /*
-    [
-        {
-            "isEx": true,
-            "field": "wrdN",
-            "txt": "名称",
-            "valType": "lang",
-            "isWarp": true
-        },
-        {
-            "isEx": true,
-            "field": "wrddesc",
-            "txt": "描述",
-            "valType": "lang",
-            "isWarp": true
-        },
-        {
-            "isEx": true,
-            "field": "ref",
-            "txt": "编号",
-            "valType": "String",
-            "isWarp": true
-        },
-        {
-            "isEx": true,
-            "field": "tmd",
-            "txt": "更新日期",
-            "valType": "String",
-            "isWarp": true
-        }
-    ]
-         */
 //        String id_C = "6076a1c7f3861e40c87fd294";
 //        String fileName = "chkin统计表";
         JSONObject exData = getExData(id_C, id_U, subTypeStatus, year, month, arrField);
         try {
             File excel = ExcelUtils.createExcel2(exData.getJSONArray("arrayField"), exData.getJSONArray("arrayExcel"), new JSONArray(), new JSONArray());
-            // 上传到cfiles桶
-//            cos.uploadCFiles()
             // 上传到cresign桶
             JSONObject jsonUpload = cos.uploadCresignStat(excel,  "Chkin/" + DateUtils.getDateNow(DateEnum.DATE_FOLDER.getDate()) + "/", fileName + DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()));
             qt.checkCapacity(id_C, jsonUpload.getLong("size"));
@@ -1473,21 +1466,22 @@ public class ZjTestServiceImpl implements ZjTestService {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                     LOG_GET_DATA_NULL.getCode(),"");
         }
-        Asset asset = qt.getConfig(id_C, "a-chkin", "chkin");
-        if (null == asset || null == asset.getChkin()) {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-                    LOG_GET_DATA_NULL.getCode(),"");
-        }
-        JSONObject chkin = asset.getChkin();
-        JSONObject objChkin = chkin.getJSONObject("objChkin");
         JSONObject work = order.getWork();
         JSONObject objWork = work.getJSONObject("objWork");
         // 一小时钱
         double hourMoney = objWork.getDouble("hourMoney");
         String grpB = objWork.getString("grpB");
         String dep = objWork.getString("dep");
-        JSONObject chkDep = objChkin.getJSONObject(dep);
-        JSONObject chkGrpB = chkDep.getJSONObject(grpB);
+//        Asset asset = qt.getConfig(id_C, "a-chkin", "chkin");
+        Asset asset = qt.getConfig(id_C, "d-"+dep, "chkin");
+        if (null == asset || null == asset.getChkin()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_GET_DATA_NULL.getCode(),"");
+        }
+        JSONObject chkin = asset.getChkin();
+        JSONObject objChkin = chkin.getJSONObject("objChkin");
+//        JSONObject chkDep = objChkin.getJSONObject(dep);
+        JSONObject chkGrpB = objChkin.getJSONObject(grpB);
         // 迟到扣钱
         Integer late = chkGrpB.getInteger("late");
         // 缺勤扣钱
@@ -1716,22 +1710,22 @@ public class ZjTestServiceImpl implements ZjTestService {
         }
         JSONObject oItem = order.getOItem();
         JSONArray objAllow = oItem.getJSONArray("objAllow");
-        double zon = 0;
+        double totalPr = 0;
         for (int i = 0; i < objAllow.size(); i++) {
             JSONObject obj = objAllow.getJSONObject(i);
             String ref = obj.getString("ref");
             Double wn4pr = obj.getDouble("wn4pr");
             if (ref.equals("k")) {
-                zon-=wn4pr;
+                totalPr-=wn4pr;
             } else {
-                zon+=wn4pr;
+                totalPr+=wn4pr;
             }
         }
-        return retResult.ok(CodeEnum.OK.getCode(),zon);
+        return retResult.ok(CodeEnum.OK.getCode(),totalPr);
     }
 
     @Override
-    public ApiResponse setOItem(String id_O, int index, JSONObject keyVal) {
+    public ApiResponse setOItemExtraKey(String id_O,boolean isCover, JSONArray indexArr, JSONObject keyVal) {
         Order order = qt.getMDContent(id_O, "oItem", Order.class);
         if (null == order || null == order.getOItem()) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
@@ -1739,23 +1733,69 @@ public class ZjTestServiceImpl implements ZjTestService {
         }
         JSONObject oItem = order.getOItem();
         JSONArray objItem = oItem.getJSONArray("objItem");
-        JSONObject item = objItem.getJSONObject(index);
-        for (String s : keyVal.keySet()) {
-            JSONObject obj = keyVal.getJSONObject(s);
-            String type = obj.getString("type");
-            if ("int".equals(type)) {
-                item.put(s,obj.getInteger("val"));
-            } else if ("double".equals(type)) {
-                item.put(s,obj.getDouble("val"));
-            } else if ("long".equals(type)) {
-                item.put(s,obj.getLong("val"));
-            } else if ("boolean".equals(type)) {
-                item.put(s,obj.getBoolean("val"));
-            } else {
-                item.put(s,obj.getString("val"));
+        if (null == indexArr || indexArr.size() == 0) {
+            for (int i = 0; i < objItem.size(); i++) {
+                JSONObject item = objItem.getJSONObject(i);
+                for (String s : keyVal.keySet()) {
+                    boolean isSetVal = false;
+                    if (isCover) {
+                        isSetVal = true;
+                    } else {
+                        if (!item.containsKey(s)) {
+                            isSetVal = true;
+                        }
+                    }
+                    if (isSetVal) {
+                        JSONObject obj = keyVal.getJSONObject(s);
+                        String type = obj.getString("type");
+                        if ("int".equals(type)) {
+                            item.put(s,obj.getInteger("val"));
+                        } else if ("double".equals(type)) {
+                            item.put(s,obj.getDouble("val"));
+                        } else if ("long".equals(type)) {
+                            item.put(s,obj.getLong("val"));
+                        } else if ("boolean".equals(type)) {
+                            item.put(s,obj.getBoolean("val"));
+                        } else {
+                            item.put(s,obj.getString("val"));
+                        }
+                    }
+                }
+                objItem.set(i,item);
+            }
+        } else {
+            for (int i = 0; i < indexArr.size(); i++) {
+                Integer index = indexArr.getInteger(i);
+                JSONObject item = objItem.getJSONObject(index);
+                for (String s : keyVal.keySet()) {
+                    boolean isSetVal = false;
+                    if (isCover) {
+                        isSetVal = true;
+                    } else {
+                        if (!item.containsKey(s)) {
+                            isSetVal = true;
+                        }
+                    }
+                    if (isSetVal) {
+                        JSONObject obj = keyVal.getJSONObject(s);
+                        String type = obj.getString("type");
+                        if ("int".equals(type)) {
+                            item.put(s,obj.getInteger("val"));
+                        } else if ("double".equals(type)) {
+                            item.put(s,obj.getDouble("val"));
+                        } else if ("long".equals(type)) {
+                            item.put(s,obj.getLong("val"));
+                        } else if ("boolean".equals(type)) {
+                            item.put(s,obj.getBoolean("val"));
+                        } else {
+                            item.put(s,obj.getString("val"));
+                        }
+                    }
+                }
+                objItem.set(index,item);
             }
         }
-        qt.setMDContent(id_O,qt.setJson("oItem.objItem."+index,item), Order.class);
+        qt.setMDContent(id_O,qt.setJson("oItem.objItem",objItem), Order.class);
         return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
     }
 
@@ -1888,18 +1928,48 @@ public class ZjTestServiceImpl implements ZjTestService {
      */
     @Override
     public ApiResponse updatePartAll(String id_P,double wn4pr,long teDur,long tePrep) {
+        boolean isLBProd = true;
+        boolean isLSProd = true;
+        JSONArray forProd = new JSONArray();
         // 查询es包含当前产品的所有产品
-        JSONArray esP = qt.getES("lBProd", qt.setESFilt("arrP","contain", qt.setArray(id_P)));
-        if (null == esP || esP.size() == 0) {
+        JSONArray esLBProd = qt.getES("lBProd", qt.setESFilt("arrP","contain", qt.setArray(id_P)));
+        if (null == esLBProd || esLBProd.size() == 0) {
+
+            isLBProd = false;
+        }
+        JSONArray esLSProd = qt.getES("lSProd", qt.setESFilt("arrP","contain", qt.setArray(id_P)));
+        if (null == esLSProd || esLSProd.size() == 0) {
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+//                    LSB_PROD_NOT_FOUND.getCode(),"");
+            isLSProd = false;
+        }
+        if (!isLBProd && !isLSProd) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                     LB_PROD_NOT_FOUND.getCode(),"");
         }
-        System.out.println("esP:");
-        System.out.println(JSON.toJSONString(esP));
+        if (isLBProd && isLSProd) {
+            forProd.addAll(esLBProd);
+            forProd.addAll(esLSProd);
+        }
+        if (!isLBProd) {
+            forProd.addAll(esLSProd);
+        }
+        if (!isLSProd) {
+            forProd.addAll(esLBProd);
+        }
+        System.out.println("输出:");
+        System.out.println(JSON.toJSONString(esLBProd));
+        System.out.println(JSON.toJSONString(esLSProd));
+//        if (true)
+//            return retResult.ok(CodeEnum.OK.getCode(),"成功");
+
+        System.out.println("forProd:");
+        System.out.println(JSON.toJSONString(forProd));
+        Map<String,Prod> prodMap = new HashMap<>();
         // 遍历产品
-        for (int i = 0; i < esP.size(); i++) {
+        for (int i = 0; i < forProd.size(); i++) {
             // 获取产品信息
-            JSONObject obj = esP.getJSONObject(i);
+            JSONObject obj = forProd.getJSONObject(i);
             // 判断arrP不为空
             if (obj.containsKey("arrP")) {
                 // 获取父产品id
@@ -1920,7 +1990,15 @@ public class ZjTestServiceImpl implements ZjTestService {
                 // 判断有位置
                 if (index != -1) {
                     // 获取父产品信息
-                    Prod prod = qt.getMDContent(id_PF, "part", Prod.class);
+                    Prod prod;
+                    if (prodMap.containsKey(id_PF)) {
+                        prod = prodMap.get(id_PF);
+                    } else {
+                        prod = qt.getMDContent(id_PF, "part", Prod.class);
+                        prodMap.put(id_PF,prod);
+                    }
+                    // 获取父产品信息
+//                    Prod prod = qt.getMDContent(id_PF, "part", Prod.class);
                     if (null == prod || null == prod.getPart() || null == prod.getPart().getJSONArray("objItem")) {
                         throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                                 LOG_FAILF.getCode(),"");
@@ -1939,34 +2017,6 @@ public class ZjTestServiceImpl implements ZjTestService {
                 System.out.println(JSON.toJSONString(obj));
             }
         }
-//        System.out.println();
-//        JSONArray esP = qt.getES("lBProd", qt.setESFilt("id_P","exact", id_P));
-////        JSONArray esP = qt.getES("lBProd", qt.setESFilt("id_P", id_P));
-//        if (null == esP || esP.size() == 0) {
-//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-//                    LB_PROD_NOT_FOUND.getCode(),"");
-//        }
-////        qt.delES("lBProd","LbSub4sBaLRqu6aFP3nE");
-//        System.out.println("esP:");
-//        System.out.println(JSON.toJSONString(esP));
-
-//        JSONArray es = qt.getES("lSBProd", qt.setESFilt("id_C", id_C));
-////        JSONArray es = qt.getES("lSBProd", qt.setESFilt("id_P", id_P));
-//        if (null == es || es.size() == 0) {
-//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-//                    LB_PROD_NOT_FOUND.getCode(),"");
-//        }
-//        for (int i = 0; i < es.size(); i++) {
-//            JSONObject obj = es.getJSONObject(i);
-//            if (obj.containsKey("arrP")) {
-//                System.out.println("lSBProd:");
-//                System.out.println(JSON.toJSONString(obj));
-//            }
-//        }
-//        JSONObject lSBProd = es.getJSONObject(0);
-//        System.out.println("lSBProd:");
-//        System.out.println(JSON.toJSONString(lSBProd));
-
         return retResult.ok(CodeEnum.OK.getCode(),"成功");
     }
 
@@ -1976,24 +2026,56 @@ public class ZjTestServiceImpl implements ZjTestService {
      */
     @Override
     public ApiResponse updateAllObjItemByArrP() {
+//        int pageNum = 1; // 当前页数
+        int pageSize = 500; // 每页显示的记录条数
         Criteria where = Criteria.where("part");
         //创建查询对象
         Query query = new Query();
         query.addCriteria(where.ne(null));
-        query.fields().include("part");
-        List<Prod> prodList = mongoTemplate.find(query, Prod.class);
-        for (Prod prod : prodList) {
-            if (null != prod && null != prod.getPart()) {
-                JSONObject part = prod.getPart();
-                JSONArray objItem = part.getJSONArray("objItem");
-                JSONArray arrP = new JSONArray();
-                for (int j = 0; j < objItem.size(); j++) {
-                    JSONObject item = objItem.getJSONObject(j);
-                    arrP.add(item.getString("id_P"));
-                }
-                qt.setMDContent(prod.getId(), qt.setJson("part.arrP", arrP), Prod.class);
-                qt.setES("lBProd",qt.setESFilt("id_P", "exact",prod.getId()),qt.setJson("arrP",arrP));
+        query.fields().include("_id");
+        // 总记录数
+        long total = mongoTemplate.count(query, Prod.class);
+        int pageTotal = (int) total/pageSize;
+        int pageTotalRemainder = (int) total%pageSize;
+        if (pageTotalRemainder > 0) {
+            pageTotal++;
+        }
+        for (int p = 0; p < pageTotal; p++) {
+            // 10. 分页
+            query.with(PageRequest.of(p, pageSize
+                    , Sort.by(Sort.Order.desc("_id"))));
+            System.out.println("total:"+total);
+            List<Prod> prodIdList = mongoTemplate.find(query, Prod.class);
+            System.out.println("prodIdList-size:"+prodIdList.size());
+            JSONArray idArr = new JSONArray();
+            for (Prod prod : prodIdList) {
+                idArr.add(prod.getId());
             }
+            List<Prod> prodList = qt.getMDContentFast(idArr, qt.strList("part"), Prod.class);
+            System.out.println("prodList-size:"+prodList.size());
+            List<JSONObject> list = new ArrayList<>();
+            List<JSONObject> listBulk = new ArrayList<>();
+            for (Prod prod : prodList) {
+                if (null != prod && null != prod.getPart()) {
+                    JSONObject part = prod.getPart();
+                    JSONArray objItem = part.getJSONArray("objItem");
+                    if (null != objItem) {
+                        JSONArray arrP = new JSONArray();
+                        for (int j = 0; j < objItem.size(); j++) {
+                            JSONObject item = objItem.getJSONObject(j);
+                            arrP.add(item.getString("id_P"));
+                        }
+//                    qt.setMDContent(prod.getId(), qt.setJson("part.arrP", arrP), Prod.class);
+                        list.add(qt.setJson("id",prod.getId(),"updateData",qt.setJson("part.arrP",arrP)));
+//                    qt.setES("lBProd",qt.setESFilt("id_P", "exact",prod.getId()),qt.setJson("arrP",arrP));
+                        listBulk.add(qt.setJson("type", "update",
+                                "id", prod.getId(),
+                                "update", qt.setJson("arrP",arrP)));
+                    }
+                }
+            }
+            qt.setMDContentFast(list, Prod.class);
+            qt.setESManyFast("lBProd",listBulk);
         }
         return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
     }
@@ -2004,32 +2086,242 @@ public class ZjTestServiceImpl implements ZjTestService {
      */
     @Override
     public ApiResponse updateAllObjItemByTime() {
+        int pageSize = 500; // 每页显示的记录条数
         Criteria where = Criteria.where("part");
         //创建查询对象
         Query query = new Query();
         query.addCriteria(where.ne(null));
-        query.fields().include("part");
-        List<Prod> prodList = mongoTemplate.find(query, Prod.class);
-        for (Prod prod : prodList) {
-            if (null != prod && null != prod.getPart()) {
-                JSONObject part = prod.getPart();
-                JSONArray objItem = part.getJSONArray("objItem");
-                for (int j = 0; j < objItem.size(); j++) {
-                    JSONObject item = objItem.getJSONObject(j);
-                    if (!item.containsKey("teDur")) {
-                        item.put("teDur",0);
+        query.fields().include("_id");
+        // 总记录数
+        long total = mongoTemplate.count(query, Prod.class);
+        int pageTotal = (int) total/pageSize;
+        int pageTotalRemainder = (int) total%pageSize;
+        if (pageTotalRemainder > 0) {
+            pageTotal++;
+        }
+        for (int p = 0; p < pageTotal; p++) {
+            // 10. 分页
+            query.with(PageRequest.of(p, pageSize
+                    , Sort.by(Sort.Order.desc("_id"))));
+            System.out.println("total:"+total);
+            List<Prod> prodListId = mongoTemplate.find(query, Prod.class);
+            System.out.println("prodListId-size:"+prodListId.size());
+            JSONArray idArr = new JSONArray();
+            for (Prod prod : prodListId) {
+                idArr.add(prod.getId());
+            }
+            List<Prod> prodList = qt.getMDContentFast(idArr, qt.strList("part"), Prod.class);
+            System.out.println("prodList-size:"+prodList.size());
+            List<JSONObject> list = new ArrayList<>();
+            for (Prod prod : prodList) {
+                if (null != prod && null != prod.getPart()) {
+                    JSONObject part = prod.getPart();
+                    JSONArray objItem = part.getJSONArray("objItem");
+                    if (null != objItem) {
+                        for (int j = 0; j < objItem.size(); j++) {
+                            JSONObject item = objItem.getJSONObject(j);
+                            if (!item.containsKey("teDur")) {
+                                item.put("teDur",0);
+                            }
+                            if (!item.containsKey("tePrep")) {
+                                item.put("tePrep",0);
+                            }
+                            if (!item.containsKey("wn4price")) {
+                                item.put("wn4price",0);
+                            }
+                            objItem.set(j,item);
+                        }
+                        list.add(qt.setJson("id",prod.getId(),"updateData",qt.setJson("part.objItem",objItem)));
                     }
-                    if (!item.containsKey("tePrep")) {
-                        item.put("tePrep",0);
-                    }
-                    if (!item.containsKey("wn4price")) {
-                        item.put("wn4price",0);
-                    }
-                    objItem.set(j,item);
                 }
-                qt.setMDContent(prod.getId(), qt.setJson("part.objItem", objItem), Prod.class);
+            }
+            qt.setMDContentFast(list, Prod.class);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
+    }
+
+    @Override
+    public ApiResponse setPartExtraKey(String id_P,boolean isCover, JSONArray indexArr, JSONObject keyVal) {
+//        Order order = qt.getMDContent(id_O, "oItem", Order.class);
+        Prod prod = qt.getMDContent(id_P, "part", Prod.class);
+        if (null == prod || null == prod.getPart()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_FAILF.getCode(),"");
+        }
+        JSONObject part = prod.getPart();
+        JSONArray objItem = part.getJSONArray("objItem");
+        if (null == indexArr || indexArr.size() == 0) {
+            for (int i = 0; i < objItem.size(); i++) {
+                JSONObject item = objItem.getJSONObject(i);
+                for (String s : keyVal.keySet()) {
+                    boolean isSet = false;
+                    if (isCover) {
+                        isSet = true;
+                    } else {
+                        if (!item.containsKey(s)) {
+                            isSet = true;
+                        }
+                    }
+                    if (isSet) {
+                        JSONObject obj = keyVal.getJSONObject(s);
+                        String type = obj.getString("type");
+                        if ("int".equals(type)) {
+                            item.put(s,obj.getInteger("val"));
+                        } else if ("double".equals(type)) {
+                            item.put(s,obj.getDouble("val"));
+                        } else if ("long".equals(type)) {
+                            item.put(s,obj.getLong("val"));
+                        } else if ("boolean".equals(type)) {
+                            item.put(s,obj.getBoolean("val"));
+                        } else {
+                            item.put(s,obj.getString("val"));
+                        }
+                    }
+                }
+                objItem.set(i,item);
+            }
+        } else {
+            for (int i = 0; i < indexArr.size(); i++) {
+                Integer index = indexArr.getInteger(i);
+                JSONObject item = objItem.getJSONObject(index);
+                for (String s : keyVal.keySet()) {
+                    boolean isSet = false;
+                    if (isCover) {
+                        isSet = true;
+                    } else {
+                        if (!item.containsKey(s)) {
+                            isSet = true;
+                        }
+                    }
+                    if (isSet) {
+                        JSONObject obj = keyVal.getJSONObject(s);
+                        String type = obj.getString("type");
+                        if ("int".equals(type)) {
+                            item.put(s,obj.getInteger("val"));
+                        } else if ("double".equals(type)) {
+                            item.put(s,obj.getDouble("val"));
+                        } else if ("long".equals(type)) {
+                            item.put(s,obj.getLong("val"));
+                        } else if ("boolean".equals(type)) {
+                            item.put(s,obj.getBoolean("val"));
+                        } else {
+                            item.put(s,obj.getString("val"));
+                        }
+                    }
+                }
+                objItem.set(index,item);
+            }
+        }
+        qt.setMDContent(id_P,qt.setJson("part.objItem",objItem), Prod.class);
+        return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
+    }
+
+    @Override
+    public ApiResponse updatePartTime(String id_P) {
+        Prod prod = qt.getMDContent(id_P, "part", Prod.class);
+        if (null == prod || null == prod.getPart()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    LOG_FAILF.getCode(),"");
+        }
+        JSONObject part = prod.getPart();
+        JSONArray objItem = part.getJSONArray("objItem");
+        for (int i = 0; i < objItem.size(); i++) {
+            JSONObject item = objItem.getJSONObject(i);
+            int bmdpt = item.getInteger("bmdpt");
+            if (bmdpt == 2) {
+                getSonPart(item.getString("id_P"));
             }
         }
         return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
+    }
+
+    @Override
+    public ApiResponse addAsset() {
+        lSAsset lsAsset = new lSAsset();
+        lsAsset.setRef("d-1xx1");
+        lsAsset.setGrp("1003");
+        lsAsset.setId_A("6598e094e21d992c73e0d59c");
+        lsAsset.setId_C("6076a1c7f3861e40c87fd294");
+        lsAsset.setWrdN(qt.setJson("cn",lsAsset.getRef()+"部门"));
+        lsAsset.setWn2qty(0D);
+        qt.addES("lSAsset",lsAsset);
+
+//        lSAsset lsAsset = new lSAsset();
+//        lsAsset.setRef("d-1xx2");
+//        lsAsset.setGrp("1003");
+//        lsAsset.setId_A("6598e094e21d992c73e0d59e");
+//        lsAsset.setId_C("6076a1c7f3861e40c87fd294");
+//        lsAsset.setWrdN(qt.setJson("cn",lsAsset.getRef()+"部门"));
+//        lsAsset.setWn2qty(0D);
+//        qt.addES("lSAsset",lsAsset);
+
+//        lSAsset lsAsset = new lSAsset();
+//        lsAsset.setRef("d-515973212487");
+//        lsAsset.setGrp("1003");
+//        lsAsset.setId_A("6598e094e21d992c73e0d596");
+//        lsAsset.setId_C("6076a1c7f3861e40c87fd294");
+//        lsAsset.setWrdN(qt.setJson("cn",lsAsset.getRef()+"部门"));
+//        lsAsset.setWn2qty(0D);
+//        qt.addES("lSAsset",lsAsset);
+//
+//        lsAsset = new lSAsset();
+//        lsAsset.setRef("d-665591821169");
+//        lsAsset.setGrp("1003");
+//        lsAsset.setId_A("6598e094e21d992c73e0d594");
+//        lsAsset.setId_C("6076a1c7f3861e40c87fd294");
+//        lsAsset.setWrdN(qt.setJson("cn",lsAsset.getRef()+"部门"));
+//        lsAsset.setWn2qty(0D);
+//        qt.addES("lSAsset",lsAsset);
+//
+//        lsAsset = new lSAsset();
+//        lsAsset.setRef("d-684744667311");
+//        lsAsset.setGrp("1003");
+//        lsAsset.setId_A("6598e094e21d992c73e0d5a0");
+//        lsAsset.setId_C("6076a1c7f3861e40c87fd294");
+//        lsAsset.setWrdN(qt.setJson("cn",lsAsset.getRef()+"部门"));
+//        lsAsset.setWn2qty(0D);
+//        qt.addES("lSAsset",lsAsset);
+//
+//        lsAsset = new lSAsset();
+//        lsAsset.setRef("d-326269832536");
+//        lsAsset.setGrp("1003");
+//        lsAsset.setId_A("6598e094e21d992c73e0d5a4");
+//        lsAsset.setId_C("6076a1c7f3861e40c87fd294");
+//        lsAsset.setWrdN(qt.setJson("cn",lsAsset.getRef()+"部门"));
+//        lsAsset.setWn2qty(0D);
+//        qt.addES("lSAsset",lsAsset);
+        return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
+    }
+
+    private long[] getSonPart(String id_P){
+        long[] result = new long[2];
+        Prod prod = qt.getMDContent(id_P, "part", Prod.class);
+        if (null == prod || null == prod.getPart()) {
+            return result;
+        }
+        JSONObject part = prod.getPart();
+        JSONArray objItem = part.getJSONArray("objItem");
+        long teDur = 0;
+        long tePrep = 0;
+        for (int i = 0; i < objItem.size(); i++) {
+            JSONObject item = objItem.getJSONObject(i);
+            int bmdpt = item.getInteger("bmdpt");
+            String id_PSon = item.getString("id_P");
+            if (bmdpt == 2) {
+                long[] sonPart = getSonPart(id_PSon);
+                teDur += sonPart[0];
+                tePrep += sonPart[1];
+                item.put("teDur",0);
+                item.put("tePrep",sonPart[0]+sonPart[1]);
+                objItem.set(i,item);
+            } else {
+                teDur+=item.getLong("teDur");
+                tePrep+=item.getLong("tePrep");
+            }
+        }
+        result[0] = teDur;
+        result[1] = tePrep;
+        qt.setMDContent(id_P,qt.setJson("part.objItem",objItem), Prod.class);
+        return result;
     }
 }

@@ -118,7 +118,7 @@ public class TaskObj {
     public static JSONObject getDateThis(Double wn2qtyneed,String id_C,Integer kaiJie,Integer csSta
             ,String grpB,Integer priority,Long teDur,Long teDurTotal,Long teStart,Long taFin,Long tePrep
             ,String id_O,Integer index,Long teDelayDate,String id_PF,String id_P,Integer priorItem
-            ,boolean empty){
+            ,boolean empty,int bmdpt){
         JSONObject date = new JSONObject();
         date.put("wn2qtyneed",wn2qtyneed);
         date.put("id_C",id_C);
@@ -138,6 +138,7 @@ public class TaskObj {
         date.put("id_P",id_P);
         date.put("priorItem",priorItem);
         date.put("empty",empty);
+        date.put("bmdpt",bmdpt);
         return date;
     }
 
@@ -344,11 +345,14 @@ public class TaskObj {
      */
     public static void addOrder(Long teS, Qt qt){
         Order order;
+        JSONObject casItemx;
+        JSONObject java;
         JSONObject action;
         JSONArray objAction;
         JSONObject actZ;
         JSONArray subParts;
         JSONObject teDate;
+        JSONArray view;
 
         order = new Order();
         order.setId("t");
@@ -375,7 +379,7 @@ public class TaskObj {
         grpBInfo.put("dep","1xx1");
         grpBGroup.put("1001",grpBInfo);
         grpBInfo = new JSONObject();
-        grpBInfo.put("dep","0xx0");
+        grpBInfo.put("dep","1xx1");
         grpBGroup.put("1000",grpBInfo);
         action.put("grpBGroup",grpBGroup);
 
@@ -384,31 +388,38 @@ public class TaskObj {
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1001"
                 ,1,12000L,0L,0L,0L,600L,"t-1",0
-                ,0L,"t","t-1-1",0,false));
+                ,0L,"t","t-1-1",0,false,1));
 
         oTasks.add(getTaskThis(1,"t-1",0,0L,600L,"t-1-1",0L
                 ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1000"
                 ,1,12000L,0L,0L,0L,600L,"t-1",1
-                ,0L,"t","t-1-2",0,false));
+                ,0L,"t","t-1-2",0,false,1));
 
         oTasks.add(getTaskThis(1,"t-1",1,0L,600L,"t-1-2",0L
                 ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1000"
                 ,1,12000L,0L,0L,0L,600L,"t-1",2
-                ,0L,"t","t-1-3",0,false));
+                ,0L,"t","t-1-3",0,false,1));
 
         oTasks.add(getTaskThis(1,"t-1",2,0L,600L,"t-1-3",0L
                 ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
-        action.put("oDates",oDates);
-        action.put("oTasks",oTasks);
+        casItemx = new JSONObject();
+        java = new JSONObject();
+        java.put("oDates",oDates);
+        java.put("oTasks",oTasks);
+        casItemx.put("java",java);
 
+        order.setCasItemx(casItemx);
         order.setAction(action);
-//        coupaUtil.delOrder(order.getId());
-//        coupaUtil.saveOrder(order);
+        view = new JSONArray();
+        view.add("info");
+        view.add("casItemx");
+        view.add("action");
+        order.setView(view);
         qt.delMD(order.getId(),Order.class);
         qt.addMD(order);
 
@@ -459,7 +470,7 @@ public class TaskObj {
         grpBInfo.put("dep","1xx1");
         grpBGroup.put("1001",grpBInfo);
         grpBInfo = new JSONObject();
-        grpBInfo.put("dep","0xx0");
+        grpBInfo.put("dep","1xx1");
         grpBGroup.put("1000",grpBInfo);
         action.put("grpBGroup",grpBGroup);
 
@@ -470,6 +481,10 @@ public class TaskObj {
         qt.delMD(order.getId(),Order.class);
         System.out.println("新增的order-t-1:");
         System.out.println(JSON.toJSONString(order));
+        view = new JSONArray();
+        view.add("info");
+        view.add("action");
+        order.setView(view);
         qt.addMD(order);
     }
 
@@ -483,11 +498,14 @@ public class TaskObj {
      */
     public static void addOrder2(Long teS,Qt qt){
         Order order;
+        JSONObject casItemx;
+        JSONObject java;
         JSONObject action;
         JSONArray objAction;
         JSONObject actZ;
         JSONArray subParts;
         JSONObject teDate;
+        JSONArray view;
 
         order = new Order();
         order.setId("t2");
@@ -518,18 +536,24 @@ public class TaskObj {
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1001"
                 ,1,12000L,0L,0L,0L,600L,"t-2",0
-                ,0L,"t2","t-2-1",0,false));
+                ,0L,"t2","t-2-1",0,false,1));
 
         oTasks.add(getTaskThis(1,"t-2",0,0L,600L,"t-2-1",0L
                 ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
-        action.put("oDates",oDates);
-        action.put("oTasks",oTasks);
+        casItemx = new JSONObject();
+        java = new JSONObject();
+        java.put("oDates",oDates);
+        java.put("oTasks",oTasks);
+        casItemx.put("java",java);
 
+        order.setCasItemx(casItemx);
         order.setAction(action);
-
-//        coupaUtil.delOrder(order.getId());
-//        coupaUtil.saveOrder(order);
+        view = new JSONArray();
+        view.add("info");
+        view.add("casItemx");
+        view.add("action");
+        order.setView(view);
         qt.delMD(order.getId(),Order.class);
         qt.addMD(order);
 
@@ -562,9 +586,11 @@ public class TaskObj {
 
         action.put("objAction",objAction);
         order.setAction(action);
-//        coupaUtil.delOrder(order.getId());
-//        coupaUtil.saveOrder(order);
         qt.delMD(order.getId(),Order.class);
+        view = new JSONArray();
+        view.add("info");
+        view.add("action");
+        order.setView(view);
         qt.addMD(order);
     }
 
@@ -579,11 +605,14 @@ public class TaskObj {
     public static void addOrder3(Long teS, Qt qt){
         teS += (86400L + 86400);
         Order order;
+        JSONObject casItemx;
+        JSONObject java;
         JSONObject action;
         JSONArray objAction;
         JSONObject actZ;
         JSONArray subParts;
         JSONObject teDate;
+        JSONArray view;
 
         order = new Order();
         order.setId("t3");
@@ -607,7 +636,7 @@ public class TaskObj {
 
         JSONObject grpBGroup = new JSONObject();
         JSONObject grpBInfo = new JSONObject();
-        grpBInfo.put("dep","0xx0");
+        grpBInfo.put("dep","1xx1");
         grpBGroup.put("1000",grpBInfo);
         action.put("grpBGroup",grpBGroup);
 
@@ -616,32 +645,40 @@ public class TaskObj {
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1000"
                 ,1,12000L,0L,0L,0L,600L,"t-3",0
-                ,0L,"t3","t-3-1",0,false));
+                ,0L,"t3","t-3-1",0,false,1));
 
         oTasks.add(getTaskThis(1,"t-3",0,0L,600L,"t-3-1",0L
                 ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1000"
                 ,1,12000L,0L,0L,0L,600L,"t-3",1
-                ,0L,"t3","t-3-2",0,false));
+                ,0L,"t3","t-3-2",0,false,1));
 
         oTasks.add(getTaskThis(1,"t-3",1,0L,600L,"t-3-2",0L
                 ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1000"
                 ,1,12000L,0L,0L,0L,600L,"t-3",2
-                ,0L,"t3","t-3-3",0,false));
+                ,0L,"t3","t-3-3",0,false,1));
 
         oTasks.add(getTaskThis(1,"t-3",2,0L,600L,"t-3-3",0L
                 ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
-        action.put("oDates",oDates);
-        action.put("oTasks",oTasks);
+        casItemx = new JSONObject();
+        java = new JSONObject();
+        java.put("oDates",oDates);
+        java.put("oTasks",oTasks);
+        casItemx.put("java",java);
+
+        order.setCasItemx(casItemx);
 
         order.setAction(action);
-//        coupaUtil.delOrder(order.getId());
-//        coupaUtil.saveOrder(order);
         qt.delMD(order.getId(),Order.class);
+        view = new JSONArray();
+        view.add("info");
+        view.add("casItemx");
+        view.add("action");
+        order.setView(view);
         qt.addMD(order);
 
 //        System.out.println("-------------------------- 分割线 --------------------------");
@@ -688,14 +725,16 @@ public class TaskObj {
 
         grpBGroup = new JSONObject();
         grpBInfo = new JSONObject();
-        grpBInfo.put("dep","0xx0");
+        grpBInfo.put("dep","1xx1");
         grpBGroup.put("1000",grpBInfo);
         action.put("grpBGroup",grpBGroup);
 
         action.put("objAction",objAction);
         order.setAction(action);
-//        coupaUtil.delOrder(order.getId());
-//        coupaUtil.saveOrder(order);
+        view = new JSONArray();
+        view.add("info");
+        view.add("action");
+        order.setView(view);
         qt.delMD(order.getId(),Order.class);
         qt.addMD(order);
     }
@@ -714,28 +753,36 @@ public class TaskObj {
 
         tasks = new ArrayList<>();
 //        String id_C = "6076a1c7f3861e40c87fd294";
-        tasks.add(TaskObj.getTask(teS,teS,"",-1,0L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
-        tasks.add(TaskObj.getTask(teS,(teS+28800),"",-1,28800L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask(teS,teS,"",-1,0L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask(teS,(teS+28800),"",-1,28800L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
         tasks.add(TaskObj.getTask((teS+41400),(teS+43200),"t-1",1,1800L,1,"我-1",0L,0L,id_C,(teS+41400),0L,1,true));
-        tasks.add(TaskObj.getTask((teS+43200),(teS+50400),"",-1,7200L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS+43200),(teS+50400),"",-1,7200L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
         tasks.add(TaskObj.getTask((teS+50400),(teS+61200),"t-1",1,10800L,1,"我-1",0L,0L,id_C,(teS+50400),0L,1,true));
         tasks.add(TaskObj.getTask((teS+61200),(teS+64800),"t-1",2,3600L,1,"我-1",0L,0L,id_C,(teS+61200),0L,2,false));
-        tasks.add(TaskObj.getTask((teS+64800),(teS+86400),"",-1,21600L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
+//        tasks.add(TaskObj.getTask((teS+64800),(teS+86400),"",-1,21600L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS+64800),(teS+68400),"",-1,3600L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS+75600),(teS+86400),"",-1,10800L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+
         long teCsSta = (teS+61200);
-        zon = 12600L;
-        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","0xx0",teS,zon,objTaskAll);
+//        zon = 12600L;
+        zon = 19800L;
+        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","1xx2",teS,zon,objTaskAll);
 
 //        System.out.println("-------------------------- 分割线 --------------------------");
 
         long teS2 = teS + 86400;
         tasks = new ArrayList<>();
-        tasks.add(TaskObj.getTask(teS2,teS2,"",-1,0L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
-        tasks.add(TaskObj.getTask(teS2,(teS2+28800),"",-1,28800L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask(teS2,teS2,"",-1,0L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask(teS2,(teS2+28800),"",-1,28800L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
         tasks.add(TaskObj.getTask((teS2+28800),(teS2+37800),"t-1",2,9000L,1,"我-1",0L,0L,id_C,teCsSta,0L,2,false));
-        tasks.add(TaskObj.getTask((teS2+43200),(teS2+50400),"",-1,7200L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
-        tasks.add(TaskObj.getTask((teS2+64800),(teS2+86400),"",-1,21600L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
-        zon = 19800L;
-        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","0xx0",teS2,zon,objTaskAll);
+        tasks.add(TaskObj.getTask((teS2+43200),(teS2+50400),"",-1,7200L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+//        tasks.add(TaskObj.getTask((teS2+64800),(teS2+86400),"",-1,21600L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS2+64800),(teS2+68400),"",-1,3600L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS2+75600),(teS2+86400),"",-1,10800L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+
+//        zon = 19800L;
+        zon = 27000L;
+        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","1xx2",teS2,zon,objTaskAll);
     }
 
     /**
@@ -754,31 +801,38 @@ public class TaskObj {
 
         tasks = new ArrayList<>();
 //        String id_C = "6076a1c7f3861e40c87fd294";
-        tasks.add(TaskObj.getTask(teS,teS,"",-1,0L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
-        tasks.add(TaskObj.getTask(teS,(teS+28800),"",-1,28800L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask(teS,teS,"",-1,0L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask(teS,(teS+28800),"",-1,28800L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
         tasks.add(TaskObj.getTask((teS+28800),(teS+41400),"t-3",0,12600L,2,"我-3",0L,0L,id_C,(teS+28800),0L,0,true));
         tasks.add(TaskObj.getTask((teS+41400),(teS+43200),"t-3",1,1800L,2,"我-3",0L,0L,id_C,(teS+41400),0L,1,true));
-        tasks.add(TaskObj.getTask((teS+43200),(teS+50400),"",-1,7200L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS+43200),(teS+50400),"",-1,7200L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
         tasks.add(TaskObj.getTask((teS+50400),(teS+61200),"t-3",1,10800L,2,"我-3",0L,0L,id_C,(teS+50400),0L,1,true));
         tasks.add(TaskObj.getTask((teS+61200),(teS+64800),"t-3",2,3600L,2,"我-3",0L,0L,id_C,(teS+61200),0L,2,false));
-        tasks.add(TaskObj.getTask((teS+64800),(teS+86400),"",-1,21600L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
+//        tasks.add(TaskObj.getTask((teS+64800),(teS+86400),"",-1,21600L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS+64800),(teS+68400),"",-1,3600L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS+75600),(teS+86400),"",-1,10800L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+
         long teCsSta = (teS+61200);
-        zon = 0L;
+        zon = 7200L;
 //        zon = 16200L;
-        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","0xx0",teS,zon,objTaskAll);
+        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","1xx2",teS,zon,objTaskAll);
 
 //        System.out.println("-------------------------- 分割线 --------------------------");
 
         long teS2 = teS + 86400;
         tasks = new ArrayList<>();
-        tasks.add(TaskObj.getTask(teS2,teS2,"",-1,0L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
-        tasks.add(TaskObj.getTask(teS2,(teS2+28800),"",-1,28800L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask(teS2,teS2,"",-1,0L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask(teS2,(teS2+28800),"",-1,28800L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
         tasks.add(TaskObj.getTask((teS2+28800),(teS2+37800),"t-3",2,9000L,2,"我-3",0L,0L,id_C,teCsSta,0L,2,false));
-        tasks.add(TaskObj.getTask((teS2+43200),(teS2+50400),"",-1,7200L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
-        tasks.add(TaskObj.getTask((teS2+64800),(teS2+86400),"",-1,21600L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS2+43200),(teS2+50400),"",-1,7200L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+//        tasks.add(TaskObj.getTask((teS2+64800),(teS2+86400),"",-1,21600L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS2+64800),(teS2+68400),"",-1,3600L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS2+75600),(teS2+86400),"",-1,10800L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
 
-        zon = 19800L;
-        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","0xx0",teS2,zon,objTaskAll);
+
+//        zon = 19800L;
+        zon = 27000L;
+        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","1xx2",teS2,zon,objTaskAll);
     }
 
     /**
@@ -798,16 +852,18 @@ public class TaskObj {
 
         tasks = new ArrayList<>();
 //        String id_C = "6076a1c7f3861e40c87fd294";
-        tasks.add(TaskObj.getTask(teS,teS,"",-1,0L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
-        tasks.add(TaskObj.getTask(teS,(teS+28800),"",-1,28800L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask(teS,teS,"",-1,0L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask(teS,(teS+28800),"",-1,28800L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
         tasks.add(TaskObj.getTask((teS+28800),(teS+41400),"t-1",0,12600L,1,"我-1",0L,0L,id_C,(teS+28800),0L,0,true));
         tasks.add(TaskObj.getTask((teS+41400),(teS+43200),"t-2",0,1800L,1,"我-2",0L,0L,id_C,(teS+41400),0L,0,false));
-        tasks.add(TaskObj.getTask((teS+43200),(teS+50400),"",-1,7200L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
-        tasks.add(TaskObj.getTask((teS+64800),(teS+86400),"",-1,21600L,-1,"电脑",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS+43200),(teS+50400),"",-1,7200L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS+64800),(teS+68400),"",-1,3600L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
+        tasks.add(TaskObj.getTask((teS+75600),(teS+86400),"",-1,10800L,-1,"休息",0L,0L,id_C,0L,0L,-1,false));
 
         long zon;
 //        zon = 16200L;
-        zon = 14400L;
+//        zon = 14400L;
+        zon = 21600L;
         TimeZjServiceImplX.setTasksAndZon(tasks,grpB,dep,teS,zon,objTaskAll);
     }
 
@@ -849,6 +905,42 @@ public class TaskObj {
         objSbZ.put("zon",14400L);
         objSb.add(objSbZ);
         return objSb;
+    }
+
+    public static JSONObject getChkinJava(){
+        JSONObject chkin = new JSONObject();
+        JSONArray arrTime = new JSONArray();
+        arrTime.add("08:00:00");
+        arrTime.add("12:00:00");
+        arrTime.add("14:00:00");
+        arrTime.add("18:00:00");
+        arrTime.add("19:00:00");
+        arrTime.add("21:00:00");
+        chkin.put("arrTime",arrTime);
+        chkin.put("tPre",15);
+        chkin.put("tPost",20);
+        chkin.put("tLate",30);
+        chkin.put("tAbsent",120);
+        chkin.put("teDur",10);
+        chkin.put("chkType","0");
+        chkin.put("dayType","0");
+        chkin.put("dayOff",8);
+        JSONArray dayMust = new JSONArray();
+        dayMust.add("2023/7/21");
+        chkin.put("dayMust",dayMust);
+        JSONArray dayMiss = new JSONArray();
+        dayMiss.add("2023/7/22");
+        chkin.put("dayMiss",dayMiss);
+        JSONArray ovt = new JSONArray();
+        ovt.add(4);
+        chkin.put("ovt",ovt);
+        chkin.put("extra",2);
+        chkin.put("late",10);
+        chkin.put("miss",50);
+        chkin.put("overtime",2);
+        chkin.put("overtimeExtra",3);
+        chkin.put("pre",10);
+        return chkin;
     }
 
 }

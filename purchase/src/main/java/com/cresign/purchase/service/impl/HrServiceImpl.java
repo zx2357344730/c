@@ -59,31 +59,41 @@ public class HrServiceImpl implements HrService {
     @Override
     public ApiResponse statisticsChKin(String id_C, JSONArray id_Us, JSONArray sumDates, int chkInMode
             , boolean isAllSpecialTime, boolean isAutoCardReplacement, boolean isSumSpecialTime) {
-        Asset asset = qt.getConfig(id_C, "a-chkin", "chkin");
-        if (null == asset || null == asset.getChkin()) {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-                    ASSET_NOT_FOUND.getCode(),"");
-        }
+        Map<String,Asset> assetMap = new HashMap<>();
         for (int i = 0; i < id_Us.size(); i++) {
             String id_U = id_Us.getString(i);
             JSONArray es = qt.getES("lBUser", qt.setESFilt("id_U", id_U,"id_CB",id_C));
             if (null == es || es.size() == 0) {
-                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-                        ASSET_NOT_FOUND.getCode(),"");
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+//                        ASSET_NOT_FOUND.getCode(),"");
+                continue;
             }
             JSONObject userLBUserInfo = es.getJSONObject(0);
+            String dep = userLBUserInfo.getString("dep");
+            Asset asset;
+            if (assetMap.containsKey(dep)) {
+                asset = assetMap.get(dep);
+            } else {
+                asset = qt.getConfig(id_C, "d-"+dep, "chkin");
+                if (null == asset || null == asset.getChkin()) {
+//                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+//                            ASSET_NOT_FOUND.getCode(),"");
+                    continue;
+                }
+                assetMap.put(dep,asset);
+            }
             JSONObject chkin = asset.getChkin();
             JSONObject objChkin = chkin.getJSONObject("objChkin");
             if (null == objChkin) {
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                         ASSET_NOT_FOUND.getCode(),"");
             }
-            JSONObject depInfo = objChkin.getJSONObject(userLBUserInfo.getString("dep"));
-            if (null == depInfo) {
-                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-                        ASSET_NOT_FOUND.getCode(),"");
-            }
-            JSONObject grpInfo = depInfo.getJSONObject(userLBUserInfo.getString("grpU"));
+//            JSONObject depInfo = objChkin.getJSONObject(userLBUserInfo.getString("dep"));
+//            if (null == depInfo) {
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+//                        ASSET_NOT_FOUND.getCode(),"");
+//            }
+            JSONObject grpInfo = objChkin.getJSONObject(userLBUserInfo.getString("grpU"));
             if (null == grpInfo) {
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                         ASSET_NOT_FOUND.getCode(),"");
@@ -169,21 +179,22 @@ public class HrServiceImpl implements HrService {
     @Override
     public ApiResponse statisticsChKinMonth(String id_C,String id_U, int year,JSONArray months) {
         JSONObject result = new JSONObject();
-        Asset asset = qt.getConfig(id_C, "a-chkin", "chkin");
-        if (null == asset || null == asset.getChkin()) {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-                    ASSET_NOT_FOUND.getCode(),"");
-        }
         JSONArray es = qt.getES("lBUser", qt.setESFilt("id_U", id_U,"id_CB",id_C));
         if (null == es || es.size() == 0) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                     ASSET_NOT_FOUND.getCode(),"");
         }
         JSONObject userLBUserInfo = es.getJSONObject(0);
+        String dep = userLBUserInfo.getString("dep");
+        Asset asset = qt.getConfig(id_C, "d-"+dep, "chkin");
+        if (null == asset || null == asset.getChkin()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+                    ASSET_NOT_FOUND.getCode(),"");
+        }
         JSONObject chkin = asset.getChkin();
         JSONObject objChkin = chkin.getJSONObject("objChkin");
-        JSONObject depInfo = objChkin.getJSONObject(userLBUserInfo.getString("dep"));
-        JSONObject grpInfo = depInfo.getJSONObject(userLBUserInfo.getString("grpU"));
+//        JSONObject depInfo = objChkin.getJSONObject(dep);
+        JSONObject grpInfo = objChkin.getJSONObject(userLBUserInfo.getString("grpU"));
         // 获取默认班日( 0（1到5），1(1到6)，2（大小周），3（按月放假天）)
         String dayType = grpInfo.getString("dayType");
 //        // 按月放假天数

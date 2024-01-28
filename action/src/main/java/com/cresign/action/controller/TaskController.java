@@ -50,7 +50,7 @@ public class TaskController {
         }
     }
 
-//    @SecurityParameter
+    @SecurityParameter
     @PostMapping("/v1/getAtFirst")
     public ApiResponse getAtFirst(@RequestBody JSONObject reqJson){
         try {
@@ -80,7 +80,7 @@ public class TaskController {
      * @date 创建时间: 2023/2/10
      * @ver 版本号: 1.0.0
      */
-//    @SecurityParameter
+    @SecurityParameter
     @PostMapping("/v1/timeSortFromNew")
     public ApiResponse timeSortFromNew(@RequestBody JSONObject reqJson){
         try {
@@ -123,9 +123,40 @@ public class TaskController {
     @PostMapping("/v1/delOrAddAArrange")
     public ApiResponse delOrAddAArrange(@RequestBody JSONObject reqJson){
         try {
-            return timeZjService.delOrAddAArrange(reqJson.getString("id_C"),reqJson.getJSONObject("object"));
+            return timeZjService.delOrAddAArrange(reqJson.getString("id_C"), reqJson.getString("dep"), reqJson.getJSONObject("object"));
         } catch (Exception e) {
             return getUserToken.err(reqJson, "TaskController.delOrAddAArrange", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getAtFirstList")
+    public ApiResponse getAtFirstList(@RequestBody JSONObject reqJson){
+        try {
+            return timeZjService.getAtFirstList(reqJson.getLong("teStart"),
+                    reqJson.getString("id_C"), reqJson.getJSONArray("orderList"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.getAtFirstList", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getTeStart")
+    public ApiResponse getTeStart(@RequestBody JSONObject reqJson){
+        try {
+            return timeZjService.getTeStart(reqJson.getString("id_O"), reqJson.getLong("teStart"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.getTeStart", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getTeStartArr")
+    public ApiResponse getTeStartArr(@RequestBody JSONObject reqJson){
+        try {
+            return timeZjService.getTeStartArr(reqJson.getJSONArray("id_OArr"), reqJson.getLong("teStart"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.getTeStartArr", e);
         }
     }
 

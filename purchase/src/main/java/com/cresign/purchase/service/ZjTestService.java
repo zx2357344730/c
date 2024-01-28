@@ -74,7 +74,7 @@ public interface ZjTestService {
 
     ApiResponse sumOItemAllow(String id_O);
 
-    ApiResponse setOItem(String id_O,int index,JSONObject keyVal);
+    ApiResponse setOItemExtraKey(String id_O,boolean isCover, JSONArray indexArr, JSONObject keyVal);
 
     ApiResponse activeOffline(String id_U,String client);
 
@@ -87,4 +87,10 @@ public interface ZjTestService {
     ApiResponse updateAllObjItemByArrP();
 
     ApiResponse updateAllObjItemByTime();
+
+    ApiResponse setPartExtraKey(String id_P,boolean isCover, JSONArray indexArr,JSONObject keyVal);
+
+    ApiResponse updatePartTime(String id_P);
+
+    ApiResponse addAsset();
 }

@@ -1,5 +1,6 @@
 package com.cresign.action.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.pojo.po.chkin.Task;
@@ -52,6 +53,8 @@ public interface TimeZjService {
      */
     ApiResponse getAtFirst(String id_O, Long teStart, String id_C, Integer wn0TPrior);
 
+    ApiResponse getAtFirstList(Long teStart, String id_C, JSONArray orderList);
+
     /**
      * 根据主订单和对应公司编号，删除时间处理信息
      * @param id_O	主订单编号
@@ -87,7 +90,7 @@ public interface TimeZjService {
      * @date 创建时间: 2023/2/10
      * @ver 版本号: 1.0.0
      */
-    ApiResponse delOrAddAArrange(String id_C,JSONObject object);
+    ApiResponse delOrAddAArrange(String id_C,String dep,JSONObject object);
 
     /**
      * 根据订单编号与下标获取剩余数量的预计完成时间
@@ -100,6 +103,8 @@ public interface TimeZjService {
      * @ver 版本号: 1.0.0
      */
     ApiResponse timeCalculation(String id_O, int index,int number);
+
+    ApiResponse getTeStart(String id_O, Long teStart);
 
     /**
      * 时间处理方法
@@ -144,6 +149,11 @@ public interface TimeZjService {
             , JSONObject recordId_OIndexState, JSONObject storageTaskWhereTime, JSONObject allImageTotalTime
             , Map<String,Map<String, Map<Long, List<Task>>>> allImageTasks, JSONObject onlyFirstTimeStamp
             , JSONObject newestLastCurrentTimestamp, JSONObject onlyRefState, JSONObject recordNoOperation
-            ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,boolean isComprehensiveHandle);
+            ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,boolean isComprehensiveHandle
+            ,JSONObject depAllTime);
+
+    long getArrTime(JSONArray arrTime,JSONArray objSb,JSONArray objXb);
+
+    ApiResponse getTeStartArr(JSONArray id_OArr, Long teStart);
 
 }

@@ -48,6 +48,6 @@ public interface TimeZjServiceNew {
      * @date 创建时间: 2023/2/10
      * @ver 版本号: 1.0.0
      */
-    ApiResponse delOrAddAArrange(String id_C,JSONObject object);
+    ApiResponse delOrAddAArrange(String id_C,String dep,JSONObject object);
 
 }
