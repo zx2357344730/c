@@ -1806,7 +1806,7 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
 
                     // 更新任务最初始开始时间
                     hTeStart = timeHandleInfo.getLong("hTeStart");
-                    System.out.println("最外层:"+hTeStart);
+                    System.out.println("最外层-1:"+hTeStart);
 //                    System.out.println(JSON.toJSONString(timeHandleInfo));
                     // 添加结束时间
                     teFinList.add(hTeStart);

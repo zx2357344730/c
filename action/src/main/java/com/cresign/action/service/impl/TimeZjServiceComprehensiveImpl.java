@@ -104,7 +104,7 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             if (split[0].equals(id_oNext) && split[1].equals(indONext.toString())) {
                 // 设置不是空插处理
                 isEmptyInsert = 0;
-//                System.out.println("重置所有镜像时间信息:");
+                System.out.println("重置所有镜像时间信息:");
                 // 重置所有任务所在日期
                 storageTaskWhereTime = new JSONObject();
             } else {
@@ -115,7 +115,7 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
         // 获取订单递归信息
         JSONArray objActionNext = actionIdO.getJSONArray(id_oNext);
         if (null == objActionNext) {
-//            System.out.println("为空-获取数据库:"+id_oNext);
+            System.out.println("为空-获取数据库:"+id_oNext);
             // 根据当前订单编号获取订单信息
 //            Order orderNext = coupaUtil.getOrderByListKey(id_oNext, Collections.singletonList("action"));
             Order orderNext = qt.getMDContent(id_oNext,"action", Order.class);
@@ -145,6 +145,22 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
         String depNext = dgInfoNext.getString("dep");
         // 获取当前订单组别
         String grpBNext = dgInfoNext.getString("grpB");
+        if (null == depNext || null == grpBNext) {
+            System.out.println("为空-获取数据库:"+grpBNext+"-"+depNext);
+            // 根据当前订单编号获取订单信息
+//            Order orderNext = coupaUtil.getOrderByListKey(id_oNext, Collections.singletonList("action"));
+            Order orderNext = qt.getMDContent(id_oNext,qt.strList("action","oItem"), Order.class);
+            JSONObject item = orderNext.getOItem().getJSONArray("objItem").getJSONObject(indONext);
+            if (null == grpBNext) {
+                grpBNext = item.getString("grpB");
+            }
+            // 获取订单递归信息
+            JSONObject objGrpBGroupNext = orderNext.getAction().getJSONObject("grpBGroup");
+            if (null == depNext) {
+                JSONObject grpBInfo = objGrpBGroupNext.getJSONObject(grpBNext);
+                depNext = grpBInfo.getString("dep");
+            }
+        }
         // 定义存储当前递归信息的下一个产品订单编号或父产品订单编号
         String id_ONextOrFather;
         // 定义存储当前递归信息的下一个产品订单下标或父产品订单下标
@@ -162,6 +178,7 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             System.out.println(randomAll);
             System.out.println(JSON.toJSONString(onlyFirstTimeStamp));
             if (null == teDateNext) {
+                System.out.println("进入为空-");
                 taskTime = new ArrayList<>();
                 taskTime.add(onlyFirstTimeStamp.getString(randomJiu));
             } else {
@@ -175,6 +192,7 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
         taskTime.sort(Comparator.naturalOrder());
         System.out.println("id_OAndIndexTaskInfo:");
         System.out.println(JSON.toJSONString(id_OAndIndexTaskInfo));
+        System.out.println("id_o:"+id_oNext+"-"+indONext);
         JSONObject id_OInfo = id_OAndIndexTaskInfo.getJSONObject(id_oNext);
         // 设置任务信息为空
         Task task = JSONObject.parseObject(JSON.toJSONString(id_OInfo.getJSONObject(indONext+"")),Task.class);
@@ -224,6 +242,13 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                 JSONObject obj = array.getJSONObject(next);
                 id_ONextOrFather = obj.getString("id_O");
                 indexNextOrFather = obj.getInteger("index");
+                if (!id_OAndIndexTaskInfo.containsKey(id_ONextOrFather)) {
+                    continue;
+                }
+                if (!id_OAndIndexTaskInfo.getJSONObject(id_ONextOrFather)
+                        .containsKey(indexNextOrFather+"")) {
+                    continue;
+                }
                 // 调用添加或更新产品状态方法
                 addSho(sho,id_oNext,indONext.toString(),id_ONextOrFather
                         ,(indexNextOrFather+""),0);
@@ -292,112 +317,130 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
         }
         System.out.println("订单-开始");
 
-//        if (true) {
-//            // 遍历递归订单列表
-//            for (int i = 0; i < objOrderList.size(); i++) {
-//                // 获取递归订单编号
-//                String id_OSon = objOrderList.getString(i);
-////                System.out.println("id_OSon:");
-////                System.out.println(id_OSon);
-//                // 根据订单编号获取递归列表信息
-//                JSONArray objAction = actionIdO.getJSONArray(id_OSon);
+        if (true) {
+            System.out.println("objOrderList-zui:");
+            System.out.println(JSON.toJSONString(objOrderList));
+            System.out.println("allImageTeDate-zui:");
+            System.out.println(JSON.toJSONString(allImageTeDate));
+            System.out.println("actionIdO-zui:");
+            System.out.println(JSON.toJSONString(actionIdO));
+            System.out.println("timeConflictCopy-zui:");
+            System.out.println(JSON.toJSONString(timeConflictCopy));
+            System.out.println("storageTaskWhereTime-zui:");
+            System.out.println(JSON.toJSONString(storageTaskWhereTime));
+            // 遍历递归订单列表
+            for (int i = 0; i < objOrderList.size(); i++) {
+                // 获取递归订单编号
+                String id_OSon = objOrderList.getString(i);
+//                System.out.println("id_OSon:");
+//                System.out.println(id_OSon);
+                // 根据订单编号获取递归列表信息
+                JSONArray objAction = actionIdO.getJSONArray(id_OSon);
 //                // 创建请求更改参数
 //                JSONObject mapKey = new JSONObject();
 //                // 添加请求更改参数信息
 //                mapKey.put("action.objAction",objAction);
 //                // 调用接口发起数据库更改信息请求
 //                coupaUtil.updateOrderByListKeyVal(id_OSon,mapKey);
-//            }
+                qt.setMDContent(id_OSon,qt.setJson("action.objAction",objAction), Order.class);
+            }
 //            System.out.println("allImageTeDate-zui:");
 //            System.out.println(JSON.toJSONString(allImageTeDate));
-//            // 获取时间冲突副本的所有键（订单id）
-//            Set<String> allImageTeDateAllKey = allImageTeDate.keySet();
-//            // 遍历键（订单id）
-//            allImageTeDateAllKey.forEach(id_OConflict -> {
-//                // 获取键（订单id）对应的值
-//                JSONObject id_OValInfo = allImageTeDate.getJSONObject(id_OConflict);
-//                // 根据键获取订单信息
+            // 获取时间冲突副本的所有键（订单id）
+            Set<String> allImageTeDateAllKey = allImageTeDate.keySet();
+            // 遍历键（订单id）
+            allImageTeDateAllKey.forEach(id_OConflict -> {
+                // 获取键（订单id）对应的值
+                JSONObject id_OValInfo = allImageTeDate.getJSONObject(id_OConflict);
+                // 根据键获取订单信息
 //                Order order = coupaUtil.getOrderByListKey(id_OConflict, Collections.singletonList("action"));
-//                // 获取action卡片信息
-//                JSONObject action = order.getAction();
-//                // 获取订单的所有action递归信息
-//                JSONArray objAction = action.getJSONArray("objAction");
-//                // 获取对应键（订单id）的所有键（index）
-//                Set<String> indexValInfo = id_OValInfo.keySet();
-//                // 遍历键（index）
-//                indexValInfo.forEach(indexConflict -> {
-//                    // 根据键（index）获取递归所在时间
-//                    JSONObject timeInfo = id_OValInfo.getJSONObject(indexConflict).getJSONObject("date");
-//                    setOrder(id_OConflict,objAction,indexConflict,timeInfo,action,order);
-//                });
-//            });
+                Order order = qt.getMDContent(id_OConflict,"action", Order.class);
+                // 获取action卡片信息
+                JSONObject action = order.getAction();
+                // 获取订单的所有action递归信息
+                JSONArray objAction = action.getJSONArray("objAction");
+                // 获取对应键（订单id）的所有键（index）
+                Set<String> indexValInfo = id_OValInfo.keySet();
+                // 遍历键（index）
+                indexValInfo.forEach(indexConflict -> {
+                    // 根据键（index）获取递归所在时间
+                    JSONObject timeInfo = id_OValInfo.getJSONObject(indexConflict).getJSONObject("date");
+                    setOrder(id_OConflict,objAction,indexConflict,timeInfo
+//                            ,action,order
+                    );
+                });
+            });
 //            System.out.println("timeConflictCopy-zui:");
 //            System.out.println(JSON.toJSONString(timeConflictCopy));
-//            // 获取时间冲突副本的所有键（订单id）
-//            Set<String> timeConflictCopyAllKey = timeConflictCopy.keySet();
-//            // 遍历键（订单id）
-//            timeConflictCopyAllKey.forEach(id_OConflict -> {
-//                // 获取键（订单id）对应的值
-//                JSONObject id_OValInfo = timeConflictCopy.getJSONObject(id_OConflict);
-//                // 根据键获取订单信息
+            // 获取时间冲突副本的所有键（订单id）
+            Set<String> timeConflictCopyAllKey = timeConflictCopy.keySet();
+            // 遍历键（订单id）
+            timeConflictCopyAllKey.forEach(id_OConflict -> {
+                // 获取键（订单id）对应的值
+                JSONObject id_OValInfo = timeConflictCopy.getJSONObject(id_OConflict);
+                // 根据键获取订单信息
 //                Order order = coupaUtil.getOrderByListKey(id_OConflict, Collections.singletonList("action"));
-//                // 获取action卡片信息
-//                JSONObject action = order.getAction();
-//                // 获取订单的所有action递归信息
-//                JSONArray objAction = action.getJSONArray("objAction");
-//                // 获取对应键（订单id）的所有键（index）
-//                Set<String> indexValInfo = id_OValInfo.keySet();
-//                // 遍历键（index）
-//                indexValInfo.forEach(indexConflict -> {
-//                    // 根据键（index）获取递归所在时间
-//                    JSONObject timeInfo = id_OValInfo.getJSONObject(indexConflict);
-//                    setOrder(id_OConflict,objAction,indexConflict,timeInfo,action,order);
-//
-////                // 根据键（index）获取递归信息
-////                JSONObject actionInfo = objAction.getJSONObject(Integer.parseInt(indexConflict));
-////                // 更新递归信息的所在时间
-////                actionInfo.put("teDate",timeInfo);
-////                // 更新递归信息
-////                objAction.set(Integer.parseInt(indexConflict),actionInfo);
-////                action.put("objAction",objAction);
-//////                order.setAction(action);
-//////                coupaUtil.saveOrder(order);
-////
-////                // 创建请求更改参数
-////                JSONObject mapKey = new JSONObject();
-////                // 添加请求更改参数信息
-////                mapKey.put("action",action);
-////                qt.setMDContent(id_OConflict,mapKey,Order.class);
-//                });
-//            });
+                Order order = qt.getMDContent(id_OConflict,"action", Order.class);
+                // 获取action卡片信息
+                JSONObject action = order.getAction();
+                // 获取订单的所有action递归信息
+                JSONArray objAction = action.getJSONArray("objAction");
+                // 获取对应键（订单id）的所有键（index）
+                Set<String> indexValInfo = id_OValInfo.keySet();
+                // 遍历键（index）
+                indexValInfo.forEach(indexConflict -> {
+                    // 根据键（index）获取递归所在时间
+                    JSONObject timeInfo = id_OValInfo.getJSONObject(indexConflict);
+                    setOrder(id_OConflict,objAction,indexConflict,timeInfo
+//                            ,action,order
+                    );
+
+                    // 根据键（index）获取递归信息
+                    JSONObject actionInfo = objAction.getJSONObject(Integer.parseInt(indexConflict));
+                    // 更新递归信息的所在时间
+                    actionInfo.put("teDate",timeInfo);
+                    // 更新递归信息
+                    objAction.set(Integer.parseInt(indexConflict),actionInfo);
+//                    action.put("objAction",objAction);
+    //                order.setAction(action);
+    //                coupaUtil.saveOrder(order);
+
+//                    // 创建请求更改参数
+//                    JSONObject mapKey = new JSONObject();
+//                    // 添加请求更改参数信息
+//                    mapKey.put("action",action);
+                    qt.setMDContent(id_OConflict,qt.setJson("action.objAction",objAction),Order.class);
+                });
+            });
 //            System.out.println("storageTaskWhereTime-zui:");
 //            System.out.println(JSON.toJSONString(storageTaskWhereTime));
-////            // 获取所有键（订单id）
-////            Set<String> storageTaskWhereTimeAllKey = storageTaskWhereTime.keySet();
-////            // 遍历键（订单id）
-////            for (String id_OConflict : storageTaskWhereTimeAllKey) {
-//////                System.out.println("订单编号:");
-//////                System.out.println(id_OConflict);
-////                // 根据键（订单id）获取信息
-////                JSONObject id_OValInfo = storageTaskWhereTime.getJSONObject(id_OConflict);
-////                // 获取键（index）
-////                Set<String> indexValInfo = id_OValInfo.keySet();
-////                // 遍历键（index）
-////                for (String indexConflict : indexValInfo) {
-////                    // 根据键（index）获取任务所在时间对象
-////                    JSONObject timeInfo = id_OValInfo.getJSONObject(indexConflict);
-////                    // 根据键（订单id）获取订单信息
+//            // 获取所有键（订单id）
+//            Set<String> storageTaskWhereTimeAllKey = storageTaskWhereTime.keySet();
+//            // 遍历键（订单id）
+//            for (String id_OConflict : storageTaskWhereTimeAllKey) {
+////                System.out.println("订单编号:");
+////                System.out.println(id_OConflict);
+//                // 根据键（订单id）获取信息
+//                JSONObject id_OValInfo = storageTaskWhereTime.getJSONObject(id_OConflict);
+//                // 获取键（index）
+//                Set<String> indexValInfo = id_OValInfo.keySet();
+//                // 遍历键（index）
+//                for (String indexConflict : indexValInfo) {
+//                    // 根据键（index）获取任务所在时间对象
+//                    JSONObject timeInfo = id_OValInfo.getJSONObject(indexConflict);
+//                    // 根据键（订单id）获取订单信息
 ////                    Order order = coupaUtil.getOrderByListKey(id_OConflict, Collections.singletonList("action"));
-//////                    System.out.println(id_OConflict);
-//////                    System.out.println(JSON.toJSONString(order));
-////                    // 获取订单action卡片信息
-////                    JSONObject action = order.getAction();
-////                    // 获取所有递归信息
-////                    JSONArray objAction = action.getJSONArray("objAction");
-////                    setOrder(id_OConflict,objAction,indexConflict,timeInfo,action,order);
-////                }
-////            }
-//        }
+//                    Order order = qt.getMDContent(id_OConflict,"action", Order.class);
+////                    System.out.println(id_OConflict);
+////                    System.out.println(JSON.toJSONString(order));
+//                    // 获取订单action卡片信息
+//                    JSONObject action = order.getAction();
+//                    // 获取所有递归信息
+//                    JSONArray objAction = action.getJSONArray("objAction");
+//                    setOrder(id_OConflict,objAction,indexConflict,timeInfo,action,order);
+//                }
+//            }
+        }
 
         System.out.println("订单-结束");
         // 部门，组别，当天
@@ -459,11 +502,11 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                     for (int i = 0; i < overallTasks.size(); i++) {
                         // 获取并且转换任务信息
                         Task task = JSONObject.parseObject(JSON.toJSONString(overallTasks.getJSONObject(i)), Task.class);
-//                        // 判断任务为空任务
-//                        if (task.getPriority() != -1 && task.getTeDurTotal() == 0 && task.getTeDelayDate() == 0) {
-//                            // 添加删除下标
-//                            needClearTaskIndex.add(i);
-//                        }
+                        // 判断任务为空任务
+                        if (task.getPriority() != -1 && task.getTeDurTotal() == 0 && task.getTeDelayDate() == 0) {
+                            // 添加删除下标
+                            needClearTaskIndex.add(i);
+                        }
                         // 判断属于系统任务
                         if (task.getPriority() != -1 && !isTaskYesSystem) {
                             // 遍历当前主订单的订单列表
@@ -481,15 +524,15 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                         // 添加任务信息
                         tasks.add(task);
                     }
-//                    // 判断删除任务下标不为空
-//                    if (needClearTaskIndex.size() > 0) {
-//                        // 降序排序循环存储下标
-//                        needClearTaskIndex.sort(Comparator.reverseOrder());
-//                        // 遍历删除任务列表对应的任务
-//                        for (int clearIndex : needClearTaskIndex) {
-//                            tasks.remove(clearIndex);
-//                        }
-//                    }
+                    // 判断删除任务下标不为空
+                    if (needClearTaskIndex.size() > 0) {
+                        // 降序排序循环存储下标
+                        needClearTaskIndex.sort(Comparator.reverseOrder());
+                        // 遍历删除任务列表对应的任务
+                        for (int clearIndex : needClearTaskIndex) {
+                            tasks.remove(clearIndex);
+                        }
+                    }
 
                     Task taskEqually = null;
                     boolean isMerge = false;
@@ -641,13 +684,11 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                 System.out.println("下面这个需要:");
 ////            qt.setMDContent(asset.getId(),qt.setJson(timeCard,aArrange), Asset.class);
 //                Asset assetDep = qt.getMDContent(id_C, "d-" + dep, Asset.class);
-                if (null != objTask
-//                        && !dep.equals("0xx0") && !dep.equals("1xx1")
-                ) {
+                if (null != objTask) {
                     System.out.println("写入数据库:"+dep);
-                    qt.setMDContent(asset.getId(),qt.setJson("aArrange.objTask"
-                            ,objTask,"aArrange.operationState",0), Asset.class);
-                    asset = qt.getMDContent(asset.getId(),"aArrange", Asset.class);
+                    qt.setMDContent(asset.getId(),qt.setJson(timeCard+".objTask"
+                            ,objTask,timeCard+".operationState",0), Asset.class);
+                    asset = qt.getMDContent(asset.getId(),timeCard, Asset.class);
                     aArrange = getAArrangeNew(asset);
                     System.out.println();
                     System.out.println("排序前-Tasks:");
@@ -789,15 +830,13 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
      * @param objAction	所有递归信息
      * @param indexConflict	下标
      * @param timeInfo	当天时间戳
-     * @param action	订单action卡片信息
-     * @param order	订单信息
-     * @return 返回结果:
      * @author tang
      * @date 创建时间: 2023/2/9
      * @ver 版本号: 1.0.0
      */
     public void setOrder(String id_OConflict,JSONArray objAction,String indexConflict,JSONObject timeInfo
-            ,JSONObject action,Order order){
+//            ,JSONObject action,Order order
+    ){
 //        System.out.println("进入写入订单方法-zui:");
 //        System.out.println(id);
 //        System.out.println(id_OConflict);
@@ -988,6 +1027,7 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,JSONObject isSetImage
             ,long endTime,JSONObject depAllTime) {
         System.out.println("进入-handleTimeConflictEnd:"+zon);
+        System.out.println(JSON.toJSONString(allImageTeDate));
         // 相同任务存储字典
         Map<String,Map<String,Task>> confTask = new HashMap<>();
         // 相同任务存储下标字典
@@ -1134,7 +1174,7 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             JSONObject id_OAndIndexTaskInfo = clearOldTask(conflictTaskCopy.getId_O()
                     , conflictTaskCopy.getDateIndex(), conflictTaskCopy.getId_C(),objTaskAll
                     ,clearStatus,allImageTasks,allImageTotalTime
-                    ,allImageTeDate,tasks,isSetImage,depAllTime);
+                    ,allImageTeDate,tasks,isSetImage,depAllTime,random,onlyFirstTimeStamp);
             // 重置一天时间
             zon = 86400L;
             // 计算余剩时间
@@ -1143,7 +1183,7 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             }
             System.out.println("当前任务清理-后:"+zon);
             System.out.println(JSON.toJSONString(tasks));
-
+            System.out.println(JSON.toJSONString(conflictTaskCopy));
             // 调用获取被冲突任务所在日期
             List<String> taskWhereDateList = getTaskWhereDate(conflictTaskCopy.getId_O()
                     , conflictTaskCopy.getIndex(),storageTaskWhereTime);
@@ -1178,6 +1218,7 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                 // 获取递归信息里的任务所在时间
                 JSONObject teDateTaskNew = dgInfo.getJSONObject("teDate");
                 if (null == teDateTaskNew) {
+                    System.out.println("输出为空teDate");
                     taskWhereDateList = new ArrayList<>();
                     taskWhereDateList.add(onlyFirstTimeStamp.getString(random));
                 } else {
@@ -1386,6 +1427,13 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                                 for (int next = 0; next < prtNextNew.size(); next++) {
 //                                    System.out.println("timeComprehensiveHandle - 3 :");
                                     JSONObject nextInfoNew = prtNextNew.getJSONObject(next);
+                                    if (!id_OAndIndexTaskInfo.containsKey(nextInfoNew.getString("id_O"))) {
+                                        continue;
+                                    }
+                                    if (!id_OAndIndexTaskInfo.getJSONObject(nextInfoNew.getString("id_O"))
+                                            .containsKey(nextInfoNew.getInteger("index").toString())) {
+                                        continue;
+                                    }
                                     // 定义时间戳
                                     long teS = tasks.get(0).getTePStart();
                                     setImageTasks(tasks,grpB,dep,teS,allImageTasks);

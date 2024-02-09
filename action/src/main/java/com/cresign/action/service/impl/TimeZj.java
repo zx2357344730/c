@@ -146,6 +146,9 @@ public class TimeZj {
                     JSONObject tasksAndZon = getTasksAndZon(getTeS(random, grpB, dep,onlyFirstTimeStamp
                             ,newestLastCurrentTimestamp), grpB, dep, id_C,objTaskAll,depAllTime);
                     List<Task> tasksNew;
+                    System.out.println("tasksAndZon:"+dep);
+                    System.out.println(JSON.toJSONString(tasksAndZon));
+                    System.out.println(JSON.toJSONString(depAllTime));
                     Object[] tasksIs = isTasksNull(tasksAndZon,depAllTime.getLong(dep));
                     tasksNew = (List<Task>) tasksIs[0];
                     zon = (long) tasksIs[1];
@@ -1116,7 +1119,7 @@ public class TimeZj {
      * @date 2022/6/9 2:07
      */
     public void setTaskAndZonKai(String id_C){
-        JSONArray array = qt.setArray("515973212487","665591821169","684744667311","326269832536","1xx2");
+        JSONArray array = qt.setArray("515973212487","665591821169","684744667311","326269832536","1xx2","1xx1");
         for (int i = 0; i < array.size(); i++) {
             String dep = array.getString(i);
             Asset asset = qt.getConfig(id_C,"d-"+dep,timeCard);
@@ -2111,6 +2114,7 @@ public class TimeZj {
             ,JSONObject clearStatus,Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks
             ,JSONObject allImageTotalTime,JSONObject allImageTeDate
             ,List<Task> thisTasks,JSONObject isSetImage,JSONObject depAllTime
+            ,String random,JSONObject onlyFirstTimeStamp
     ){
         // 下标加一，从下一个开始
         dateIndex++;
@@ -2186,7 +2190,7 @@ public class TimeZj {
 //            System.out.println("清理镜像前:");
 //            System.out.println(JSON.toJSONString(depAndGrpB));
 //            System.out.println(JSON.toJSONString(allImageTasks));
-            // 遍历需要删除的位置信息爱
+            // 遍历需要删除的位置信息
             for (String dep : depAndGrpB.keySet()) {
                 // 根据指定部门获取部门信息
                 JSONObject depInfo = depAndGrpB.getJSONObject(dep);
@@ -2250,7 +2254,6 @@ public class TimeZj {
         JSONObject result = new JSONObject();
         JSONObject resultNew = new JSONObject();
         // 根据订单编号查询action卡片信息
-//        Order insideAction = coupaUtil.getOrderByListKey(id_O, Arrays.asList("action","info"));
         Order insideAction = qt.getMDContent(id_O, qt.strList("action", "info"), Order.class);
         // 判断订单是否为空
         if (null == insideAction || null == insideAction.getInfo()
@@ -2258,21 +2261,20 @@ public class TimeZj {
                 || null == insideAction.getAction().getJSONArray("objAction")) {
             // 返回为空错误信息
             System.out.println();
-            System.out.println("-查询为空!-");
+            System.out.println("-查询为空!-"+id_O);
             System.out.println();
             return null;
         }
         // 调用方法获取订单信息
-//        Order salesOrderData = coupaUtil.getOrderByListKey(
-//                insideAction.getInfo().getId_OP(), Collections.singletonList("action"));
         Order salesOrderData = qt.getMDContent(insideAction.getInfo().getId_OP(),qt.strList("action", "casItemx"), Order.class);
         // 判断订单是否为空
         if (null == salesOrderData || null == salesOrderData.getAction()
                 || null == salesOrderData.getCasItemx()
-                || null == salesOrderData.getCasItemx().getJSONArray("oDates")) {
+                || null == salesOrderData.getCasItemx().getJSONObject("java")
+                || null == salesOrderData.getCasItemx().getJSONObject("java").getJSONArray("oDates")) {
             // 返回为空错误信息
             System.out.println();
-            System.out.println("-查询为空!-");
+            System.out.println("-查询为空!-"+insideAction.getInfo().getId_OP());
             System.out.println();
             return null;
         }
@@ -2291,35 +2293,62 @@ public class TimeZj {
         // 获取进度的oDates字段信息
         JSONArray oDates = salesOrderData.getCasItemx().getJSONObject("java").getJSONArray("oDates");
 //        boolean isOneDel = true;
-        // 创建存储部门和组别信息字典
-        Map<String,String> grpBAndDep = new HashMap<>();
-        // 获取递归信息
-        JSONArray objAction = insideAction.getAction().getJSONArray("objAction");
-        // 获取组别对应部门信息
-        JSONObject grpBGroup = insideAction.getAction().getJSONObject("grpBGroup");
-        // 遍历组别对应部门信息
-        for (String grpB : grpBGroup.keySet()) {
-            // 获取组别对应信息
-            JSONObject grpBInfo = grpBGroup.getJSONObject(grpB);
-            // 获取组别的部门
-            String depNew = grpBInfo.getString("dep");
-            grpBAndDep.put(grpB,depNew);
-        }
+//        // 创建存储部门和组别信息字典
+//        Map<String,String> grpBAndDep = new HashMap<>();
+//        // 获取递归信息
+//        JSONArray objAction = insideAction.getAction().getJSONArray("objAction");
+//        // 获取组别对应部门信息
+//        JSONObject grpBGroup = insideAction.getAction().getJSONObject("grpBGroup");
+//        // 遍历组别对应部门信息
+//        for (String grpB : grpBGroup.keySet()) {
+//            // 获取组别对应信息
+//            JSONObject grpBInfo = grpBGroup.getJSONObject(grpB);
+//            // 获取组别的部门
+//            String depNew = grpBInfo.getString("dep");
+//            grpBAndDep.put(grpB,depNew);
+//        }
 //        System.out.println("初始objTask:");
 //        System.out.println(JSON.toJSONString(objTask));
 //        System.out.println(JSON.toJSONString(objThisTaskAll));
 //        System.out.println(JSON.toJSONString(storageTaskWhereTime));
 //        System.out.println(JSON.toJSONString(allImageTasks));
-        try {
+//        try {
             Map<String,Asset> assetMap = new HashMap<>();
+//            System.out.println("objAction:");
+//            System.out.println(JSON.toJSONString(objAction));
+            Map<String,Order> orderMap = new HashMap<>();
             // 遍历时间处理信息集合
             for (int i = dateIndex; i < oDates.size(); i++) {
                 // 获取i对应的时间处理信息
                 JSONObject oDate = oDates.getJSONObject(i);
+                if (oDate.getInteger("bmdpt") == 3) {
+                    continue;
+                }
+                // 获取订单编号
+                String id_OThis = oDate.getString("id_O");
+                System.out.println("oDate:");
+                System.out.println(JSON.toJSONString(oDate));
+                Order order;
+                if (orderMap.containsKey(id_OThis)) {
+                    order = orderMap.get(id_OThis);
+                } else {
+                    order = qt.getMDContent(id_OThis,"action", Order.class);
+                    orderMap.put(id_OThis,order);
+                }
+                if (null == order
+                        || null == order.getAction()
+                        || null == order.getAction().getJSONObject("grpBGroup")
+                        || null == order.getAction().getJSONArray("objAction")) {
+                    continue;
+                }
+                // 获取组别对应部门信息
+                JSONObject grpBGroupThis = order.getAction().getJSONObject("grpBGroup");
                 // 获取时间处理的组别
                 String grpBNew = oDate.getString("grpB");
+                JSONObject grpBObj = grpBGroupThis.getJSONObject(grpBNew);
+                String depNew = grpBObj.getString("dep");
                 // 根据组别获取部门
-                String depNew = grpBAndDep.get(grpBNew);
+//                String depNew = grpBAndDep.get(grpBNew);
                 Asset asset;
                 if (assetMap.containsKey(depNew)) {
                     asset = assetMap.get(depNew);
@@ -2330,22 +2359,27 @@ public class TimeZj {
                 if (null == asset) {
                     // 返回为空错误信息
                     System.out.println();
-                    System.out.println("-查询为空!-");
+                    System.out.println("-查询为空!-"+depNew);
                     System.out.println();
                     continue;
                 }
                 JSONObject aArrange = getAArrangeNew(asset);
+                JSONObject objTask;
                 if (null == aArrange || null == aArrange.getJSONObject("objTask")) {
                     // 返回为空错误信息
                     System.out.println();
-                    System.out.println("-查询为空!-");
+                    System.out.println("-查询为空!-"+depNew+"-objTask");
+                    System.out.println(JSON.toJSONString(objThisTaskAll));
+                    System.out.println(JSON.toJSONString(allImageTasks));
                     System.out.println();
-                    continue;
+                    objTask  = objThisTaskAll.getJSONObject(depNew);
+//                    continue;
+                } else {
+                    // 获取数据库任务信息
+                    objTask = aArrange.getJSONObject("objTask");
                 }
-                // 获取数据库任务信息
-                JSONObject objTask = aArrange.getJSONObject("objTask");
-                // 获取订单编号
-                String id_OThis = oDate.getString("id_O");
+//                // 获取订单编号
+//                String id_OThis = oDate.getString("id_O");
                 // 根据订单编号和获取镜像任务所在日期信息
                 JSONObject imgTeDateId_O = allImageTeDate.getJSONObject(id_OThis);
                 // 判断为空
@@ -2359,22 +2393,27 @@ public class TimeZj {
                 imgDate.put("grpB",grpBNew);
                 imgDate.put("dep",depNew);
                 imgDate.put("date",new JSONObject());
-                imgTeDateId_O.put(i+"",imgDate);
+                imgTeDateId_O.put(oDate.getInteger("index")+"",imgDate);
                 allImageTeDate.put(id_OThis,imgTeDateId_O);
 
                 // 获取下标
                 Integer indexThis = oDate.getInteger("index");
+                System.out.println("indexThis:"+indexThis);
                 // 根据指定下标获取进度信息
-                JSONObject actionIndex = objAction.getJSONObject(indexThis);
+                JSONObject actionIndex = order.getAction().getJSONArray("objAction").getJSONObject(indexThis);
                 // 获取任务所在时间
                 JSONObject teDateNext = actionIndex.getJSONObject("teDate");
                 System.out.println(id_OThis+" - "+indexThis+" - "+grpBNew+" - "+depNew
                         +" - teDateNext:"+JSON.toJSONString(teDateNext));
+                if (null == teDateNext) {
+                    teDateNext = new JSONObject();
+                    teDateNext.put(onlyFirstTimeStamp.getString(random),0);
+                }
 //                List<String> taskWhereDate = getTaskWhereDate(id_OThis, indexThis, storageTaskWhereTime);
 //                System.out.println(JSON.toJSONString(taskWhereDate));
 
-                // 定义存储是否是拿全局任务，默认不是
-                boolean isGetThisTaskAll = false;
+//                // 定义存储是否是拿全局任务，默认不是
+//                boolean isGetThisTaskAll = false;
 //                // 根据部门获取指定数据库任务信息的部门信息
 //                JSONObject depTask = objTask.getJSONObject(depNew);
 //                // 判断为空
@@ -2390,8 +2429,8 @@ public class TimeZj {
                 if (null == grpBTask) {
                     // 获取全局任务信息
                     grpBTask = objThisTaskAll.getJSONObject(depNew).getJSONObject(grpBNew);
-                    // 更新状态
-                    isGetThisTaskAll = true;
+//                    // 更新状态
+//                    isGetThisTaskAll = true;
                 }
                 // 遍历任务所在时间
                 for (String time : teDateNext.keySet()) {
@@ -2632,10 +2671,10 @@ public class TimeZj {
 //                System.out.println("清理状态:"+clearStatusThis);
             }
 //            setClearData(id_O,dateIndex,clearStatus,result);
-        } catch (Exception ex) {
-            System.out.println("循环问题:"+ex.getMessage());
-            System.out.println(ex.getLocalizedMessage());
-        }
+//        } catch (Exception ex) {
+//            System.out.println("循环问题:"+ex.getMessage());
+//            System.out.println(ex.getLocalizedMessage());
+//        }
         System.out.println("写入的objTask:");
 //        System.out.println(JSON.toJSONString(objTask));
 //        System.out.println();
@@ -2841,7 +2880,7 @@ public class TimeZj {
             oDate.put("grpUNum",getObjGrpUNum(grpB,dep,oDate.getString("id_C"),grpUNumAll));
             // 获取类别
             Integer bmdpt = oDate.getInteger("bmdpt");
-            if (bmdpt == 3) {
+            if (bmdpt == 3 || (oDate.getBoolean("isSto") != null && oDate.getBoolean("isSto"))) {
                 // 添加当前下标
                 delDateIndex.add(i);
                 continue;

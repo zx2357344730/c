@@ -52,7 +52,7 @@ public class ZjTestController {
 
     @SecurityParameter
     @PostMapping("/v1/sendLog")
-    public ApiResponse sendLog(@RequestBody LogFlow logData) {
+    public ApiResponse getMdSetEs(@RequestBody LogFlow logData) {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
             return zjService.sendLog(logData);
@@ -378,6 +378,11 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 添加用户个人空间
+     * @param resJson 请求数据体
+     * @return  添加结果
+     */
     @SecurityParameter
     @PostMapping("/v1/addCompSpace")
     public ApiResponse addCompSpace(@RequestBody JSONObject resJson) {
@@ -391,6 +396,11 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 添加劳动合同api
+     * @param resJson 请求参数
+     * @return  添加结果
+     */
     @SecurityParameter
     @PostMapping("/v1/addWorkContract")
     public ApiResponse addWorkContract(@RequestBody JSONObject resJson) {
@@ -405,6 +415,11 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 根据 subTypeStatus 统计打卡数据
+     * @param resJson 请求参数
+     * @return  统计结果
+     */
     @SecurityParameter
     @PostMapping("/v1/sumTimeChkIn")
     public ApiResponse sumTimeChkIn(@RequestBody JSONObject resJson) {
@@ -418,6 +433,11 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 查询指定的es库的keyVal条件的所有内容，并且返回size条数
+     * @param resJson 请求参数
+     * @return  查询结果
+     */
     @SecurityParameter
     @PostMapping("/v1/getEsShow")
     public ApiResponse getEsShow(@RequestBody JSONObject resJson) {
@@ -430,6 +450,11 @@ public class ZjTestController {
 //        }
     }
 
+    /**
+     * 删除指定es库的id_ES的内容
+     * @param resJson 请求参数
+     * @return  删除结果
+     */
     @SecurityParameter
     @PostMapping("/v1/delEs")
     public ApiResponse delEs(@RequestBody JSONObject resJson) {
@@ -441,6 +466,11 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 添加订单记录信息api
+     * @param resJson 请求参数
+     * @return  添加结果
+     */
     @SecurityParameter
     @PostMapping("/v1/addOItemAllow")
     public ApiResponse addOItemAllow(@RequestBody JSONObject resJson) {
@@ -454,6 +484,11 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 统计订单记录信息
+     * @param resJson 请求参数
+     * @return  统计结果
+     */
     @SecurityParameter
     @PostMapping("/v1/sumOItemAllow")
     public ApiResponse sumOItemAllow(@RequestBody JSONObject resJson) {
@@ -465,18 +500,28 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 根据参数indexArr下标集合修改订单的oItem为参数keyVal对应信息
+     * @param resJson 请求参数
+     * @return  修改结果
+     */
     @SecurityParameter
-    @PostMapping("/v1/setOItem")
-    public ApiResponse setOItem(@RequestBody JSONObject resJson) {
+    @PostMapping("/v1/setOItemExtraKey")
+    public ApiResponse setOItemExtraKey(@RequestBody JSONObject resJson) {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
             return zjService.setOItemExtraKey(resJson.getString("id_O"),resJson.getBoolean("isCover"),resJson.getJSONArray("indexArr")
                     ,resJson.getJSONObject("keyVal"));
         } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "ZjTestController.setOItem", e);
+            return getUserToken.err(new JSONObject(), "ZjTestController.setOItemExtraKey", e);
         }
     }
 
+    /**
+     * 下线指定端
+     * @param resJson 请求参数
+     * @return  下线结果
+     */
     @SecurityParameter
     @PostMapping("/v1/activeOffline")
     public ApiResponse activeOffline(@RequestBody JSONObject resJson) {
@@ -488,6 +533,11 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * app端同意登录后，设置能登录接口
+     * @param resJson 请求参数
+     * @return  请求结果
+     */
     @SecurityParameter
     @PostMapping("/v1/allowLogin")
     public ApiResponse allowLogin(@RequestBody JSONObject resJson) {
@@ -499,6 +549,11 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 请求app端登录接口
+     * @param resJson 请求参数
+     * @return  请求结果
+     */
     @SecurityParameter
     @PostMapping("/v1/requestLogin")
     public ApiResponse requestLogin(@RequestBody JSONObject resJson) {
@@ -510,6 +565,11 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 修改指定产品的价格，单人单件用时，准备时间，并且修改所有用到的part
+     * @param resJson 请求参数
+     * @return  处理结果
+     */
     @SecurityParameter
     @PostMapping("/v1/updatePartAll")
     public ApiResponse updatePartAll(@RequestBody JSONObject resJson) {
@@ -522,6 +582,10 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 批量新增或修改mongodb的Prod内arrP，和es的lBProd的arrP字段
+     * @return 处理结果
+     */
     @SecurityParameter
     @PostMapping("/v1/updateAllObjItemByArrP")
     public ApiResponse updateAllObjItemByArrP() {
@@ -533,6 +597,10 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 批量新增或修改mongodb的Prod内part的objItem内的时间，准备时间，价格的默认值
+     * @return  请求结果
+     */
     @SecurityParameter
     @PostMapping("/v1/updateAllObjItemByTime")
     public ApiResponse updateAllObjItemByTime() {
@@ -544,15 +612,20 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 根据参数indexArr下标集合修改产品的part为参数keyVal对应信息
+     * @param resJson 请求参数
+     * @return  修改结果
+     */
     @SecurityParameter
-    @PostMapping("/v1/setPart")
-    public ApiResponse setPart(@RequestBody JSONObject resJson) {
+    @PostMapping("/v1/setPartExtraKey")
+    public ApiResponse setPartExtraKey(@RequestBody JSONObject resJson) {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
             return zjService.setPartExtraKey(resJson.getString("id_P"),resJson.getBoolean("isCover"),resJson.getJSONArray("indexArr")
                     ,resJson.getJSONObject("keyVal"));
         } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "ZjTestController.setPart", e);
+            return getUserToken.err(new JSONObject(), "ZjTestController.setPartExtraKey", e);
         }
     }
 
@@ -567,6 +640,10 @@ public class ZjTestController {
         }
     }
 
+    /**
+     * 添加测试Asset的lSAsset信息
+     * @return  添加结果
+     */
     @SecurityParameter
     @PostMapping("/v1/addAsset")
     public ApiResponse addAsset() {

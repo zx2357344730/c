@@ -53,7 +53,15 @@ public interface TimeZjService {
      */
     ApiResponse getAtFirst(String id_O, Long teStart, String id_C, Integer wn0TPrior);
 
-    ApiResponse getAtFirstList(Long teStart, String id_C, JSONArray orderList);
+    /**
+     * 多订单时间处理方法
+     * @param id_C  公司编号
+     * @param orderList 订单信息
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
+     */
+    ApiResponse getAtFirstList(String id_C, JSONArray orderList);
 
     /**
      * 根据主订单和对应公司编号，删除时间处理信息
@@ -104,6 +112,12 @@ public interface TimeZjService {
      */
     ApiResponse timeCalculation(String id_O, int index,int number);
 
+    /**
+     * 获取计算物料时间后的开始时间
+     * @param id_O  订单编号
+     * @param teStart   开始时间
+     * @return  开始时间
+     */
     ApiResponse getTeStart(String id_O, Long teStart);
 
     /**
@@ -152,8 +166,28 @@ public interface TimeZjService {
             ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,boolean isComprehensiveHandle
             ,JSONObject depAllTime);
 
+    /**
+     * 获取上班时间戳与休息时间戳
+     * @param arrTime   上班时间段
+     * @param objSb 存储上班信息
+     * @param objXb 存储休息信息
+     * @return  上班时间戳与休息时间戳
+     */
     long getArrTime(JSONArray arrTime,JSONArray objSb,JSONArray objXb);
 
-    ApiResponse getTeStartArr(JSONArray id_OArr, Long teStart);
+    /**
+     * 获取多订单一起计算物料时间后的开始时间
+     * @param id_OArr  订单编号集合
+     * @param teStart   开始时间
+     * @return  开始时间
+     */
+    ApiResponse getTeStartTotal(JSONArray id_OArr, Long teStart);
+
+    /**
+     * 获取多订单分开计算物料时间后的开始时间
+     * @param orderInfo  订单信息集合
+     * @return  开始时间
+     */
+    ApiResponse getTeStartList(JSONArray orderInfo);
 
 }

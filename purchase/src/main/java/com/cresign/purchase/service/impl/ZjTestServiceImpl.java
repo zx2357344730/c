@@ -1310,6 +1310,16 @@ public class ZjTestServiceImpl implements ZjTestService {
         return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern(DateEnum.DATE_TIME_FULL.getDate()));
     }
 
+    /**
+     * 添加用户个人空间
+     * @param id_U  用户编号
+     * @param id_C  公司编号
+     * @param wrdN  公司名称
+     * @param wrddesc   公司描述
+     * @param pic   公司头像
+     * @param ref   公司ref
+     * @return  添加结果
+     */
     @Override
     public ApiResponse addCompSpace(String id_U,String id_C, JSONObject wrdN, JSONObject wrddesc, String pic, String ref) {
         JSONArray lNUser = qt.getES("lNUser", qt.setESFilt("id_U", id_U));
@@ -1365,6 +1375,18 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(), compId);
     }
 
+    /**
+     * 添加劳动合同api
+     * @param id_U  用户编号
+     * @param id_CB 劳动合同合作公司
+     * @param money 钱数量
+     * @param year  年份
+     * @param contJ 合同甲方详细信息
+     * @param contY 合同乙方详细信息
+     * @param grpB  组别
+     * @param dep   部门
+     * @return  添加结果
+     */
     @Override
     public ApiResponse addWorkContract(String id_U,String id_CB,int money,int year
             ,JSONObject contJ,JSONObject contY,String grpB,String dep) {
@@ -1441,6 +1463,15 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),"创建成功");
     }
 
+    /**
+     * 根据 subTypeStatus 统计打卡数据
+     * @param id_C  公司编号
+     * @param id_U  用户编号
+     * @param subTypeStatus 统计类型（ == 1 统计月打卡信息、 == 0 统计天打卡信息）
+     * @param year  当前年份
+     * @param monthArr  统计月数组
+     * @return  统计结果
+     */
     @Override
     public ApiResponse sumTimeChkIn(String id_C,String id_U,int subTypeStatus,int year,JSONArray monthArr) {
         JSONObject result = new JSONObject();
@@ -1670,6 +1701,16 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
     }
 
+    /**
+     * 添加订单记录信息api
+     * @param id_O  订单编号
+     * @param wrdN  记录名称
+     * @param ref   记录编号
+     * @param allow 记录次数
+     * @param pr    记录单次钱
+     * @param wn4pr 记录合计钱
+     * @return  添加结果
+     */
     @Override
     public ApiResponse addOItemAllow(String id_O, String wrdN, String ref, double allow,double pr, double wn4pr) {
         Order order = qt.getMDContent(id_O, qt.strList("oItem", "work"), Order.class);
@@ -1698,6 +1739,11 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
     }
 
+    /**
+     * 统计订单记录信息
+     * @param id_O  统计的订单编号
+     * @return  统计结果
+     */
     @Override
     public ApiResponse sumOItemAllow(String id_O) {
         Order order = qt.getMDContent(id_O, "oItem", Order.class);
@@ -1721,6 +1767,14 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),totalPr);
     }
 
+    /**
+     * 根据参数indexArr下标集合修改订单的oItem为参数keyVal对应信息
+     * @param id_O  订单编号
+     * @param isCover   是否覆盖旧数据
+     * @param indexArr  修改的下标位置集合
+     * @param keyVal    修改的键值对
+     * @return  修改结果
+     */
     @Override
     public ApiResponse setOItemExtraKey(String id_O,boolean isCover, JSONArray indexArr, JSONObject keyVal) {
         Order order = qt.getMDContent(id_O, "oItem", Order.class);
@@ -1994,8 +2048,6 @@ public class ZjTestServiceImpl implements ZjTestService {
                         prod = qt.getMDContent(id_PF, "part", Prod.class);
                         prodMap.put(id_PF,prod);
                     }
-                    // 获取父产品信息
-//                    Prod prod = qt.getMDContent(id_PF, "part", Prod.class);
                     if (null == prod || null == prod.getPart() || null == prod.getPart().getJSONArray("objItem")) {
                         throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                                 LOG_FAILF.getCode(),"");
@@ -2137,6 +2189,14 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
     }
 
+    /**
+     * 根据参数indexArr下标集合修改产品的part为参数keyVal对应信息
+     * @param id_P  产品编号
+     * @param isCover   是否覆盖旧数据
+     * @param indexArr  修改的下标位置集合
+     * @param keyVal    修改的键值对
+     * @return  修改结果
+     */
     @Override
     public ApiResponse setPartExtraKey(String id_P,boolean isCover, JSONArray indexArr, JSONObject keyVal) {
 //        Order order = qt.getMDContent(id_O, "oItem", Order.class);
@@ -2232,6 +2292,10 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),"操作成功");
     }
 
+    /**
+     * 添加测试Asset的lSAsset信息
+     * @return  添加结果
+     */
     @Override
     public ApiResponse addAsset() {
         lSAsset lsAsset = new lSAsset();

@@ -766,7 +766,7 @@ public class TaskObj {
         long teCsSta = (teS+61200);
 //        zon = 12600L;
         zon = 19800L;
-        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","1xx2",teS,zon,objTaskAll);
+        TimeZjServiceImplX.setTasksAndZon(tasks,"386677624296","1xx2",teS,zon,objTaskAll);
 
 //        System.out.println("-------------------------- 分割线 --------------------------");
 
@@ -782,7 +782,7 @@ public class TaskObj {
 
 //        zon = 19800L;
         zon = 27000L;
-        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","1xx2",teS2,zon,objTaskAll);
+        TimeZjServiceImplX.setTasksAndZon(tasks,"386677624296","1xx2",teS2,zon,objTaskAll);
     }
 
     /**
@@ -815,7 +815,7 @@ public class TaskObj {
         long teCsSta = (teS+61200);
         zon = 7200L;
 //        zon = 16200L;
-        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","1xx2",teS,zon,objTaskAll);
+        TimeZjServiceImplX.setTasksAndZon(tasks,"386677624296","1xx2",teS,zon,objTaskAll);
 
 //        System.out.println("-------------------------- 分割线 --------------------------");
 
@@ -832,7 +832,7 @@ public class TaskObj {
 
 //        zon = 19800L;
         zon = 27000L;
-        TimeZjServiceImplX.setTasksAndZon(tasks,"1000","1xx2",teS2,zon,objTaskAll);
+        TimeZjServiceImplX.setTasksAndZon(tasks,"386677624296","1xx2",teS2,zon,objTaskAll);
     }
 
     /**

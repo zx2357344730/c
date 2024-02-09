@@ -166,4 +166,9 @@ public class OrderODate {
      */
     private Integer linkInd;
 
+    /**
+     * 是否使用库存 == true说明用库存 = 跳过
+     */
+    private Boolean isSto;
+
 }

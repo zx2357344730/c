@@ -50,6 +50,13 @@ public class TaskController {
         }
     }
 
+    /**
+     * 时间处理方法
+     * @param reqJson 请求参数
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
+     */
     @SecurityParameter
     @PostMapping("/v1/getAtFirst")
     public ApiResponse getAtFirst(@RequestBody JSONObject reqJson){
@@ -61,6 +68,13 @@ public class TaskController {
         }
     }
 
+    /**
+     * 根据主订单和对应公司编号，删除时间处理信息
+     * @param reqJson 请求参数
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
+     */
     @SecurityParameter
     @PostMapping("/v1/removeTime")
     public ApiResponse removeTime(@RequestBody JSONObject reqJson){
@@ -129,17 +143,29 @@ public class TaskController {
         }
     }
 
+    /**
+     * 多订单时间处理方法
+     * @param reqJson 请求参数
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
+     */
     @SecurityParameter
     @PostMapping("/v1/getAtFirstList")
     public ApiResponse getAtFirstList(@RequestBody JSONObject reqJson){
         try {
-            return timeZjService.getAtFirstList(reqJson.getLong("teStart"),
+            return timeZjService.getAtFirstList(
                     reqJson.getString("id_C"), reqJson.getJSONArray("orderList"));
         } catch (Exception e) {
             return getUserToken.err(reqJson, "TaskController.getAtFirstList", e);
         }
     }
 
+    /**
+     * 获取计算物料时间后的开始时间
+     * @param reqJson 请求参数
+     * @return  开始时间
+     */
     @SecurityParameter
     @PostMapping("/v1/getTeStart")
     public ApiResponse getTeStart(@RequestBody JSONObject reqJson){
@@ -150,13 +176,33 @@ public class TaskController {
         }
     }
 
+    /**
+     * 获取多订单一起计算物料时间后的开始时间
+     * @param reqJson 请求参数
+     * @return  开始时间
+     */
     @SecurityParameter
-    @PostMapping("/v1/getTeStartArr")
-    public ApiResponse getTeStartArr(@RequestBody JSONObject reqJson){
+    @PostMapping("/v1/getTeStartTotal")
+    public ApiResponse getTeStartTotal(@RequestBody JSONObject reqJson){
         try {
-            return timeZjService.getTeStartArr(reqJson.getJSONArray("id_OArr"), reqJson.getLong("teStart"));
+            return timeZjService.getTeStartTotal(reqJson.getJSONArray("id_OArr"), reqJson.getLong("teStart"));
         } catch (Exception e) {
-            return getUserToken.err(reqJson, "TaskController.getTeStartArr", e);
+            return getUserToken.err(reqJson, "TaskController.getTeStartTotal", e);
+        }
+    }
+
+    /**
+     * 获取多订单分开计算物料时间后的开始时间
+     * @param reqJson  请求参数
+     * @return  开始时间
+     */
+    @SecurityParameter
+    @PostMapping("/v1/getTeStartList")
+    public ApiResponse getTeStartList(@RequestBody JSONObject reqJson){
+        try {
+            return timeZjService.getTeStartList(reqJson.getJSONArray("orderInfo"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.getTeStartList", e);
         }
     }
 

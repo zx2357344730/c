@@ -647,6 +647,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             orderODate.setId_PF(id_PF);
             orderODate.setId_C(myCompId);
             orderODate.setBmdpt(objActionCollection.get(fin_O).get(fin_Ind).getBmdpt());
+            orderODate.setIsSto(false);
 
             // 判断父编号是当前唯一ID存储时间处理的最初产品编号并且序号为1
             if (isPf && orderODate.getPriorItem() == 1) {
@@ -988,6 +989,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             orderODate.setTeStart(0L);
             orderODate.setTaFin(0L);
             orderODate.setBmdpt(partInfo.getInteger("bmdpt"));
+            orderODate.setIsSto(partInfo.getBoolean("isSto") != null && partInfo.getBoolean("isSto"));
             // 判断层级为第一层并且序号为1
             if (timeHandleSerialNoIsOneInside == 1 && objOItem.getWn0prior() == 1) {
                 // 添加信息
