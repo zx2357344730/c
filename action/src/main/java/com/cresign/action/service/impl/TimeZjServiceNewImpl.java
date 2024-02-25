@@ -762,7 +762,7 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
 //                        // 获取时间处理的零件产品编号
 //                        String id_P = oDate.getString("id_P");
 //                        // 获取时间处理的实际准备时间
-//                        Long tePrep = oTasks.getJSONObject(i).getLong("prep");
+//                        Long wntPrep = oTasks.getJSONObject(i).getLong("prep");
 //                        long teDurTotal = oTasks.getJSONObject(i).getLong("teDurTotal");
 //
 //                        // 判断序号是为1层级并且记录，存储是递归第一层的，序号为1和序号为最后一个状态为第一层
@@ -808,7 +808,7 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
 //                        // 获取任务的最初开始时间备份
 //                        Long teStartBackups = oDate.getLong("teStart");
 //                        // 设置最初结束时间
-//                        oDate.put("teFin",(teStartBackups+(teDurTotal+tePrep)));
+//                        oDate.put("teFin",(teStartBackups+(teDurTotal+wntPrep)));
 //                        // 获取最初结束时间
 //                        Long teFin = oDate.getLong("teFin");
 //                        // 获取任务信息，并且转换为任务类
@@ -1719,7 +1719,7 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
                         // 获取时间处理的零件产品编号
                         String id_P = oDate.getString("id_P");
                         // 获取时间处理的实际准备时间
-                        Long tePrep = oTasks.getJSONObject(i).getLong("prep");
+                        Long wntPrep = oTasks.getJSONObject(i).getLong("prep");
                         long teDurTotal = oTasks.getJSONObject(i).getLong("teDurTotal");
 
                         // 判断序号是为1层级并且记录，存储是递归第一层的，序号为1和序号为最后一个状态为第一层
@@ -1765,7 +1765,7 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
                         // 获取任务的最初开始时间备份
                         Long teStartBackups = oDate.getLong("teStart");
                         // 设置最初结束时间
-                        oDate.put("teFin",(teStartBackups+(teDurTotal+tePrep)));
+                        oDate.put("teFin",(teStartBackups+(teDurTotal+wntPrep)));
                         // 获取最初结束时间
                         Long teFin = oDate.getLong("teFin");
                         // 获取任务信息，并且转换为任务类
@@ -1959,9 +1959,9 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
             int wn2qtymade = objDataSon.getInteger("wn2qtymade");
             JSONObject objItemInd = objItem.getJSONObject(index);
             Integer wn2qtyneed = objItemInd.getInteger("wn2qtyneed");
-            long teDur = objItemInd.getLong("teDur")==null?120:objItemInd.getLong("teDur");
+            long wntDur = objItemInd.getLong("wntDur")==null?120:objItemInd.getLong("wntDur");
             // 存储任务总时间
-            long taskTotalTime = (teDur * (wn2qtyneed-wn2qtymade));
+            long taskTotalTime = (wntDur * (wn2qtyneed-wn2qtymade));
             long grpUNum;
             if (taskTotalTime % number == 0) {
                 grpUNum = taskTotalTime / number;

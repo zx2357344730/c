@@ -10,7 +10,7 @@ public interface UsageService {
    ApiResponse setFav(String id_U, String id_C, JSONObject content);
    ApiResponse setFavInfo(String id_U, String id_C, String id, String listType, String grp, String pic, JSONObject wrdN);
 
-    ApiResponse getFav(String id_U);
+    ApiResponse getFav(String id_U, String type);
 
     ApiResponse delFav(String id_U, String id_O, Integer index, String id, String id_FS);
 
@@ -31,6 +31,8 @@ public interface UsageService {
     ApiResponse getNacosStatus();
 
     ApiResponse notifyLog(String id_U, String id_C, JSONObject wrdNU, String id, String id_I, JSONObject wrdN, JSONObject wrddesc);
+
+    ApiResponse updateIp(String ip, String id_U);
 
     /**
      * 连接真公司
@@ -57,6 +59,6 @@ public interface UsageService {
 
    ApiResponse setPowerup(String id_C, JSONObject capacity);
 
-   ApiResponse getPowerup(String id_C, String ref);
+   ApiResponse getPowerup(String id_C);
 
 }

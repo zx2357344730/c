@@ -4,10 +4,12 @@ import com.cresign.tools.common.Constants;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ErrorResponseException;
+import com.cresign.tools.pojo.po.LogFlow;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -142,13 +144,13 @@ public class DateUtils {
      * @ver 1.0.0
      * ##Updated: 2020/8/6 11:21
      */
-    public static boolean judgeTimeSize(String date, String date1, String date2, String date3, int is) {
+    public boolean judgeTimeSize(String date, String date1, String date2, String date3, int is) {
 
         // 比较 年 月 日
         //创建日期转换对象：年月日 时分秒
         SimpleDateFormat sdf = new SimpleDateFormat(date);
         String[] s = date1.split(Constants.STRING_BLANK_SPACE);
-        int qu = Ut.getLength(s);
+        int qu = this.getLength(s);
         boolean flag = false;
         try {
             //转换为 date 类型 Debug：Sun Nov 11 11:11:11 CST 2018
@@ -227,7 +229,7 @@ public class DateUtils {
      * @ver 1.0.0
      * ##Updated: 2020/8/6 11:20
      */
-    public static String splitDateString(String date, int shu, int addOrReduce) {
+    public String splitDateString(String date, int shu, int addOrReduce) {
         String[] split = date.split(":");
         int h = Integer.parseInt(split[0]);
         int m = Integer.parseInt(split[Constants.INT_ONE]);
@@ -237,24 +239,24 @@ public class DateUtils {
         }
         if (addOrReduce == 0) {
             if (m >= shu) {
-                sb.append(Ut.addZero(h));
+                sb.append(this.addZero(h));
                 sb.append(":");
-                sb.append(Ut.addZero((m - shu)));
+                sb.append(this.addZero((m - shu)));
             } else {
-                sb.append(Ut.addZero((h - Constants.INT_ONE)));
+                sb.append(this.addZero((h - Constants.INT_ONE)));
                 sb.append(":");
-                sb.append(Ut.addZero(((m + Constants.DATE_SIXTY) - shu)));
+                sb.append(this.addZero(((m + Constants.DATE_SIXTY) - shu)));
             }
         } else {
             int l = m + shu;
             if (l >= Constants.DATE_SIXTY) {
-                sb.append(Ut.addZero((h + Constants.INT_ONE)));
+                sb.append(this.addZero((h + Constants.INT_ONE)));
                 sb.append(":");
-                sb.append(Ut.addZero((l - Constants.DATE_SIXTY)));
+                sb.append(this.addZero((l - Constants.DATE_SIXTY)));
             } else {
-                sb.append(Ut.addZero(h));
+                sb.append(this.addZero(h));
                 sb.append(":");
-                sb.append(Ut.addZero(l));
+                sb.append(this.addZero(l));
             }
         }
         sb.append(":");
@@ -477,7 +479,7 @@ public class DateUtils {
      * @ver 1.0.0
      * ##Updated: 2020/8/6 11:31
      */
-    public static Map<String, Long> getDatePoor(String endDate, String nowDate) {
+    public Map<String, Long> getDateMinus(String endDate, String nowDate) {
 
 //        //创建日期格式化对象
 //        SimpleDateFormat sDateFormat=new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate()); //加上时间
@@ -499,9 +501,9 @@ public class DateUtils {
         //定义被减数日期
         Date nowDateZ = null;
 
-        int qu1 = Ut.getLength(str1);
+        int qu1 = this.getLength(str1);
 
-        int qu2 = Ut.getLength(str2);
+        int qu2 = this.getLength(str2);
 
         //必须捕获异常
         try {
@@ -738,6 +740,40 @@ public class DateUtils {
     }
 
     /**
+     * 将数字补零,只限用于时间
+     * @param b	需要补零的数字
+     * @return java.lang.String  返回结果: 补零结果
+     * @author tang
+     * @ver 1.0.0
+     * ##Updated: 2020/8/6 11:20
+     */
+    public String addZero(int b) {
+        if (b > 9) {
+            return b + "";
+        } else {
+            return "0" + b;
+        }
+    }
+
+    /**
+     * 获取s的长度
+     * @param s	数组
+     * @return int  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
+     * ##Updated: 2020/8/6 11:21
+     */
+    private int getLength(String[] s) {
+        if (s.length == Constants.INT_TWO) {
+            return 1;
+        } else if (s.length == Constants.INT_THREE) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
      * 根据i获取星期
      * @param i	数字星期
      * @return java.lang.String  返回结果: 中文星期
@@ -765,6 +801,159 @@ public class DateUtils {
 //                log.debug("错误");
                 return null;
         }
+    }
+
+
+    /**
+     * 将list根据dateType按照is进行排序
+     * @param is	模式
+     * @param list	集合
+     * @param dateType	排序条件
+     * @return void  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
+     * ##Updated: 2020/8/6 11:32
+     */
+    public static void sortIs(int is, List<LogFlow> list, String dateType) {
+        //重写原list的排序方法
+        list.sort((o1, o2) -> {
+
+            //创建日期格式化对象，并添加格式化日期的格式
+            SimpleDateFormat format = new SimpleDateFormat(dateType);
+
+            //捕捉异常
+            try {
+
+                //将第一个对象的tmd字段转换成日期
+                Date dt1 = format.parse(o1.getTmd());
+
+                //将第二个对象的tmd字段转换成日期
+                Date dt2 = format.parse(o2.getTmd());
+
+                return listSortResult(is, dt1, dt2);
+            } catch (Exception e /*捕捉所有异常*/) {
+
+                //抛出异常信息
+//                log.debug("出现错误：" + e.getMessage());
+            }
+
+            //返回结果
+            return 0;
+        });
+
+    }
+
+    /**
+     * 对dt1和dt2进行判断并返回值
+     * @param is	需要的返回结果：1是降序，2是升序
+     * @param dt1	比较值1
+     * @param dt2	比较值2
+     * @return int  返回结果: 结果
+     * @author tang
+     * @ver 1.0.0
+     * ##Updated: 2020/8/6 11:33
+     */
+    public static int listSortResult(int is, Date dt1, Date dt2) {
+        if (is == Constants.INT_ONE) {
+            //判断第一个时间戳小于第二个时间戳
+            if (dt1.getTime() < dt2.getTime()) {
+
+                //返回结果
+                return 1;
+
+                //判断第一个时间戳大于第二个时间戳
+            } else if (dt1.getTime() > dt2.getTime()) {
+
+                //返回结果
+                return -1;
+            }
+        } else {
+            //判断第一个时间戳小于第二个时间戳
+            if (dt1.getTime() > dt2.getTime()) {
+
+                //返回结果
+                return 1;
+
+                //判断第一个时间戳大于第二个时间戳
+            } else if (dt1.getTime() < dt2.getTime()) {
+
+                //返回结果
+                return -1;
+            }
+        }
+        return 0;
+    }
+
+
+    /**
+     * 平均半径,单位：m；不是赤道半径。赤道为6378左右
+     */
+    private static final double EARTH_RADIUS = 6371393;
+
+
+    /**
+     * 反余弦计算两个经纬度的差
+     * @param lat1	精度1
+     * @param lng1	纬度1
+     * @param lat2	精度2
+     * @param lng2	纬度2
+     * @return double  返回结果: 结果米数
+     * @author tang
+     * @ver 1.0.0
+     * ##Updated: 2020/8/6 11:18
+     */
+    public static double getDistance(Double lat1,Double lng1,Double lat2,Double lng2) {
+        // 经纬度（角度）转弧度。弧度用作参数，以调用Math.cos和Math.sin
+        // A经弧度
+        double radiansAx = Math.toRadians(lng1);
+        // A纬弧度
+        double radiansAy = Math.toRadians(lat1);
+        // B经弧度
+        double radiansBx = Math.toRadians(lng2);
+        // B纬弧度
+        double radiansBy = Math.toRadians(lat2);
+
+        // 公式中“cosβ1cosβ2cos（α1-α2）+sinβ1sinβ2”的部分，得到∠AOB的cos值
+        double cos = Math.cos(radiansAy) * Math.cos(radiansBy) * Math.cos(radiansAx - radiansBx)
+                + Math.sin(radiansAy) * Math.sin(radiansBy);
+        // 反余弦值
+        double acos = Math.acos(cos);
+        // 最终结果
+        return EARTH_RADIUS * acos;
+    }
+
+    /**
+     * 获取文件大小
+     * @author Jevon
+     * @param size
+     * @ver 1.0
+     * @updated 2020/9/22 9:50
+     * @return java.lang.String
+     */
+    public static String fileSizeString(long size) {
+        StringBuffer bytes = new StringBuffer();
+        DecimalFormat format = new DecimalFormat("###.0");
+        if (size >= 1024 * 1024 * 1024) {
+            double i = (size / (1024.0 * 1024.0 * 1024.0));
+            bytes.append(format.format(i)).append("GB");
+        }
+        else if (size >= 1024 * 1024) {
+            double i = (size / (1024.0 * 1024.0));
+            bytes.append(format.format(i)).append("MB");
+        }
+        else if (size >= 1024) {
+            double i = (size / (1024.0));
+            bytes.append(format.format(i)).append("KB");
+        }
+        else {
+            if (size <= 0) {
+                bytes.append("0B");
+            }
+            else {
+                bytes.append((int) size).append("B");
+            }
+        }
+        return bytes.toString();
     }
 
 

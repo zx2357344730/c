@@ -551,19 +551,19 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 
 
             // 获取时间处理的实际准备时间
-            Long tePrep = oDate.getLong("tePrep");
-            Long teDur = oDate.getLong("teDur");
+            Long wntPrep = oDate.getLong("wntPrep");
+            Long wntDur = oDate.getLong("wntDur");
             Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
 //            System.out.println(JSON.toJSONString(oDa));
             // 存储任务总时间
-            long taskTotalTime = (long)(teDur * wn2qtyneed);
+            long taskTotalTime = (long)(wntDur * wn2qtyneed);
             // 获取时间处理的组别
             String grpB = oDate.getString("grpB");
             // 根据组别获取部门
             String dep = grpBGroupIdOJ.getJSONObject(grpB).getString("dep");
             oDate.put("dep",dep);
             oDate.put("grpUNum",getObjGrpUNum(grpB,dep,oDate.getString("id_C"),grpUNumAll));
-//            System.out.println("teDur:"+teDur+",wn2qty:"+wn2qtyneed+",l:"+l);
+//            System.out.println("wntDur:"+wntDur+",wn2qty:"+wn2qtyneed+",l:"+l);
             long grpUNum;
             // 计算总时间
             if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {
@@ -572,7 +572,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 grpUNum = (long) Math.ceil((double) (taskTotalTime / oDate.getInteger("grpUNum")));
             }
             // 获取时间处理的总任务时间
-            long teDurTotal = grpUNum+tePrep;
+            long teDurTotal = grpUNum+wntPrep;
 
 
             if (teDurTotal > maxTeDurTotal) {
@@ -1207,15 +1207,15 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //            // 获取时间处理的记录，存储是递归第一层的，序号为1和序号为最后一个状态
 //            Integer kaiJie = oDate.getInteger("kaiJie");
 //            // 获取时间处理的实际准备时间
-////            Long tePrep = oDate.getLong("tePrep");
-//            Long tePrep = oTasks.getJSONObject(i).getLong("prep");
+////            Long wntPrep = oDate.getLong("wntPrep");
+//            Long wntPrep = oTasks.getJSONObject(i).getLong("prep");
 //            Long teDurTotal = oTasks.getJSONObject(i).getLong("teDurTotal");
-////            Long teDur = oDate.getLong("teDur");
+////            Long wntDur = oDate.getLong("wntDur");
 ////            Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
 //////            System.out.println(JSON.toJSONString(oDa));
 ////            // 存储任务总时间
-////            long taskTotalTime = (long)(teDur * wn2qtyneed);
-//////            System.out.println("teDur:"+teDur+",wn2qty:"+wn2qtyneed+",l:"+l);
+////            long taskTotalTime = (long)(wntDur * wn2qtyneed);
+//////            System.out.println("wntDur:"+wntDur+",wn2qty:"+wn2qtyneed+",l:"+l);
 ////            long grpUNum;
 ////            if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {
 ////                grpUNum = taskTotalTime / oDate.getInteger("grpUNum");
@@ -1227,12 +1227,12 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 ////            long teDurTotal = grpUNum;
 //////            if (bcdState == 5) {
 //////                teDurTotal = 0L;
-//////                tePrep = 0L;
+//////                wntPrep = 0L;
 //////            }
-////            System.out.println("teDurTotal:" +teDurTotal+" - tePrep:"
-////                    +tePrep+" - prior:"+priorItem);
+////            System.out.println("teDurTotal:" +teDurTotal+" - wntPrep:"
+////                    +wntPrep+" - prior:"+priorItem);
 ////            System.out.println("csTeJTe:"+" - id_PF:"+id_PF);
-////            if (teDurTotal == 0 && tePrep == 0) {
+////            if (teDurTotal == 0 && wntPrep == 0) {
 ////                continue;
 ////            }
 //            // 判断当前唯一ID存储时间处理的最初开始时间为0
@@ -1288,7 +1288,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //            // 获取任务的最初开始时间备份
 //            Long teStartBackups = oDate.getLong("teStart");
 //            // 设置最初结束时间
-//            oDate.put("teFin",(teStartBackups+(teDurTotal+tePrep)));
+//            oDate.put("teFin",(teStartBackups+(teDurTotal+wntPrep)));
 //            // 获取最初结束时间
 //            Long teFin = oDate.getLong("teFin");
 //            // 获取任务信息，并且转换为任务类
@@ -1300,7 +1300,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //            task.setTeCsStart(teStartBackups);
 //            task.setTeCsSonOneStart(0L);
 //            task.setDateIndex(i);
-////            task.setPrep(oDate.getLong("tePrep"));
+////            task.setPrep(oDate.getLong("wntPrep"));
 //            // 判断优先级不等于-1
 //            if (wn0TPrior != -1) {
 //                // 设置优先级为传参的优先级
@@ -1690,7 +1690,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //                // 获取时间处理的记录，存储是递归第一层的，序号为1和序号为最后一个状态
 //                Integer kaiJie = oDate.getInteger("kaiJie");
 //                // 获取时间处理的实际准备时间
-//                Long tePrep = oTasks.getJSONObject(i).getLong("prep");
+//                Long wntPrep = oTasks.getJSONObject(i).getLong("prep");
 //                Long teDurTotal = oTasks.getJSONObject(i).getLong("teDurTotal");
 //                // 判断当前唯一ID存储时间处理的最初开始时间为0
 //                if (hTeStart == 0) {
@@ -1742,7 +1742,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //                // 获取任务的最初开始时间备份
 //                Long teStartBackups = oDate.getLong("teStart");
 //                // 设置最初结束时间
-//                oDate.put("teFin",(teStartBackups+(teDurTotal+tePrep)));
+//                oDate.put("teFin",(teStartBackups+(teDurTotal+wntPrep)));
 //                // 获取最初结束时间
 //                Long teFin = oDate.getLong("teFin");
 //                // 获取任务信息，并且转换为任务类
@@ -2129,7 +2129,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             // 获取时间处理的记录，存储是递归第一层的，序号为1和序号为最后一个状态
             Integer kaiJie = oDate.getInteger("kaiJie");
             // 获取时间处理的实际准备时间
-            Long tePrep = oTasks.getJSONObject(i).getLong("prep");
+            Long wntPrep = oTasks.getJSONObject(i).getLong("prep");
             Long teDurTotal = oTasks.getJSONObject(i).getLong("teDurTotal");
             // 判断当前唯一ID存储时间处理的最初开始时间为0
             if (hTeStart == 0) {
@@ -2181,7 +2181,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             // 获取任务的最初开始时间备份
             Long teStartBackups = oDate.getLong("teStart");
             // 设置最初结束时间
-            oDate.put("teFin",(teStartBackups+(teDurTotal+tePrep)));
+            oDate.put("teFin",(teStartBackups+(teDurTotal+wntPrep)));
             // 获取最初结束时间
             Long teFin = oDate.getLong("teFin");
             // 获取任务信息，并且转换为任务类
@@ -2425,8 +2425,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //                prodSet.add(id_P);
 //                compMap.put(id_C,prodSet);
 //            } else {
-//                Long teDur = oDate.getLong("teDur");
-//                if (bmdpt != 2 && teDur <= 0) {
+//                Long wntDur = oDate.getLong("wntDur");
+//                if (bmdpt != 2 && wntDur <= 0) {
 //                    // 返回为空错误信息
 //                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_TIME_NULL.getCode(), "时间为空");
 //                }
@@ -3724,8 +3724,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //                    prodSet.add(id_P);
 //                    compMap.put(id_C,prodSet);
 //                } else {
-//                    Long teDur = oDate.getLong("teDur");
-//                    if (bmdpt != 2 && teDur <= 0) {
+//                    Long wntDur = oDate.getLong("wntDur");
+//                    if (bmdpt != 2 && wntDur <= 0) {
 //                        // 返回为空错误信息
 //                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_TIME_NULL.getCode(), "时间为空");
 //                    }
@@ -3804,8 +3804,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 prodSet.add(id_P);
                 compMap.put(id_C,prodSet);
             } else {
-                Long teDur = oDate.getLong("teDur");
-                if (bmdpt != 2 && teDur <= 0) {
+                Long wntDur = oDate.getLong("wntDur");
+                if (bmdpt != 2 && wntDur <= 0) {
                     // 返回为空错误信息
                     throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_TIME_NULL.getCode(), "时间为空");
                 }

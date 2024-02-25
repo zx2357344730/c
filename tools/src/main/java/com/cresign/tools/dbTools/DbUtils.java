@@ -1071,6 +1071,9 @@ public class DbUtils {
     }
 
 
+    /////////////////////////////////////////////////////////////////////////////////////
+
+
 //     SE if / info / exec (oTrig, cTrig, Summ00s, tempa
     public void oTriggerIf(JSONObject jsonObjIf, JSONObject jsonObjVar, JSONObject jsonObjExec) {
         try {
@@ -1161,7 +1164,7 @@ public class DbUtils {
                             for (int k = 0; k < arrayKey.length; k++) {
                                 String key = arrayKey[k];
                                 System.out.println("key=" + key);
-                                Object var = scriptEngineVar(jsonObjVar.getString(key), jsonObjVar);
+                                Object var = this.scriptEngineVar(jsonObjVar.getString(key), jsonObjVar);
                                 bindings.put(key, var);
                             }
                         }
@@ -1184,6 +1187,7 @@ public class DbUtils {
         }
     }
 
+    //KEY method
     public void scriptEngineExec(JSONArray arrayExec, JSONObject jsonVars) {
         try {
             for (int i = 0; i < arrayExec.size(); i++) {
@@ -1195,6 +1199,8 @@ public class DbUtils {
                 String id_I = jsonStruct.getString("id_I");
                 String structKey = jsonStruct.getString("key");
                 String structVal = jsonStruct.getString("val");
+
+                //Let id_I to fillup all variables and then change by the ExecVars
                 if (!id_I.isEmpty()) {
                     Info info = qt.getMDContent(id_I, "jsonInfo", Info.class);
                     JSONObject jsonInfo = info.getJsonInfo().getJSONObject("objData");
@@ -1254,7 +1260,7 @@ public class DbUtils {
 //                            }
                         }
                         else if (val.startsWith("##")) {
-                            scriptEngineVar(val, jsonVars);
+                            this.scriptEngineVar(val, jsonVars);
                         }
                     }
                     String[] keySplit = key.split("\\.");
@@ -1274,7 +1280,11 @@ public class DbUtils {
                         }
                     }
                 }
+
+                //Finished calculating ALL params
                 System.out.println("jsonParams=" + jsonParams);
+
+                //ALL method must be in com.cresign.timer, else just send out a log etc, addES..
                 if (method.startsWith("com.cresign")) {
                     //调用方法
                     String[] methodSplit = method.split("##");
@@ -1328,7 +1338,7 @@ public class DbUtils {
                             if (varSplit.startsWith("##")) {
                                 String key = varSplit.substring(2);
                                 qt.errPrint("sev", jsonVars.getString(key), jsonVars, varSplit);
-                                Object result = scriptEngineVar(jsonVars.getString(key), jsonVars);
+                                Object result = this.scriptEngineVar(jsonVars.getString(key), jsonVars);
                                 System.out.println("##CC=" + key + ":" + result);
                                 if (qt.toJson(result) != null && qt.toJson(result).getString("cn") != null)
                                 {
@@ -1469,7 +1479,7 @@ public class DbUtils {
                     System.out.println("##F=" + varSplit[0] + "," + varSplit[1] + "," + varSplit[2]);
                     JSONObject jsonResult;
                     if (jsonVars.getJSONObject(varSplit[2]).get("val") instanceof String) {
-                        String result = (String) scriptEngineVar(jsonVars.getJSONObject(varSplit[2]).getString("val"), jsonVars);
+                        String result = (String) this.scriptEngineVar(jsonVars.getJSONObject(varSplit[2]).getString("val"), jsonVars);
                         System.out.println("result=" + result);
                         jsonResult = JSONObject.parseObject(result);
                     } else {
@@ -1727,7 +1737,7 @@ public class DbUtils {
                                 // I am calling myself again here
                                 Object result;
                                 if (jsonVars.getJSONObject(key).get("val") instanceof String) {
-                                    result = scriptEngineVar(jsonVars.getJSONObject(key).getString("val"), jsonVars);
+                                    result = this.scriptEngineVar(jsonVars.getJSONObject(key).getString("val"), jsonVars);
                                 } else {
                                     result = jsonVars.getJSONObject(key).get("val");
                                 }
@@ -1881,7 +1891,7 @@ public class DbUtils {
 //                                if (varSplit.startsWith("##")) {
 //                                    String key = varSplit.substring(2);
 //                                    qt.errPrint("sev", jsonVars.getString(key), jsonVars, varSplit);
-//                                    Object result = scriptEngineVar(jsonVars.getString(key), jsonVars);
+//                                    Object result = this.scriptEngineVar(jsonVars.getString(key), jsonVars);
 //                                    System.out.println("##CC=" + key + ":" + result);
 //                                    sb.append(result);
 //                                } else {
@@ -2008,7 +2018,7 @@ public class DbUtils {
 //                        String varSubstring = var.substring(4);
 //                        String[] varSplit = varSubstring.split("##");
 //                        System.out.println("##F=" + varSplit[0] + "," + varSplit[1] + "," + varSplit[2]);
-//                        String result = (String) scriptEngineVar(jsonVars.getJSONObject(varSplit[2]).get("val"), jsonVars);
+//                        String result = (String) this.scriptEngineVar(jsonVars.getJSONObject(varSplit[2]).get("val"), jsonVars);
 //                        System.out.println("result=" + result);
 //                        JSONObject jsonResult = JSONObject.parseObject(result);
 //                        System.out.println("jsonResult=" + jsonResult);
@@ -2135,7 +2145,7 @@ public class DbUtils {
 //                                    String key = arrayKey[i];
 //                                    System.out.println("key=" + key);
 //                                    // I am calling myself again here
-//                                    Object result = scriptEngineVar(jsonVars.getJSONObject(key).get("val"), jsonVars);
+//                                    Object result = this.scriptEngineVar(jsonVars.getJSONObject(key).get("val"), jsonVars);
 //                                    System.out.println(i + ":" + result);
 //                                    bindings.put(key, result);
 //                                }
@@ -3047,12 +3057,6 @@ public class DbUtils {
         }
     }
 
-//    public Object createAsset() {
-//
-//        return null;
-//    }
-
-
     public void setBulkInsert(List<JSONObject> listBulk, Object obj) {
         JSONObject jsonBulk = qt.setJson("type", "insert",
                 "insert", obj);
@@ -3070,307 +3074,4 @@ public class DbUtils {
         listBulk.add(jsonBulk);
     }
 
-//    public boolean getUserByIdAndInfo(String id_U,JSONObject info){
-//        User user = qt.getMDContent(id_U, "info", User.class);
-//        if (null == user || null == user.getInfo()) {
-//            return false;
-//        }
-//        JSONObject userInfo = JSON.parseObject(JSON.toJSONString(user.getInfo()));
-//        JSONArray keys = JSONArray.parseArray(JSON.toJSONString(info.keySet()));
-//        boolean mongodbUser = true;
-//        for (int i = 0; i < keys.size(); i++) {
-//            if (!userInfo.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
-//                mongodbUser = false;
-//                break;
-//            }
-//        }
-//        JSONObject userLn = qt.getES("lNUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
-//        boolean esLnUser = true;
-//        for (int i = 0; i < keys.size(); i++) {
-//            if (!userLn.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
-//                esLnUser = false;
-//                break;
-//            }
-//        }
-//        JSONObject userLb = qt.getES("lBUser", qt.setESFilt("id_U", id_U)).getJSONObject(0);
-//        boolean esLbUser = true;
-//        for (int i = 0; i < keys.size(); i++) {
-//            if (!userLb.getString(keys.getString(i)).equals(info.getString(keys.getString(i)))) {
-//                esLbUser = false;
-//                break;
-//            }
-//        }
-//        return mongodbUser || esLnUser || esLbUser;
-//    }
-
-
-    /*  Order -> order, =>
-
-    if action, oItem -> action, sumQty, wn2Qtynow
-    if oStock
-    */
-
-//    public void upOrderRelated(Order data, JSONObject listCol) {
-//
-//        JSONArray cardList = data.getOItem().getJSONArray("objCard");
-//
-//        JSONArray oItem = data.getOItem().getJSONArray("objItem");
-//
-//        JSONArray view = data.getView();
-//
-//        // up all card's summary values
-//        for (int i = 0; i < cardList.size(); i++)
-//        {
-//            String card = cardList.getString(i);
-//
-//            switch (card) {
-//                case "oItem":
-//                    // Calculate Summarize keys here
-//                    // summarize all lsbKeys
-//                    Double qtyTotal = 0.0;
-//                    Double priceTotal = 0.0;
-//                    for (int j = 0; j < data.getOItem().getJSONArray("objItem").size(); j++)
-//                    {
-//                        JSONObject objItem = data.getOItem().getJSONArray("objItem").getJSONObject(j);
-//                        qtyTotal = qtyTotal + objItem.getDouble("wn2qtyneed");
-//                        priceTotal = priceTotal + objItem.getDouble("wn2qtyneed") * objItem.getDouble("wn4price");
-//                    }
-//
-//                    // set mdb & listCol
-//                    data.getOItem().put("wn2qty", qtyTotal);
-//                    data.getOItem().put("wn4price", priceTotal);
-//                    listCol.put("wn2qty", qtyTotal);
-//                    listCol.put("wn4price", priceTotal);
-//
-//                    System.out.print("oItem");
-//
-//                    break;
-//                case "action":
-//
-//                    //if card is NULL, init
-//                    if (data.getAction() == null)
-//                    {
-//                        JSONObject obj = new JSONObject();
-//                        obj.put("grpBGroup", new JSONObject());
-//                        obj.put("grpGroup", new JSONObject());
-//                        obj.put("objAction", new JSONArray());
-//                        data.setAction(obj);
-//                    }
-////                    JSONArray savingData = new JSONArray();
-//                    JSONArray actionObj = data.getAction().getJSONArray("objAction");
-//                    JSONArray savingData = new JSONArray();
-//
-//                    Integer counter = 0;
-//
-//                    for (int j = 0; j < oItem.size(); j++)
-//                    {
-//                        String rKey = oItem.getJSONObject(j).getString("rKey");
-//                        Boolean isSet = false;
-//                        for (int k = 0; k < actionObj.size(); k++)
-//                        {
-//                            if (actionObj.getJSONObject(k).getString("rKey").equals(rKey))
-//                            {
-//                                //setup rearrange items by rKey
-//                                savingData.add(qt.cloneObj(actionObj.getJSONObject(k)));
-//                                isSet = true;
-//                                //set index as j (it's not arranged correctly)
-//                                savingData.getJSONObject(j).put("index", j);
-//                            }
-//                            break;
-//                        }
-//
-//                        if (!isSet)
-//                        {
-//                            //need to init objAction here
-//                            OrderAction objAction = new OrderAction(100, 0, 0, 1, "", "", oItem.getJSONObject(j).getString("id_P"),
-//                                    oItem.getJSONObject(j).getString("id_O"),j,oItem.getJSONObject(j).getString("rKey"),
-//                                    0, 0, null, null, null, null, null, oItem.getJSONObject(j).getJSONObject("wrdN"));
-//                            savingData.add(qt.toJson(objAction));
-//                        }
-//
-//                        if (savingData.getJSONObject(j).getInteger("bcdStatus").equals(2))
-//                        {
-//                            counter++;
-//                        }
-//                    }
-//
-//                    // Calculate Summarize keys here
-//                    // summarize all lsbKeys
-//                    data.getAction().put("wn2progress", counter / data.getAction().getJSONArray("objAction").size());
-//
-//                    // set mdb & listCol
-//                    data.getAction().put("objAction", savingData);
-//                    listCol.put("wn2progress", data.getAction().getDouble("wn2progress"));
-//
-//                    System.out.print("action");
-//                    break;
-//                case "oStock":
-//                    //if card is NULL, init
-//                    if (data.getOStock() == null)
-//                    {
-//                        JSONObject obj = new JSONObject();
-//                        obj.put("wn2fin", 0);
-//                        obj.put("objData", new JSONArray());
-//                        data.setOStock(obj);
-//                    }
-//                    JSONArray stockObj = data.getOStock().getJSONArray("objData");
-//                    Double finQty = 0.0;
-//                    JSONArray savingStock = new JSONArray();
-//
-//                    for (int j = 0; j < oItem.size(); j++)
-//                    {
-//                        String rKey = oItem.getJSONObject(j).getString("rKey");
-//                        Boolean isSet = false;
-//                        for (int k = 0; k < stockObj.size(); k++)
-//                        {
-//                            if (stockObj.getJSONObject(k).getString("rKey").equals(rKey))
-//                            {
-//                                //setup rearrange items by rKey
-//                                savingStock.add(qt.cloneObj(stockObj.getJSONObject(k)));
-//                                isSet = true;
-//                                //set index as j (it's not arranged correctly)
-//                                savingStock.getJSONObject(j).put("index", j);
-//                            }
-//                            break;
-//                        }
-//
-//                        if (!isSet)
-//                        {
-//                            //need to init objAction here
-//                            OrderStock objStock = new OrderStock(oItem.getJSONObject(j).getString("id_P"),
-//                                    oItem.getJSONObject(j).getString("rKey"),j, 0.0, 0.0);
-//                            savingStock.add(qt.toJson(objStock));
-//                        }
-//
-//                        finQty = finQty + savingStock.getJSONObject(j).getDouble("wn2qtymade");
-//                    }
-//
-//                    // set mdb & listCol
-//                    data.getOStock().put("objData", savingStock);
-//                    data.getOStock().put("wn2fin", finQty);
-//                    listCol.put("wn2fin", finQty);
-//
-//                    System.out.print("oStock");
-//                    break;
-//            }
-//
-//            System.out.println("...2");
-//
-//            if(!view.contains(card)) {
-//                view.add(card);
-//            }
-//        }
-//
-//
-//
-//     //   qt.setMDContent(data.getId(), savingData, Order.class);
-//      //  qt.setES(listType,qt.setESFilt("id", data.getId()), listCol);
-//
-//    }
-
-//    public ApiResponse tempa(String id_U, String id_C, String id, String listType, String grp) {
-//        if ("lSProd".equals(listType) || "lBProd".equals(listType)) {
-//            Prod prod = qt.getMDContent(id, "", Prod.class);
-//            JSONObject jsonCopy = copyUtil(id_U, id, id_C, grp, listType);
-//            JSONObject listProd = jsonCopy.getJSONObject("es");
-//            String copyId = jsonCopy.getJSONObject("mongo").getString("id");
-//            JSONObject mapResult = this.tempaCOUPA(prod.getTempa(), listProd, listType);
-//
-//            qt.setMDContent(copyId, mapResult.getJSONObject("mongo"), Prod.class);
-//            qt.errPrint("mapres", mapResult);
-//            qt.setES(listType, qt.setESFilt("id_P", copyId), mapResult.getJSONObject("es"));
-//            return retResult.ok(CodeEnum.OK.getCode(), null);
-//        }
-//        else if ("lSOrder".equals(listType) || "lBOrder".equals(listType)) {
-//            Order order = qt.getMDContent(id, "", Order.class);
-//            JSONObject jsonCopy = copyUtil(id_U, id, id_C, grp, listType);
-//            JSONObject listOrder = jsonCopy.getJSONObject("es");
-//            String copyId = jsonCopy.getJSONObject("mongo").getString("id");
-//            JSONObject mapResult = this.tempaCOUPA(order.getTempa(), listOrder, listType);
-//
-//            qt.setMDContent(copyId, mapResult.getJSONObject("mongo"), Order.class);
-//            qt.setES("lSBOrder", qt.setESFilt("id_O", copyId), mapResult.getJSONObject("es"));
-//            return retResult.ok(CodeEnum.OK.getCode(), null);
-//        }
-////        else if ("lSAsset".equals(listType) || "lBAsset".equals(listType)) {
-////            Asset asset = qt.getMDContent(id, "", Asset.class);
-////            JSONObject jsonCopy = copyUtil(id_U, id, id_C, grp, listType);
-////            JSONObject listOrder = jsonCopy.getJSONObject("es");
-////            String copyId = jsonCopy.getJSONObject("mongo").getString("id");
-////            JSONObject mapResult = this.tempaCOUPA(asset.getTempa(), listOrder, listType);
-////
-////            qt.setMDContent(copyId, mapResult.getJSONObject("mongo"), Order.class);
-////            qt.setES(listType, qt.setESFilt("id_A", copyId), mapResult.getJSONObject("es"));
-////            return retResult.ok(CodeEnum.OK.getCode(), null);
-////        }
-//        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_FOUND.getCode(), null);
-//    }
-//
-//    private JSONObject tempaCOUPA(JSONObject jsonTempa, JSONObject jsonEs, String listType) {
-//        JSONArray arrayData = jsonTempa.getJSONArray("objData");
-//        JSONObject jsonVar = jsonTempa.getJSONObject("objVar");
-//        jsonEs.remove("grpT");
-//        Init init = qt.getInitData("cn");
-//
-//        JSONObject jsonCol = init.getCol().getJSONObject(listType);
-////        Update update = new Update();
-//        JSONObject upKevVal = new JSONObject();
-//        for (int i = 0; i < arrayData.size(); i++) {
-//            JSONObject jsonData = arrayData.getJSONObject(i);
-//            String key = jsonData.getString("key");
-//            JSONArray arrayIndex = jsonData.getJSONArray("index");
-//
-//            /////////////*************////////////
-//            Object value = dbu.scriptEngineVar(jsonData.getString("value"), jsonVar);
-//            jsonData.put("value", value);
-//            qt.errPrint("key+", jsonData, key, value);
-//
-//            if (key.equals("info.grp")) {
-//                JSONArray arrayGrpTarget = jsonTempa.getJSONArray("grpT");
-//                if (!arrayGrpTarget.contains(key)) {
-//                    throw new ErrorResponseException(HttpStatus.OK, FileEnum.PROD_NOT_FOUND.getCode(), null); //GRP_NOT_MATCH
-//                }
-//            }
-//
-//            if (arrayIndex == null) {
-////                update.set(key, value);
-//
-//                String[] keySplit = key.split("\\.");
-//                String colKey = keySplit[keySplit.length - 1];
-//
-//                if (colKey.startsWith("wrd"))
-//                {
-//                    key = key + ".cn";
-//                    qt.upJson(upKevVal, key, value);
-//                    if (jsonCol.getJSONObject(colKey) != null) {
-//                        jsonEs.put(colKey, qt.setJson("cn", value));
-//                    }
-//
-//                } else {
-//                    qt.upJson(upKevVal, key, value);
-//                    if (jsonCol.getJSONObject(colKey) != null) {
-//                        jsonEs.put(colKey, value);
-//                    }
-//                }
-//
-//            } else {
-//                int keyIndexOf = key.indexOf("$");
-//                String keyPrefix = key.substring(0, keyIndexOf);
-//                String keySuffix = key.substring(keyIndexOf + 1, key.length());
-//                if (keySuffix.startsWith("wrd"))
-//                {
-//                    keySuffix = keySuffix + ".cn";
-//                }
-//                for (int j = 0; j < arrayIndex.size(); j++) {
-//                    Integer index = arrayIndex.getInteger(j);
-//                    qt.upJson(upKevVal, keyPrefix +"."+ index+ "." + keySuffix, value);
-//                }
-//            }
-//        }
-////        Map<String, Object> mapResult = new HashMap<>();
-//        JSONObject mapResult = new JSONObject();
-//        mapResult.put("mongo", upKevVal);
-//        mapResult.put("es", jsonEs);
-//        return mapResult;
-//    }
 }

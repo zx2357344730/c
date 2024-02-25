@@ -2946,10 +2946,10 @@ public class TimeZj {
 //            } else {
 //
 //            }
-            Long teDur = oDate.getLong("teDur");
+            Long wntDur = oDate.getLong("wntDur");
             Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
             // 存储任务总时间
-            long taskTotalTime = (long)(teDur * wn2qtyneed);
+            long taskTotalTime = (long)(wntDur * wn2qtyneed);
             long teDurTotal;
             // 计算总时间
             if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {

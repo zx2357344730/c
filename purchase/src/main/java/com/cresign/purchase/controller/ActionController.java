@@ -158,7 +158,8 @@ public class ActionController {
             JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
             return actionService.cancelOrder(
                     tokData.getString("id_C"),
-                    reqJson.getString("id_O"));
+                    reqJson.getString("id_O"),
+                    reqJson.getInteger("lST"));
         } catch (Exception e) {
             return getUserToken.err(reqJson, "ActionController.cancelOrder", e);
         }
@@ -263,7 +264,7 @@ public class ActionController {
 
     @SecurityParameter
     @PostMapping("/v1/getRefOPList")
-    public ApiResponse getRefOPList(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse getRefOPList(@RequestBody JSONObject reqJson) {
         try {
             JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
             return actionService.getRefOPList(

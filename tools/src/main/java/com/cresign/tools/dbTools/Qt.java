@@ -70,7 +70,20 @@ public class Qt {
     @Autowired
     private QtThread qtThread;
 
-    public JSONObject initData = new JSONObject();
+    private JSONObject initData = new JSONObject();
+
+    private JSONObject idJson = this.setJson(
+            "newComp" , "65d9dcbe2b82a159561d52ad",
+            "newUser" , "65d9dccc2b82a159561d52ae",
+            "newSpace" , "65d9dde12b82a159561d52b0",
+            "compModule" , "6563344c3438734bdee926e1",
+            "exchangeRate" , "656342e63438734bdee926e2",
+            "newFCOrder" , "65473a1278dd5b51122b17ab",
+            "pdfFormat" , "656345f53438734bdee926e4",
+            "flowInit" , "65d9dd362b82a159561d52af",
+            "initCn" , "65d9da9f2b82a159561d52ab",
+            "initJava" , "65d9db342b82a159561d52ac",
+            "initDev" , "65d9e04debc15a0bd0f8be91");
 
     public static final String appId = "KVB0qQq0fRArupojoL4WM9";
 
@@ -81,7 +94,7 @@ public class Qt {
     //Other - done: toJson, jsonTo, list2Map, getConfig, filterBuilder
     //Other - need: getRecentLog, judgeComp, chkUnique,, checkOrder, updateSize
 
-    public static String GetObjectId() {
+    public String GetObjectId() {
         return new ObjectId().toString();
     }
 
@@ -179,23 +192,70 @@ public class Qt {
     {
         if (initData.get("cn_java") == null)
         {
-            InitJava result = this.getMDContent("cn_java", "", InitJava.class);
-            initData.put("cn_java", result);
-            return result;
+            return this.jsonTo(this.setupInit("initJava", "cn_java"), InitJava.class);
+        } else {
+            String ver = this.getRDSetStr("InitData", "cn_java");
+
+            if (ver.equals(initData.getJSONObject("cn_java").getInteger("ver").toString()))
+            {
+                return this.jsonTo(initData.get("cn_java"), InitJava.class);
+            } else {
+                return this.jsonTo(this.setupInit("initJava", "cn_java"), InitJava.class);
+            }
         }
-        return this.jsonTo(initData.get("cn_java"), InitJava.class);
     }
+
+    private JSONObject setupInit(String key, String setKey) // key = initJava etc idJson's key, setKey = cn_java etc lang
+    {
+        Info resultObj = this.getMDContent(idJson.getString(key), Arrays.asList("tvs","jsonInfo"), Info.class);
+        resultObj.getJsonInfo().getJSONObject("objData").put("ver", resultObj.getTvs());
+        initData.put(setKey, resultObj.getJsonInfo().getJSONObject("objData"));
+        this.setRDSet("InitData", setKey, resultObj.getTvs(),7776000L);
+        return resultObj.getJsonInfo().getJSONObject("objData");
+    }
+
     public Init getInitData(String lang)
     {
         if (initData.get(lang) == null)
         {
-            //get init, then save to initData
-            Init result = this.getMDContent(lang, "", Init.class);
-            initData.put(lang, result);
-            return result;
+            return this.jsonTo(this.setupInit("initCn", lang), Init.class);
+        } else {
+            String ver = this.getRDSetStr("InitData", lang);
+
+            if (ver.equals(initData.getJSONObject(lang).getInteger("ver").toString()))
+            {
+                return this.jsonTo(initData.get(lang), Init.class);
+            } else {
+                return this.jsonTo(this.setupInit("initCn", lang), Init.class);
+            }
         }
-        return this.jsonTo(initData.get(lang), Init.class);
     }
+
+
+//    public Init getInitData(String lang)
+//    {
+//        if (initData.get(lang) == null)
+//        {
+//            //get init, then save to initData
+//            Init result = this.getMDContent(lang, "", Init.class);
+//            initData.put(lang, result);
+//            this.setRDSet("InitData", lang, result.getVer(),-1L);
+//            return result;
+//        } else {
+//            String ver = this.getRDSet("InitData", lang).toString();
+//
+//            if (ver.equals(initData.getJSONObject(lang).getInteger("ver").toString()))
+//            {
+//                return this.jsonTo(initData.get(lang), Init.class);
+//            } else {
+//                Init result = this.getMDContent(lang, "", Init.class);
+//                initData.put(lang, result);
+//                this.setRDSet("InitData", lang, result.getVer(),-1L);
+//                return result;
+//            }
+//        }
+////        return this.jsonTo(initData.get(lang), Init.class);
+//    }
 
     public JSONObject getInitFormat(String key, String subKey)
     {
@@ -564,8 +624,8 @@ public class Qt {
 
     public void errPrint(String title, Exception e, Object... vars)
     {
-//
-//        try {
+
+        try {
 //            System.out.println("****[" + title + "]****");
 //            for (Object item : vars) {
 //                if (item == null) {
@@ -574,7 +634,16 @@ public class Qt {
 //                    System.out.println(this.toJArray(item));
 //                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
 //                        item.getClass().toString().startsWith("class java.util")) {
+//
 //                    System.out.println(this.toJson(item));
+//
+//                    JSONObject looper = this.toJson(item);
+//                    looper.forEach((k, v) ->{
+//                        System.out.println(k + ":" + v);
+//                    });
+//                    System.out.println("----------------------------------------");
+//
+//
 //                } else {
 //                    System.out.println(item);
 //                }
@@ -583,11 +652,11 @@ public class Qt {
 //
 //            if (e != null)
 //                e.printStackTrace();
-//        }
-//        catch (Exception ex)
-//        {
-//            System.out.println("****" + title + " is NULL ****");
-//        }
+        }
+        catch (Exception ex)
+        {
+            System.out.println("****" + title + " is NULL ****");
+        }
     }
 
     public void errPrint(String title, Object... vars)
@@ -1349,7 +1418,7 @@ public class Qt {
             data.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 
             request.source(data, XContentType.JSON);
-            client.index(request, RequestOptions.DEFAULT);
+            client.index(request, RequestOptions.DEFAULT); //adding ES
         } catch (IOException e) {
             e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
@@ -1768,7 +1837,7 @@ public class Qt {
             if (fileSize > 0 && fileSize + jsonCapacity.getLong("used") > jsonCapacity.getLong("total")) {
                 throw new ErrorResponseException(HttpStatus.OK, ToolEnum.POWER_NOT_ENOUGH.getCode(), "");
             }
-            JSONObject jsonUpdate = setJson("powerup.capacity.used", fileSize);
+            JSONObject jsonUpdate = setJson("powerup.capacity.used", fileSize + jsonCapacity.getLong("used"));
             incMDContent(asset.getId(), jsonUpdate, Asset.class);
         }
 

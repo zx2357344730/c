@@ -61,8 +61,10 @@ public class InitServiceImpl implements InitService {
 
         InitJava init = qt.getInitData();
         Boolean isDev = false;
+        String key = id_U + "-1";
+        System.out.println("init"+init);
 
-        if (init.getDevList().contains(id_U))
+        if (init.getIpList().getLong(key) != null)
         {
             isDev = true;
         }

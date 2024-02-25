@@ -43,6 +43,8 @@ public class Ws {
     @Autowired
     private QtThread qtThread;
 
+
+
     /**
      * 直接发送MQ信息方法
      * 1。 receive logFlow only
@@ -52,9 +54,12 @@ public class Ws {
      * @date 创建时间: 2023/4/15
      * @ver 版本号: 1.0.0
      */
-    //TODO ZJ 其实这个
     public void sendMQ(String mqKey,LogFlow log){
-        rocketMQTemplate.convertAndSend(mqKey, JSON.toJSONString(log));
+        try {
+            rocketMQTemplate.convertAndSend(mqKey, JSON.toJSONString(log));
+        } catch (Exception e) {
+            System.out.print("sendMQ Error");
+        }
     }
 
     /**
@@ -79,7 +84,11 @@ public class Ws {
     public void sendESOnly(LogFlow log){
         log.setId_Us(null);
         log.setId_APPs(null);
+        try {
         rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
+        } catch (Exception e) {
+            System.out.print("sendMQ Error");
+        }
     }
 
     /**

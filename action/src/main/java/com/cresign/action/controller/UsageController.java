@@ -85,7 +85,8 @@ public class UsageController {
         try {
             JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
             return usageService.getFav(
-                    tokData.getString("id_U")
+                    tokData.getString("id_U"),
+                    json.getString("type")
             );
         } catch (Exception e) {
             return getUserToken.err(json, "UsageController.getFav", e);
@@ -126,7 +127,7 @@ public class UsageController {
 
     @SecurityParameter
     @PostMapping("/v1/appointTask")
-    public ApiResponse appointTask(@RequestBody JSONObject json) throws IOException {
+    public ApiResponse appointTask(@RequestBody JSONObject json) {
         try {
             JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
             return usageService.appointTask(
@@ -142,12 +143,12 @@ public class UsageController {
 
     @SecurityParameter
     @PostMapping("/v1/setPowerup")
-    public ApiResponse setPowerup(@RequestBody JSONObject json) throws IOException {
+    public ApiResponse setPowerup(@RequestBody JSONObject json) {
         try {
             JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
             return usageService.setPowerup(
-                    tokData.getString("id_C"),
-                    json.getJSONObject("capacity")
+                    json.getString("id_C"),
+                    json.getJSONObject("powerup")
             );
         } catch (Exception e) {
             return getUserToken.err(json, "UsageController.setPowerup", e);
@@ -156,12 +157,11 @@ public class UsageController {
 
     @SecurityParameter
     @PostMapping("/v1/getPowerup")
-    public ApiResponse getPowerup(@RequestBody JSONObject json) throws IOException {
+    public ApiResponse getPowerup(@RequestBody JSONObject json) {
         try {
             JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
             return usageService.getPowerup(
-                    tokData.getString("id_C"),
-                    json.getString("ref")
+                    json.getString("id_C")
             );
         } catch (Exception e) {
             return getUserToken.err(json, "UsageController.getPowerup", e);
@@ -245,6 +245,16 @@ public class UsageController {
         } catch (Exception e) {
             return getUserToken.err(json, "UsageController.notify", e);
         }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/updateIp")
+    public ApiResponse updateIp(@RequestBody JSONObject json) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        return usageService.updateIp(
+                json.getString("ip"),
+                tokData.getString("id_U")
+        );
     }
 
 }

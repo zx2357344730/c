@@ -55,7 +55,7 @@ public class lBUser implements Serializable {
 
     private JSONObject wrdN;
 
-    private JSONObject wrdNCB; // need delete
+    private JSONObject wrdNCB;
 
     private String grpU;
 

@@ -393,9 +393,9 @@ public class ZjTestServiceImpl implements ZjTestService {
     public ApiResponse shareSave(JSONObject data) {
         /*
         data:
-        id_U, tmk, tdur (86400L), wrdNU, wn0open, zcndesc描述, wrdN id_X, listType
+        id_U, tmk, wntDur (86400L), wrdNU, wn0open, zcndesc描述, wrdN id_X, listType
          */
-        Long tdur = data.getLong("tdur");
+        Long wntDur = data.getLong("wntDur");
         UUID uuid = UUID.randomUUID();
         System.out.println("输出:");
         System.out.println(uuid);
@@ -404,13 +404,13 @@ public class ZjTestServiceImpl implements ZjTestService {
         System.out.println(shareId);
 //        System.out.println(JSON.toJSONString(jsonObject));
         boolean isSetRd = true;
-        if (null == tdur) {
-            tdur = (long)(86400*2);
-        } else if (tdur == -1) {
+        if (null == wntDur) {
+            wntDur = (long)(86400*2);
+        } else if (wntDur == -1) {
             isSetRd = false;
         }
         if (isSetRd) {
-            qt.setRDSet(sharePrefix,shareId,data,tdur);
+            qt.setRDSet(sharePrefix,shareId,data,wntDur);
         } else {
             shareId+="_ES";
             data.put("shareId",shareId);
@@ -1086,19 +1086,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(), result);
     }
 
-    @Override
-    public ApiResponse delLBUser(String id_U,String id_C) {
-        qt.delES("lBUser",qt.setESFilt("id_U",id_U,"id_C",id_C));
-        User user = qt.getMDContent(id_U, "rolex", User.class);
-        if (user == null || null == user.getRolex()) {
-            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), null);
-        }
-        JSONObject rolex = user.getRolex();
-        JSONObject objComp = rolex.getJSONObject("objComp");
-        objComp.remove(id_C);
-        qt.setMDContent(id_U,qt.setJson("rolex"), User.class);
-        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
-    }
+
 
     @Override
     public ApiResponse testEx(String id_C,String fileName,String id_U
@@ -1209,7 +1197,7 @@ public class ZjTestServiceImpl implements ZjTestService {
                         } else {
                             switch (field) {
                                 // 总要求上班时间
-                                case "teDur":
+                                case "wntDur":
                                 // 总上班时间
                                 case "taAll":
                                 // 普通上班时间
@@ -1973,12 +1961,12 @@ public class ZjTestServiceImpl implements ZjTestService {
      * 修改指定产品的价格，单人单件用时，准备时间，并且修改所有用到的part
      * @param id_P  需要修改的产品
      * @param wn4pr 产品新的价格
-     * @param teDur 产品单人单件用时
-     * @param tePrep    准备时间
+     * @param wntDur 产品单人单件用时
+     * @param wntPrep    准备时间
      * @return  处理结果
      */
     @Override
-    public ApiResponse updatePartAll(String id_P,double wn4pr,long teDur,long tePrep) {
+    public ApiResponse updatePartAll(String id_P,double wn4pr,long wntDur,long wntPrep) {
         boolean isLBProd = true;
         boolean isLSProd = true;
         JSONArray forProd = new JSONArray();
@@ -2057,8 +2045,8 @@ public class ZjTestServiceImpl implements ZjTestService {
                     // 更新父产品指定位置的当前产品信息
                     JSONObject itemIndex = objItem.getJSONObject(index);
                     itemIndex.put("wn4price",wn4pr);
-                    itemIndex.put("teDur",teDur);
-                    itemIndex.put("tePrep",tePrep);
+                    itemIndex.put("wntDur",wntDur);
+                    itemIndex.put("wntPrep",wntPrep);
                     // 更新mongodb
                     qt.setMDContent(id_PF,qt.setJson("part.objItem."+index,itemIndex), Prod.class);
                 }
@@ -2169,11 +2157,11 @@ public class ZjTestServiceImpl implements ZjTestService {
                     if (null != objItem) {
                         for (int j = 0; j < objItem.size(); j++) {
                             JSONObject item = objItem.getJSONObject(j);
-                            if (!item.containsKey("teDur")) {
-                                item.put("teDur",0);
+                            if (!item.containsKey("wntDur")) {
+                                item.put("wntDur",0);
                             }
-                            if (!item.containsKey("tePrep")) {
-                                item.put("tePrep",0);
+                            if (!item.containsKey("wntPrep")) {
+                                item.put("wntPrep",0);
                             }
                             if (!item.containsKey("wn4price")) {
                                 item.put("wn4price",0);
@@ -2362,26 +2350,26 @@ public class ZjTestServiceImpl implements ZjTestService {
         }
         JSONObject part = prod.getPart();
         JSONArray objItem = part.getJSONArray("objItem");
-        long teDur = 0;
-        long tePrep = 0;
+        long wntDur = 0;
+        long wntPrep = 0;
         for (int i = 0; i < objItem.size(); i++) {
             JSONObject item = objItem.getJSONObject(i);
             int bmdpt = item.getInteger("bmdpt");
             String id_PSon = item.getString("id_P");
             if (bmdpt == 2) {
                 long[] sonPart = getSonPart(id_PSon);
-                teDur += sonPart[0];
-                tePrep += sonPart[1];
-                item.put("teDur",0);
-                item.put("tePrep",sonPart[0]+sonPart[1]);
+                wntDur += sonPart[0];
+                wntPrep += sonPart[1];
+                item.put("wntDur",0);
+                item.put("wntPrep",sonPart[0]+sonPart[1]);
                 objItem.set(i,item);
             } else {
-                teDur+=item.getLong("teDur");
-                tePrep+=item.getLong("tePrep");
+                wntDur+=item.getLong("wntDur");
+                wntPrep+=item.getLong("wntPrep");
             }
         }
-        result[0] = teDur;
-        result[1] = tePrep;
+        result[0] = wntDur;
+        result[1] = wntPrep;
         qt.setMDContent(id_P,qt.setJson("part.objItem",objItem), Prod.class);
         return result;
     }

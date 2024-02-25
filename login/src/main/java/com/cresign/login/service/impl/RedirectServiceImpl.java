@@ -73,7 +73,7 @@ public class RedirectServiceImpl implements RedirectService {
         // 添加基础信息到redis
         qt.putRDHashMany("scancode_log", token, qt.setJson("id_C", id_C, "tmk"
                 ,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()),
-                "tdur", "300","id_U",id_U), 300L);
+                "wntDur", "300","id_U",id_U), 300L);
         // 拼接二维码路径
         String url = HTTP_LOG + token;
         System.out.println(token);
@@ -162,7 +162,9 @@ public class RedirectServiceImpl implements RedirectService {
                 String code_token = qrShareCode.getString("token");
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                 if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_CODE_IS_EXIT.getCode(), code_token);
+                    String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token;
+                    return retResult.ok(CodeEnum.OK.getCode(), url);
+//                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_CODE_IS_EXIST.getCode(), code_token);
                 }
             }
         }
@@ -236,7 +238,7 @@ public class RedirectServiceImpl implements RedirectService {
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                 if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
                     throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
+PROD_CODE_IS_EXIST.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
             }
         }
@@ -311,8 +313,10 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
                 String code_token = qrShareCode.getString("token");
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                 if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
+                    String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token;
+                    return retResult.ok(CodeEnum.OK.getCode(), url);
+//                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+//PROD_CODE_IS_EXIST.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
             }
         }
@@ -384,8 +388,10 @@ PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD
                 String code_token = qrShareCode.getString("token");
 //                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
                 if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-PROD_CODE_IS_EXIT.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
+                    String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token;
+                    return retResult.ok(CodeEnum.OK.getCode(), url);
+//                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+//PROD_CODE_IS_EXIST.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
                 }
             }
         }

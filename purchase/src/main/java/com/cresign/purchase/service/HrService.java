@@ -17,4 +17,6 @@ public interface HrService {
 
     ApiResponse statisticsChKinMonth(String id_C,String id_U, int year,JSONArray months);
 
+    ApiResponse delLBUser(String id_U,String id_C);
+
 }

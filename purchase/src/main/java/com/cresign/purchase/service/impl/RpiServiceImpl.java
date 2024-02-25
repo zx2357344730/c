@@ -4,12 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.purchase.client.WSClient;
-import com.cresign.purchase.common.ChatEnum;
 import com.cresign.purchase.service.RpiService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
@@ -99,7 +99,7 @@ public class RpiServiceImpl implements RpiService {
                 JSONObject rnameData = rnames.getJSONObject(rname);
                 // 判断信息为空，抛出异常
                 if (null == rnameData) {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_RPI_R_NAME_K.getCode(), "该公司rpi卡片没有对应的rname，请新增");
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_T_DATA_NO.getCode(), "该公司rpi卡片没有对应的rname，请新增");
                 }
                 // 删除对应的ranme信息
                 pinfo.remove(rname);
@@ -134,7 +134,7 @@ public class RpiServiceImpl implements RpiService {
             } else {
                 // 否则输出异常信息
                 if (statusInside == 5) {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_X_NO.getCode(), "rpi卡片异常-rpi-基础信息为空");
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi卡片异常-rpi-基础信息为空");
                 } else {
                     return errResult(statusInside);
                 }
@@ -145,13 +145,13 @@ public class RpiServiceImpl implements RpiService {
         }
 //        String s = redisTemplate0.opsForValue().get(PI + rname);
 //        if (null == s || "".equals(s)) {
-//            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_X_K.getCode(), "机器信息为空，操作失败");
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PI_X_K.getCode(), "机器信息为空，操作失败");
 //        } else {
 //            if (id_C.equals(s)) {
 //                redisTemplate0.opsForValue().set(PI + rname,"");
 //                return retResult.ok(CodeEnum.OK.getCode(), "机器解绑公司成功");
 //            } else {
-//                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_B_NO.getCode(), "该机器不属于你们公司，操作失败");
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PI_B_NO.getCode(), "该机器不属于你们公司，操作失败");
 //            }
 //        }
     }
@@ -182,7 +182,7 @@ public class RpiServiceImpl implements RpiService {
                 // 调用方法
                 return rpiCodeCore(id_C,rname);
             } else {
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_B_BIND.getCode(), "机器已经被绑定");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_T_DATA_NO.getCode(), "机器已经被绑定");
             }
         }
     }
@@ -210,7 +210,7 @@ public class RpiServiceImpl implements RpiService {
             JSONObject rnameData = rnames.getJSONObject(rname);
             // 判断信息为空，抛出异常
             if (null == rnameData) {
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_RPI_R_NAME_K.getCode(), "该公司rpi卡片没有对应的rname，请新增");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_T_DATA_NO.getCode(), "该公司rpi卡片没有对应的rname，请新增");
             }
             // 定义存储树莓派的所有gpio信息
             JSONArray resultArr = new JSONArray();
@@ -285,7 +285,7 @@ public class RpiServiceImpl implements RpiService {
 //        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
         String gpioDataStr = qt.getRDSetStr(PI_Q,PI_GPIO_H+token);
         if (null == gpioDataStr) {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
 //        String id_C = can.getString("id_C");
         // 转换为JSON对象
@@ -346,7 +346,7 @@ public class RpiServiceImpl implements RpiService {
 //        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
         String gpioDataStr = qt.getRDSetStr(PI_Q,PI_GPIO_H+token);
         if (null == gpioDataStr) {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
         // 转换为JSON对象
         JSONObject gpioData = JSON.parseObject(gpioDataStr);
@@ -421,7 +421,7 @@ public class RpiServiceImpl implements RpiService {
 //        String gpioDataStr = redisTemplate0.opsForValue().get(PI_GPIO + token);
         String gpioDataStr = qt.getRDSetStr(PI_Q,PI_GPIO_H+token);
         if (null == gpioDataStr) {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_T_DATA_NO.getCode(), "rpi的token数据不存在");
         }
         // 转换为JSON对象
         JSONObject gpioData = JSON.parseObject(gpioDataStr);
@@ -502,9 +502,9 @@ public class RpiServiceImpl implements RpiService {
     private ApiResponse errResultPi(int status){
         // 判断状态，并输出对应错误信息
         if (status == 1) {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_X_K.getCode(), "机器信息为空，操作失败");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_T_DATA_NO.getCode(), "机器信息为空，操作失败");
         } else {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PI_B_NO.getCode(), "该机器不属于你们公司，操作失败");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_T_DATA_NO.getCode(), "该机器不属于你们公司，操作失败");
         }
     }
 
@@ -520,15 +520,15 @@ public class RpiServiceImpl implements RpiService {
         // 判断状态并返回对应的错误信息
         switch (status) {
             case 1:
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET_ID.getCode(), "该公司没有assetId");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_NO_ASSET_ID.getCode(), "该公司没有assetId");
             case 2:
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET.getCode(), "该公司没有asset");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_NO_ASSET.getCode(), "该公司没有asset");
             case 3:
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_RPI_K.getCode(), "该公司没有rpi卡片");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_T_DATA_NO.getCode(), "该公司没有rpi卡片");
             case 4:
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_RPI_K.getCode(), "该公司rpi卡片异常");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_K.getCode(), "该公司rpi卡片异常");
             default:
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_WZ.getCode(), "接口未知异常");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_RPI_T_DATA_NO.getCode(), "接口未知异常");
         }
     }
 

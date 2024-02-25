@@ -5,16 +5,18 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.service.UsageService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
+import com.cresign.tools.dbTools.CosUpload;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
-import com.cresign.tools.pojo.po.Asset;
-import com.cresign.tools.pojo.po.LogFlow;
-import com.cresign.tools.pojo.po.Order;
-import com.cresign.tools.pojo.po.User;
+import com.cresign.tools.enumeration.ErrEnum;
+import com.cresign.tools.exception.ErrorResponseException;
+import com.cresign.tools.pojo.po.*;
+import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -40,17 +42,26 @@ public class UsageServiceImpl implements UsageService {
     private Ws ws;
 
     @Autowired
+    private CosUpload cos;
+
+
+    @Autowired
     private RetResult retResult;
-
-
-    //TODO KEV:  save oItem into fav by: id_O, index to ALL arrUA, content is from FE, need to check and fix
 
     @Override
     public ApiResponse setFav(String id_U, String id_C, JSONObject content) {
         qt.pushMDContent(id_U, "fav.objFav", content, User.class);
         String id_O = content.getString("id_O");
         Integer index = content.getInteger("index");
-        qt.pushMDContent(id_O, "action.objAction." + index + ".arrUA", id_U, Order.class);
+//        qt.pushMDContent(id_O, "action.objAction." + index + ".arrUA", id_U, Order.class);
+
+        LogFlow log = new LogFlow();
+        log.setSysLog(id_C, "mut_fav", "更新我的收藏", 3, qt.setJson("cn", "更新我的收藏"));
+        log.setId_Us(qt.setArray(id_U));
+        log.setData(qt.setJson("type", "objFav"));
+        ws.sendWSDirect(log);
+
+
         return retResult.ok(CodeEnum.OK.getCode(), null);
     }
 
@@ -61,36 +72,69 @@ public class UsageServiceImpl implements UsageService {
         JSONObject content = qt.setJson("id", id, "id_C", id_C, "listType", listType,
                 "grp", grp, "pic", pic, "wrdN", wrdN);
         qt.pushMDContent(id_U, "fav.objInfo", content, User.class);
+
+
+        LogFlow log = new LogFlow();
+        log.setSysLog(id_C, "mut_fav", "更新我的收藏", 3, qt.setJson("cn", "更新我的收藏"));
+        log.setId_Us(qt.setArray(id_U));
+        log.setData(qt.setJson("type", "objInfo"));
+        ws.sendWSDirect(log);
+
         return retResult.ok(CodeEnum.OK.getCode(), null);
     }
 
 
     @Override
-    public ApiResponse getFav(String id_U) {
+    public ApiResponse getFav(String id_U, String type) {
+        // 5 types now: objFav, objInfo, objCopy, objFile, objLog(for my notifications)
+
         User user = qt.getMDContent(id_U, "fav", User.class);
         //All new user must have fav and cookiex card, but it may not exists for old users
         if (user.getFav() == null)
         {
             // init if null
-            JSONObject initFav = qt.setJson("objFav", new JSONArray(), "objInfo", new JSONArray());
+            JSONObject initFav = qt.setJson(
+                    "objFav", new JSONArray(), "objInfo", new JSONArray(),
+                    "objCopy", new JSONArray(), "objFile", new JSONArray(),
+                    "objLog", new JSONArray());
             qt.setMDContent(id_U, qt.setJson("fav", initFav), User.class);
             user.setFav(initFav);
         }
         if (user.getFav().getJSONArray("objInfo") == null)
         {
             // init if null
-            JSONObject initFav = qt.setJson("objInfo", new JSONArray());
-            qt.setMDContent(id_U, qt.setJson("fav.objInfo", initFav), User.class);
-            user.getFav().put("objInfo", initFav);
+            qt.setMDContent(id_U, qt.setJson("fav.objInfo", new JSONArray()), User.class);
+            user.getFav().put("objInfo", new JSONArray());
         }
         if (user.getFav().getJSONArray("objFav") == null)
         {  // init if null
-            JSONObject initFav = qt.setJson("objFav", new JSONArray());
-            qt.setMDContent(id_U, qt.setJson("fav.objFav", initFav), User.class);
-            user.getFav().put("objFav", initFav);
+            qt.setMDContent(id_U, qt.setJson("fav.objFav", new JSONArray()), User.class);
+            user.getFav().put("objFav", new JSONArray());
+        }
+        if (user.getFav().getJSONArray("objCopy") == null)
+        {  // init if null
+            qt.setMDContent(id_U, qt.setJson("fav.objCopy", new JSONArray()), User.class);
+            user.getFav().put("objCopy", new JSONArray());
+        }
+        if (user.getFav().getJSONArray("objFile") == null)
+        {  // init if null
+            qt.setMDContent(id_U, qt.setJson("fav.objFile", new JSONArray()), User.class);
+            user.getFav().put("objFile", new JSONArray());
+        }
+
+        if (user.getFav().getJSONArray("objLog") == null)
+        {  // init if null
+            qt.setMDContent(id_U, qt.setJson("fav.objLog", new JSONArray()), User.class);
+            user.getFav().put("objLog", new JSONArray());
+        }
+
+        JSONObject result = user.getFav();
+        if (!type.equals(""))
+        {
+            result = user.getFav().getJSONObject(type);
         }
         // return all those I init or already in user.getFav
-        return retResult.ok(CodeEnum.OK.getCode(), user.getFav());
+        return retResult.ok(CodeEnum.OK.getCode(), result);
     }
 
     // del Fav from oItem objFav
@@ -98,11 +142,11 @@ public class UsageServiceImpl implements UsageService {
     public ApiResponse delFav(String id_U, String id_O, Integer index, String id, String id_FS) {
         JSONObject jsonFav = qt.setJson("id_O", id_O, "index", index, "id", id, "id_FS", id_FS);
         qt.pullMDContent(id_U, "fav.objFav", jsonFav, User.class);
-        try {
-            qt.pullMDContent(id_O, "action.objAction." + index + ".arrUA", id_U, Order.class);
-        } catch (Exception e) {
-            return retResult.ok(CodeEnum.OK.getCode(), "任务单已删除");
-        }
+//        try {
+//            qt.pullMDContent(id_O, "action.objAction." + index + ".arrUA", id_U, Order.class);
+//        } catch (Exception e) {
+//            return retResult.ok(CodeEnum.OK.getCode(), "任务单已删除");
+//        }
         return retResult.ok(CodeEnum.OK.getCode(), "");
     }
 
@@ -138,31 +182,75 @@ public class UsageServiceImpl implements UsageService {
                         oItem.getString("grp"), "", id_O, index, id_C, "", "", "", "请处理该任务", 5, qt.setJson("cn", "请处理该任务"), null);
                 appointLog.setData(qt.setJson("id_UM", id_UManager));
                 ws.sendWS(appointLog);
+
+                qt.pushMDContent(id_U, "fav.objLog", appointLog, User.class);
+
+
+
             }
         }
         qt.setMDContent(id_O, qt.setJson("action.objAction." + index + ".arrUA", arrUA), Order.class);
 
+        LogFlow log = new LogFlow();
+        log.setSysLog("", "mut_fav", "更新我的收藏", 3, qt.setJson("cn", "更新我的收藏"));
+        log.setId_Us(arrayId_U);
+        log.setData(qt.setJson("type", "objLog"));
+        ws.sendWSDirect(log);
+
         return retResult.ok(CodeEnum.OK.getCode(), null);
     }
 
 
     //powerUp need to set "key value" and really need to check auth and check WHY it can change (cresign ONLY API)
 
+//    @Override
+//    public ApiResponse setPowerup(String id_C, JSONObject capacity) {
+//        String id_A = qt.getId_A(id_C, "a-core");
+//        JSONObject jsonUpdate = qt.setJson("powerup", capacity);
+//        qt.setMDContent(id_A, jsonUpdate, Asset.class);
+//        return retResult.ok(CodeEnum.OK.getCode(), null);
+//    }
     @Override
-    public ApiResponse setPowerup(String id_C, JSONObject capacity) {
-        String id_A = qt.getId_A(id_C, "a-core");
-        JSONObject jsonUpdate = qt.setJson("powerup", capacity);
-        qt.setMDContent(id_A, jsonUpdate, Asset.class);
+    public ApiResponse setPowerup(String id_C, JSONObject powerup) {
+        Asset asset = qt.getConfig(id_C, "a-core", Arrays.asList("powerup", "view"));
+
+        if (!asset.getId().equals("none")) {
+            if (asset.getPowerup() == null) {
+                JSONArray newView = asset.getView();
+                newView.add("powerup");
+                qt.setMDContent(asset.getId(), qt.setJson("powerup", powerup, "view", newView), Asset.class);
+            } else {
+                qt.setMDContent(asset.getId(), qt.setJson("powerup", powerup), Asset.class);
+            }
+        }
         return retResult.ok(CodeEnum.OK.getCode(), null);
     }
 
     //powerUp need to set "key value" and really need to check auth and check WHY it can change (cresign ONLY API)
-
+//
+//    @Override
+//    public ApiResponse getPowerup(String id_C, String ref) {
+//        Asset asset = qt.getConfig(id_C, "a-core", "powerup");
+//        JSONObject jsonPowerup = asset.getPowerup().getJSONObject("objSize").getJSONObject(ref);
+//        return retResult.ok(CodeEnum.OK.getCode(), jsonPowerup);
+//    }
     @Override
-    public ApiResponse getPowerup(String id_C, String ref) {
-        Asset asset = qt.getConfig(id_C, "a-core", "powerup");
-        JSONObject jsonPowerup = asset.getPowerup().getJSONObject("objSize").getJSONObject(ref);
-        return retResult.ok(CodeEnum.OK.getCode(), jsonPowerup);
+    public ApiResponse getPowerup(String id_C) {
+        Asset asset = qt.getConfig(id_C, "a-core", Arrays.asList("powerup", "view"));
+        System.out.println("id_C=" + id_C);
+        System.out.println("asset=" + asset);
+        if (!asset.getId().equals("none")) {
+            JSONObject jsonPowerup = asset.getPowerup();
+            if (asset.getPowerup() == null) {
+                jsonPowerup = qt.getInitData().getNewComp().getJSONObject("a-core").getJSONObject("powerup");
+                JSONArray newView = asset.getView();
+                newView.add("powerup");
+                qt.setMDContent(asset.getId(), qt.setJson("powerup", jsonPowerup, "view", newView), Asset.class);
+            }
+            System.out.println("jsonPowerup=" + jsonPowerup);
+            return retResult.ok(CodeEnum.OK.getCode(), jsonPowerup);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), null);
     }
 
 
@@ -271,6 +359,25 @@ public class UsageServiceImpl implements UsageService {
             }
         }
         return retResult.ok(CodeEnum.OK.getCode(), null);
+    }
+
+    @Override
+    public ApiResponse updateIp(String ip, String id_U) {
+
+        String key = id_U + "-1";
+
+        InitJava keyCheck = qt.getInitData();
+
+        if (keyCheck.getIpList().getLong(key) != null) {
+            try {
+                cos.updateSecurity(keyCheck.getIpList().getLong(key), ip, key);
+            } catch (TencentCloudSDKException e) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.DB_ERROR.getCode(), "");
+            }
+            return retResult.ok(CodeEnum.OK.getCode(), ip);
+        } else {
+            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
+        }
     }
 
 

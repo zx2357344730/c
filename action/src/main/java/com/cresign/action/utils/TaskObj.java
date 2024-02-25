@@ -116,7 +116,7 @@ public class TaskObj {
     }
 
     public static JSONObject getDateThis(Double wn2qtyneed,String id_C,Integer kaiJie,Integer csSta
-            ,String grpB,Integer priority,Long teDur,Long teDurTotal,Long teStart,Long taFin,Long tePrep
+            ,String grpB,Integer priority,Long wntDur,Long teDurTotal,Long teStart,Long taFin,Long wntPrep
             ,String id_O,Integer index,Long teDelayDate,String id_PF,String id_P,Integer priorItem
             ,boolean empty,int bmdpt){
         JSONObject date = new JSONObject();
@@ -126,11 +126,11 @@ public class TaskObj {
         date.put("csSta",csSta);
         date.put("grpB",grpB);
         date.put("priority",priority);
-        date.put("teDur",teDur);
+        date.put("wntDur",wntDur);
         date.put("teDurTotal",teDurTotal);
         date.put("teStart",teStart);
         date.put("taFin",taFin);
-        date.put("tePrep",tePrep);
+        date.put("wntPrep",wntPrep);
         date.put("id_O",id_O);
         date.put("index",index);
         date.put("teDelayDate",teDelayDate);
@@ -921,7 +921,7 @@ public class TaskObj {
         chkin.put("tPost",20);
         chkin.put("tLate",30);
         chkin.put("tAbsent",120);
-        chkin.put("teDur",10);
+        chkin.put("wntDur",10);
         chkin.put("chkType","0");
         chkin.put("dayType","0");
         chkin.put("dayOff",8);

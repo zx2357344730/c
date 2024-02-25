@@ -8,7 +8,6 @@ import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
-import com.cresign.tools.dbTools.Ut;
 import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
@@ -16,6 +15,7 @@ import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.LogFlow;
+import com.cresign.tools.pojo.po.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -39,6 +39,9 @@ public class HrServiceImpl implements HrService {
 
     @Autowired
     private Qt qt;
+
+    @Autowired
+    private DateUtils dateUtils;
 
     @Autowired
     private RetResult retResult;
@@ -109,7 +112,7 @@ public class HrServiceImpl implements HrService {
             // 获取矿工迟到时间
             long tAbsent = grpInfo.getInteger("tAbsent") * 60;
             // 获取正常上班总时间
-            long teDur = grpInfo.getInteger("teDur") * 60 *60;
+            long wntDur = grpInfo.getInteger("wntDur") * 60 *60;
             // 获取考勤类型（0 = 固定班、1 = 自由时间）
             String chkType = grpInfo.getString("chkType");
             // 记录加班时间，自己加一获取
@@ -130,7 +133,7 @@ public class HrServiceImpl implements HrService {
                     // 获取用户的long上班时间
                     JSONArray userDates1 = getUserDates(chkInEs);
                     // 调用全部是特殊时间的处理方法
-                    JSONObject testSpecialTime1 = testSpecialTime(userDates1, teDur,thisDate);
+                    JSONObject testSpecialTime1 = testSpecialTime(userDates1, wntDur,thisDate);
                     System.out.println("testSpecialTime1:");
                     System.out.println(JSON.toJSONString(testSpecialTime1));
                 }
@@ -145,7 +148,7 @@ public class HrServiceImpl implements HrService {
                     // 获取用户的long上班时间
                     JSONArray userDates1 = getUserDates(chkInEs);
                     // 调用正常统计用户打卡时间方法
-                    JSONObject testChkInSum1 = testChkInSum(normalWorkTime, userDates1, id_U, teDur
+                    JSONObject testChkInSum1 = testChkInSum(normalWorkTime, userDates1, id_U, wntDur
                             , isAutoCardReplacement, isSumSpecialTime, ovt, tPre, tPost, tLate, tAbsent,thisDate,chkType,id_C);
                     System.out.println("testChkInSum1:");
                     System.out.println(JSON.toJSONString(testChkInSum1));
@@ -159,7 +162,7 @@ public class HrServiceImpl implements HrService {
                     JSONArray chkInEs = chkInObj.getJSONArray(thisDate);
                     JSONArray userDates1 = getUserDates(chkInEs);
                     // 调用首尾统计用户打卡时间方法
-                    JSONObject testChkInSumHeadTail1 = testChkInSumHeadTail(normalWorkTime, userDates1, id_U, teDur
+                    JSONObject testChkInSumHeadTail1 = testChkInSumHeadTail(normalWorkTime, userDates1, id_U, wntDur
                             , isAutoCardReplacement, isSumSpecialTime, ovt, tPre, tPost, tLate, tAbsent,thisDate,chkType,id_C);
                     System.out.println("testChkInSumHeadTail1:");
                     System.out.println(JSON.toJSONString(testChkInSumHeadTail1));
@@ -413,13 +416,13 @@ public class HrServiceImpl implements HrService {
      * @param month 月份
      * @return  一个月的所有日期
      */
-    private static JSONArray getThisMonth(int year,int month){
+    private JSONArray getThisMonth(int year,int month){
         LocalDate currentDate = LocalDate.of(year,month,1);
         LocalDate firstDayOfMonth = currentDate.with(TemporalAdjusters.firstDayOfMonth());
         LocalDate lastDayOfMonth = currentDate.with(TemporalAdjusters.lastDayOfMonth());
         JSONArray dates = new JSONArray();
         for (LocalDate date = firstDayOfMonth; date.isBefore(lastDayOfMonth.plusDays(1)); date = date.plusDays(1)) {
-            dates.add(date.getYear()+"/"+date.getMonthValue()+"/"+ Ut.addZero(date.getDayOfMonth()));
+            dates.add(date.getYear()+"/"+date.getMonthValue()+"/"+ dateUtils.addZero(date.getDayOfMonth()));
         }
         return dates;
     }
@@ -448,7 +451,7 @@ public class HrServiceImpl implements HrService {
      * @param normalWorkTime   公司规定正常上班时间集合
      * @param userDates 用户实际上班时间集合
      * @param id_U  用户编号
-     * @param teDur 公司规定一天需要上班的总时间
+     * @param wntDur 公司规定一天需要上班的总时间
      * @param isAutoCardReplacement 是否自动补卡
      * @param isSumSpecialTime  是否统计特殊时间
      * @param ovt   公司规定加班时间段
@@ -458,7 +461,7 @@ public class HrServiceImpl implements HrService {
      * @param tAbsent   矿工迟到时间
      */
     public JSONObject testChkInSum(JSONArray normalWorkTime,JSONArray userDates,String id_U
-            ,long teDur,boolean isAutoCardReplacement,boolean isSumSpecialTime,JSONArray ovt
+            ,long wntDur,boolean isAutoCardReplacement,boolean isSumSpecialTime,JSONArray ovt
             ,long tPre,long tPost,long tLate,long tAbsent,String theSameDay,String chkType,String id_C){
         // 用户上班时间分段集合
         JSONArray originTimeSegmentList = new JSONArray();
@@ -528,7 +531,7 @@ public class HrServiceImpl implements HrService {
             correctTimeSegmentList.add(correctList);
         }
         return getSumChkInResult(id_U,id_C,correctTimeList,originTimeList,correctTimeSegmentList,originTimeSegmentList
-                ,normalWorkSegmentTime,ovt,lateTime,earlyTime,tLate,tAbsent,teDur,isSumSpecialTime
+                ,normalWorkSegmentTime,ovt,lateTime,earlyTime,tLate,tAbsent,wntDur,isSumSpecialTime
                 ,normalWorkTime,userDates,tPre,tPost,theSameDay,chkType,lateSum,earlySum);
     }
 
@@ -537,7 +540,7 @@ public class HrServiceImpl implements HrService {
      * @param normalWorkTime    公司规定正常上班时间集合
      * @param userDates 用户实际上班时间集合
      * @param id_U  用户编号
-     * @param teDur 公司规定一天需要上班的总时间
+     * @param wntDur 公司规定一天需要上班的总时间
      * @param isAutoCardReplacement 是否自动补卡
      * @param isSumSpecialTime  是否统计特殊时间
      * @param ovt   公司规定加班时间段
@@ -547,7 +550,7 @@ public class HrServiceImpl implements HrService {
      * @param tAbsent   矿工迟到时间
      */
     public JSONObject testChkInSumHeadTail(JSONArray normalWorkTime,JSONArray userDates,String id_U
-            ,long teDur,boolean isAutoCardReplacement,boolean isSumSpecialTime,JSONArray ovt
+            ,long wntDur,boolean isAutoCardReplacement,boolean isSumSpecialTime,JSONArray ovt
             ,long tPre,long tPost,long tLate,long tAbsent,String theSameDay,String chkType,String id_C){
         // 用户上班时间分段集合
         JSONArray originTimeSegmentList = new JSONArray();
@@ -618,7 +621,7 @@ public class HrServiceImpl implements HrService {
             correctTimeSegmentList.add(correctList);
         }
         return getSumChkInResult(id_U,id_C,correctTimeList,originTimeList,correctTimeSegmentList,originTimeSegmentList
-                ,normalWorkSegmentTime,ovt,lateTime,earlyTime,tLate,tAbsent,teDur,isSumSpecialTime
+                ,normalWorkSegmentTime,ovt,lateTime,earlyTime,tLate,tAbsent,wntDur,isSumSpecialTime
                 ,normalWorkTime,userDates,tPre,tPost,theSameDay,chkType,lateSum,earlySum);
     }
 
@@ -635,7 +638,7 @@ public class HrServiceImpl implements HrService {
      * @param earlyTime 早退时间
      * @param tLate 严重迟到时间
      * @param tAbsent   矿工迟到时间
-     * @param teDur 公司规定一天需要上班的总时间
+     * @param wntDur 公司规定一天需要上班的总时间
      * @param isSumSpecialTime  是否统计特殊时间
      * @param normalWorkTime    公司规定正常上班时间集合
      * @param userDates 用户实际上班时间集合
@@ -645,7 +648,7 @@ public class HrServiceImpl implements HrService {
     public JSONObject getSumChkInResult(String id_U,String id_C,JSONArray correctTimeList,JSONArray originTimeList
             ,JSONArray correctTimeSegmentList
             ,JSONArray originTimeSegmentList,JSONArray normalWorkSegmentTime,JSONArray ovt
-            ,long lateTime,long earlyTime,long tLate,long tAbsent,long teDur,boolean isSumSpecialTime
+            ,long lateTime,long earlyTime,long tLate,long tAbsent,long wntDur,boolean isSumSpecialTime
             ,JSONArray normalWorkTime,JSONArray userDates,long tPre,long tPost,String theSameDay
             ,String chkType,int lateSum,int earlySum){
         System.out.println();
@@ -765,7 +768,7 @@ public class HrServiceImpl implements HrService {
         System.out.println("早退时间 - earlyTime:"+earlyTime);
         System.out.println("加班时间 - overtime:"+overtime);
         System.out.println("缺勤时间 - absenceTime:"+absenceTime);
-        System.out.println("总要求上班时间 - teDur:"+teDur);
+        System.out.println("总要求上班时间 - wntDur:"+wntDur);
         System.out.println("当天时间 - theSameDay:"+theSameDay);
         System.out.println();
         JSONObject result = new JSONObject();
@@ -854,7 +857,7 @@ public class HrServiceImpl implements HrService {
         // 添加缺勤次数
         result.put("taMissSum",absenceSum);
         // 添加公司规定一天需要上班的总时间
-        result.put("teDur",teDur);
+        result.put("wntDur",wntDur);
         sendMsg(id_C,id_U,"dayChkin",theSameDay,result,chkType,0,0);
         return result;
     }
@@ -1189,9 +1192,9 @@ public class HrServiceImpl implements HrService {
     /**
      * 全部是特殊时间的处理方法
      * @param userDates 用户的上班时间
-     * @param teDur 规定的总需要上班时间
+     * @param wntDur 规定的总需要上班时间
      */
-    public JSONObject testSpecialTime(JSONArray userDates,long teDur,String theSameDay){
+    public JSONObject testSpecialTime(JSONArray userDates,long wntDur,String theSameDay){
         if (null == userDates || userDates.size() == 0) {
             return null;
         }
@@ -1217,14 +1220,14 @@ public class HrServiceImpl implements HrService {
             specialTime += below - upper;
         }
         // 判断特殊总时间大于规定上班时间
-        if (specialTime > teDur) {
+        if (specialTime > wntDur) {
             // 获取超出的时间为加班时间
-            overtime = specialTime - teDur;
+            overtime = specialTime - wntDur;
             // 纠正正常上班时间
-            specialTime = teDur;
+            specialTime = wntDur;
         } else {
             // 获取缺勤时间
-            absenceTime = teDur - specialTime;
+            absenceTime = wntDur - specialTime;
         }
         System.out.println();
         System.out.println("用户上班时间 - userDates:");
@@ -1233,14 +1236,14 @@ public class HrServiceImpl implements HrService {
         System.out.println("特殊上班时间 - specialTime:"+specialTime);
         System.out.println("缺勤时间 - absenceTime:"+absenceTime);
         System.out.println("加班时间 - overtime:"+overtime);
-        System.out.println("总要求上班时间 - teDur:"+teDur);
+        System.out.println("总要求上班时间 - wntDur:"+wntDur);
         System.out.println("当天时间 - theSameDay:"+theSameDay);
         System.out.println();
         result.put("userDates",userDates);
         result.put("specialTime",specialTime);
         result.put("absenceTime",absenceTime);
         result.put("overtime",overtime);
-        result.put("teDur",teDur);
+        result.put("wntDur",wntDur);
         return result;
     }
 
@@ -1272,6 +1275,21 @@ public class HrServiceImpl implements HrService {
         }
         // 返回结果
         return dates;
+    }
+
+    @Override
+    public ApiResponse delLBUser(String id_U,String id_C) {
+        qt.delES("lBUser",qt.setESFilt("id_U",id_U,"id_CB",id_C));
+        User user = qt.getMDContent(id_U, "rolex", User.class);
+        if (user == null || null == user.getRolex() || user.getRolex().getJSONObject("objComp").getJSONObject(id_C) == null) {
+            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), null);
+        }
+
+        JSONObject result = user.getRolex().getJSONObject("objComp").fluentRemove(id_C);
+
+        qt.setMDContent(id_U,qt.setJson("rolex.objComp", result), User.class);
+
+        return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
     }
 
     /**
@@ -1443,7 +1461,7 @@ public class HrServiceImpl implements HrService {
         logFlow.setLogType("usageflow");
         logFlow.setSubType(subType);
         logFlow.setZcndesc(subType.equals("dayChkin")?"当天打卡记录":"当月打卡记录");
-        logFlow.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        logFlow.setTmd(dateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         logFlow.setImp(1);
         JSONObject data = new JSONObject();
         if (subType.equals("dayChkin")) {

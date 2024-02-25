@@ -270,7 +270,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
         String token = UUID19.uuid();
 
         qt.putRDHashMany(SCANCODE_LOGINCOMP, token, qt.setJson("id", id, "tmk",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()),
-        "tdur", "300"), 300L);
+        "wntDur", "300"), 300L);
         String url = QR_URL + token;
         return retResult.ok(CodeEnum.OK.getCode(), url);
 

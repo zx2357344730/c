@@ -354,16 +354,7 @@ public class ZjTestController {
         }
     }
 
-    @SecurityParameter
-    @PostMapping("/v1/delLBUser")
-    public ApiResponse delLBUser(@RequestBody JSONObject resJson) {
-//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-        try {
-            return zjService.delLBUser(resJson.getString("id_U"), resJson.getString("id_C"));
-        } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "ZjTestController.delLBUser", e);
-        }
-    }
+
 
     @SecurityParameter
     @PostMapping("/v1/testEx")
@@ -576,7 +567,7 @@ public class ZjTestController {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
             return zjService.updatePartAll(resJson.getString("id_P"),resJson.getDouble("wn4pr")
-                    ,resJson.getLong("teDur"), resJson.getLong("tePrep"));
+                    ,resJson.getLong("wntDur"), resJson.getLong("wntPrep"));
         } catch (Exception e) {
             return getUserToken.err(new JSONObject(), "ZjTestController.updatePartAll", e);
         }

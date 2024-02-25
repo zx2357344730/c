@@ -54,7 +54,6 @@ public interface ZjTestService {
 
     ApiResponse getOnLine(String id_U);
 
-    ApiResponse delLBUser(String id_U,String id_C);
 
     ApiResponse testEx(String id_C, String fileName, String id_U
             , int subTypeStatus, String year, String month, JSONArray arrField);
@@ -171,11 +170,11 @@ public interface ZjTestService {
      * 修改指定产品的价格，单人单件用时，准备时间，并且修改所有用到的part
      * @param id_P  需要修改的产品
      * @param wn4pr 产品新的价格
-     * @param teDur 产品单人单件用时
-     * @param tePrep    准备时间
+     * @param wntDur 产品单人单件用时
+     * @param wntPrep    准备时间
      * @return  处理结果
      */
-    ApiResponse updatePartAll(String id_P,double wn4pr,long teDur,long tePrep);
+    ApiResponse updatePartAll(String id_P,double wn4pr,long wntDur,long wntPrep);
 
     /**
      * 批量新增或修改mongodb的Prod内arrP，和es的lBProd的arrP字段

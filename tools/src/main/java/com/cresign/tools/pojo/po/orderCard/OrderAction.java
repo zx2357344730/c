@@ -108,9 +108,9 @@ public class OrderAction {
 
     private String rKey;
 
-    private JSONArray id_Us = new JSONArray();
+    private JSONArray id_Us = new JSONArray(); //who is working on this item
 
-    private JSONArray arrUA = new JSONArray();
+    private JSONArray arrUA = new JSONArray(); //who is being appointed
 
     /**
      * 自己的下标

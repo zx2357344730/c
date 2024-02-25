@@ -103,17 +103,24 @@ public class lSBOrder {
     private String id_CP;
     private JSONArray arrP;
 
+    private JSONArray grpT = new JSONArray();
+
+
     private String grp;
 
     private String grpB;
 
     private JSONObject wrdN;
     private JSONObject wrddesc;
+
+    // xxxxx no need
     private JSONObject wrddescB;
 
     private Integer lST;
 
     private Integer lCR;
+
+    private Integer priority;
 
     private String pic;
 
@@ -121,25 +128,30 @@ public class lSBOrder {
 
     private String refB;
 
+    private String refOP;
+
     private double wn4price;
 //    private double wn2qc;
     private double wn2qty;
 
+    private double wn2qtyShip;
 
-//    private String grpU;
+    private double wn2fin;
+
+    private double wn2progress;
 
     private String tmd;
 
     private String tmk;
 
-    private String teSt;
+    private String teStart;
+    private String teFin;
+    private String taStart;
+    private String taFin;
 
-    private String teDur;
+    private long wn0Dur;
 
     private String qr;
 
-//    private Integer mNow;
-//
-//    private Integer sNow;
 
 }

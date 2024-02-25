@@ -1,6 +1,5 @@
 package com.cresign.tools.pojo.po;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
@@ -28,7 +27,7 @@ public class InitJava {
 //    private JSONObject newProd;
 
     private JSONObject ipList;
-    private JSONArray devList;
+//    private JSONArray devList;
 
 
     private JSONObject idJson;

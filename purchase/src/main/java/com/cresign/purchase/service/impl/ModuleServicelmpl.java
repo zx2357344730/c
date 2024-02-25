@@ -3,7 +3,6 @@ package com.cresign.purchase.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.purchase.common.ChatEnum;
 import com.cresign.purchase.service.ModuleService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
@@ -442,7 +441,7 @@ public class ModuleServicelmpl implements ModuleService {
 
         if (!authComp.equals("61a5940b01902729e2576ead") && !authComp.equals("6141b6797e8ac90760913fd0"))
         {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_MATCHING_MOD_REF.getCode(), "无匹配的modRef");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.MODUL_NO_HAVE.getCode(), "无匹配的modRef");
         }
         // 调用方法获取公司模块信息
         JSONObject compAssetMod = getCompAssetByRef(id_C,"a-core","control");
@@ -509,7 +508,7 @@ public class ModuleServicelmpl implements ModuleService {
                     JSONObject re = new JSONObject();
                     re.put("key",k);
                     re.put("err","修改状态为空");
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_MATCHING_MOD_REF.getCode(), "无匹配的modRef");
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.MODUL_NO_HAVE.getCode(), "无匹配的modRef");
                 }
             });
 
@@ -675,7 +674,7 @@ public class ModuleServicelmpl implements ModuleService {
                         jsonObject.put("auth",auth);
                         logAuthList.set(updateInd,jsonObject);
                     } else {
-                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_MATCHING_MOD_REF.getCode(), "无匹配的modRef");
+                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.MODUL_NO_HAVE.getCode(), "无匹配的modRef");
                     }
                 }
 //                listTypeGrp.put("log",logAuthList);
@@ -795,23 +794,23 @@ public class ModuleServicelmpl implements ModuleService {
     private ApiResponse errResult(int status,int isOperation){
         switch (status) {
             case 1:
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET_ID.getCode(), "该公司没有assetId");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_NO_ASSET_ID.getCode(), "该公司没有assetId");
             case 2:
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ASSET.getCode(), "该公司没有asset");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_NO_ASSET.getCode(), "该公司没有asset");
             case 3:
                 if (isOperation == 0) {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_CONTROL_K.getCode(), "该公司没有control卡片");
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.CARD_NO_HAVE.getCode(), "该公司没有control卡片");
                 } else {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_NO_ROLE_K.getCode(), "该公司没有role卡片");
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.CARD_NO_HAVE.getCode(), "该公司没有role卡片");
                 }
             case 4:
                 if (isOperation == 0) {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_CONTROL_K.getCode(), "该公司control卡片异常");
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.CARD_NO_HAVE.getCode(), "该公司control卡片异常");
                 } else {
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_ROLE_K.getCode(), "该公司role卡片异常");
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ROLE_UP_ERROR.getCode(), "该公司role卡片异常");
                 }
             default:
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_WZ.getCode(), "接口未知异常");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_UNKNOWN.getCode(), "接口未知异常");
         }
     }
 

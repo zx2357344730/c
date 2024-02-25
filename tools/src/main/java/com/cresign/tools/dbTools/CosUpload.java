@@ -1,6 +1,5 @@
 package com.cresign.tools.dbTools;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.md5.MD5Util;
@@ -20,9 +19,11 @@ import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.common.profile.ClientProfile;
 import com.tencentcloudapi.common.profile.HttpProfile;
-import com.tencentcloudapi.cvm.v20170312.models.AssociateSecurityGroupsResponse;
 import com.tencentcloudapi.vpc.v20170312.VpcClient;
-import com.tencentcloudapi.vpc.v20170312.models.*;
+import com.tencentcloudapi.vpc.v20170312.models.ReplaceSecurityGroupPolicyRequest;
+import com.tencentcloudapi.vpc.v20170312.models.ReplaceSecurityGroupPolicyResponse;
+import com.tencentcloudapi.vpc.v20170312.models.SecurityGroupPolicy;
+import com.tencentcloudapi.vpc.v20170312.models.SecurityGroupPolicySet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -696,26 +697,26 @@ public class CosUpload {
         } while (objectListing.isTruncated());
         return size;
     }
-
-    public JSONObject getSecurity() throws TencentCloudSDKException {
-        Credential cred = new Credential(secretId, secretKey);
-        // 实例化一个http选项，可选的，没有特殊需求可以跳过
-        HttpProfile httpProfile = new HttpProfile();
-        httpProfile.setEndpoint("vpc.tencentcloudapi.com");
-        // 实例化一个client选项，可选的，没有特殊需求可以跳过
-        ClientProfile clientProfile = new ClientProfile();
-        clientProfile.setHttpProfile(httpProfile);
-        // 实例化要请求产品的client对象,clientProfile是可选的
-        VpcClient client = new VpcClient(cred, "ap-guangzhou", clientProfile);
-        // 实例化一个请求对象,每个接口都会对应一个request对象
-        DescribeSecurityGroupPoliciesRequest req = new DescribeSecurityGroupPoliciesRequest();
-        req.setSecurityGroupId("sg-caueeii1");
-        // 返回的resp是一个DescribeSecurityGroupPoliciesResponse的实例，与请求对象对应
-        DescribeSecurityGroupPoliciesResponse resp = client.DescribeSecurityGroupPolicies(req);
-        // 输出json格式的字符串回包
-        System.out.println(DescribeSecurityGroupPoliciesResponse.toJsonString(resp));
-        return JSON.parseObject(AssociateSecurityGroupsResponse.toJsonString(resp));
-    }
+//
+//    public JSONObject getSecurity() throws TencentCloudSDKException {
+//        Credential cred = new Credential(secretId, secretKey);
+//        // 实例化一个http选项，可选的，没有特殊需求可以跳过
+//        HttpProfile httpProfile = new HttpProfile();
+//        httpProfile.setEndpoint("vpc.tencentcloudapi.com");
+//        // 实例化一个client选项，可选的，没有特殊需求可以跳过
+//        ClientProfile clientProfile = new ClientProfile();
+//        clientProfile.setHttpProfile(httpProfile);
+//        // 实例化要请求产品的client对象,clientProfile是可选的
+//        VpcClient client = new VpcClient(cred, "ap-guangzhou", clientProfile);
+//        // 实例化一个请求对象,每个接口都会对应一个request对象
+//        DescribeSecurityGroupPoliciesRequest req = new DescribeSecurityGroupPoliciesRequest();
+//        req.setSecurityGroupId("sg-caueeii1");
+//        // 返回的resp是一个DescribeSecurityGroupPoliciesResponse的实例，与请求对象对应
+//        DescribeSecurityGroupPoliciesResponse resp = client.DescribeSecurityGroupPolicies(req);
+//        // 输出json格式的字符串回包
+//        System.out.println(DescribeSecurityGroupPoliciesResponse.toJsonString(resp));
+//        return JSON.parseObject(AssociateSecurityGroupsResponse.toJsonString(resp));
+//    }
 
     public Object updateSecurity(Long index, String ip, String key) throws TencentCloudSDKException {
         Credential cred = new Credential(secretId, secretKey);

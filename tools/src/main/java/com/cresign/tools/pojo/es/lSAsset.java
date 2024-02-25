@@ -59,6 +59,9 @@ public class lSAsset {
 
     private String grp;
 
+    private JSONArray grpT = new JSONArray();
+
+
     private String ref;
 
     private String pic;

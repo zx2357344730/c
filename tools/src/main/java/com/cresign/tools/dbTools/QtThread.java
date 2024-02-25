@@ -2,7 +2,6 @@ package com.cresign.tools.dbTools;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.pojo.po.Prod;
 import com.cresign.tools.request.HttpClientUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

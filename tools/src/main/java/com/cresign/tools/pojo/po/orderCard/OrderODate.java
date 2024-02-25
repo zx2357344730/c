@@ -64,7 +64,7 @@ public class OrderODate {
     /**
      * 预计一人一件用时
      */
-    private Long teDur;
+    private Long wntDur;
 
     /**
      * 实际一人一件用时
@@ -119,7 +119,7 @@ public class OrderODate {
     /**
      * 准备时间
      */
-    private Long tePrep;
+    private Long wntPrep;
 
     /**
      * 实际准备时间

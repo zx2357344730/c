@@ -52,6 +52,8 @@ public class lSProd implements Serializable {
     private String id_P;
 
     private String id_C;
+    private JSONArray grpT = new JSONArray();
+
 
     private String id_CP;
 

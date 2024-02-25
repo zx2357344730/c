@@ -29,21 +29,13 @@ public class Constants {
     public static final int HASH_MAP_DEFAULT_LENGTH = 16;
 
     public static final String GET_PAGING_ROW = "pagingRow";
-    public static final String GET_KEY_LIST = "keyList";
-    public static final String GET_VAL_LIST = "valList";
-    public static final String GET_CONTENT = "content";
+
     public static final String GET_BACKGROUND = "background";
     public static final String GET_FONT_SIZE = "fontSize";
     public static final String GET_IS_FIXED = "isFixed";
     public static final String GET_IS_BOLD = "isBold";
     public static final String GET_OCCUPY_ROW = "occupyRow";
-    public static final String GET_PLUS_KEY = "plusKey";
-    public static final String GET_PLUS_INDEX = "plusIndex";
-    public static final String GET_WIDTHS = "widths";
     public static final String GET_MERGE_FORM = "mergeForm";
-    public static final String GET_TITLE = "title";
-
-    public static final String GET_ID_C = "id_C";
 
     public static final String GET_NAME = "name";
     public static final String GET_DATA = "data";
@@ -75,6 +67,5 @@ public class Constants {
 
     public static final int INT_TWELVE = 12;
 
-    public static final int INT_TWO_HUNDRED_AND_FIFTY = 250;
 
 }

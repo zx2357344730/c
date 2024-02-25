@@ -53,7 +53,7 @@ public class Chkin {
     /**
      * 加班总时间
      */
-    private int teDur;
+    private int wntDur;
     /**
      * 状态（提问，拒绝，同意）
      */

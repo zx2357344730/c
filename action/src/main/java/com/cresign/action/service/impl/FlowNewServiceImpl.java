@@ -1007,8 +1007,8 @@ public class FlowNewServiceImpl implements FlowNewService {
             // 添加信息
             orderODate.setCsSta(timeHandleSerialNoIsOneInside);
             // 设置订单时间操作信息
-            orderODate.setTeDur(partInfo.getLong("teDur") == null ? 0 : partInfo.getLong("teDur"));
-            orderODate.setTePrep(partInfo.getLong("tePrep") == null ? 0 : partInfo.getLong("tePrep"));
+            orderODate.setWntDur(partInfo.getLong("wntDur") == null ? 0 : partInfo.getLong("wntDur"));
+            orderODate.setWntPrep(partInfo.getLong("wntPrep") == null ? 0 : partInfo.getLong("wntPrep"));
             // action里面的
             //++ZJ
             orderODate.setPriority(0);
@@ -1018,8 +1018,8 @@ public class FlowNewServiceImpl implements FlowNewService {
             // 判断bmdpt等于部件
             if (objAction.getBmdpt() == 2) {
                 // 设置订单时间操作信息
-                orderODate.setTePrep(partInfo.getLong("tePrep") == null ? 0 : partInfo.getLong("tePrep"));
-                orderODate.setTeDur(0L);
+                orderODate.setWntPrep(partInfo.getLong("wntPrep") == null ? 0 : partInfo.getLong("wntPrep"));
+                orderODate.setWntDur(0L);
                 // 判断层级为第一层
                 if (timeHandleSerialNoIsOneInside == 1) {
                     orderODate.setKaiJie(3);
@@ -1029,7 +1029,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                 }
             }
 //            // **System.out.println("wn2qtyneed:" + objOItem.getWn2qtyneed() + " - teDurTotal:"
-//                    + orderODate.getTeDurTotal() + " - tePrep:" + orderODate.getTePrep() + " - prior:" + objOItem.getWn0prior());
+//                    + orderODate.getTeDurTotal() + " - wntPrep:" + orderODate.getTePrep() + " - prior:" + objOItem.getWn0prior());
 //            // **System.out.println("csTeJ:" + " - id_P:" + objOItem.getId_P() + " - id_PF:" + id_PF + " - dq:" + dq);
             // 添加信息
             orderODate.setId_O(objAction.getId_O());
@@ -1049,7 +1049,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             // 调用生成任务信息
             Task task = TaskObj.getTask(orderODate.getTeStart(), orderODate.getTeFin(), orderODate.getId_O()
                     , orderODate.getIndex(), 0L
-                    , orderODate.getPriority(), itemWrdN, orderODate.getTePrep(), orderODate.getTeDelayDate()
+                    , orderODate.getPriority(), itemWrdN, orderODate.getWntPrep(), orderODate.getTeDelayDate()
                     , myCompId, 0L, 0L, -1, isNextPart);
             // 设置任务公司编号
             task.setId_C(myCompId);

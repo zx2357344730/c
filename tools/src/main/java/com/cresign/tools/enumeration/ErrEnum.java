@@ -236,7 +236,7 @@ public enum ErrEnum {
     //加入公司二维码已存在       Login服务在用
     JOINCOMP_CODE_EXIST("061003"),
     //产品二维码已经存在       Login服务在用
-    PROD_CODE_IS_EXIT("061004"),
+    PROD_CODE_IS_EXIST("061004"),
     //产品二维码已过期       Login服务在用
     PROD_CODE_OVERDUE("061005"),
     //统计结果为空       Login服务在用

@@ -40,7 +40,7 @@ public class lBInfo {
         this.ref = ref == null ? "": ref;
         this.refB = refB == null ? "": refB;
         this.pic = pic  == null ? "": pic;
-        this.lDC = lDC  == null ? 0: lDC;
+//        this.lDC = lDC  == null ? 0: lDC;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
@@ -63,13 +63,15 @@ public class lBInfo {
 
     private String grpB;
 
+    private JSONArray grpT = new JSONArray();
+
     private String ref;
 
     private String refB;
 
     private String pic;
 
-    private Integer lDC;
+//    private Integer lDC;
 
     private String tmd;
 

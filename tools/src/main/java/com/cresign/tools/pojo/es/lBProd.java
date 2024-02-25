@@ -55,15 +55,21 @@ public class lBProd {
 
     private String id_CP;
 
+    private String id_CBP;
+
     private JSONObject wrdN;
 
     private JSONObject wrddesc;
 
     private JSONArray arrP = new JSONArray();
 
+    private JSONArray arrPS = new JSONArray();
+
     private String grp;
 
     private String grpB;
+
+    private JSONArray grpT = new JSONArray();
 
     private String ref = "";
 
@@ -74,11 +80,17 @@ public class lBProd {
 
     private Integer lDC = 0;
 
-    private Integer lUT;
+    private Integer lUT = 0;
 
-    private Integer lCR;//
+    private Integer lCR = 0;
 
-    private double wn4price;
+    private double wn4price = 0.0;
+
+    private double wn4cost = 0.0;
+
+
+
+    private String qr;
 
     private String tmd;
 

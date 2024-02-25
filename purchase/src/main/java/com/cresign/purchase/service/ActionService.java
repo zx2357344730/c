@@ -71,7 +71,7 @@ public interface ActionService {
     ApiResponse dgConfirmOrder(JSONObject tokData, JSONArray casList);
 
     Integer confirmOrder(JSONObject tokData, String id_O);
-    ApiResponse cancelOrder(String cId, String id_O);
+    ApiResponse cancelOrder(String id_C, String id_O, Integer lST);
 
     ApiResponse actionChart(String id_O);
 

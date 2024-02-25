@@ -433,8 +433,6 @@ public class SetAuthServicelmpl implements SetAuthService {
         JSONObject compList = one.getRolex().getJSONObject("objComp");
 
         for (String cid :compList.keySet()) {
-            System.out.println("For ."+ cid);
-
             if (compList.getJSONObject(cid).getString("picC") == null) {
 //                Query compQ = new Query(
 //                        new Criteria("_id").is(cid));

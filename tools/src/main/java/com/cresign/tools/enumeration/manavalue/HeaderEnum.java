@@ -17,6 +17,17 @@ public enum  HeaderEnum {
      */
     CLIENTTYPE("clientType"),
 
+    // web端
+    WEB_CLIENT("web"),
+
+    // 微信小程序端
+    WX_CLIENT("wx"),
+
+    // 手机端
+    APP_CLIENT("app"),
+
+
+
     ;
 
 

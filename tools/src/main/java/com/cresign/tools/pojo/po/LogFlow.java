@@ -140,7 +140,7 @@ public class LogFlow {
         data.put("teEnd", chKin.getTeEnd());
         data.put("date", chKin.getDate());
         data.put("id_UC",chKin.getId_UC());
-        data.put("teDur",chKin.getTeDur());
+        data.put("wntDur",chKin.getWntDur());
         data.put("state",chKin.getState());
         data.put("arrDayMiss",chKin.getArrDayMiss());
         this.data = data;
@@ -313,6 +313,11 @@ public class LogFlow {
     private String id_FS = "";
 
     /**
+     * 日志具体内容数据
+     */
+    private JSONObject data = new JSONObject();
+
+    /**
      * 公司id
      */
     private String id_C;
@@ -371,10 +376,6 @@ public class LogFlow {
      */
     private String tmd;
 
-    /**
-     * 日志具体内容数据
-     */
-    private JSONObject data = new JSONObject();
 
     /**
      * 日志内容

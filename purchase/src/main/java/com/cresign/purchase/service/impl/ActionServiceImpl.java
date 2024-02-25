@@ -3,7 +3,6 @@ package com.cresign.purchase.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.purchase.common.ChatEnum;
 import com.cresign.purchase.service.ActionService;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
@@ -13,6 +12,7 @@ import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.po.Asset;
@@ -192,7 +192,7 @@ public class ActionServiceImpl implements ActionService {
 
         if (bcdStatus != 100 && bcdStatus != 2 && bcdStatus != 9)
         {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "这任务没有关闭");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "这任务没有关闭");
         }
 
         // 备注
@@ -623,17 +623,17 @@ public class ActionServiceImpl implements ActionService {
         JSONObject jsonFav = qt.setJson("id_C", id_C, "id_O", id_O, "index", index, "id", id_FC, "id_FS", id_FS,
                 "wrdN", wrdN, "pic", pic, "type", 0);
         qt.pushMDContent(id_U, "fav.objFav", jsonFav, User.class);
-        qt.pushMDContent(id_O, "action.objAction." + index + ".arrUA", id_U, Order.class);
+//        qt.pushMDContent(id_O, "action.objAction." + index + ".id_Us", id_U, Order.class);
     }
 
-    private void removeFavRecent(JSONArray idRemove, String id_O, Integer index, String id_FC, String id_FS, JSONArray id_UA)
+    private void removeFavRecent(JSONArray idRemove, String id_O, Integer index)
     {
-        JSONObject jsonFav = qt.setJson("id_O", id_O, "index", index, "id", id_FC, "id_FS", id_FS);
+        JSONObject jsonFav = qt.setJson("id_O", id_O, "index", index);
         for (int i = 0; i < idRemove.size(); i++) {
             qt.pullMDContent(idRemove.getString(i), "fav.objFav", jsonFav, User.class);
-            id_UA.remove(idRemove.getString(i));
+//            id_UA.remove(idRemove.getString(i));
         }
-        qt.setMDContent(id_O, qt.setJson("action.objAction." + index + ".arrUA", id_UA), Order.class);
+//        qt.setMDContent(id_O, qt.setJson("action.objAction." + index + ".arrUA", id_UA), Order.class);
     }
     /**
      * 操作开始，暂停，恢复功能 - 注释完成
@@ -667,7 +667,7 @@ public class ActionServiceImpl implements ActionService {
                 // 判断新的状态和旧状态如果一样, 该操作已被处理, 两人同时有用, 防止重复按
                 if (orderAction.getBcdStatus().equals(status)) {
                     // 抛出操作成功异常
-                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
                 }
 
                 // 备注
@@ -716,7 +716,7 @@ public class ActionServiceImpl implements ActionService {
                     case 1:
                         // Start an OItem, DG just start, Task just start, Quest start + update Prob
                         if (orderAction.getBcdStatus() != 0) {
-                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经开始过了");
+                            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经开始过了");
                         }
                         // 设置备注信息
                         // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
@@ -738,10 +738,10 @@ public class ActionServiceImpl implements ActionService {
                         break;
                     case 2:                    // 2 = finish, set qtyfin setNextDesc
 //                        if (orderAction.getBcdStatus() != 2 && orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3 && orderAction.getBcdStatus() != -8 && orderAction.getBcdStatus() != 7) {
-//                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
+//                            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
 //                        }
                         if (orderAction.getSumChild() > 0 && orderAction.getBmdpt() == 2 && isLink) {
-                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
+                            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
                         }
 
                         Double progress = Double.valueOf((actData.getInteger("progress") + 1) / actData.getJSONArray("actionArray").size() * 100);
@@ -760,10 +760,10 @@ public class ActionServiceImpl implements ActionService {
                         break;
                     case -2:                    // 2 = finish, set qtyfin setNextDesc
 //                        if (orderAction.getBcdStatus() != 2 && orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3 && orderAction.getBcdStatus() != -8 && orderAction.getBcdStatus() != 7) {
-//                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
+//                            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
 //                        }
                         if (orderAction.getSumChild() > 0 && orderAction.getBmdpt() == 2 && isLink) {
-                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
+                            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
                         }
 
                         orderAction.setBcdStatus(2);
@@ -776,9 +776,9 @@ public class ActionServiceImpl implements ActionService {
                     case 3:
                     case -8: // resume OItem
                         if (orderAction.getBcdStatus() != 8) {
-//                            return retResult.ok(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
+//                            return retResult.ok(ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
 
-                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
+                            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
                         }
 
                         message = taskName + "[已恢复执行] " + msg;
@@ -816,7 +816,7 @@ public class ActionServiceImpl implements ActionService {
                     case 7:
                         if ((orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != -8)
                                 || orderAction.getBisactivate() == 4) {
-                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能操作");
+                            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能操作");
                         }
                         orderAction.setBisactivate(4);
                         message = taskName + "[继续下一个]" + msg;
@@ -825,7 +825,7 @@ public class ActionServiceImpl implements ActionService {
                     case 8: // pause
                         if (orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3
                                 && orderAction.getBcdStatus() != -8) {
-                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能");
+                            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能");
                         }                    // 设置备注信息
                         message = taskName + "[已暂停]" + msg;
                         orderAction.setBcdStatus(status);
@@ -946,13 +946,14 @@ public class ActionServiceImpl implements ActionService {
                     this.setFavRecent(tokData.getString("id_C"), tokData.getString("id_U"), id_O, index, id_FC, id_FS,
                             orderOItem.getWrdN(), orderOItem.getPic());
                 else if (duraType.equals("end")) {
-                    this.removeFavRecent(qt.setArray(tokData.getString("id_U")), id_O, index, id_FC, id_FS, orderAction.getArrUA());
+                    this.removeFavRecent(qt.setArray(tokData.getString("id_U")), id_O, index);
                     orderAction.getId_Us().remove(tokData.getString("id_U"));
                 }
                 else if (duraType.equals("allEnd"))
                 {
-                    this.removeFavRecent(orderAction.getId_Us(), id_O, index, id_FC, id_FS, orderAction.getArrUA());
+                    this.removeFavRecent(orderAction.getId_Us(), id_O, index);
                     orderAction.setId_Us(new JSONArray());
+
                     LogFlow logDURA = new LogFlow("action", id_FC,
                         id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
                         orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
@@ -1046,7 +1047,7 @@ public class ActionServiceImpl implements ActionService {
                                 Order.class);
                     } catch (RuntimeException e) {
                         //System.out.println("shit A");
-                        throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
+                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
                     }
                 } else if ((status == 2 && orderAction.getBisactivate() != 4) || status == 7) {
                     // activate = 4 means Skip = already pushed Next, status == -2 then skip upNext
@@ -1070,408 +1071,6 @@ public class ActionServiceImpl implements ActionService {
             return res;
 //            return retResult.ok(CodeEnum.OK.getCode(), res);
         }
-
-//    @Override
-//    @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
-//    public ApiResponse changeActionStatusNew(String logType, Integer status, String msg,
-//                                          Integer index, String id_O, Boolean isLink,
-//                                          String id_FC, String id_FS, JSONObject tokData,JSONArray id_UsLog) {
-//
-//        JSONObject actData = this.getActionData(id_O, index);
-//
-//        OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
-//        OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
-//
-//        String taskName = orderOItem.getWrdN().getString("cn");
-//
-//        // 根据下标获取递归信息
-//
-//        // 判断新的状态和旧状态不一样
-////                if (orderAction.getBcdStatus().equals(status)) {
-////                    // 抛出操作成功异常
-//////                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
-////                    return retResult.error(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "该操作已被处理");
-////
-////                }
-//
-//        // 备注
-//        String message;
-//        JSONObject res = new JSONObject();
-//        JSONObject mapKey = new JSONObject();
-//        JSONObject listCol = new JSONObject();
-//        boolean isStateChg = false;
-//        String duraType = "none";
-//
-//        /***
-//         * logStatus(wn0prog) = 2@推送 3@开始 1@停 -1@再开 -6@取消 5@完成
-//         * bcdStatus = 0, 1 start, 2 end, -8 resume, 8 stop, 9 cancel
-//         * 0 about, 1 process, 9 stop, -8(3) resume/process, 3 finished, 10 cancel, 8 process(with next started)
-//         * rePush = > -2,
-//         *
-//         * 1. send logDura, 2. favRecent+, 3.
-//         */
-//        // if state => 1 ^id_Us+ / ^state => 1 / ^logState 1 / ^ logdura+start / ^recent+ / ^lST = 8
-//        // if state => 5 ^(add me) id_Us+ / ^state no chg / ^logState no / ^logdura+start / ^recent+
-//        // if state => 6 ^(rem me) id+Us- / ^state no chg / ^logState no / ^logdura+end / ^recent keep
-//
-//        // 8 pause (^if id_Us [1]) id_Us- / ^stateChg / ^logState / ^logdura+end / ^recent keep
-//        // 3/-8 resume (^id_Us+) / id_Us = []? ^stateChg / ^logState / ^logdura+start /
-//
-//        // if state => 2 ^statechg/^logState /^id_Us = [] / ^logdura all user end /  ^FavRecent remove all / ^lST = 13
-//
-//        // 7 start next => ^isactivated = 4 / push next / ^nothing else changed
-//        // 9 cancel => ^state = 9 / ^id_Us = [] ^ all user end / ^favRecent remove all
-//
-//        // ???repush state = 0 log sent as 0, waiting for user to start?
-//
-//        // activate = 4 means Skip = already pushed Next
-//
-//
-//        JSONArray id_Us = orderAction.getId_Us() == null ? new JSONArray() : orderAction.getId_Us();
-//
-//        // 判断属于什么操作
-//        switch (status) {
-//            case 1:
-//                // Start an OItem, DG just start, Task just start, Quest start + update Prob
-//                if (orderAction.getBcdStatus() != 0) {
-//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经开始过了");
-//                }
-//                // 设置备注信息
-//                // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
-//                message = "[开始运行]" + msg;
-//
-//                //Adding myself to the id_Us of action to indicate
-//                id_Us.add(tokData.getString("id_U"));
-//                orderAction.setId_Us(id_Us);
-//                res.put("isJoin", 1);
-//                res.put("id_Us", orderAction.getId_Us());
-//                if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
-//                    mapKey.put("info.lST", 8);
-//                    listCol.put("lST", 8);
-//                }
-//                orderAction.setBcdStatus(status);
-//                isStateChg = true;
-//                duraType = "start";
-//
-//                break;
-//            case 2:                    // 2 = finish, set qtyfin setNextDesc
-////                        if (orderAction.getBcdStatus() != 2 && orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3 && orderAction.getBcdStatus() != -8 && orderAction.getBcdStatus() != 7) {
-////                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经处理了");
-////                        }
-//                if (orderAction.getSumChild() > 0 && orderAction.getBmdpt() == 2 && isLink) {
-//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_PROD_RECURRED.getCode(), "还有子工序没完成，不能完成");
-//                }
-//
-//                Double progress = Double.valueOf((actData.getInteger("progress") + 1) / actData.getJSONArray("actionArray").size() * 100);
-//                //update actions' total progress
-//                if (progress == 100.0) {
-//                    mapKey.put("info.lST", 13);
-//                    listCol.put("lST", 13);
-//                }
-//                mapKey.put("action.wn2progress", progress);
-//                orderAction.setBcdStatus(status);
-//
-//                message = "[已完成]" + msg;
-//                isStateChg = true;
-//                duraType = "allEnd";
-//
-//                break;
-//            case 3:
-//            case -8: // resume OItem
-//                if (orderAction.getBcdStatus() != 8) {
-//                    return retResult.ok(ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
-//
-////                            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能开始");
-//                }
-//
-//                message = "[已恢复执行]" + msg;
-//                orderAction.setBcdStatus(-8);
-//                res.put("isJoin", 1);
-//                res.put("id_Us", orderAction.getId_Us());
-//                isStateChg = true;
-//                duraType = "resume";
-//
-//                break;
-//            case 5: // 加入
-//                id_Us.add(tokData.getString("id_U"));
-//                orderAction.setId_Us(id_Us);
-//                message = tokData.getJSONObject("wrdNU").getString("cn") + "[加入成功]" + msg;
-//                // set back status to original status
-//                status = orderAction.getBcdStatus();
-//
-//                res.put("isJoin", 1);
-//                res.put("id_Us", orderAction.getId_Us());
-//                duraType = "start";
-//                break;
-//            case 6:
-//                id_Us.remove(tokData.getString("id_U"));
-//                orderAction.setId_Us(id_Us);
-//
-//                message = tokData.getJSONObject("wrdNU").getString("cn") + "[退出成功]" + msg;
-//                status = orderAction.getBcdStatus();
-//
-//                res.put("isJoin", 0);
-//                res.put("id_Us", orderAction.getId_Us());
-//                duraType = "end";
-//                break;
-//            case 7:
-//                if ((orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != -8)
-//                        || orderAction.getBisactivate() == 4) {
-//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能操作");
-//                }
-//                orderAction.setBisactivate(4);
-//                message = "[继续下一个]" + msg;
-//
-//                break;
-//            case 8: // pause
-//                if (orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3
-//                        && orderAction.getBcdStatus() != -8) {
-//                    throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "不能");
-//                }                    // 设置备注信息
-//                message = "[已暂停]" + msg;
-//                orderAction.setBcdStatus(status);
-//                isStateChg = true;
-//                duraType = "pause";
-//
-////                    logStatus = 1;
-//                break;
-//            case 9: // cancel
-//
-//                // pause but it's nothing special
-//                if (orderAction.getBcdStatus() == 8) {
-//                    // need to unpause then cancel
-//                    LogFlow logL = new LogFlow("action", id_FC,
-//                            id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-//                            orderAction.getId_OP(), id_O, index, tokData.getString("id_C"), orderOItem.getId_C(), "", tokData.getString("dep"), "[准备取消]", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
-//                    logL.setLogData_action(orderAction, orderOItem);
-//                    logL.getData().put("bcdStatus", -8);
-//                    ws.sendWS(logL);
-//                }
-//                // 设置备注信息
-//                orderAction.setBcdStatus(status);
-//                message = "[已取消]" + msg;
-//                isStateChg = true;
-//                duraType = "allEnd";
-//                break;
-//            case 54:
-//                // 设置备注信息
-//                // can start now, send a msg for status into 1, and then can start doing other buttons, very simple
-//                message = "[cusMsg-拒收]" + msg;
-//
-//                //Adding myself to the id_Us of action to indicate
-////                        id_Us.add(tokData.getString("id_U"));
-////                        orderAction.setId_Us(id_Us);
-////                        res.put("isJoin", 1);
-////                        res.put("id_Us", orderAction.getId_Us());
-////                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
-////                            mapKey.put("info.lST", 8);
-////                            listCol.put("lST", 8);
-////                        }
-//                orderAction.setBcdStatus(status);
-////                        duraType = "start";
-//                res.put("isJoin", 1);
-//                res.put("id_Us", orderAction.getId_Us());
-//                isStateChg = true;
-////                        duraType = "resume";
-//                break;
-//            case 55:
-//                message = "[cusMsg-删除]" + msg;
-//
-//                //Adding myself to the id_Us of action to indicate
-////                        id_Us.add(tokData.getString("id_U"));
-////                        orderAction.setId_Us(id_Us);
-////                        res.put("isJoin", 1);
-////                        res.put("id_Us", orderAction.getId_Us());
-////                        if (actData.getJSONObject("info").getInteger("lST") == 3 || actData.getJSONObject("info").getInteger("lST") == 7) {
-////                            mapKey.put("info.lST", 8);
-////                            listCol.put("lST", 8);
-////                        }
-//                orderAction.setBcdStatus(status);
-//                res.put("isJoin", 1);
-//                res.put("id_Us", orderAction.getId_Us());
-//                isStateChg = true;
-////                        duraType = "resume";
-//                break;
-//            case 53:
-//                message = "[已恢复执行]" + msg;
-//                orderAction.setBcdStatus(-8);
-//                res.put("isJoin", 1);
-//                res.put("id_Us", orderAction.getId_Us());
-//                isStateChg = true;
-//                duraType = "resume";
-//                break;
-//            default:
-//                message = taskName + "[无法操作]";
-//                break;
-//        }
-//
-//        // 设置产品状态
-//        String compId;
-//
-//        if (logType.endsWith("SL")) {
-//            compId = actData.getJSONObject("info").getString("id_CB");
-//        } else {
-//            compId = tokData.getString("id_C");
-//        }
-//
-//        if (isStateChg) {
-//
-//            if (status.equals(2) || status.equals(9))
-//            {
-//                //removing it from flowControl RefOP
-//                this.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
-//                        id_FC, id_FS, orderAction.getId_OP(), orderAction.getRefOP(), orderAction.getWrdNP(), orderAction.getIndex(), false );
-//            }
-//
-//            // Start making log with data
-//            LogFlow logL = new LogFlow("action", id_FC,
-//                    id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-//                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), message, 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
-//
-//            // Here set time info into action's log
-//            logL.setLogData_action(orderAction, orderOItem);
-//            logL.getData().put("id_Us",actData.getJSONArray("id_Us"));
-//
-//            if (duraType.equals("start") || duraType.equals("resume")) {
-//                logL.setActionTime(DateUtils.getTimeStamp(), 0L, duraType);
-//            } else if (duraType.equals("end") || duraType.equals("pause") || duraType.equals("allEnd")) {
-//                logL.setActionTime(0L, DateUtils.getTimeStamp(), duraType);
-//            }
-//
-//            logL.setId_Us(id_UsLog);
-//            ws.sendWS(logL);
-//        }
-//
-//        // setup User's Fav card
-//        if (duraType.equals("start"))
-//            this.setFavRecent(tokData.getString("id_C"), tokData.getString("id_U"), id_O, index, id_FC, id_FS,
-//                    orderOItem.getWrdN(), orderOItem.getPic());
-//        else if (duraType.equals("end")) {
-//            this.removeFavRecent(qt.setArray(tokData.getString("id_U")), id_O, index, id_FC, id_FS, orderAction.getArrUA());
-//            orderAction.getId_Us().remove(tokData.getString("id_U"));
-//        }
-//        else if (duraType.equals("allEnd"))
-//        {
-//            this.removeFavRecent(orderAction.getId_Us(), id_O, index, id_FC, id_FS, orderAction.getArrUA());
-//            orderAction.setId_Us(new JSONArray());
-//            LogFlow logDURA = new LogFlow("action", id_FC,
-//                    id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-//                    orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
-//
-//            // I am just fixing this by putting the "finish" time into calculation and ignoring the last log
-//            this.sumDura(id_O, index, logDURA);
-//        }
-//
-//
-////                LogFlow logL = new LogFlow("duraflow", id_FC,
-////                        id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
-////                        orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
-////
-////                if (duraType.equals("start") || duraType.equals("resume")) { //type start
-////                    // Start making log with data
-////                    logL.setLogData_duraflow(DateUtils.getTimeStamp(), 0L, duraType);
-////                    logL.setZcndesc("任务计时开始");
-////                    ws.sendWS(logL);
-//////casItemx, summ00s
-////                } else if (duraType.equals("end") || duraType.equals("pause")) { //type end
-////                    // End making log with data
-////                    logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
-////                    logL.setZcndesc("任务计时停止");
-////                    ws.sendWS(logL);
-////
-////                } else if (duraType.equals("allEnd")) { // type allEnd
-////                    for (int i = 0; i < orderAction.getId_Us().size(); i++) {
-////                        logL.setId_U(orderAction.getId_Us().getString(i));
-////                        logL.setGrpU("1000");
-////                        logL.setLogData_duraflow(0L, DateUtils.getTimeStamp(), duraType);
-////                        logL.setZcndesc("任务结束");
-////                        ws.sendWS(logL);
-////                    }
-////                }
-////                try {
-//        mapKey.put("action.objAction." + index, orderAction);
-//        qt.setMDContent(id_O, mapKey, Order.class);
-//
-//        if (null != listCol.getInteger("lST")) {
-//            qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
-//        }
-//
-//        // if Quest, send log + update OItem of myself = task = DG = above
-//        // get upPrnt data, and find the prob, set that status of Prob to status
-//
-//        //*** Here we set oStock qty to 1 whenever noP task is completed
-//        if (status == 2 && orderOItem.getId_P().equals(""))
-//        {
-//            Order oStockCheck = qt.getMDContent(id_O, Arrays.asList("info","oStock", "action", "oItem", "view"), Order.class);
-//            if (oStockCheck.getOStock() != null)
-//            {
-//                Double qty = oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).getDouble("wn2qtynow");
-//                Double qtyAdding = 1 - qty;
-//
-//                oStockCheck.getOStock().getJSONArray("objData").getJSONObject(index).put("wn2qtynow", 1.0);
-//                JSONObject listCol2 = new JSONObject();
-//                dbu.summOrder(oStockCheck, listCol2, qt.setArray("oStock"));
-////                qt.saveMD(oStockCheck);
-//                qt.setMDContent(id_O, qt.setJson("oStock", oStockCheck.getOStock()), Order.class);
-//
-//                qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
-//
-//                LogFlow log = new LogFlow(tokData, oStockCheck.getOItem(), oStockCheck.getAction(), "", id_O, index,
-//                        "assetflow", "qtyChg", orderAction.getRefOP() + "-" + orderOItem.getWrdN().getString("cn") +
-//                        " 完成了 " + qtyAdding, 3);
-//
-//                Double price = orderOItem.getWn4price() == null ? 0.0: orderOItem.getWn4price();
-//                log.setLogData_assetflow(qtyAdding, price, "","");
-//
-//                log.setId_Us(id_UsLog);
-//                ws.sendWS(log);
-//            }
-//            //getOStock (if not null)
-//            //was 0.3 then set to 1
-//            //send log that I finished 0.7
-//        }
-//
-//        if (orderAction.getBisactivate() == 7)
-//        {
-//            JSONObject upPrnt = orderAction.getUpPrnts().getJSONObject(0);
-//
-//            try {
-//                // if any null exception, catch
-//                JSONObject taskOwner = this.getActionData(upPrnt.getString("id_O"), upPrnt.getInteger("index"));
-//                OrderAction objAction = JSONObject.parseObject(JSON.toJSONString(taskOwner.get("orderAction")), OrderAction.class);
-//
-//                JSONObject probData = objAction.getProb().getJSONObject(upPrnt.getInteger("probIndex"));
-//                probData.put("bcdStatus", status);
-//
-//                qt.setMDContent(upPrnt.getString("id_O"),
-//                        qt.setJson("action.objAction." + upPrnt.getInteger("index"), objAction),
-//                        Order.class);
-//            } catch (RuntimeException e) {
-//                //System.out.println("shit A");
-//                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_AN_ERROR_OCCURRED.getCode(), "不能开始," + e);
-//            }
-//        } else if ((status == 2 && orderAction.getBisactivate() != 4) || status == 7) {
-//            // activate = 4 means Skip = already pushed Next
-//            if (orderAction.getUpPrnts().size() == 0 && orderOItem.getId_P().equals("")) {
-//                //Here for noP, DO NOT check parent, it will blow up
-//                this.updateNext(orderAction, tokData);
-//            }
-//            else {
-//                //for regular DG, we will go check our parent first
-//                //then push it together with myself because I am always the first Item
-//                this.updateParent(orderAction, tokData);
-//            }
-//        } else if (status == 1 && orderAction.getBmdpt() == 4)
-//        {
-//            // here I must check all my subParts, and see if they are prtPrev.size == 0
-//            // if so, push
-//            this.updateSon(orderAction, tokData);
-//        }
-//
-//
-//        // 抛出操作成功异常
-//        return retResult.ok(CodeEnum.OK.getCode(), res);
-//    }
 
     private void updateSon(OrderAction orderAction, JSONObject tokData)
     {
@@ -1816,12 +1415,12 @@ public class ActionServiceImpl implements ActionService {
             //System.out.println(ms);
             String time = qt.formatMs(ms);
             //System.out.println(time);
-            log.setData(qt.setJson("tDur", ms));
+            log.setData(qt.setJson("wntDur", ms));
             log.setZcndesc("任务总用时" + time);
             ws.sendWS(log);
         } catch (Exception e)
         {
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_ES_GET_DATA_IS_NULL.getCode(), "没有关联订单");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ES_GET_DATA_IS_NULL.getCode(), "没有关联订单");
         }
 
 //        return retResult.ok(CodeEnum.OK.getCode(), time);
@@ -1931,7 +1530,7 @@ public class ActionServiceImpl implements ActionService {
 
             if (id_O.equals(""))
             {                // 返回操作失败结果
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
             }
 
 
@@ -1980,7 +1579,7 @@ public class ActionServiceImpl implements ActionService {
         // 判断订单为空
         if (null == order || order.getOItem() == null || order.getAction() == null) {
 
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
         // 创建放回结果存储字典
         JSONObject result = new JSONObject();
@@ -2128,7 +1727,7 @@ public class ActionServiceImpl implements ActionService {
             OrderInfo unitInfo = JSONObject.parseObject(JSON.toJSONString(orderDataList.get(n).getInfo()), OrderInfo.class);
 
             if (unitInfo.getLST() != 7) {
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_ORDER_NEED_FINAL.getCode(), "");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_NEED_FINAL.getCode(), "");
             }
         }
         // After checked all lST, they are all 7 and ready to push
@@ -2263,7 +1862,7 @@ public class ActionServiceImpl implements ActionService {
             OrderInfo unitInfo = JSONObject.parseObject(JSON.toJSONString(orderDataList.get(n).getInfo()), OrderInfo.class);
 
             if (unitInfo.getLST() != 7) {
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_ORDER_NEED_FINAL.getCode(), "");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_NEED_FINAL.getCode(), "");
             }
         }
         // After checked all lST, they are all 7 and ready to push
@@ -2389,7 +1988,7 @@ public class ActionServiceImpl implements ActionService {
 
         if (id_O.equals(""))
         {                // 返回操作失败结果
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
         }
 
         // Converting id_FS/id_FC
@@ -2494,7 +2093,7 @@ public class ActionServiceImpl implements ActionService {
 
         if (id_O.equals(""))
         {                // 返回操作失败结果
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
         }
 
         JSONArray id_Us;
@@ -2506,7 +2105,7 @@ public class ActionServiceImpl implements ActionService {
         if (!id.equals(id_FS)) {
             Asset asset = qt.getConfig(myCompId,"a-auth","flowControl");
             if (null == asset || null == asset.getFlowControl()) {
-                throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_GET_ORDER_NULL.getCode(), "asset异常");
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_ORDER_NULL.getCode(), "asset异常");
             }
             JSONArray objData = asset.getFlowControl().getJSONArray("objData");
             id_Us = new JSONArray();
@@ -2707,7 +2306,7 @@ public class ActionServiceImpl implements ActionService {
 
         if (id_Prob.equals(""))
         {                // 返回操作失败结果
-            throw new ErrorResponseException(HttpStatus.OK, ChatEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
         }
 
         if (actData != null)
@@ -2993,42 +2592,40 @@ public class ActionServiceImpl implements ActionService {
     }
 
     @Override
-    public ApiResponse cancelOrder(String id_C,String id_O) {
-//        Order order = coupaUtil.getOrderByListKey(id_O, Arrays.asList("info"));
+    public ApiResponse cancelOrder(String id_C,String id_O, Integer bothLST) {
         Order order = qt.getMDContent(id_O, "info", Order.class);
         //Seller = 14, Buyer = 15, Both = 16
 
+
         // if I am both buyer and seller, internal order, whatever side I am, set it to both final
         if (order.getInfo().getId_C().equals(id_C) && order.getInfo().getId_C().equals(order.getInfo().getId_CB())) { //Check C== CB
-            order.getInfo().setLST(16);
+            order.getInfo().setLST(bothLST);
         } // I am id_CB Buyer
         else if (id_C.equals(order.getInfo().getId_CB())) { //if Seller is REAL
             if (qt.judgeComp(id_C, order.getInfo().getId_C()) == 1) {
                 if (order.getInfo().getLST() == 14) { // if they confirmed, set to both confirm
-                    order.getInfo().setLST(16);
+                    order.getInfo().setLST(bothLST);
                 } else {
                     order.getInfo().setLST(15);
                 }
             } else {
                 // if otherComp is fake, set to both confirm
-                order.getInfo().setLST(16);
+                order.getInfo().setLST(bothLST);
             }
         } else // I am Seller
         { //if Buyer is REAL
             if (qt.judgeComp(id_C, order.getInfo().getId_CB()) == 1) {
                 if (order.getInfo().getLST() == 15) { // if they confirmed, set to both confirm
-                    order.getInfo().setLST(16);
+                    order.getInfo().setLST(bothLST);
                 } else {
                     order.getInfo().setLST(14);
                 }
             } else {
                 // if otherComp is fake, set to both confirm
-                order.getInfo().setLST(16);
+                order.getInfo().setLST(bothLST);
             }
         }
-//        JSONObject mapKey = new JSONObject();
-//        mapKey.put("info.lST", order.getInfo().getLST());
-//        coupaUtil.updateOrderByListKeyVal(id_O, mapKey);
+
         qt.setMDContent(id_O, qt.setJson("info.lST", order.getInfo().getLST()), Order.class);
         return retResult.ok(CodeEnum.OK.getCode(), order.getInfo());
     }
@@ -3075,7 +2672,7 @@ public class ActionServiceImpl implements ActionService {
         Asset assetData = qt.getConfig(id_C, "a-auth", "flowControl");
         if (null == assetData) {
             // 返回操作失败结果
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, ChatEnum.ERR_GET_DATA_NULL.getCode(), "获取数据为空");
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, ErrEnum.ERR_GET_DATA_NULL.getCode(), "获取数据为空");
         }
         JSONArray result = new JSONArray();
 

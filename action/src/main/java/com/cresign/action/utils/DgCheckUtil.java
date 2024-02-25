@@ -2,8 +2,8 @@ package com.cresign.action.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cresign.tools.config.async.ActionEnum;
 import com.cresign.tools.dbTools.Qt;
+import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Prod;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -167,10 +167,10 @@ public class DgCheckUtil {
             checkUtilCore(pidList, id_P, myCompId, nextPart, isRecurred, isEmpty, stat, id_Ps);
 
             if (isRecurred.size() > 0) {
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), id_P);
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), id_P);
             }
             if (isEmpty.size() > 0) {
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
             }
         }
     }
@@ -203,10 +203,10 @@ public class DgCheckUtil {
             checkUtilCore(pidList, id_P, myCompId, nextPart, isRecurred, isEmpty, stat, id_Ps);
 
             if (isRecurred.size() > 0) {
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_RECURRED.getCode(), id_P);
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), id_P);
             }
             if (isEmpty.size() > 0) {
-                throw new ErrorResponseException(HttpStatus.OK, ActionEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
             }
         }
     }

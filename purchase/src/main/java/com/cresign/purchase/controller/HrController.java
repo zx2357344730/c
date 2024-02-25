@@ -69,4 +69,15 @@ public class HrController {
         }
     }
 
+    @SecurityParameter
+    @PostMapping("/v1/delLBUser")
+    public ApiResponse delLBUser(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return hrService.delLBUser(resJson.getString("id_U"), tokData.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.delLBUser", e);
+        }
+    }
+
 }
