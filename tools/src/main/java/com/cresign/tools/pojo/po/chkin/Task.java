@@ -54,7 +54,7 @@ public class Task {
     /**
      * 总共时间
      */
-    private Long teDurTotal;
+    private Long wntDurTotal;
     /**
      * 延迟总时间
      */
