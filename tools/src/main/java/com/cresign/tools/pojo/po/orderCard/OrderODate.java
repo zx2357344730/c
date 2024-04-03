@@ -1,5 +1,6 @@
 package com.cresign.tools.pojo.po.orderCard;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -82,20 +83,20 @@ public class OrderODate {
      */
     private Long taDurTotal;
 
-//    /**
-//     * 预计开始时间
-//     */
-//    private Long teStart;
-//
+    /**
+     * 预计开始时间
+     */
+    private Long teStart;
+
 //    /**
 //     * 实际开始时间
 //     */
 //    private Long taStart;
 //
-//    /**
-//     * 预计完成时间
-//     */
-//    private Long teFin;
+    /**
+     * 预计完成时间
+     */
+    private Long teFin;
 //
 //    /**
 //     * 实际完成时间
@@ -176,5 +177,20 @@ public class OrderODate {
      * 当前任务的所在日期时间戳
      */
     private JSONObject teDate;
+
+    /**
+     * 合并oDates任务列表
+     */
+    private JSONArray mergeDates;
+
+    /**
+     * 名称
+     */
+    private JSONObject wrdN;
+
+    /**
+     * 层级
+     */
+    private int layer;
 
 }

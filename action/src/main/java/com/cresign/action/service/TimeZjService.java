@@ -190,4 +190,10 @@ public interface TimeZjService {
      */
     ApiResponse getTeStartList(JSONArray orderInfo);
 
+    ApiResponse updateODate();
+
+    ApiResponse delExcessiveODateField();
+
+    ApiResponse getClearOldTask(String id_O,int dateIndex,String id_C);
+
 }

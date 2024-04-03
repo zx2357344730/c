@@ -1,15 +1,14 @@
 package com.cresign.action.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.service.TimeZjServiceTimeConflict;
 import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.pojo.po.chkin.Task;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Description 时间处理(处理时间冲突方法)类
@@ -70,15 +69,27 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
             ,boolean isComprehensiveHandle,JSONObject depAllTime) {
         // 创建返回结果对象
         JSONObject result = new JSONObject();
+
 //        System.out.println("处理时间冲突方法-q");
         // 创建冲突任务集合
+//        List<Task> conflict = new ArrayList<>();
+        JSONObject thisInfoQuiltConflictInfo = getThisInfoQuiltConflictInfo(thisInfo);
         List<Task> conflict = new ArrayList<>();
+        if (null != thisInfoQuiltConflictInfo && null != thisInfoQuiltConflictInfo.getJSONArray("conflict") && thisInfoQuiltConflictInfo.getJSONArray("conflict").size() != 0) {
+            JSONArray conflictThis = thisInfoQuiltConflictInfo.getJSONArray("conflict");
+            for (int con = 0; con < conflictThis.size(); con++) {
+                conflict.add(JSONObject.parseObject(JSON.toJSONString(conflictThis.getJSONObject(con)), Task.class));
+            }
+        }
+        System.out.println("输出获取this冲突:");
+        System.out.println(JSON.toJSONString(conflict));
         // 调用冲突处理核心方法
         JSONObject handleTimeConflictCoreInfo = handleTimeConflictCore(task, contrastTaskOne, contrastTaskTwo, zon
                 , tasks, i, conflict,getTeS(random, grpB, dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                 ,random,grpB,dep,teDate,isGetTaskPattern,getCurrentTimeStampPattern,sho,csSta,randomAll,xbAndSbAll
                 ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
+                ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime
+                ,thisInfo,actionIdO);
 //        System.out.println("处理时间冲突方法-2-q");
         // 获取任务余剩时间
         zon = handleTimeConflictCoreInfo.getLong("zon");
@@ -91,6 +102,8 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
         // 获取当前时间戳
         long teSB = handleTimeConflictCoreInfo.getLong("teSB");
 //        System.out.println("storageTaskIsProcessedComplete外:"+storageTaskIsProcessedComplete);
+        System.out.println("输出冲突:");
+        System.out.println(JSON.toJSONString(conflict));
         // 获取存储任务是否被处理完状态参数：storageTaskIsProcessedComplete == 0 任务没有被处理完、isJ == 1 任务已经被处理完了
         if (storageTaskIsProcessedComplete == 0) {
             // 开启循环
@@ -123,7 +136,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 ,teDate,isGetTaskPattern,0,sho,csSta
                                 ,randomAll,xbAndSbAll,objTaskAll,storageTaskWhereTime,allImageTotalTime
                                 ,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState
-                                ,allImageTeDate,isComprehensiveHandle,depAllTime);
+                                ,allImageTeDate,isComprehensiveHandle,depAllTime,thisInfo,actionIdO);
                         // 获取任务余剩时间
                         zonInside = handleTimeConflictCoreInfo.getLong("zon");
                         // 获取存储任务是否被处理完状态参数：storageTaskIsProcessedComplete == 0 任务没有被处理完、isJ == 1 任务已经被处理完了
@@ -183,21 +196,220 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
             setImageTasks(tasks,grpB,dep,tasks.get(0).getTePStart(),allImageTasks);
             setImageZon(zon,grpB,dep,tasks.get(0).getTePStart(),allImageTotalTime);
         }
-        // 调用处理冲突核心方法
-        JSONObject handleTimeConflictEndInfo = timeZjServiceComprehensive.handleTimeConflictEnd(i
-                ,tasks,conflict,zon,random,dep,grpB,timeConflictCopy,isGetTaskPattern
-                ,getCurrentTimeStampPattern,sho,csSta,randomAll,xbAndSbAll,actionIdO,objTaskAll
-                ,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime
-                ,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState
-                ,recordNoOperation,tePFinish,clearStatus,thisInfo,allImageTeDate,isSetImage,endTime,depAllTime);
+
+        // 相同任务存储字典
+        Map<String,Map<String,Task>> confTask = new HashMap<>();
+        // 相同任务存储下标字典
+        Map<String,Map<String,Integer>> confIndex = new HashMap<>();
+        // 需要更新存储字典
+        Map<String,String> updateConf = new HashMap<>();
+        // 需要删除集合
+        List<Integer> removeConf = new ArrayList<>();
+        // 遍历冲突的任务集合
+        for (int n = 0; n < conflict.size(); n++) {
+            // 获取循环当前任务
+            Task taskThis = conflict.get(n);
+            // 根据订单编号获取相同任务信息
+            Map<String,Task> taskGetId_O = confTask.get(taskThis.getId_O());
+            // 判断为空
+            if (null == taskGetId_O) {
+                // 创建相同任务信息
+                taskGetId_O = new HashMap<>();
+                taskGetId_O.put(taskThis.getIndex()+"",taskThis);
+                confTask.put(taskThis.getId_O(),taskGetId_O);
+                // 创建记录信息
+                Map<String, Integer> indexGetId_O = new HashMap<>();
+                indexGetId_O.put(taskThis.getIndex()+"",n);
+                confIndex.put(taskThis.getId_O(),indexGetId_O);
+            } else {
+                // 不为空，获取下标任务信息
+                Task taskNew = taskGetId_O.get(taskThis.getIndex() + "");
+                // 获取记录下标
+                Map<String, Integer> indexGetId_O = confIndex.get(taskThis.getId_O());
+                // 判断下标任务信息为空
+                if (null == taskNew) {
+                    // 创建记录信息
+                    taskGetId_O.put(taskThis.getIndex() + "",taskThis);
+                    confTask.put(taskThis.getId_O(),taskGetId_O);
+
+                    indexGetId_O.put(taskThis.getIndex() + "",n);
+                    confIndex.put(taskThis.getId_O(),indexGetId_O);
+                } else {
+                    // 不为空，添加信息
+                    taskNew.setWntDurTotal(taskNew.getWntDurTotal()+taskThis.getWntDurTotal());
+                    String updateId_O = updateConf.get(taskThis.getId_O());
+                    taskGetId_O.put(taskNew.getIndex() + "",taskNew);
+                    confTask.put(taskNew.getId_O(),taskGetId_O);
+                    removeConf.add(n);
+                    // 判断更新状态为空
+                    if (null == updateId_O) {
+                        // 添加信息
+                        updateConf.put(taskThis.getId_O(),taskThis.getIndex()+"");
+                    }
+                }
+            }
+        }
+        // 遍历更新的下标
+        for (String o : updateConf.keySet()) {
+            // 根据订单编号获取下标
+            String ind = updateConf.get(o);
+            // 获取冲突下标信息
+            Map<String, Integer> indexGetId_O = confIndex.get(o);
+            // 获取冲突下标
+            int index = indexGetId_O.get(ind);
+            // 获取冲突任务信息
+            Map<String, Task> taskGetId_O = confTask.get(o);
+            // 获取任务信息
+            Task taskNew = taskGetId_O.get(ind);
+            // 更新任务
+            conflict.set(index,taskNew);
+        }
+        // 遍历需要删除集合
+        for (int r = removeConf.size()-1; r >= 0; r--) {
+            // 获取删除下标
+            int indexNewThis = removeConf.get(r);
+            // 删除
+            conflict.remove(indexNewThis);
+        }
+        // 创建删除集合
+        removeConf = new ArrayList<>();
+        // 创建重复记录字典
+        Map<String,Map<String,Integer>> record = new HashMap<>();
+        // 遍历冲突任务集合
+        for (int n = 0; n < conflict.size(); n++) {
+            // 获取任务信息
+            Task taskNew = conflict.get(n);
+            // 获取订单编号记录信息
+            Map<String,Integer> id_OInfo = record.get(taskNew.getId_O());
+            // 判断为空
+            if (null == id_OInfo) {
+                // 创建并添加记录信息
+                Map<String,Integer> id_OInfoNew = new HashMap<>();
+                id_OInfoNew.put(taskNew.getIndex()+"",n);
+                record.put(taskNew.getId_O(),id_OInfoNew);
+            } else {
+                // 不为空，遍历记录信息所有键
+                for (String indexStr : id_OInfo.keySet()) {
+                    // 根据键获取下标
+                    int id_OInfoInt = Integer.parseInt(indexStr);
+                    // 判断下标小于当前
+                    if (id_OInfoInt < taskNew.getIndex()) {
+                        // 添加外层任务到删除集合
+                        removeConf.add(n);
+                    } else {
+                        // 添加当前任务到删除集合
+                        removeConf.add(id_OInfo.get(indexStr));
+                        Map<String,Integer> id_OInfoNew = new HashMap<>();
+                        id_OInfoNew.put(taskNew.getIndex()+"",n);
+                        record.put(taskNew.getId_O(),id_OInfoNew);
+                    }
+                    break;
+                }
+            }
+        }
+        for (int r = removeConf.size()-1; r >= 0; r--) {
+            int indexNewThis = removeConf.get(r);
+            conflict.remove(indexNewThis);
+        }
+        System.out.println("被冲突的任务-最后清理后:");
+        System.out.println(JSON.toJSONString(conflict));
+        int quiltConflictInfoAddIndex = getQuiltConflictInfoAddIndex(thisInfo);
+        // 根据被冲突的任务当前处理下标获取被冲突任务信息
+        Task conflictTask = conflict.get(quiltConflictInfoAddIndex);
+        // 深度复制被冲突任务信息
+        Task conflictTaskCopy = TaskObj.getTaskY(conflictTask);
+        // 定义存储删除信息
+        JSONArray removeIndex = new JSONArray();
+        // 遍历当前处理任务信息列表
+        for (int t = 1; t < tasks.size(); t++) {
+            // 获取任务信息
+            Task taskInside = tasks.get(t);
+            // 判断循环订单编号等于当前处理订单编号，并且循环下标等于当前处理下标
+            if (taskInside.getId_O().equals(conflictTaskCopy.getId_O())
+                    && Objects.equals(taskInside.getIndex(), conflictTaskCopy.getIndex())) {
+                // 添加删除下标
+                removeIndex.add(t);
+            }
+        }
+        // 遍历删除信息
+        for (int r = removeIndex.size()-1; r >= 0; r--) {
+            // 转换信息为int
+            int indexNewThis = Integer.parseInt(removeIndex.getString(r));
+            // 删除指定下标的任务
+            tasks.remove(indexNewThis);
+        }
+        // 获取被清理的任务信息
+        JSONObject id_OAndIndexTaskInfo = clearOldTask(conflictTaskCopy.getId_O()
+                , conflictTaskCopy.getDateIndex(), conflictTaskCopy.getId_C(),objTaskAll
+                ,clearStatus,allImageTasks,allImageTotalTime
+                ,allImageTeDate,tasks,isSetImage,depAllTime,random,onlyFirstTimeStamp,actionIdO
+                ,thisInfo,conflictTaskCopy.getLayer(),conflictTaskCopy.getId_PF());
+        // 重置一天时间
+        zon = 86400L;
+        // 计算余剩时间
+        for (Task taskNew : tasks) {
+            zon -= taskNew.getWntDurTotal();
+        }
+        JSONObject quiltConflictInfo;
+        JSONArray addIndexS;
+        JSONObject indexInfo;
+        if (quiltConflictInfoAddIndex == 0) {
+            quiltConflictInfo = new JSONObject();
+            addIndexS = new JSONArray();
+            indexInfo = new JSONObject();
+        } else {
+            quiltConflictInfo = getThisInfoQuiltConflictInfo(thisInfo);
+            addIndexS = quiltConflictInfo.getJSONArray("addIndexS");
+            indexInfo = quiltConflictInfo.getJSONObject("indexInfo");
+        }
+        addIndexS.add(quiltConflictInfoAddIndex);
+        quiltConflictInfo.put("addIndexS",addIndexS);
+        quiltConflictInfo.put("addIndex",quiltConflictInfoAddIndex);
+        JSONObject quiltConflictInfoSon = new JSONObject();
+        quiltConflictInfoSon.put("thisI",i);
+        quiltConflictInfoSon.put("thisTime",endTime);
+        quiltConflictInfoSon.put("id_O",conflictTaskCopy.getId_O());
+        quiltConflictInfoSon.put("dateIndex",conflictTaskCopy.getDateIndex());
+        quiltConflictInfoSon.put("id_OAndIndexTaskInfo",id_OAndIndexTaskInfo);
+        indexInfo.put(quiltConflictInfoAddIndex+"",quiltConflictInfoSon);
+        quiltConflictInfo.put("indexInfo",indexInfo);
+        JSONArray conflictArr = new JSONArray();
+        for (Task taskNew : conflict) {
+            conflictArr.add(JSONObject.parseObject(JSON.toJSONString(taskNew)));
+        }
+        quiltConflictInfo.put("conflict",conflictArr);
+        setThisInfoQuiltConflictInfo(thisInfo,quiltConflictInfo);
+        setThisInfoIsConflict(thisInfo,true);
+
+        System.out.println("当前任务清理-后:"+zon);
+        System.out.println(JSON.toJSONString(tasks));
+        System.out.println(JSON.toJSONString(conflictTaskCopy));
+        System.out.println(JSON.toJSONString(id_OAndIndexTaskInfo));
+
+//        // 调用处理冲突核心方法
+//        JSONObject handleTimeConflictEndInfo = timeZjServiceComprehensive.handleTimeConflictEnd(i
+//                ,tasks,conflict,zon,random,dep,grpB,timeConflictCopy,isGetTaskPattern
+//                ,getCurrentTimeStampPattern,sho,csSta,randomAll,xbAndSbAll,actionIdO,objTaskAll
+//                ,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime
+//                ,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState
+//                ,recordNoOperation,tePFinish,clearStatus,thisInfo,allImageTeDate,isSetImage,endTime,depAllTime);
+//        System.out.println("处理时间冲突方法-2h-H:"+tePFinish);
+//        System.out.println(JSON.toJSONString(allImageTeDate));
+//        result.put("zon",handleTimeConflictEndInfo.getLong("zon"));
+//        // 存储问题状态参数: isProblemState = 0 正常、isPd = 1 订单编号为空、isPd = 2 主生产部件
+//        result.put("isProblemState",handleTimeConflictEndInfo.getInteger("isProblemState"));
+//        result.put("tePFinish",tePFinish);
+//        result.put("endTime",endTime);
+//        result.put("isSetEnd", handleTimeConflictEndInfo.getBoolean("isSetEnd") == null || handleTimeConflictEndInfo.getBoolean("isSetEnd"));
+
         System.out.println("处理时间冲突方法-2h-H:"+tePFinish);
         System.out.println(JSON.toJSONString(allImageTeDate));
-        result.put("zon",handleTimeConflictEndInfo.getLong("zon"));
+        result.put("zon",zon);
         // 存储问题状态参数: isProblemState = 0 正常、isPd = 1 订单编号为空、isPd = 2 主生产部件
-        result.put("isProblemState",handleTimeConflictEndInfo.getInteger("isProblemState"));
+        result.put("isProblemState",0);
         result.put("tePFinish",tePFinish);
         result.put("endTime",endTime);
-        result.put("isSetEnd", handleTimeConflictEndInfo.getBoolean("isSetEnd") == null || handleTimeConflictEndInfo.getBoolean("isSetEnd"));
+        result.put("isSetEnd", false);
         return result;
     }
 
@@ -243,13 +455,13 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
             , JSONObject storageTaskWhereTime, JSONObject allImageTotalTime
             , Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks, JSONObject onlyFirstTimeStamp
             , JSONObject newestLastCurrentTimestamp, JSONObject onlyRefState,JSONObject allImageTeDate
-            ,boolean isComprehensiveHandle,JSONObject depAllTime) {
+            ,boolean isComprehensiveHandle,JSONObject depAllTime,JSONObject thisInfo,JSONObject actionIdO) {
         // 调用冲突处理核心方法
         JSONObject handleTimeConflictCoreInfo = handleTimeConflictCore(task, contrastTaskOne, contrastTaskTwo
                 , zon, tasks, j, conflict,teSB,random,grpB,dep,teDate,isGetTaskPattern,getCurrentTimeStampPattern
                 ,sho,csSta,randomAll,xbAndSbAll,objTaskAll,storageTaskWhereTime
                 ,allImageTotalTime,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp
-                ,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
+                ,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime,thisInfo,actionIdO);
         // 获取任务余剩时间
         zon = handleTimeConflictCoreInfo.getLong("zon");
         // 获取存储任务是否被处理完状态参数：isJ2 == 0 任务没有被处理完、isJ2 == 1 任务已经被处理完了
@@ -296,7 +508,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 , k, conflict, teSBNew,random,grpB,dep,teDate,isGetTaskPattern,0,sho
                                 ,csSta,randomAll,xbAndSbAll,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks
                                 ,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,allImageTeDate
-                                ,isComprehensiveHandle,depAllTime);
+                                ,isComprehensiveHandle,depAllTime,thisInfo,actionIdO);
                         // 获取任务余剩时间
                         zonInside = handleTimeConflictCoreInfo.getLong("zon");
                         // 获取存储任务是否被处理完状态参数：isJ2 == 0 任务没有被处理完、isJ2 == 1 任务已经被处理完了
@@ -408,7 +620,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
             , JSONObject storageTaskWhereTime, JSONObject allImageTotalTime
             , Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks, JSONObject onlyFirstTimeStamp
             , JSONObject newestLastCurrentTimestamp, JSONObject onlyRefState,JSONObject allImageTeDate
-            ,boolean isComprehensiveHandle,JSONObject depAllTime) {
+            ,boolean isComprehensiveHandle,JSONObject depAllTime,JSONObject thisInfo, JSONObject actionIdO) {
         System.out.println("处理时间冲突核心方法-q");
         // 定义存储最后结束时间
         long tePFinish = 0;
@@ -424,7 +636,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
         int storageTaskIsProcessedComplete = 0;
         // 获取余剩时间（对比任务2的开始时间-对比任务1的结束时间）
         long remainingTime = contrastTaskTwo.getTePStart() - contrastTaskOne.getTePFinish();
-        long teDurTotal;
+        long wntDurTotal;
         /*
          * 存储冲突处理模式参数：conflictHandlePattern
          * 1、isP == 0 正常处理（使用所有冲突处理方法）不携带任务集合当前下标往后的循环处理
@@ -453,13 +665,13 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
             // 判断对比任务是系统任务
             if (contrastTaskThree.getPriority() == -1) {
                 // 获取开始时间（对比任务2的开始时间+当前任务的总时间）
-                long startTime = contrastTaskTwo.getTePStart() + task.getTeDurTotal();
+                long startTime = contrastTaskTwo.getTePStart() + task.getWntDurTotal();
                 // 判断开始时间大于对比任务3的开始时间
                 if (startTime > contrastTaskThree.getTePStart()) {
                     long timeDiffer = contrastTaskTwo.getTePStart() - contrastTaskOne.getTePFinish();
                     int accumulation = 1;
                     if (timeDiffer > 0) {
-                        long durTotal = task.getTeDurTotal() - timeDiffer;
+                        long durTotal = task.getWntDurTotal() - timeDiffer;
                         boolean isResult = false;
                         if (durTotal > 0) {
                             // 任务余剩时间累减
@@ -471,14 +683,15 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             System.out.println(JSON.toJSONString(tasks));
                             tePFinish = (contrastTaskOne.getTePFinish()+timeDiffer);
                             endTime = tasks.get(0).getTePStart();
-                            teDurTotal = timeDiffer;
+                            wntDurTotal = timeDiffer;
                             // 更新当前任务的开始时间
                             task.setTePStart(contrastTaskOne.getTePFinish());
                             // 更新任务的结束时间
                             task.setTePFinish((contrastTaskOne.getTePFinish()+timeDiffer));
-                            task.setTeDurTotal(durTotal);
+                            task.setWntDurTotal(durTotal);
                             System.out.println("处理时间冲突核心方法--xx-1");
                             accumulation++;
+                            setThisInfoTimeCount(thisInfo);
                         } else if (durTotal == 0) {
                             // 任务余剩时间累减
                             zon -= timeDiffer;
@@ -489,48 +702,50 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             System.out.println(JSON.toJSONString(tasks));
                             tePFinish = (contrastTaskOne.getTePFinish()+timeDiffer);
                             endTime = tasks.get(0).getTePStart();
-                            teDurTotal = timeDiffer;
+                            wntDurTotal = timeDiffer;
                             // 更新当前任务的开始时间
                             task.setTePStart(contrastTaskOne.getTePFinish());
                             // 更新任务的结束时间
                             task.setTePFinish((contrastTaskOne.getTePFinish()+timeDiffer));
-                            task.setTeDurTotal(0L);
+                            task.setWntDurTotal(0L);
                             System.out.println("处理时间冲突核心方法--xx-2");
                             conflictHandlePattern = 5;
                             result.put("taskIsProcessedComplete",2);
                             storageTaskIsProcessedComplete = 1;
                             isResult = true;
+                            setThisInfoTimeCount(thisInfo);
                         } else {
                             // 任务余剩时间累减
-                            zon -= task.getTeDurTotal();
+                            zon -= task.getWntDurTotal();
                             System.out.println(JSON.toJSONString(tasks));
                             // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
                             tasks.add(i+1, TaskObj.getTaskX(contrastTaskOne.getTePFinish()
-                                    , (contrastTaskOne.getTePFinish()+task.getTeDurTotal()),task.getTeDurTotal(),task));
+                                    , (contrastTaskOne.getTePFinish()+task.getWntDurTotal()),task.getWntDurTotal(),task));
                             System.out.println(JSON.toJSONString(tasks));
-                            tePFinish = (contrastTaskOne.getTePFinish()+task.getTeDurTotal());
+                            tePFinish = (contrastTaskOne.getTePFinish()+task.getWntDurTotal());
                             endTime = tasks.get(0).getTePStart();
-                            teDurTotal = 0L;
+                            wntDurTotal = 0L;
                             // 更新当前任务的开始时间
                             task.setTePStart(contrastTaskOne.getTePFinish());
                             // 更新任务的结束时间
-                            task.setTePFinish((contrastTaskOne.getTePFinish()+task.getTeDurTotal()));
-                            task.setTeDurTotal(0L);
+                            task.setTePFinish((contrastTaskOne.getTePFinish()+task.getWntDurTotal()));
+                            task.setWntDurTotal(0L);
                             System.out.println("处理时间冲突核心方法--xx-3");
                             conflictHandlePattern = 5;
                             result.put("taskIsProcessedComplete",2);
                             storageTaskIsProcessedComplete = 1;
                             isResult = true;
+                            setThisInfoTimeCount(thisInfo);
                         }
                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                        addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,teDurTotal);
+                        addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,wntDurTotal);
                         // 调用判断产品状态再调用写入任务所在日期方法的方法
-                        putTeDate(task.getId_O(),task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
+                        putTeDate(task.getId_O(),task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                 ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                         .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                         setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
                                 ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                ,teDurTotal,allImageTeDate,isGetTaskPattern,endTime);
+                                ,wntDurTotal,allImageTeDate,isGetTaskPattern,endTime);
                         if (isResult) {
                             result.put("zon",zon);
                             result.put("hTeStart",tePFinish);
@@ -546,61 +761,65 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                     if (task.getPriority() < contrastTaskOne.getPriority()) {
                         boolean isResult = false;
                         // 任务余剩时间累加
-                        zon += contrastTaskOne.getTeDurTotal();
+                        zon += contrastTaskOne.getWntDurTotal();
                         // 冲突任务集合添加对比任务2的任务信息
-                        conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(),contrastTaskOne.getTePFinish(),contrastTaskOne.getTeDurTotal(),contrastTaskOne));
+                        conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(),contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),contrastTaskOne));
+                        addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                        setThisInfoTimeCount(thisInfo);
+//                        addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                         // 调用添加或更新产品状态方法
                         addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskOne.getId_O(),contrastTaskOne.getIndex().toString(),0);
-                        long teDurTotalNew = task.getTeDurTotal()-contrastTaskOne.getTeDurTotal();
+                        long teDurTotalNew = task.getWntDurTotal()-contrastTaskOne.getWntDurTotal();
                         if (teDurTotalNew > 0) {
                             // 任务余剩时间累减
-                            zon -= contrastTaskOne.getTeDurTotal();
+                            zon -= contrastTaskOne.getWntDurTotal();
                             System.out.println(JSON.toJSONString(tasks));
                             // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
                             tasks.set((i+accumulation)-1, TaskObj.getTaskX(contrastTaskOne.getTePStart()
-                                    , contrastTaskOne.getTePFinish(),contrastTaskOne.getTeDurTotal(),task));
+                                    , contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),task));
                             System.out.println(JSON.toJSONString(tasks));
                             tePFinish = contrastTaskThree.getTePStart();
                             endTime = tasks.get(0).getTePStart();
-                            teDurTotal = contrastTaskOne.getTeDurTotal();
+                            wntDurTotal = contrastTaskOne.getWntDurTotal();
                             // 更新当前任务的开始时间
                             task.setTePStart(contrastTaskOne.getTePStart());
                             // 更新任务的结束时间
                             task.setTePFinish(contrastTaskOne.getTePFinish());
-                            task.setTeDurTotal(teDurTotalNew);
+                            task.setWntDurTotal(teDurTotalNew);
                             System.out.println("处理时间冲突核心方法-one-1");
-
+                            setThisInfoTimeCount(thisInfo);
                         } else {
                             // 任务余剩时间累减
-                            zon -= task.getTeDurTotal();
+                            zon -= task.getWntDurTotal();
                             System.out.println(JSON.toJSONString(tasks));
                             // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
                             tasks.set((i+accumulation)-1, TaskObj.getTaskX(contrastTaskOne.getTePStart()
-                                    , (contrastTaskOne.getTePStart()+task.getTeDurTotal()),task.getTeDurTotal(),task));
+                                    , (contrastTaskOne.getTePStart()+task.getWntDurTotal()),task.getWntDurTotal(),task));
                             System.out.println(JSON.toJSONString(tasks));
                             tePFinish = contrastTaskThree.getTePStart();
                             endTime = tasks.get(0).getTePStart();
-                            teDurTotal = task.getTeDurTotal();
+                            wntDurTotal = task.getWntDurTotal();
                             // 更新当前任务的开始时间
                             task.setTePStart(contrastTaskOne.getTePStart());
                             // 更新任务的结束时间
-                            task.setTePFinish(contrastTaskOne.getTePStart()+task.getTeDurTotal());
-                            task.setTeDurTotal(0L);
+                            task.setTePFinish(contrastTaskOne.getTePStart()+task.getWntDurTotal());
+                            task.setWntDurTotal(0L);
                             System.out.println("处理时间冲突核心方法-one-2");
                             result.put("taskIsProcessedComplete",2);
                             storageTaskIsProcessedComplete = 1;
                             isResult = true;
+                            setThisInfoTimeCount(thisInfo);
                         }
                         conflictHandlePattern = 5;
                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                        addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,teDurTotal);
+                        addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,wntDurTotal);
                         // 调用判断产品状态再调用写入任务所在日期方法的方法
-                        putTeDate(task.getId_O(),task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
+                        putTeDate(task.getId_O(),task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                 ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                         .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                         setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
                                 ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                ,teDurTotal,allImageTeDate,isGetTaskPattern,endTime);
+                                ,wntDurTotal,allImageTeDate,isGetTaskPattern,endTime);
                         if (isResult) {
                             result.put("zon",zon);
                             result.put("hTeStart",tePFinish);
@@ -619,11 +838,14 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             // 获取时间差（对比任务3的开始时间-当前任务的开始时间）
                             long timeDifference = contrastTaskThree.getTePStart() - contrastTaskTwo.getTePStart();
                             // 获取余剩总时间（当前任务总时间-时间差）
-                            remainingTime = task.getTeDurTotal() - timeDifference;
+                            remainingTime = task.getWntDurTotal() - timeDifference;
                             // 任务余剩时间累加
-                            zon += contrastTaskTwo.getTeDurTotal();
+                            zon += contrastTaskTwo.getWntDurTotal();
                             // 冲突任务集合添加对比任务2的任务信息
-                            conflict.add(TaskObj.getTaskX(task.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                            conflict.add(TaskObj.getTaskX(task.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                            addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                            setThisInfoTimeCount(thisInfo);
+//                            addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                             // 调用添加或更新产品状态方法
                             addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
                             // 任务余剩时间累减
@@ -634,25 +856,26 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             System.out.println(JSON.toJSONString(tasks));
                             tePFinish = contrastTaskThree.getTePStart();
                             endTime = tasks.get(0).getTePStart();
-                            teDurTotal = timeDifference;
+                            wntDurTotal = timeDifference;
                             // 更新当前任务的开始时间
                             task.setTePStart(contrastTaskTwo.getTePStart());
                             // 更新任务的结束时间
                             task.setTePFinish(contrastTaskThree.getTePStart());
                             // 更新当前任务的总时间
-                            task.setTeDurTotal(remainingTime);
+                            task.setWntDurTotal(remainingTime);
                             System.out.println("处理时间冲突核心方法--1");
                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                            addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,teDurTotal);
+                            addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,wntDurTotal);
                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                            putTeDate(task.getId_O(),task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
+                            putTeDate(task.getId_O(),task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                     ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                             .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                             setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
                                     ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                    ,teDurTotal,allImageTeDate,isGetTaskPattern,endTime);
+                                    ,wntDurTotal,allImageTeDate,isGetTaskPattern,endTime);
                             taskIndexAccumulation = 2;
                             conflictHandlePattern = 7;
+                            setThisInfoTimeCount(thisInfo);
                         }
                     } else {
                         // 存储是否反回结果
@@ -660,11 +883,14 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         // 获取时间差（对比任务3的开始时间-对比任务2的开始时间）
                         long timeDifference = contrastTaskThree.getTePStart() - contrastTaskTwo.getTePStart();
                         // 获取余剩总时间（当前任务总时间-时间差）
-                        remainingTime = task.getTeDurTotal() - timeDifference;
+                        remainingTime = task.getWntDurTotal() - timeDifference;
                         // 任务余剩时间累加
-                        zon += contrastTaskTwo.getTeDurTotal();
+                        zon += contrastTaskTwo.getWntDurTotal();
                         // 冲突任务集合添加对比任务2的任务信息
-                        conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                        conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                        addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                        setThisInfoTimeCount(thisInfo);
+//                        addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                         // 调用添加或更新产品状态方法
                         addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
                         if (remainingTime > 0) {
@@ -677,45 +903,47 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             System.out.println(JSON.toJSONString(tasks));
                             tePFinish = contrastTaskThree.getTePStart();
                             endTime = tasks.get(0).getTePStart();
-                            teDurTotal = timeDifference;
+                            wntDurTotal = timeDifference;
                             // 更新当前任务的开始时间
                             task.setTePStart(contrastTaskTwo.getTePStart());
                             // 更新任务的结束时间
                             task.setTePFinish(contrastTaskThree.getTePStart());
-                            task.setTeDurTotal(remainingTime);
+                            task.setWntDurTotal(remainingTime);
                             System.out.println("处理时间冲突核心方法--2");
                             conflictHandlePattern = 5;
+                            setThisInfoTimeCount(thisInfo);
                         } else {
                             // 任务余剩时间累减
-                            zon -= task.getTeDurTotal();
+                            zon -= task.getWntDurTotal();
                             System.out.println(JSON.toJSONString(tasks));
                             // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
                             tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart()
-                                    , (contrastTaskTwo.getTePStart()+task.getTeDurTotal()),task.getTeDurTotal(),task));
+                                    , (contrastTaskTwo.getTePStart()+task.getWntDurTotal()),task.getWntDurTotal(),task));
                             System.out.println(JSON.toJSONString(tasks));
-                            tePFinish = (contrastTaskTwo.getTePStart()+task.getTeDurTotal());
+                            tePFinish = (contrastTaskTwo.getTePStart()+task.getWntDurTotal());
                             endTime = tasks.get(0).getTePStart();
-                            teDurTotal = task.getTeDurTotal();
+                            wntDurTotal = task.getWntDurTotal();
                             // 更新当前任务的开始时间
                             task.setTePStart(contrastTaskTwo.getTePStart());
                             // 更新任务的结束时间
-                            task.setTePFinish((contrastTaskTwo.getTePStart()+task.getTeDurTotal()));
-                            task.setTeDurTotal(0L);
+                            task.setTePFinish((contrastTaskTwo.getTePStart()+task.getWntDurTotal()));
+                            task.setWntDurTotal(0L);
                             // 更新当前任务的开始时间
                             task.setTePStart(contrastTaskTwo.getTePStart());
                             System.out.println("处理时间冲突核心方法--3");
                             isResult = true;
                             storageTaskIsProcessedComplete = 1;
+                            setThisInfoTimeCount(thisInfo);
                         }
                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                        addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,teDurTotal);
+                        addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,wntDurTotal);
                         // 调用判断产品状态再调用写入任务所在日期方法的方法
-                        putTeDate(task.getId_O(),task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
+                        putTeDate(task.getId_O(),task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                 ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                         .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                         setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
                                 ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                ,teDurTotal,allImageTeDate,isGetTaskPattern,endTime);
+                                ,wntDurTotal,allImageTeDate,isGetTaskPattern,endTime);
                         taskIndexAccumulation += accumulation;
                         if (isResult) {
                             result.put("zon",zon);
@@ -742,7 +970,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                 // 累加下标
                 int accumulation = 1;
                 if (timeDiffer > 0) {
-                    long durTotal = task.getTeDurTotal() - timeDiffer;
+                    long durTotal = task.getWntDurTotal() - timeDiffer;
                     // 存储是否返回结果
                     boolean isResult = false;
 //                    System.out.println("timeDiffer:"+timeDiffer+" - durTotal:"+durTotal);
@@ -756,15 +984,16 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         System.out.println(JSON.toJSONString(tasks));
                         tePFinish = (contrastTaskOne.getTePFinish()+timeDiffer);
                         endTime = tasks.get(0).getTePStart();
-                        teDurTotal = timeDiffer;
+                        wntDurTotal = timeDiffer;
                         // 更新当前任务的开始时间
                         task.setTePStart(contrastTaskOne.getTePFinish());
                         // 更新任务的结束时间
                         task.setTePFinish((contrastTaskOne.getTePFinish()+timeDiffer));
-                        task.setTeDurTotal(durTotal);
+                        task.setWntDurTotal(durTotal);
                         System.out.println("处理时间冲突核心方法--xx-4");
                         accumulation++;
                         taskIndexAccumulation += 1;
+                        setThisInfoTimeCount(thisInfo);
                     } else if (durTotal == 0) {
                         // 任务余剩时间累减
                         zon -= timeDiffer;
@@ -775,48 +1004,50 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         System.out.println(JSON.toJSONString(tasks));
                         tePFinish = (contrastTaskOne.getTePFinish()+timeDiffer);
                         endTime = tasks.get(0).getTePStart();
-                        teDurTotal = timeDiffer;
+                        wntDurTotal = timeDiffer;
                         // 更新当前任务的开始时间
                         task.setTePStart(contrastTaskOne.getTePFinish());
                         // 更新任务的结束时间
                         task.setTePFinish((contrastTaskOne.getTePFinish()+timeDiffer));
-                        task.setTeDurTotal(0L);
+                        task.setWntDurTotal(0L);
                         System.out.println("处理时间冲突核心方法--xx-5");
                         conflictHandlePattern = 5;
                         result.put("taskIsProcessedComplete",2);
                         storageTaskIsProcessedComplete = 1;
                         isResult = true;
+                        setThisInfoTimeCount(thisInfo);
                     } else {
                         // 任务余剩时间累减
-                        zon -= task.getTeDurTotal();
+                        zon -= task.getWntDurTotal();
                         System.out.println(JSON.toJSONString(tasks));
                         // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
                         tasks.add(i+1, TaskObj.getTaskX(contrastTaskOne.getTePFinish()
-                                , (contrastTaskOne.getTePFinish()+task.getTeDurTotal()),task.getTeDurTotal(),task));
+                                , (contrastTaskOne.getTePFinish()+task.getWntDurTotal()),task.getWntDurTotal(),task));
                         System.out.println(JSON.toJSONString(tasks));
-                        tePFinish = (contrastTaskOne.getTePFinish()+task.getTeDurTotal());
+                        tePFinish = (contrastTaskOne.getTePFinish()+task.getWntDurTotal());
                         endTime = tasks.get(0).getTePStart();
-                        teDurTotal = 0L;
+                        wntDurTotal = 0L;
                         // 更新当前任务的开始时间
                         task.setTePStart(contrastTaskOne.getTePFinish());
                         // 更新任务的结束时间
-                        task.setTePFinish((contrastTaskOne.getTePFinish()+task.getTeDurTotal()));
-                        task.setTeDurTotal(0L);
+                        task.setTePFinish((contrastTaskOne.getTePFinish()+task.getWntDurTotal()));
+                        task.setWntDurTotal(0L);
                         System.out.println("处理时间冲突核心方法--xx-6");
                         conflictHandlePattern = 5;
                         result.put("taskIsProcessedComplete",2);
                         storageTaskIsProcessedComplete = 1;
                         isResult = true;
+                        setThisInfoTimeCount(thisInfo);
                     }
                     // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                    addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,teDurTotal);
+                    addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,wntDurTotal);
                     // 调用判断产品状态再调用写入任务所在日期方法的方法
-                    putTeDate(task.getId_O(),task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
+                    putTeDate(task.getId_O(),task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                             ,sho.getJSONObject(task.getId_O()).getJSONObject(task.getIndex()
                                     .toString()).getInteger("prodState"),storageTaskWhereTime);
                     setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
                             ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                            ,teDurTotal,allImageTeDate,isGetTaskPattern,endTime);
+                            ,wntDurTotal,allImageTeDate,isGetTaskPattern,endTime);
                     if (isResult) {
                         result.put("zon",zon);
                         result.put("hTeStart",tePFinish);
@@ -830,85 +1061,94 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                     }
                 }
                 // 获取开始时间（对比任务2的开始时间+当前任务的总时间）
-                long startTime = contrastTaskTwo.getTePStart()+task.getTeDurTotal();
+                long startTime = contrastTaskTwo.getTePStart()+task.getWntDurTotal();
                 // 存储是否返回结果
                 boolean isResult = false;
                 // 判断开始时间大于对比任务3的开始时间
                 if (startTime > contrastTaskThree.getTePFinish()) {
                     // 获取时间差2（当前任务的总时间-对比任务2的总时间）
-                    long timeDifference = task.getTeDurTotal() - contrastTaskTwo.getTeDurTotal();
+                    long timeDifference = task.getWntDurTotal() - contrastTaskTwo.getWntDurTotal();
                     // 更新当前任务的总时间
-                    task.setTeDurTotal(timeDifference);
+                    task.setWntDurTotal(timeDifference);
                     // 任务余剩时间累加
-                    zon += contrastTaskTwo.getTeDurTotal();
+                    zon += contrastTaskTwo.getWntDurTotal();
                     // 冲突任务集合添加对比任务2的任务信息
-                    conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                    conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                    addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                    setThisInfoTimeCount(thisInfo);
+//                    addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                     // 调用添加或更新产品状态方法
                     addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
                     // 任务余剩时间累减
-                    zon -= contrastTaskTwo.getTeDurTotal();
+                    zon -= contrastTaskTwo.getWntDurTotal();
                     System.out.println(JSON.toJSONString(tasks));
                     // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
-                    tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+contrastTaskTwo.getTeDurTotal())
-                            ,contrastTaskTwo.getTeDurTotal(),task));
+                    tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+contrastTaskTwo.getWntDurTotal())
+                            ,contrastTaskTwo.getWntDurTotal(),task));
                     System.out.println(JSON.toJSONString(tasks));
-                    tePFinish = (contrastTaskTwo.getTePStart()+contrastTaskTwo.getTeDurTotal());
+                    tePFinish = (contrastTaskTwo.getTePStart()+contrastTaskTwo.getWntDurTotal());
                     endTime = tasks.get(0).getTePStart();
-                    teDurTotal = contrastTaskTwo.getTeDurTotal();
+                    wntDurTotal = contrastTaskTwo.getWntDurTotal();
                     conflictHandlePattern = 1;
                     System.out.println("处理时间冲突核心方法--4");
+                    setThisInfoTimeCount(thisInfo);
                 } else {
-                    long surplusTime = task.getTeDurTotal() - contrastTaskTwo.getTeDurTotal();
+                    long surplusTime = task.getWntDurTotal() - contrastTaskTwo.getWntDurTotal();
                     // 任务余剩时间累加
-                    zon += contrastTaskTwo.getTeDurTotal();
+                    zon += contrastTaskTwo.getWntDurTotal();
                     // 冲突任务集合添加对比任务2的任务信息
                     conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart()
-                            ,contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                            ,contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                    setThisInfoTimeCount(thisInfo);
+                    addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+//                    addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                     // 调用添加或更新产品状态方法
                     addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O()
                             ,contrastTaskTwo.getIndex().toString(),0);
                     if (surplusTime > 0) {
                         // 任务余剩时间累减
-                        zon -= contrastTaskTwo.getTeDurTotal();
+                        zon -= contrastTaskTwo.getWntDurTotal();
                         System.out.println(JSON.toJSONString(tasks));
                         // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
-                        tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+contrastTaskTwo.getTeDurTotal())
-                                ,contrastTaskTwo.getTeDurTotal(),task));
+                        tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+contrastTaskTwo.getWntDurTotal())
+                                ,contrastTaskTwo.getWntDurTotal(),task));
                         System.out.println(JSON.toJSONString(tasks));
-                        tePFinish = (contrastTaskTwo.getTePStart()+contrastTaskTwo.getTeDurTotal());
+                        tePFinish = (contrastTaskTwo.getTePStart()+contrastTaskTwo.getWntDurTotal());
                         endTime = tasks.get(0).getTePStart();
-                        teDurTotal = contrastTaskTwo.getTeDurTotal();
-                        task.setTeDurTotal(surplusTime);
+                        wntDurTotal = contrastTaskTwo.getWntDurTotal();
+                        task.setWntDurTotal(surplusTime);
                         System.out.println("处理时间冲突核心方法--5-1");
                         conflictHandlePattern = 4;
+                        setThisInfoTimeCount(thisInfo);
                     } else {
                         // 任务余剩时间累减
-                        zon -= task.getTeDurTotal();
+                        zon -= task.getWntDurTotal();
                         System.out.println(JSON.toJSONString(tasks));
                         // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
-                        tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+task.getTeDurTotal())
-                                ,task.getTeDurTotal(),task));
+                        tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+task.getWntDurTotal())
+                                ,task.getWntDurTotal(),task));
                         System.out.println(JSON.toJSONString(tasks));
-                        tePFinish = (contrastTaskTwo.getTePStart()+task.getTeDurTotal());
+                        tePFinish = (contrastTaskTwo.getTePStart()+task.getWntDurTotal());
                         endTime = tasks.get(0).getTePStart();
-                        teDurTotal = task.getTeDurTotal();
-                        task.setTeDurTotal(0L);
+                        wntDurTotal = task.getWntDurTotal();
+                        task.setWntDurTotal(0L);
                         System.out.println("处理时间冲突核心方法--5-2");
                         result.put("taskIsProcessedComplete",2);
                         storageTaskIsProcessedComplete = 1;
                         isResult = true;
                         conflictHandlePattern = 3;
+                        setThisInfoTimeCount(thisInfo);
                     }
                 }
                 // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,teDurTotal);
+                addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,wntDurTotal);
                 // 调用判断产品状态再调用写入任务所在日期方法的方法
-                putTeDate(task.getId_O(),task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
+                putTeDate(task.getId_O(),task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                         ,sho.getJSONObject(task.getId_O()).getJSONObject(task.getIndex()
                                 .toString()).getInteger("prodState"),storageTaskWhereTime);
                 setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
                         ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                        ,teDurTotal,allImageTeDate,isGetTaskPattern,endTime);
+                        ,wntDurTotal,allImageTeDate,isGetTaskPattern,endTime);
                 if (isResult) {
                     result.put("zon",zon);
                     result.put("hTeStart",tePFinish);
@@ -932,135 +1172,194 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                 // 判断余剩总时间大于0
                 if (remainingTime > 0) {
                     // 获取时间差（余剩总时间-当前任务的开始时间）
-                    long timeDifference = remainingTime - task.getTeDurTotal();
+                    long timeDifference = remainingTime - task.getWntDurTotal();
                     // 获取存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
                     if (currentOnlyNumberState == 0) {
                         if (task.getTePStart() < contrastTaskTwo.getTePStart() && task.getTePStart() > contrastTaskOne.getTePFinish()) {
-                            long surplusTime = contrastTaskTwo.getTePStart() - task.getTePStart();
-                            // 判断时间差大于等于0
-                            if (timeDifference >= 0) {
-                                System.out.println(JSON.toJSONString(tasks));
-                                // 任务集合按照指定下标（i（任务下标）+1）添加任务信息
-                                tasks.add(i+accumulation, TaskObj.getTaskX(task.getTePStart()
-                                        ,(task.getTePStart()+task.getTeDurTotal())
-                                        ,task.getTeDurTotal(),task));
-                                System.out.println(JSON.toJSONString(tasks));
-                                // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                                addOrUpdateTeDate(teS,teDate,task.getTeDurTotal());
-                                // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                putTeDate(task.getId_O(), task.getIndex(),teS,prodState,storageTaskWhereTime);
-                                setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
-                                        ,teS,task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,tasks.get(0).getTePStart());
-                                // 任务余剩时间累减
-                                zon -= task.getTeDurTotal();
-                                // taskIsProcessedComplete：用于外部判断任务是否被处理完参数，jie == 0 没有被处理完、jie == 2 已经被处理完了
-                                result.put("taskIsProcessedComplete",2);
-                                result.put("zon",zon);
-                                result.put("hTeStart",(task.getTePStart()+task.getTeDurTotal()));
-                                result.put("teSB",teSB);
-                                storageTaskIsProcessedComplete = 1;
-                                result.put("storageTaskIsProcessedComplete",storageTaskIsProcessedComplete);
-                                result.put("tePFinish",(task.getTePStart()+task.getTeDurTotal()));
-                                result.put("endTime",tasks.get(0).getTePStart());
-                                conflictHandlePattern = 3;
-                                result.put("conflictHandlePattern",conflictHandlePattern);
-                                System.out.println("进入这里--=1");
-                                return result;
-                            } else {
-                                // 获取时间差2（当前任务的总时间-余剩总时间）
-                                long timeDifferenceNew = task.getTeDurTotal() - surplusTime;
-                                System.out.println(JSON.toJSONString(tasks));
-                                if (timeDifferenceNew > 0) {
-                                    // 任务集合按照指定下标（i（任务下标）+1）添加任务信息
-                                    tasks.add(i+accumulation, TaskObj.getTaskX(task.getTePStart(),(task.getTePStart()+surplusTime),surplusTime,task));
-                                    System.out.println(JSON.toJSONString(tasks));
-                                    tePFinish = (task.getTePStart()+surplusTime);
-                                    endTime = tasks.get(0).getTePStart();
-                                    // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                                    addOrUpdateTeDate(teS,teDate,surplusTime);
-                                    // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                    putTeDate(task.getId_O(), task.getIndex(),teS,prodState,storageTaskWhereTime);
-                                    setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
-                                            ,teS,surplusTime,allImageTeDate,isGetTaskPattern,endTime);
-                                    // 更新当前任务的总时间
-                                    task.setTeDurTotal(timeDifferenceNew);
-                                    // 更新当前任务的开始时间
-                                    task.setTePStart((task.getTePStart()+surplusTime));
-                                    // 更新任务的结束时间
-                                    task.setTePFinish((task.getTePStart()+surplusTime)+task.getTeDurTotal());
-                                    System.out.println("进入这里++=1:");
-                                    currentOnlyNumberState = 1;
-                                    // 添加存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
-                                    onlyRefState.put(random,1);
-                                    // 任务余剩时间累减
-                                    zon -= surplusTime;
-                                    accumulation++;
-                                    conflictHandlePattern = 4;
-                                } else {
-                                    // 任务集合按照指定下标（i（任务下标）+1）添加任务信息
-                                    tasks.add(i+accumulation, TaskObj.getTaskX(task.getTePStart(),(task.getTePStart()+task.getTeDurTotal()),task.getTeDurTotal(),task));
-                                    System.out.println(JSON.toJSONString(tasks));
-                                    tePFinish = (task.getTePStart()+task.getTeDurTotal());
-                                    endTime = tasks.get(0).getTePStart();
-                                    // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                                    addOrUpdateTeDate(teS,teDate,task.getTeDurTotal());
-                                    // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                    putTeDate(task.getId_O(), task.getIndex(),teS,prodState,storageTaskWhereTime);
-                                    setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
-                                            ,teS,task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
-                                    // 更新当前任务的总时间
-                                    task.setTeDurTotal(0L);
-                                    // 更新当前任务的开始时间
-                                    task.setTePStart((task.getTePStart()+task.getTeDurTotal()));
-                                    // 更新任务的结束时间
-                                    task.setTePFinish((task.getTePStart()+task.getTeDurTotal()));
-                                    System.out.println("进入这里++=1-New:");
-                                    // 添加存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
-                                    onlyRefState.put(random,1);
-                                    // 任务余剩时间累减
-                                    zon -= task.getTeDurTotal();
-                                    // taskIsProcessedComplete：用于外部判断任务是否被处理完参数，jie == 0 没有被处理完、jie == 2 已经被处理完了
-                                    result.put("taskIsProcessedComplete",2);
-                                    result.put("zon",zon);
-                                    result.put("hTeStart",tePFinish);
-                                    result.put("teSB",teSB);
-                                    storageTaskIsProcessedComplete = 1;
-                                    result.put("storageTaskIsProcessedComplete",storageTaskIsProcessedComplete);
-                                    result.put("tePFinish",tePFinish);
-                                    result.put("endTime",endTime);
-                                    conflictHandlePattern = 3;
-                                    result.put("conflictHandlePattern",conflictHandlePattern);
-                                    return result;
-                                }
-                            }
-                        }
-                        else if (task.getTePStart() >= contrastTaskOne.getTePFinish() && task.getTePFinish() > contrastTaskTwo.getTePStart() && task.getTePFinish() < contrastTaskTwo.getTePFinish()) {
-                            if (contrastTaskTwo.getPriority() != -1) {
+                            System.out.println(JSON.toJSONString(contrastTaskOne));
+                            System.out.println(JSON.toJSONString(contrastTaskTwo));
+                            if (task.getTePStart() >= contrastTaskTwo.getTePStart() && task.getTePStart() <= contrastTaskTwo.getTePFinish()
+                                    || task.getTePFinish() >= contrastTaskTwo.getTePStart() && task.getTePFinish() <= contrastTaskTwo.getTePFinish()) {
                                 // 任务余剩时间累加
-                                zon += contrastTaskTwo.getTeDurTotal();
+                                zon += contrastTaskTwo.getWntDurTotal();
                                 // 冲突任务集合添加对比任务2的任务信息
-                                conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                                conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                                addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                                setThisInfoTimeCount(thisInfo);
+//                                addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                 // 调用添加或更新产品状态方法
                                 addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
 
                                 // 任务余剩时间累减
-                                zon -= task.getTeDurTotal();
+                                zon -= task.getWntDurTotal();
                                 System.out.println(JSON.toJSONString(tasks));
                                 // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
-                                tasks.set((i+accumulation), TaskObj.getTaskX(contrastTaskOne.getTePFinish()
-                                        , contrastTaskOne.getTePFinish()+task.getTeDurTotal(),task.getTeDurTotal(),task));
+                                tasks.set((i+accumulation), TaskObj.getTaskX(task.getTePStart()
+                                        , task.getTePStart()+task.getWntDurTotal(),task.getWntDurTotal(),task));
                                 System.out.println(JSON.toJSONString(tasks));
-                                tePFinish = contrastTaskOne.getTePFinish()+task.getTeDurTotal();
+                                tePFinish = task.getTePStart()+task.getWntDurTotal();
                                 endTime = tasks.get(0).getTePStart();
-                                teDurTotal = task.getTeDurTotal();
-                                // 更新当前任务的开始时间
-                                task.setTePStart(contrastTaskOne.getTePFinish());
+//                                wntDurTotal = task.getWntDurTotal();
+//                                // 更新当前任务的开始时间
+//                                task.setTePStart(contrastTaskOne.getTePFinish());
                                 // 更新任务的结束时间
-                                task.setTePFinish(contrastTaskOne.getTePFinish()+task.getTeDurTotal());
-                                task.setTeDurTotal(0L);
+                                task.setTePFinish(task.getTePStart()+task.getWntDurTotal());
+                                task.setWntDurTotal(0L);
+                                System.out.println("进入这里--=1-Q");
+                                conflictHandlePattern = 3;
+                                setThisInfoTimeCount(thisInfo);
+                                isContinue = false;
+                            } else {
+                                long surplusTime = contrastTaskTwo.getTePStart() - task.getTePStart();
+                                // 判断时间差大于等于0
+                                if (timeDifference >= 0) {
+                                    System.out.println(JSON.toJSONString(tasks));
+                                    // 任务集合按照指定下标（i（任务下标）+1）添加任务信息
+                                    tasks.add(i+accumulation, TaskObj.getTaskX(task.getTePStart()
+                                            ,(task.getTePStart()+task.getWntDurTotal())
+                                            ,task.getWntDurTotal(),task));
+                                    System.out.println(JSON.toJSONString(tasks));
+                                    // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
+                                    addOrUpdateTeDate(teS,teDate,task.getWntDurTotal());
+                                    // 调用判断产品状态再调用写入任务所在日期方法的方法
+                                    putTeDate(task.getId_O(), task.getDateIndex(),teS,prodState,storageTaskWhereTime);
+                                    setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
+                                            ,teS,task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,tasks.get(0).getTePStart());
+                                    // 任务余剩时间累减
+                                    zon -= task.getWntDurTotal();
+                                    // taskIsProcessedComplete：用于外部判断任务是否被处理完参数，jie == 0 没有被处理完、jie == 2 已经被处理完了
+                                    result.put("taskIsProcessedComplete",2);
+                                    result.put("zon",zon);
+                                    result.put("hTeStart",(task.getTePStart()+task.getWntDurTotal()));
+                                    result.put("teSB",teSB);
+                                    storageTaskIsProcessedComplete = 1;
+                                    result.put("storageTaskIsProcessedComplete",storageTaskIsProcessedComplete);
+                                    result.put("tePFinish",(task.getTePStart()+task.getWntDurTotal()));
+                                    result.put("endTime",tasks.get(0).getTePStart());
+                                    conflictHandlePattern = 3;
+                                    result.put("conflictHandlePattern",conflictHandlePattern);
+                                    System.out.println("进入这里--=1");
+                                    setThisInfoTimeCount(thisInfo);
+                                    return result;
+                                } else {
+                                    // 获取时间差2（当前任务的总时间-余剩总时间）
+                                    long timeDifferenceNew = task.getWntDurTotal() - surplusTime;
+                                    System.out.println(JSON.toJSONString(tasks));
+                                    if (timeDifferenceNew > 0) {
+                                        // 任务集合按照指定下标（i（任务下标）+1）添加任务信息
+                                        tasks.add(i+accumulation, TaskObj.getTaskX(task.getTePStart(),(task.getTePStart()+surplusTime),surplusTime,task));
+                                        System.out.println(JSON.toJSONString(tasks));
+                                        tePFinish = (task.getTePStart()+surplusTime);
+                                        endTime = tasks.get(0).getTePStart();
+                                        // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
+                                        addOrUpdateTeDate(teS,teDate,surplusTime);
+                                        // 调用判断产品状态再调用写入任务所在日期方法的方法
+                                        putTeDate(task.getId_O(), task.getDateIndex(),teS,prodState,storageTaskWhereTime);
+                                        setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
+                                                ,teS,surplusTime,allImageTeDate,isGetTaskPattern,endTime);
+                                        // 更新当前任务的总时间
+                                        task.setWntDurTotal(timeDifferenceNew);
+                                        // 更新当前任务的开始时间
+                                        task.setTePStart((task.getTePStart()+surplusTime));
+                                        // 更新任务的结束时间
+                                        task.setTePFinish((task.getTePStart()+surplusTime)+task.getWntDurTotal());
+                                        System.out.println("进入这里++=1:");
+                                        currentOnlyNumberState = 1;
+                                        // 添加存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
+                                        onlyRefState.put(random,1);
+                                        // 任务余剩时间累减
+                                        zon -= surplusTime;
+                                        accumulation++;
+                                        conflictHandlePattern = 4;
+                                        setThisInfoTimeCount(thisInfo);
+                                    } else {
+                                        // 任务集合按照指定下标（i（任务下标）+1）添加任务信息
+                                        tasks.add(i+accumulation, TaskObj.getTaskX(task.getTePStart(),(task.getTePStart()+task.getWntDurTotal()),task.getWntDurTotal(),task));
+                                        System.out.println(JSON.toJSONString(tasks));
+                                        tePFinish = (task.getTePStart()+task.getWntDurTotal());
+                                        endTime = tasks.get(0).getTePStart();
+                                        // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
+                                        addOrUpdateTeDate(teS,teDate,task.getWntDurTotal());
+                                        // 调用判断产品状态再调用写入任务所在日期方法的方法
+                                        putTeDate(task.getId_O(), task.getDateIndex(),teS,prodState,storageTaskWhereTime);
+                                        setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
+                                                ,teS,task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                        // 更新当前任务的总时间
+                                        task.setWntDurTotal(0L);
+                                        // 更新当前任务的开始时间
+                                        task.setTePStart((task.getTePStart()+task.getWntDurTotal()));
+                                        // 更新任务的结束时间
+                                        task.setTePFinish((task.getTePStart()+task.getWntDurTotal()));
+                                        System.out.println("进入这里++=1-New:");
+                                        // 添加存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
+                                        onlyRefState.put(random,1);
+                                        // 任务余剩时间累减
+                                        zon -= task.getWntDurTotal();
+                                        // taskIsProcessedComplete：用于外部判断任务是否被处理完参数，jie == 0 没有被处理完、jie == 2 已经被处理完了
+                                        result.put("taskIsProcessedComplete",2);
+                                        result.put("zon",zon);
+                                        result.put("hTeStart",tePFinish);
+                                        result.put("teSB",teSB);
+                                        storageTaskIsProcessedComplete = 1;
+                                        result.put("storageTaskIsProcessedComplete",storageTaskIsProcessedComplete);
+                                        result.put("tePFinish",tePFinish);
+                                        result.put("endTime",endTime);
+                                        conflictHandlePattern = 3;
+                                        result.put("conflictHandlePattern",conflictHandlePattern);
+                                        setThisInfoTimeCount(thisInfo);
+                                        return result;
+                                    }
+                                }
+                            }
+                        }
+                        else if (task.getTePStart() >= contrastTaskOne.getTePFinish() && task.getTePFinish()
+                                > contrastTaskTwo.getTePStart() && task.getTePFinish() < contrastTaskTwo.getTePFinish()) {
+                            if (contrastTaskTwo.getPriority() != -1) {
+                                // 任务余剩时间累加
+                                zon += contrastTaskTwo.getWntDurTotal();
+                                // 冲突任务集合添加对比任务2的任务信息
+                                conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                                addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                                setThisInfoTimeCount(thisInfo);
+//                                addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
+                                // 调用添加或更新产品状态方法
+                                addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
+
+                                // 任务余剩时间累减
+                                zon -= task.getWntDurTotal();
+//                                System.out.println(JSON.toJSONString(tasks));
+//                                // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
+//                                tasks.set((i+accumulation), TaskObj.getTaskX(contrastTaskOne.getTePFinish()
+//                                        , contrastTaskOne.getTePFinish()+task.getWntDurTotal(),task.getWntDurTotal(),task));
+//                                System.out.println(JSON.toJSONString(tasks));
+//                                tePFinish = contrastTaskOne.getTePFinish()+task.getWntDurTotal();
+//                                endTime = tasks.get(0).getTePStart();
+//                                wntDurTotal = task.getWntDurTotal();
+//                                // 更新当前任务的开始时间
+//                                task.setTePStart(contrastTaskOne.getTePFinish());
+//                                // 更新任务的结束时间
+//                                task.setTePFinish(contrastTaskOne.getTePFinish()+task.getWntDurTotal());
+//                                task.setWntDurTotal(0L);
+//                                System.out.println("进入这里--=++=1-1=新的");
+//                                conflictHandlePattern = 3;
+//                                isContinue = false;
+                                System.out.println(JSON.toJSONString(tasks));
+                                // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
+                                tasks.set((i+accumulation), TaskObj.getTaskX(task.getTePStart()
+                                        , task.getTePStart()+task.getWntDurTotal(),task.getWntDurTotal(),task));
+                                System.out.println(JSON.toJSONString(tasks));
+                                tePFinish = task.getTePStart()+task.getWntDurTotal();
+                                endTime = tasks.get(0).getTePStart();
+                                wntDurTotal = task.getWntDurTotal();
+//                                // 更新当前任务的开始时间
+//                                task.setTePStart(contrastTaskOne.getTePFinish());
+                                // 更新任务的结束时间
+                                task.setTePFinish(task.getTePStart()+task.getWntDurTotal());
+                                task.setWntDurTotal(0L);
                                 System.out.println("进入这里--=++=1-1=新的");
                                 conflictHandlePattern = 3;
                                 isContinue = false;
+                                setThisInfoTimeCount(thisInfo);
                             } else {
                                 long time = contrastTaskTwo.getTePStart() - contrastTaskOne.getTePFinish();
                                 // 任务余剩时间累减
@@ -1072,24 +1371,25 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 System.out.println(JSON.toJSONString(tasks));
                                 tePFinish = contrastTaskOne.getTePFinish()+time;
                                 endTime = tasks.get(0).getTePStart();
-                                teDurTotal = time;
+                                wntDurTotal = time;
                                 // 更新当前任务的开始时间
                                 task.setTePStart(contrastTaskOne.getTePFinish());
                                 // 更新任务的结束时间
                                 task.setTePFinish(contrastTaskOne.getTePFinish()+time);
-                                task.setTeDurTotal(task.getTeDurTotal() - time);
+                                task.setWntDurTotal(task.getWntDurTotal() - time);
                                 System.out.println("进入这里--=++=1-2=新的");
                                 conflictHandlePattern = 4;
+                                setThisInfoTimeCount(thisInfo);
                             }
                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                            addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,teDurTotal);
+                            addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,wntDurTotal);
                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                            putTeDate(task.getId_O(),task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
+                            putTeDate(task.getId_O(),task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                     ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                             .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                             setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
                                     ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                    ,teDurTotal,allImageTeDate,isGetTaskPattern,endTime);
+                                    ,wntDurTotal,allImageTeDate,isGetTaskPattern,endTime);
                         }
                         else {
                             System.out.println("进入这里 -- ++ = 1-跳过-");
@@ -1100,34 +1400,35 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             System.out.println(JSON.toJSONString(tasks));
                             // 任务集合按照指定下标（i（任务下标）+1）添加任务信息
                             tasks.add(i+1, TaskObj.getTaskX(contrastTaskOne.getTePFinish()
-                                    ,(contrastTaskOne.getTePFinish()+task.getTeDurTotal())
-                                    ,task.getTeDurTotal(),task));
+                                    ,(contrastTaskOne.getTePFinish()+task.getWntDurTotal())
+                                    ,task.getWntDurTotal(),task));
                             System.out.println(JSON.toJSONString(tasks));
                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                            addOrUpdateTeDate(teS,teDate,task.getTeDurTotal());
+                            addOrUpdateTeDate(teS,teDate,task.getWntDurTotal());
                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                            putTeDate(task.getId_O(), task.getIndex(),teS,prodState,storageTaskWhereTime);
+                            putTeDate(task.getId_O(), task.getDateIndex(),teS,prodState,storageTaskWhereTime);
                             setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
-                                    ,teS,task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,tasks.get(0).getTePStart());
+                                    ,teS,task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,tasks.get(0).getTePStart());
                             // 任务余剩时间累减
-                            zon -= task.getTeDurTotal();
+                            zon -= task.getWntDurTotal();
                             // taskIsProcessedComplete：用于外部判断任务是否被处理完参数，jie == 0 没有被处理完、jie == 2 已经被处理完了
                             result.put("taskIsProcessedComplete",2);
                             result.put("zon",zon);
-                            result.put("hTeStart",(contrastTaskOne.getTePFinish()+task.getTeDurTotal()));
+                            result.put("hTeStart",(contrastTaskOne.getTePFinish()+task.getWntDurTotal()));
                             result.put("teSB",teSB);
                             storageTaskIsProcessedComplete = 1;
                             result.put("storageTaskIsProcessedComplete",storageTaskIsProcessedComplete);
-                            result.put("tePFinish",(contrastTaskOne.getTePFinish()+task.getTeDurTotal()));
+                            result.put("tePFinish",(contrastTaskOne.getTePFinish()+task.getWntDurTotal()));
                             result.put("endTime",tasks.get(0).getTePStart());
-                            task.setTeDurTotal(0L);
+                            task.setWntDurTotal(0L);
                             conflictHandlePattern = 3;
                             result.put("conflictHandlePattern",conflictHandlePattern);
                             System.out.println("进入这里--=2");
+                            setThisInfoTimeCount(thisInfo);
                             return result;
                         } else {
                             // 获取时间差2（当前任务的总时间-余剩总时间）
-                            long timeDifferenceNew = task.getTeDurTotal() - remainingTime;
+                            long timeDifferenceNew = task.getWntDurTotal() - remainingTime;
                             System.out.println(JSON.toJSONString(tasks));
                             // 任务集合按照指定下标（i（任务下标）+1）添加任务信息
                             tasks.add(i+accumulation, TaskObj.getTaskX(contrastTaskOne.getTePFinish(),(contrastTaskOne.getTePFinish()+remainingTime)
@@ -1138,21 +1439,22 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                             addOrUpdateTeDate(teS,teDate,remainingTime);
                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                            putTeDate(task.getId_O(), task.getIndex(),teS,prodState,storageTaskWhereTime);
+                            putTeDate(task.getId_O(), task.getDateIndex(),teS,prodState,storageTaskWhereTime);
                             setAllImageTeDateAndDate(task.getId_O(),task.getDateIndex()
                                     ,teS,remainingTime,allImageTeDate,isGetTaskPattern,endTime);
                             // 更新当前任务的总时间
-                            task.setTeDurTotal(timeDifferenceNew);
+                            task.setWntDurTotal(timeDifferenceNew);
                             // 更新当前任务的开始时间
                             task.setTePStart((contrastTaskOne.getTePFinish()+remainingTime));
                             // 更新任务的结束时间
-                            task.setTePFinish((contrastTaskOne.getTePFinish()+remainingTime)+task.getTeDurTotal());
+                            task.setTePFinish((contrastTaskOne.getTePFinish()+remainingTime)+task.getWntDurTotal());
                             System.out.println("进入这里++=2");
                             // 任务余剩时间累减
                             zon -= remainingTime;
                             accumulation++;
                             conflictHandlePattern = 4;
                             isContinue = false;
+                            setThisInfoTimeCount(thisInfo);
                         }
                     }
                 } else {
@@ -1173,87 +1475,96 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         // 判断当前任务的优先级小于对比任务1的优先级
                         if (task.getPriority() < contrastTaskOne.getPriority()) {
                             // 任务余剩时间累加
-                            zon += contrastTaskOne.getTeDurTotal();
+                            zon += contrastTaskOne.getWntDurTotal();
                             // 冲突任务集合添加对比任务1的任务信息
-                            conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(), contrastTaskOne.getTePFinish(),contrastTaskOne.getTeDurTotal(),contrastTaskOne));
+                            conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(), contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),contrastTaskOne));
+                            addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                            setThisInfoTimeCount(thisInfo);
+//                            addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                             // 调用添加或更新产品状态方法
                             addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskOne.getId_O(),contrastTaskOne.getIndex().toString(),0);
                             // 任务余剩时间累减
-                            zon -= task.getTeDurTotal();
+                            zon -= task.getWntDurTotal();
                             System.out.println(JSON.toJSONString(tasks));
                             // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
-                            tasks.set(i, TaskObj.getTaskX(contrastTaskOne.getTePStart(),(contrastTaskOne.getTePStart()+task.getTeDurTotal())
-                                    ,task.getTeDurTotal(),task));
+                            tasks.set(i, TaskObj.getTaskX(contrastTaskOne.getTePStart(),(contrastTaskOne.getTePStart()+task.getWntDurTotal())
+                                    ,task.getWntDurTotal(),task));
                             System.out.println(JSON.toJSONString(tasks));
-                            tePFinish = (contrastTaskOne.getTePStart()+task.getTeDurTotal());
+                            tePFinish = (contrastTaskOne.getTePStart()+task.getWntDurTotal());
                             endTime = tasks.get(0).getTePStart();
                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                            addOrUpdateTeDate(teS,teDate,task.getTeDurTotal());
+                            addOrUpdateTeDate(teS,teDate,task.getWntDurTotal());
                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                            putTeDate(task.getId_O(), task.getIndex(),teS,sho.getJSONObject(task.getId_O()).getJSONObject(task
+                            putTeDate(task.getId_O(), task.getDateIndex(),teS,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                     .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                             setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
-                                    ,teS,task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                    ,teS,task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                             // taskIsProcessedComplete：用于外部判断任务是否被处理完参数，jie == 0 没有被处理完、jie == 2 已经被处理完了
                             result.put("taskIsProcessedComplete",2);
                             System.out.println("进入这里--=3");
                             storageTaskIsProcessedComplete = 1;
                             conflictHandlePattern = 3;
+                            setThisInfoTimeCount(thisInfo);
                         } else {
                             // 判断当前任务的优先级小于对比任务2的优先级
                             if (task.getPriority() < contrastTaskTwo.getPriority()) {
-                                long surplusTime = task.getTeDurTotal() - contrastTaskTwo.getTeDurTotal();
+                                long surplusTime = task.getWntDurTotal() - contrastTaskTwo.getWntDurTotal();
                                 // 任务余剩时间累加
-                                zon += contrastTaskTwo.getTeDurTotal();
+                                zon += contrastTaskTwo.getWntDurTotal();
                                 // 冲突任务集合添加对比任务2的任务信息
-                                conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                                conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                                addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                                setThisInfoTimeCount(thisInfo);
+//                                addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                 // 调用添加或更新产品状态方法
                                 addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
                                 if (surplusTime > 0) {
                                     // 任务余剩时间累减
-                                    zon -= contrastTaskTwo.getTeDurTotal();
-                                    Task testTask = TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+contrastTaskTwo.getTeDurTotal())
-                                            ,contrastTaskTwo.getTeDurTotal(),task);
+                                    zon -= contrastTaskTwo.getWntDurTotal();
+                                    Task testTask = TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+contrastTaskTwo.getWntDurTotal())
+                                            ,contrastTaskTwo.getWntDurTotal(),task);
                                     System.out.println(JSON.toJSONString(tasks));
                                     // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
                                     tasks.set(i+1, testTask);
                                     System.out.println(JSON.toJSONString(tasks));
-                                    tePFinish = (contrastTaskTwo.getTePStart()+contrastTaskTwo.getTeDurTotal());
+                                    tePFinish = (contrastTaskTwo.getTePStart()+contrastTaskTwo.getWntDurTotal());
                                     endTime = tasks.get(0).getTePStart();
                                     // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                                    addOrUpdateTeDate(teS,teDate,contrastTaskTwo.getTeDurTotal());
+                                    addOrUpdateTeDate(teS,teDate,contrastTaskTwo.getWntDurTotal());
                                     // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                    putTeDate(task.getId_O(), task.getIndex(),teS,sho.getJSONObject(task.getId_O()).getJSONObject(task
+                                    putTeDate(task.getId_O(), task.getDateIndex(),teS,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                             .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                                     setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
-                                            ,teS,contrastTaskTwo.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                            ,teS,contrastTaskTwo.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                                     System.out.println("进入这里--=4-New:");
-                                    task.setTeDurTotal(surplusTime);
+                                    task.setWntDurTotal(surplusTime);
                                     isResult = false;
                                     conflictHandlePattern = 8;
+                                    setThisInfoTimeCount(thisInfo);
                                 } else {
                                     // 任务余剩时间累减
-                                    zon -= task.getTeDurTotal();
-                                    Task testTask = TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+task.getTeDurTotal())
-                                            ,task.getTeDurTotal(),task);
+                                    zon -= task.getWntDurTotal();
+                                    Task testTask = TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+task.getWntDurTotal())
+                                            ,task.getWntDurTotal(),task);
                                     System.out.println(JSON.toJSONString(tasks));
                                     // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
                                     tasks.set(i+1, testTask);
                                     System.out.println(JSON.toJSONString(tasks));
-                                    tePFinish = (contrastTaskTwo.getTePStart()+task.getTeDurTotal());
+                                    tePFinish = (contrastTaskTwo.getTePStart()+task.getWntDurTotal());
                                     endTime = tasks.get(0).getTePStart();
                                     // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                                    addOrUpdateTeDate(teS,teDate,task.getTeDurTotal());
+                                    addOrUpdateTeDate(teS,teDate,task.getWntDurTotal());
                                     // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                    putTeDate(task.getId_O(), task.getIndex(),teS,sho.getJSONObject(task.getId_O()).getJSONObject(task
+                                    putTeDate(task.getId_O(), task.getDateIndex(),teS,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                             .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                                     setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
-                                            ,teS,task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                            ,teS,task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                                     storageTaskIsProcessedComplete = 1;
                                     System.out.println("进入这里--=4:");
-                                    task.setTeDurTotal(0L);
+                                    task.setWntDurTotal(0L);
                                     result.put("taskIsProcessedComplete",2);
                                     conflictHandlePattern = 3;
+                                    setThisInfoTimeCount(thisInfo);
                                 }
                             }
 //                            else {
@@ -1287,78 +1598,84 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         // 判断当前任务的优先级小于对比任务1的优先级
                         if (task.getPriority() < contrastTaskOne.getPriority() && task.getTePStart() <= contrastTaskOne.getTePFinish()) {
                             // 任务余剩时间累加
-                            zon += contrastTaskOne.getTeDurTotal();
+                            zon += contrastTaskOne.getWntDurTotal();
                             // 冲突任务集合添加对比任务1的任务信息
-                            conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(),contrastTaskOne.getTePFinish(),contrastTaskOne.getTeDurTotal(),contrastTaskOne));
+                            conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(),contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),contrastTaskOne));
+                            addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                            setThisInfoTimeCount(thisInfo);
+//                            addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                             // 调用添加或更新产品状态方法
                             addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskOne.getId_O(),contrastTaskOne.getIndex().toString(),0);
-                            long record = contrastTaskOne.getTePStart() + task.getTeDurTotal();
+                            long record = contrastTaskOne.getTePStart() + task.getWntDurTotal();
                             if (record <= contrastTaskOne.getTePFinish()) {
                                 // 任务余剩时间累减
-                                zon -= task.getTeDurTotal();
+                                zon -= task.getWntDurTotal();
                                 System.out.println(JSON.toJSONString(tasks));
                                 // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
-                                tasks.set(i, TaskObj.getTaskX(task.getTePStart(),(task.getTePStart()+task.getTeDurTotal())
-                                        ,task.getTeDurTotal(),task));
+                                tasks.set(i, TaskObj.getTaskX(task.getTePStart(),(task.getTePStart()+task.getWntDurTotal())
+                                        ,task.getWntDurTotal(),task));
                                 System.out.println(JSON.toJSONString(tasks));
-                                tePFinish = (task.getTePStart()+task.getTeDurTotal());
+                                tePFinish = (task.getTePStart()+task.getWntDurTotal());
                                 endTime = tasks.get(0).getTePStart();
                                 // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                                addOrUpdateTeDate(teS,teDate,task.getTeDurTotal());
+                                addOrUpdateTeDate(teS,teDate,task.getWntDurTotal());
                                 // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                putTeDate(task.getId_O(), task.getIndex(),teS,sho.getJSONObject(task.getId_O()).getJSONObject(task
+                                putTeDate(task.getId_O(), task.getDateIndex(),teS,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                         .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                                 setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
-                                        ,teS,task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                        ,teS,task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                                 System.out.println("进入这里--=5-1");
                                 conflictHandlePattern = 3;
+                                setThisInfoTimeCount(thisInfo);
                             } else {
-                                long recordZon = task.getTeDurTotal() - contrastTaskOne.getTeDurTotal();
+                                long recordZon = task.getWntDurTotal() - contrastTaskOne.getWntDurTotal();
                                 if (recordZon <= 0) {
                                     // 任务余剩时间累减
-                                    zon -= task.getTeDurTotal();
+                                    zon -= task.getWntDurTotal();
                                     System.out.println(JSON.toJSONString(tasks));
                                     // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
-                                    tasks.set(i, TaskObj.getTaskX(contrastTaskOne.getTePStart(),(contrastTaskOne.getTePStart()+task.getTeDurTotal())
-                                            ,task.getTeDurTotal(),task));
+                                    tasks.set(i, TaskObj.getTaskX(contrastTaskOne.getTePStart(),(contrastTaskOne.getTePStart()+task.getWntDurTotal())
+                                            ,task.getWntDurTotal(),task));
                                     System.out.println(JSON.toJSONString(tasks));
-                                    tePFinish = (contrastTaskOne.getTePStart()+task.getTeDurTotal());
+                                    tePFinish = (contrastTaskOne.getTePStart()+task.getWntDurTotal());
                                     endTime = tasks.get(0).getTePStart();
                                     // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                                    addOrUpdateTeDate(teS,teDate,task.getTeDurTotal());
+                                    addOrUpdateTeDate(teS,teDate,task.getWntDurTotal());
                                     // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                    putTeDate(task.getId_O(), task.getIndex(),teS
+                                    putTeDate(task.getId_O(), task.getDateIndex(),teS
                                             ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                                     .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                                     setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
-                                            ,teS, task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
-                                    task.setTeDurTotal(0L);
+                                            ,teS, task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                    task.setWntDurTotal(0L);
                                     System.out.println("进入这里--=5-2");
                                     isEnd = 1;
 //                                    conflictHandlePattern = 6;
                                     conflictHandlePattern = 3;
+                                    setThisInfoTimeCount(thisInfo);
                                 } else {
                                     // 任务余剩时间累减
-                                    zon -= contrastTaskOne.getTeDurTotal();
+                                    zon -= contrastTaskOne.getWntDurTotal();
                                     System.out.println(JSON.toJSONString(tasks));
                                     // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
-                                    tasks.set(i, TaskObj.getTaskX(contrastTaskOne.getTePStart(),(contrastTaskOne.getTePStart()+contrastTaskOne.getTeDurTotal())
-                                            ,contrastTaskOne.getTeDurTotal(),task));
+                                    tasks.set(i, TaskObj.getTaskX(contrastTaskOne.getTePStart(),(contrastTaskOne.getTePStart()+contrastTaskOne.getWntDurTotal())
+                                            ,contrastTaskOne.getWntDurTotal(),task));
                                     System.out.println(JSON.toJSONString(tasks));
-                                    tePFinish = (contrastTaskOne.getTePStart()+contrastTaskOne.getTeDurTotal());
+                                    tePFinish = (contrastTaskOne.getTePStart()+contrastTaskOne.getWntDurTotal());
                                     endTime = tasks.get(0).getTePStart();
                                     // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                                    addOrUpdateTeDate(teS,teDate,contrastTaskOne.getTeDurTotal());
+                                    addOrUpdateTeDate(teS,teDate,contrastTaskOne.getWntDurTotal());
                                     // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                    putTeDate(task.getId_O(), task.getIndex(),teS
+                                    putTeDate(task.getId_O(), task.getDateIndex(),teS
                                             ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                                     .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                                     setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
-                                            ,teS, contrastTaskOne.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
-                                    task.setTeDurTotal(recordZon);
+                                            ,teS, contrastTaskOne.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                    task.setWntDurTotal(recordZon);
                                     System.out.println("进入这里--=5-2-New");
 //                                    isEnd = 1;
                                     conflictHandlePattern = 7;
+                                    setThisInfoTimeCount(thisInfo);
                                 }
                             }
                             isGetInto = true;
@@ -1368,9 +1685,12 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 if (task.getTePStart() >= contrastTaskTwo.getTePStart() && task.getTePStart() <= contrastTaskTwo.getTePFinish()) {
                                     System.out.println("进入-优先级小于对比任务2的优先级-");
                                     // 任务余剩时间累加
-                                    zon += contrastTaskTwo.getTeDurTotal();
+                                    zon += contrastTaskTwo.getWntDurTotal();
                                     // 冲突任务集合添加对比任务2的任务信息
-                                    conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                                    conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                                    addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                                    setThisInfoTimeCount(thisInfo);
+//                                    addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                     // 调用添加或更新产品状态方法
                                     addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
                                     // 任务集合删除指定下标(i+1)任务
@@ -1383,95 +1703,107 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 // 判断当前任务的开始时间大于等于对比任务2的开始时间，并且当前任务的开始时间小于等于对比任务2的结束时间
                                 if (task.getTePStart() >= contrastTaskTwo.getTePStart() && task.getTePStart() <= contrastTaskTwo.getTePFinish()) {
                                     // 任务余剩时间累加
-                                    zon += contrastTaskTwo.getTeDurTotal();
+                                    zon += contrastTaskTwo.getWntDurTotal();
                                     // 冲突任务集合添加对比任务2的任务信息
-                                    conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                                    conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                                    addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                                    setThisInfoTimeCount(thisInfo);
+//                                    addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
 //                                    clearOldTask(contrastTaskTwo.getId_O(), contrastTaskTwo.getDateIndex(), contrastTaskTwo.getId_C());
                                     // 调用添加或更新产品状态方法
                                     addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
                                     // 任务余剩时间累减
-                                    zon -= task.getTeDurTotal();
+                                    zon -= task.getWntDurTotal();
                                     System.out.println(JSON.toJSONString(tasks));
                                     // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
-                                    tasks.set(i+accumulation, TaskObj.getTaskX(task.getTePStart(),(task.getTePStart()+task.getTeDurTotal())
-                                            ,task.getTeDurTotal(),task));
+                                    tasks.set(i+accumulation, TaskObj.getTaskX(task.getTePStart(),(task.getTePStart()+task.getWntDurTotal())
+                                            ,task.getWntDurTotal(),task));
                                     System.out.println(JSON.toJSONString(tasks));
-                                    tePFinish = (task.getTePStart()+task.getTeDurTotal());
+                                    tePFinish = (task.getTePStart()+task.getWntDurTotal());
                                     endTime = tasks.get(0).getTePStart();
                                     // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                     addOrUpdateTeDate(teS
-                                            ,teDate,task.getTeDurTotal());
+                                            ,teDate,task.getWntDurTotal());
                                     // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                    putTeDate(task.getId_O(), task.getIndex(),teS
+                                    putTeDate(task.getId_O(), task.getDateIndex(),teS
                                             ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                                     .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                                     setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
-                                            ,teS, task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                            ,teS, task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                                     System.out.println("进入这里--=6");
                                     conflictHandlePattern = 3;
+                                    setThisInfoTimeCount(thisInfo);
 //                                    isGetInto = true;
                                 } else {
-                                    long time = contrastTaskTwo.getTeDurTotal() - task.getTeDurTotal();
+                                    long time = contrastTaskTwo.getWntDurTotal() - task.getWntDurTotal();
                                     if (time >= 0) {
                                         // 任务余剩时间累加
-                                        zon += contrastTaskTwo.getTeDurTotal();
+                                        zon += contrastTaskTwo.getWntDurTotal();
                                         // 冲突任务集合添加对比任务2的任务信息
-                                        conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                                        conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                                        addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                                        setThisInfoTimeCount(thisInfo);
+//                                        addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
 //                                        clearOldTask(contrastTaskTwo.getId_O(), contrastTaskTwo.getDateIndex(), contrastTaskTwo.getId_C());
                                         // 调用添加或更新产品状态方法
                                         addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
                                         // 任务余剩时间累减
-                                        zon -= task.getTeDurTotal();
+                                        zon -= task.getWntDurTotal();
                                         System.out.println(JSON.toJSONString(tasks));
                                         // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
-                                        tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+task.getTeDurTotal())
-                                                ,task.getTeDurTotal(),task));
+                                        tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+task.getWntDurTotal())
+                                                ,task.getWntDurTotal(),task));
                                         System.out.println(JSON.toJSONString(tasks));
-                                        tePFinish = (contrastTaskTwo.getTePStart()+task.getTeDurTotal());
+                                        tePFinish = (contrastTaskTwo.getTePStart()+task.getWntDurTotal());
                                         endTime = tasks.get(0).getTePStart();
                                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                         addOrUpdateTeDate(teS
-                                                ,teDate,task.getTeDurTotal());
+                                                ,teDate,task.getWntDurTotal());
                                         // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                        putTeDate(task.getId_O(), task.getIndex(),teS
+                                        putTeDate(task.getId_O(), task.getDateIndex(),teS
                                                 ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                                         .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                                         setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
-                                                ,teS, task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
-                                        task.setTeDurTotal(0L);
+                                                ,teS, task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                        task.setWntDurTotal(0L);
                                         System.out.println("进入这里--=6-new-1");
                                         conflictHandlePattern = 3;
+                                        setThisInfoTimeCount(thisInfo);
                                     } else {
-                                        time = task.getTeDurTotal() - contrastTaskTwo.getTeDurTotal();
+                                        time = task.getWntDurTotal() - contrastTaskTwo.getWntDurTotal();
                                         // 任务余剩时间累加
-                                        zon += contrastTaskTwo.getTeDurTotal();
+                                        zon += contrastTaskTwo.getWntDurTotal();
                                         // 冲突任务集合添加对比任务2的任务信息
-                                        conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                                        conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                                        addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                                        setThisInfoTimeCount(thisInfo);
+//                                        addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                         // 调用添加或更新产品状态方法
                                         addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
                                         // 任务余剩时间累减
-                                        zon -= contrastTaskTwo.getTeDurTotal();
+                                        zon -= contrastTaskTwo.getWntDurTotal();
                                         System.out.println(JSON.toJSONString(tasks));
                                         // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
-                                        tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+contrastTaskTwo.getTeDurTotal())
-                                                ,contrastTaskTwo.getTeDurTotal(),task));
+                                        tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+contrastTaskTwo.getWntDurTotal())
+                                                ,contrastTaskTwo.getWntDurTotal(),task));
                                         System.out.println(JSON.toJSONString(tasks));
-                                        tePFinish = (contrastTaskTwo.getTePStart()+contrastTaskTwo.getTeDurTotal());
+                                        tePFinish = (contrastTaskTwo.getTePStart()+contrastTaskTwo.getWntDurTotal());
                                         endTime = tasks.get(0).getTePStart();
                                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                         addOrUpdateTeDate(teS
-                                                ,teDate,contrastTaskTwo.getTeDurTotal());
+                                                ,teDate,contrastTaskTwo.getWntDurTotal());
                                         // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                        putTeDate(task.getId_O(), task.getIndex(),teS
+                                        putTeDate(task.getId_O(), task.getDateIndex(),teS
                                                 ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                                         .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                                         setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
-                                                ,teS, contrastTaskTwo.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
-                                        task.setTeDurTotal(time);
+                                                ,teS, contrastTaskTwo.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                        task.setWntDurTotal(time);
                                         System.out.println("进入这里--=6-new-2");
                                         isEnd = 1;
 //                                        conflictHandlePattern = 6;
                                         conflictHandlePattern = 4;
+                                        setThisInfoTimeCount(thisInfo);
                                     }
                                 }
                                 isGetInto = true;
@@ -1505,9 +1837,12 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         // 判断当前任务的优先级小于对比任务1的优先级
                         if (task.getPriority() < contrastTaskOne.getPriority()) {
                             // 任务余剩时间累加
-                            zon += contrastTaskOne.getTeDurTotal();
+                            zon += contrastTaskOne.getWntDurTotal();
                             // 冲突任务集合添加对比任务1的任务信息
-                            conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(),contrastTaskOne.getTePFinish(),contrastTaskOne.getTeDurTotal(),contrastTaskOne));
+                            conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(),contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),contrastTaskOne));
+                            addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                            setThisInfoTimeCount(thisInfo);
+//                            addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                             // 调用添加或更新产品状态方法
                             addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskOne.getId_O(),contrastTaskOne.getIndex().toString(),0);
                             // 判断当前任务的优先级小于对比任务2的优先级
@@ -1517,16 +1852,16 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 获取余剩总时间（对比任务2的开始时间-当前任务的开始时间）
                                     remainingTime = contrastTaskTwo.getTePStart() - task.getTePStart();
                                     // 获取时间差（当前任务总时间-余剩总时间）
-                                    long timeDifference = task.getTeDurTotal() - remainingTime;
+                                    long timeDifference = task.getWntDurTotal() - remainingTime;
                                     System.out.println(JSON.toJSONString(tasks));
                                     // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
                                     tasks.set(i, TaskObj.getTaskX(task.getTePStart(),(task.getTePStart()+remainingTime),remainingTime,task));
                                     System.out.println(JSON.toJSONString(tasks));
                                     tePFinish = (task.getTePStart()+remainingTime);
                                     endTime = tasks.get(0).getTePStart();
-                                    teDurTotal = remainingTime;
+                                    wntDurTotal = remainingTime;
                                     // 更新当前任务的总时间
-                                    task.setTeDurTotal(timeDifference);
+                                    task.setWntDurTotal(timeDifference);
                                     // 更新当前任务的开始时间
                                     task.setTePStart(contrastTaskTwo.getTePFinish());
                                     // 更新任务的结束时间
@@ -1535,71 +1870,78 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 任务余剩时间累减
                                     zon -= remainingTime;
                                     conflictHandlePattern = 1;
+                                    setThisInfoTimeCount(thisInfo);
                                 } else {
                                     // 任务余剩时间累加
-                                    zon += contrastTaskTwo.getTeDurTotal();
+                                    zon += contrastTaskTwo.getWntDurTotal();
                                     // 冲突任务集合添加对比任务2的任务信息
-                                    conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                                    conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                                    addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                                    setThisInfoTimeCount(thisInfo);
+//                                    addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                     // 调用添加或更新产品状态方法
                                     addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
                                     // 任务集合删除指定下标(i+1)任务
                                     tasks.remove(i+1);
                                     // 任务余剩时间累减
-                                    zon -= task.getTeDurTotal();
+                                    zon -= task.getWntDurTotal();
                                     System.out.println(JSON.toJSONString(tasks));
                                     // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
-                                    tasks.set(i, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+task.getTeDurTotal())
-                                            ,task.getTeDurTotal(),task));
+                                    tasks.set(i, TaskObj.getTaskX(contrastTaskTwo.getTePStart(),(contrastTaskTwo.getTePStart()+task.getWntDurTotal())
+                                            ,task.getWntDurTotal(),task));
                                     System.out.println(JSON.toJSONString(tasks));
-                                    tePFinish = (contrastTaskTwo.getTePStart()+task.getTeDurTotal());
+                                    tePFinish = (contrastTaskTwo.getTePStart()+task.getWntDurTotal());
                                     endTime = tasks.get(0).getTePStart();
-                                    teDurTotal = task.getTeDurTotal();
+                                    wntDurTotal = task.getWntDurTotal();
                                     System.out.println("进入这里--=7");
                                     conflictHandlePattern = 3;
+                                    setThisInfoTimeCount(thisInfo);
                                 }
                             } else {
                                 // 判断对比任务1的总时间大于当前任务的总时间
-                                if (contrastTaskOne.getTeDurTotal() > task.getTeDurTotal()) {
+                                if (contrastTaskOne.getWntDurTotal() > task.getWntDurTotal()) {
                                     // 任务余剩时间累减
-                                    zon -= task.getTeDurTotal();
+                                    zon -= task.getWntDurTotal();
                                     System.out.println(JSON.toJSONString(tasks));
                                     // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
                                     tasks.set(i, TaskObj.getTaskX(contrastTaskOne.getTePStart()
-                                            ,(contrastTaskOne.getTePStart()+task.getTeDurTotal())
-                                            ,task.getTeDurTotal(),task));
+                                            ,(contrastTaskOne.getTePStart()+task.getWntDurTotal())
+                                            ,task.getWntDurTotal(),task));
                                     System.out.println(JSON.toJSONString(tasks));
-                                    tePFinish = (contrastTaskOne.getTePStart()+task.getTeDurTotal());
+                                    tePFinish = (contrastTaskOne.getTePStart()+task.getWntDurTotal());
                                     endTime = tasks.get(0).getTePStart();
-                                    teDurTotal = task.getTeDurTotal();
+                                    wntDurTotal = task.getWntDurTotal();
                                     System.out.println("进入新开辟的-1-1");
                                     conflictHandlePattern = 3;
+                                    setThisInfoTimeCount(thisInfo);
                                 } else {
                                     // 获取余剩总时间（当前任务的总时间-对比任务1的总时间）
-                                    remainingTime = task.getTeDurTotal() - contrastTaskOne.getTeDurTotal();
+                                    remainingTime = task.getWntDurTotal() - contrastTaskOne.getWntDurTotal();
                                     // 任务余剩时间累减
-                                    zon -= contrastTaskOne.getTeDurTotal();
+                                    zon -= contrastTaskOne.getWntDurTotal();
                                     System.out.println(JSON.toJSONString(tasks));
                                     // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
                                     tasks.set(i, TaskObj.getTaskX(contrastTaskOne.getTePStart()
-                                            ,contrastTaskOne.getTePFinish(),contrastTaskOne.getTeDurTotal(),task));
+                                            ,contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),task));
                                     System.out.println(JSON.toJSONString(tasks));
                                     tePFinish = contrastTaskOne.getTePFinish();
                                     endTime = tasks.get(0).getTePStart();
-                                    teDurTotal = contrastTaskOne.getTeDurTotal();
+                                    wntDurTotal = contrastTaskOne.getWntDurTotal();
                                     // 更新当前任务的总时间
-                                    task.setTeDurTotal(remainingTime);
+                                    task.setWntDurTotal(remainingTime);
                                     System.out.println("进入新开辟的-1-2");
                                     conflictHandlePattern = 1;
+                                    setThisInfoTimeCount(thisInfo);
                                 }
                             }
                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                            addOrUpdateTeDate(teS,teDate,teDurTotal);
+                            addOrUpdateTeDate(teS,teDate,wntDurTotal);
                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                            putTeDate(task.getId_O(), task.getIndex(),teS
+                            putTeDate(task.getId_O(), task.getDateIndex(),teS
                                     ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                             .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                             setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
-                                    ,teS, teDurTotal,allImageTeDate,isGetTaskPattern,endTime);
+                                    ,teS, wntDurTotal,allImageTeDate,isGetTaskPattern,endTime);
                         } else {
                             // 判断对比任务2的优先级等于系统
                             if (contrastTaskTwo.getPriority() == -1) {
@@ -1607,7 +1949,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 获取余剩总时间（对比任务2的开始时间-当前任务的开始时间）
                                     remainingTime = contrastTaskTwo.getTePStart() - task.getTePStart();
                                     // 获取时间差（当前任务总时间-余剩总时间）
-                                    long timeDifference = task.getTeDurTotal() - remainingTime;
+                                    long timeDifference = task.getWntDurTotal() - remainingTime;
                                     System.out.println(JSON.toJSONString(tasks));
                                     // 更新任务集合指定下标i（任务下标）的任务信息为当前任务信息
                                     tasks.set(i, TaskObj.getTaskX(task.getTePStart()
@@ -1618,12 +1960,12 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                     addOrUpdateTeDate(teS,teDate,remainingTime);
                                     // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                    putTeDate(task.getId_O(), task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
+                                    putTeDate(task.getId_O(), task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
                                             ,newestLastCurrentTimestamp),prodState,storageTaskWhereTime);
                                     setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
                                             ,teS, remainingTime,allImageTeDate,isGetTaskPattern,endTime);
                                     // 更新当前任务的总时间
-                                    task.setTeDurTotal(timeDifference);
+                                    task.setWntDurTotal(timeDifference);
                                     // 更新当前任务的开始时间
                                     task.setTePStart(contrastTaskTwo.getTePFinish());
                                     // 更新任务的结束时间
@@ -1632,6 +1974,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 任务余剩时间累减
                                     zon -= remainingTime;
                                     conflictHandlePattern = 1;
+                                    setThisInfoTimeCount(thisInfo);
                                 } else {
                                     System.out.println("时间为零-跳过");
                                 }
@@ -1639,9 +1982,12 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 // 判断当前任务的优先级小于对比任务2的优先级
                                 if (task.getPriority() < contrastTaskTwo.getPriority()) {
                                     // 任务余剩时间累加
-                                    zon += contrastTaskTwo.getTeDurTotal();
+                                    zon += contrastTaskTwo.getWntDurTotal();
                                     // 冲突任务集合添加对比任务2的任务信息
-                                    conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),contrastTaskTwo));
+                                    conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
+                                    addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
+                                    setThisInfoTimeCount(thisInfo);
+//                                    addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                     // 调用添加或更新产品状态方法
                                     addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
                                     // 获取对比任务3
@@ -1651,16 +1997,16 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     if (contrastTaskThree.getPriority() == -1) {
                                         // 获取存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
                                         if (currentOnlyNumberState == 0) {
-                                            System.out.println("--");
-                                            System.out.println(JSON.toJSONString(task));
-                                            System.out.println(JSON.toJSONString(contrastTaskThree));
+//                                            System.out.println("--");
+//                                            System.out.println(JSON.toJSONString(task));
+//                                            System.out.println(JSON.toJSONString(contrastTaskThree));
                                             // 获取时间差（对比任务3的开始时间-当前任务的开始时间）
                                             long timeDifference = contrastTaskThree.getTePStart() - task.getTePStart();
-                                            if (task.getTeDurTotal() >= timeDifference) {
+                                            if (task.getWntDurTotal() >= timeDifference) {
                                                 // 获取余剩总时间（当前任务总时间-时间差）
-                                                remainingTime = task.getTeDurTotal() - timeDifference;
+                                                remainingTime = task.getWntDurTotal() - timeDifference;
                                                 // 更新当前任务总时间
-                                                task.setTeDurTotal(remainingTime);
+                                                task.setWntDurTotal(remainingTime);
                                                 // 任务余剩时间累减
                                                 zon -= timeDifference;
                                                 System.out.println(JSON.toJSONString(tasks));
@@ -1670,57 +2016,85 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                                 System.out.println(JSON.toJSONString(tasks));
                                                 tePFinish = contrastTaskThree.getTePStart();
                                                 endTime = tasks.get(0).getTePStart();
-                                                teDurTotal = timeDifference;
+                                                wntDurTotal = timeDifference;
                                                 // 更新任务的结束时间
                                                 task.setTePFinish(contrastTaskThree.getTePStart());
                                                 // 更新当前任务的开始时间
                                                 task.setTePStart(task.getTePStart());
                                                 System.out.println("进入这里--=8");
+                                                setThisInfoTimeCount(thisInfo);
                                             } else {
 //                                                // 获取余剩总时间（当前任务总时间-时间差）
-//                                                remainingTime = task.getTeDurTotal() - timeDifference;
+//                                                remainingTime = task.getWntDurTotal() - timeDifference;
 //                                                // 更新当前任务总时间
-//                                                task.setTeDurTotal(remainingTime);
+//                                                task.setWntDurTotal(remainingTime);
                                                 // 任务余剩时间累减
-                                                zon -= task.getTeDurTotal();
+                                                zon -= task.getWntDurTotal();
                                                 System.out.println(JSON.toJSONString(tasks));
                                                 // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
                                                 tasks.set(i+accumulation, TaskObj.getTaskX(task.getTePStart()
-                                                        ,task.getTePStart()+task.getTeDurTotal()
-                                                        ,task.getTeDurTotal(),task));
+                                                        ,task.getTePStart()+task.getWntDurTotal()
+                                                        ,task.getWntDurTotal(),task));
                                                 System.out.println(JSON.toJSONString(tasks));
-                                                tePFinish = task.getTePStart()+task.getTeDurTotal();
+                                                tePFinish = task.getTePStart()+task.getWntDurTotal();
                                                 endTime = tasks.get(0).getTePStart();
-                                                teDurTotal = task.getTeDurTotal();
+                                                wntDurTotal = task.getWntDurTotal();
                                                 // 更新任务的结束时间
-                                                task.setTePFinish(task.getTePStart()+task.getTeDurTotal());
+                                                task.setTePFinish(task.getTePStart()+task.getWntDurTotal());
                                                 // 更新当前任务的开始时间
                                                 task.setTePStart(task.getTePStart());
                                                 System.out.println("进入这里-+=8");
                                                 conflictHandlePattern = 3;
+                                                setThisInfoTimeCount(thisInfo);
                                             }
                                         } else {
                                             // 获取时间差（对比任务3的开始时间-对比任务2的开始时间）
                                             long timeDifference = contrastTaskThree.getTePStart() - contrastTaskTwo.getTePStart();
-                                            // 获取余剩总时间（当前任务总时间-时间差）
-                                            remainingTime = task.getTeDurTotal() - timeDifference;
-                                            // 更新当前任务总时间
-                                            task.setTeDurTotal(remainingTime);
-                                            // 任务余剩时间累减
-                                            zon -= timeDifference;
-                                            System.out.println(JSON.toJSONString(tasks));
-                                            // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
-                                            tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart()
-                                                    ,contrastTaskThree.getTePStart(),timeDifference,task));
-                                            System.out.println(JSON.toJSONString(tasks));
-                                            tePFinish = contrastTaskThree.getTePStart();
-                                            endTime = tasks.get(0).getTePStart();
-                                            teDurTotal = timeDifference;
-                                            // 更新任务的结束时间
-                                            task.setTePFinish(contrastTaskThree.getTePStart());
-                                            // 更新当前任务的开始时间
-                                            task.setTePStart(contrastTaskTwo.getTePStart());
-                                            System.out.println("进入这里--=9");
+                                            System.out.println("--");
+                                            System.out.println(JSON.toJSONString(task));
+                                            System.out.println(JSON.toJSONString(contrastTaskThree));
+                                            System.out.println(JSON.toJSONString(contrastTaskTwo));
+                                            if (task.getWntDurTotal() >= timeDifference) {
+                                                // 获取余剩总时间（当前任务总时间-时间差）
+                                                remainingTime = task.getWntDurTotal() - timeDifference;
+                                                // 更新当前任务总时间
+                                                task.setWntDurTotal(remainingTime);
+                                                // 任务余剩时间累减
+                                                zon -= timeDifference;
+                                                System.out.println(JSON.toJSONString(tasks));
+                                                // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
+                                                tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart()
+                                                        ,contrastTaskThree.getTePStart(),timeDifference,task));
+                                                System.out.println(JSON.toJSONString(tasks));
+                                                tePFinish = contrastTaskThree.getTePStart();
+                                                endTime = tasks.get(0).getTePStart();
+                                                wntDurTotal = timeDifference;
+                                                // 更新任务的结束时间
+                                                task.setTePFinish(contrastTaskThree.getTePStart());
+                                                // 更新当前任务的开始时间
+                                                task.setTePStart(contrastTaskTwo.getTePStart());
+                                                System.out.println("进入这里--=9");
+                                                setThisInfoTimeCount(thisInfo);
+                                            } else {
+                                                // 任务余剩时间累减
+                                                zon -= task.getWntDurTotal();
+                                                System.out.println(JSON.toJSONString(tasks));
+                                                // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
+                                                tasks.set(i+accumulation, TaskObj.getTaskX(task.getTePStart()
+                                                        ,task.getTePStart()+task.getWntDurTotal()
+                                                        ,task.getWntDurTotal(),task));
+                                                System.out.println(JSON.toJSONString(tasks));
+                                                tePFinish = task.getTePStart()+task.getWntDurTotal();
+                                                endTime = tasks.get(0).getTePStart();
+                                                wntDurTotal = task.getWntDurTotal();
+                                                // 更新任务的结束时间
+                                                task.setTePFinish(task.getTePStart()+task.getWntDurTotal());
+                                                // 更新当前任务的开始时间
+                                                task.setTePStart(task.getTePStart());
+                                                System.out.println("进入这里-+=9");
+                                                conflictHandlePattern = 3;
+                                                setThisInfoTimeCount(thisInfo);
+                                            }
                                         }
                                     } else {
                                         // 获取存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
@@ -1736,7 +2110,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             // 获取时间差（对比任务2的结束时间-当前任务的开始时间）
                                             long timeDifference = contrastTaskTwo.getTePFinish() - task.getTePStart();
                                             // 获取余剩总时间（当前任务总时间-时间差）
-                                            remainingTime = task.getTeDurTotal() - timeDifference;
+                                            remainingTime = task.getWntDurTotal() - timeDifference;
                                             // 任务余剩时间累减
                                             zon -= timeDifference;
                                             System.out.println(JSON.toJSONString(tasks));
@@ -1746,36 +2120,38 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             System.out.println(JSON.toJSONString(tasks));
                                             tePFinish = contrastTaskTwo.getTePFinish();
                                             endTime = tasks.get(0).getTePStart();
-                                            teDurTotal = timeDifference;
+                                            wntDurTotal = timeDifference;
                                             System.out.println("进入这里--=22");
+                                            setThisInfoTimeCount(thisInfo);
                                             // 更新当前任务的开始时间
                                             task.setTePStart(task.getTePStart());
                                         } else {
                                             // 获取余剩总时间（当前任务总时间-对比任务2的总时间）
-                                            remainingTime = task.getTeDurTotal() - contrastTaskTwo.getTeDurTotal();
+                                            remainingTime = task.getWntDurTotal() - contrastTaskTwo.getWntDurTotal();
                                             // 任务余剩时间累减
-                                            zon -= contrastTaskTwo.getTeDurTotal();
+                                            zon -= contrastTaskTwo.getWntDurTotal();
                                             System.out.println(JSON.toJSONString(tasks));
                                             // 更新任务集合指定下标（i（任务下标）+1）的任务信息为当前任务信息
                                             tasks.set(i+accumulation, TaskObj.getTaskX(contrastTaskTwo.getTePStart()
-                                                    ,contrastTaskTwo.getTePFinish(),contrastTaskTwo.getTeDurTotal(),task));
+                                                    ,contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),task));
                                             System.out.println(JSON.toJSONString(tasks));
                                             tePFinish = contrastTaskTwo.getTePFinish();
                                             endTime = tasks.get(0).getTePStart();
-                                            teDurTotal = contrastTaskTwo.getTeDurTotal();
+                                            wntDurTotal = contrastTaskTwo.getWntDurTotal();
                                             System.out.println("进入这里--=23");
+                                            setThisInfoTimeCount(thisInfo);
                                         }
                                         // 更新当前任务总时间
-                                        task.setTeDurTotal(remainingTime);
+                                        task.setWntDurTotal(remainingTime);
                                     }
                                     // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
-                                    addOrUpdateTeDate(teS,teDate,teDurTotal);
+                                    addOrUpdateTeDate(teS,teDate,wntDurTotal);
                                     // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                    putTeDate(task.getId_O(), task.getIndex(),teS
+                                    putTeDate(task.getId_O(), task.getDateIndex(),teS
                                             ,sho.getJSONObject(task.getId_O()).getJSONObject(task
                                                     .getIndex().toString()).getInteger("prodState"),storageTaskWhereTime);
                                     setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
-                                            ,teS, teDurTotal,allImageTeDate,isGetTaskPattern,endTime);
+                                            ,teS, wntDurTotal,allImageTeDate,isGetTaskPattern,endTime);
                                     taskIndexAccumulation += accumulation;
                                     currentOnlyNumberState = 1;
                                     // 添加存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
@@ -1813,7 +2189,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             // 判断余剩总时间大于0
                             if (remainingTime > 0) {
                                 // 获取时间差（余剩总时间-当前任务总时间）
-                                long timeDifference = remainingTime - task.getTeDurTotal();
+                                long timeDifference = remainingTime - task.getWntDurTotal();
                                 // 获取存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
                                 if (currentOnlyNumberState == 0) {
                                     // 判断时间差大于等于0
@@ -1821,37 +2197,38 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         System.out.println(JSON.toJSONString(tasks));
                                         // 任务集合按照指定下标（i1（任务下标）+1）添加任务信息
                                         tasks.add(j+1, TaskObj.getTaskX(task.getTePStart()
-                                                ,(task.getTePStart()+task.getTeDurTotal())
-                                                ,task.getTeDurTotal(),task));
+                                                ,(task.getTePStart()+task.getWntDurTotal())
+                                                ,task.getWntDurTotal(),task));
                                         System.out.println(JSON.toJSONString(tasks));
-                                        tePFinish = (task.getTePStart()+task.getTeDurTotal());
+                                        tePFinish = (task.getTePStart()+task.getWntDurTotal());
                                         endTime = tasks.get(0).getTePStart();
                                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                         addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                                ,teDate,task.getTeDurTotal());
+                                                ,teDate,task.getWntDurTotal());
                                         // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                        putTeDate(task.getId_O(), task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
+                                        putTeDate(task.getId_O(), task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
                                                 ,newestLastCurrentTimestamp),prodState,storageTaskWhereTime);
                                         setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
                                                 ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                                , task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                                , task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                                         // 任务余剩时间累减
-                                        zon -= task.getTeDurTotal();
+                                        zon -= task.getWntDurTotal();
                                         result.put("zon",zon);
                                         // taskIsProcessedComplete：用于外部判断任务是否被处理完参数，jie == 0 没有被处理完、jie == 2 已经被处理完了
                                         result.put("taskIsProcessedComplete",2);
-                                        result.put("hTeStart",(task.getTePStart()+task.getTeDurTotal()));
+                                        result.put("hTeStart",(task.getTePStart()+task.getWntDurTotal()));
                                         storageTaskIsProcessedComplete = 1;
                                         // 更新当前任务的开始时间
                                         task.setTePStart(task.getTePStart());
                                         // 更新当前任务的结束时间
-                                        task.setTePFinish((task.getTePStart()+task.getTeDurTotal()));
+                                        task.setTePFinish((task.getTePStart()+task.getWntDurTotal()));
                                         System.out.println("进入这里++=5-2");
                                         conflictHandlePattern = conflictHandlePatternCopy;
+                                        setThisInfoTimeCount(thisInfo);
                                         break;
                                     } else {
                                         // 获取时间差2（当前任务总时间-余剩总时间）
-                                        long timeDifferenceNew = task.getTeDurTotal() - remainingTime;
+                                        long timeDifferenceNew = task.getWntDurTotal() - remainingTime;
                                         System.out.println(JSON.toJSONString(tasks));
                                         // 任务集合按照指定下标（i1（任务下标）+1）添加任务信息
                                         tasks.add(j+1, TaskObj.getTaskX(task.getTePFinish()
@@ -1862,13 +2239,13 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                         addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,remainingTime);
                                         // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                        putTeDate(task.getId_O(), task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
+                                        putTeDate(task.getId_O(), task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
                                                 ,newestLastCurrentTimestamp),prodState,storageTaskWhereTime);
                                         setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
                                                 ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                                 , remainingTime,allImageTeDate,isGetTaskPattern,endTime);
                                         // 更新当前任务的总时间
-                                        task.setTeDurTotal(timeDifferenceNew);
+                                        task.setWntDurTotal(timeDifferenceNew);
                                         // 更新当前任务的开始时间
                                         task.setTePStart(contrastTaskOne.getTePStart());
                                         // 更新当前任务的结束时间
@@ -1877,6 +2254,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         // 任务余剩时间累减
                                         zon -= remainingTime;
                                         conflictHandlePattern = 7;
+                                        setThisInfoTimeCount(thisInfo);
                                     }
                                 } else {
                                     // 判断时间差大于等于0
@@ -1888,37 +2266,38 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         System.out.println("---");
                                         // 任务集合按照指定下标（i1（任务下标）+1）添加任务信息
                                         tasks.add(j+1, TaskObj.getTaskX(contrastTaskOneNew.getTePFinish()
-                                                ,(contrastTaskOneNew.getTePFinish()+task.getTeDurTotal())
-                                                ,task.getTeDurTotal(),task));
+                                                ,(contrastTaskOneNew.getTePFinish()+task.getWntDurTotal())
+                                                ,task.getWntDurTotal(),task));
                                         System.out.println(JSON.toJSONString(tasks));
-                                        tePFinish = (contrastTaskOneNew.getTePFinish()+task.getTeDurTotal());
+                                        tePFinish = (contrastTaskOneNew.getTePFinish()+task.getWntDurTotal());
                                         endTime = tasks.get(0).getTePStart();
                                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                         addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                                ,teDate,task.getTeDurTotal());
+                                                ,teDate,task.getWntDurTotal());
                                         // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                        putTeDate(task.getId_O(), task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
+                                        putTeDate(task.getId_O(), task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
                                                 ,newestLastCurrentTimestamp),prodState,storageTaskWhereTime);
                                         setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
                                                 ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                                , task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                                , task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                                         // 任务余剩时间累减
-                                        zon -= task.getTeDurTotal();
+                                        zon -= task.getWntDurTotal();
                                         result.put("zon",zon);
                                         // taskIsProcessedComplete：用于外部判断任务是否被处理完参数，jie == 0 没有被处理完、jie == 2 已经被处理完了
                                         result.put("taskIsProcessedComplete",2);
-                                        result.put("hTeStart",(contrastTaskOneNew.getTePFinish()+task.getTeDurTotal()));
+                                        result.put("hTeStart",(contrastTaskOneNew.getTePFinish()+task.getWntDurTotal()));
                                         storageTaskIsProcessedComplete = 1;
                                         // 更新当前任务的开始时间
                                         task.setTePStart(contrastTaskOneNew.getTePFinish());
                                         // 更新当前任务的结束时间
-                                        task.setTePFinish((contrastTaskOneNew.getTePFinish()+task.getTeDurTotal()));
+                                        task.setTePFinish((contrastTaskOneNew.getTePFinish()+task.getWntDurTotal()));
                                         System.out.println("进入这里--=10");
                                         conflictHandlePattern = conflictHandlePatternCopy;
+                                        setThisInfoTimeCount(thisInfo);
                                         break;
                                     } else {
                                         // 获取时间差2（当前任务总时间-余剩总时间）
-                                        long timeDifferenceNew = task.getTeDurTotal() - remainingTime;
+                                        long timeDifferenceNew = task.getWntDurTotal() - remainingTime;
                                         System.out.println(JSON.toJSONString(tasks));
                                         // 任务集合按照指定下标（i1（任务下标）+1）添加任务信息
                                         tasks.add(j+1, TaskObj.getTaskX(contrastTaskOneNew.getTePFinish()
@@ -1929,13 +2308,13 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                         addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,remainingTime);
                                         // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                        putTeDate(task.getId_O(), task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
+                                        putTeDate(task.getId_O(), task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
                                                 ,newestLastCurrentTimestamp),prodState,storageTaskWhereTime);
                                         setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
                                                 ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                                 , remainingTime,allImageTeDate,isGetTaskPattern,endTime);
                                         // 更新当前任务的总时间
-                                        task.setTeDurTotal(timeDifferenceNew);
+                                        task.setWntDurTotal(timeDifferenceNew);
                                         // 更新当前任务的开始时间
                                         task.setTePStart(contrastTaskOne.getTePStart());
                                         // 更新当前任务的结束时间
@@ -1944,6 +2323,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         // 任务余剩时间累减
                                         zon -= remainingTime;
                                         conflictHandlePattern = 7;
+                                        setThisInfoTimeCount(thisInfo);
                                     }
                                 }
                             }
@@ -1959,7 +2339,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     JSONObject handleTimeConflictEasyInfo = handleTimeConflictEasy(task, contrastTaskOneNew, contrastTaskTwoNew, zon, tasks, i, j, conflict, teSB
                                             , random, grpB, dep, teDate,isGetTaskPattern,1,sho,csSta,randomAll,xbAndSbAll
                                             ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
+                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime,thisInfo,actionIdO);
 //                                    System.out.println("进入这里X-X-1-1-h:");
 //                                    System.out.println(JSON.toJSONString(handleTimeConflictEasyInfo));
                                     // 获取任务余剩时间
@@ -1979,39 +2359,40 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 判断余剩总时间大于0
                                     if (remainingTime > 0) {
                                         // 获取时间差（余剩总时间-当前任务总时间）
-                                        long timeDifference = remainingTime - task.getTeDurTotal();
+                                        long timeDifference = remainingTime - task.getWntDurTotal();
                                         // 判断时间差大于等于0
                                         if (timeDifference >= 0) {
                                             System.out.println(JSON.toJSONString(tasks));
                                             // 任务集合按照指定下标（i1（任务下标）+1）添加任务信息
                                             tasks.add(j + 1, TaskObj.getTaskX(task.getTePStart()
-                                                    ,(task.getTePStart() + task.getTeDurTotal())
-                                                    ,task.getTeDurTotal(), task));
+                                                    ,(task.getTePStart() + task.getWntDurTotal())
+                                                    ,task.getWntDurTotal(), task));
                                             System.out.println(JSON.toJSONString(tasks));
-                                            tePFinish = (task.getTePStart() + task.getTeDurTotal());
+                                            tePFinish = (task.getTePStart() + task.getWntDurTotal());
                                             endTime = tasks.get(0).getTePStart();
                                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                             addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                                    ,teDate,task.getTeDurTotal());
+                                                    ,teDate,task.getWntDurTotal());
                                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                            putTeDate(task.getId_O(), task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
+                                            putTeDate(task.getId_O(), task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
                                                     ,newestLastCurrentTimestamp),prodState,storageTaskWhereTime);
                                             setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
                                                     ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                                    , task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                                    , task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                                             // 任务余剩时间累减
-                                            zon -= task.getTeDurTotal();
+                                            zon -= task.getWntDurTotal();
                                             result.put("zon", zon);
                                             // taskIsProcessedComplete：用于外部判断任务是否被处理完参数，jie == 0 没有被处理完、jie == 2 已经被处理完了
                                             result.put("taskIsProcessedComplete", 2);
-                                            result.put("hTeStart", (task.getTePStart() + task.getTeDurTotal()));
+                                            result.put("hTeStart", (task.getTePStart() + task.getWntDurTotal()));
                                             System.out.println("进入这里再出-1");
                                             storageTaskIsProcessedComplete = 1;
                                             conflictHandlePattern = conflictHandlePatternCopy;
+                                            setThisInfoTimeCount(thisInfo);
                                             break;
                                         } else {
                                             // 获取时间差2（当前任务总时间-余剩总时间）
-                                            long timeDifferenceNew = task.getTeDurTotal() - remainingTime;
+                                            long timeDifferenceNew = task.getWntDurTotal() - remainingTime;
                                             System.out.println(JSON.toJSONString(tasks));
                                             // 任务集合按照指定下标（i1（任务下标）+1）添加任务信息
                                             tasks.add(j + 1, TaskObj.getTaskX(task.getTePFinish()
@@ -2022,21 +2403,22 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                             addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,remainingTime);
                                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                            putTeDate(task.getId_O(), task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
+                                            putTeDate(task.getId_O(), task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
                                                     ,newestLastCurrentTimestamp),prodState,storageTaskWhereTime);
                                             setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
                                                     ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                                     , remainingTime,allImageTeDate,isGetTaskPattern,endTime);
                                             // 更新当前任务的总时间
-                                            task.setTeDurTotal(timeDifferenceNew);
+                                            task.setWntDurTotal(timeDifferenceNew);
                                             // 更新当前任务的开始时间
                                             task.setTePStart((task.getTePFinish() + remainingTime));
                                             // 更新当前任务的结束时间
-                                            task.setTePFinish((task.getTePFinish() + remainingTime) + task.getTeDurTotal());
+                                            task.setTePFinish((task.getTePFinish() + remainingTime) + task.getWntDurTotal());
                                             System.out.println("进入这里++=7");
                                             // 任务余剩时间累减
                                             zon -= remainingTime;
                                             conflictHandlePattern = 7;
+                                            setThisInfoTimeCount(thisInfo);
                                         }
                                     } else {
                                         System.out.println("进入新的啊-q:");
@@ -2045,7 +2427,8 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                                 , contrastTaskTwoNew, zon, tasks, i, j, conflict, teSB, random, grpB, dep, teDate
                                                 ,isGetTaskPattern,1,sho,csSta,randomAll,xbAndSbAll
                                                 ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                                                ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
+                                                ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle
+                                                ,depAllTime,thisInfo,actionIdO);
                                         System.out.println("进入新的啊-h:");
 //                                        System.out.println(JSON.toJSONString(handleTimeConflictEasyInfo));
                                         tePFinish = handleTimeConflictEasyInfo.getLong("tePFinish");
@@ -2071,7 +2454,8 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             , contrastTaskTwoNew, zon, tasks, i, j, conflict, teSB, random, grpB, dep, teDate
                                             ,isGetTaskPattern,0,sho,csSta,randomAll,xbAndSbAll
                                             ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
+                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle
+                                            ,depAllTime,thisInfo,actionIdO);
                                     System.out.println("进入这里-X-1-h:");
                                     tePFinish = handleTimeConflictEasyInfo.getLong("tePFinish");
                                     endTime = handleTimeConflictEasyInfo.getLong("endTime");
@@ -2091,7 +2475,8 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             , contrastTaskTwoNew, zon, tasks, i, j, conflict, teSB, random, grpB, dep, teDate
                                             ,isGetTaskPattern,0,sho,csSta,randomAll,xbAndSbAll
                                             ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
+                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle
+                                            ,depAllTime,thisInfo,actionIdO);
                                     tePFinish = handleTimeConflictEasyInfo.getLong("tePFinish");
                                     endTime = handleTimeConflictEasyInfo.getLong("endTime");
                                     // 获取任务余剩时间
@@ -2113,7 +2498,8 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             , contrastTaskTwoNew, zon, tasks, i, j, conflict, teSB, random, grpB, dep, teDate
                                             ,isGetTaskPattern,0,sho,csSta,randomAll,xbAndSbAll
                                             ,objTaskAll,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
-                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle,depAllTime);
+                                            ,newestLastCurrentTimestamp,onlyRefState,allImageTeDate,isComprehensiveHandle
+                                            ,depAllTime,thisInfo,actionIdO);
                                     tePFinish = handleTimeConflictEasyInfo.getLong("tePFinish");
                                     endTime = handleTimeConflictEasyInfo.getLong("endTime");
                                     // 获取任务余剩时间
@@ -2132,29 +2518,29 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 判断余剩总时间大于0
                                     if (remainingTime > 0) {
                                         // 获取时间差（余剩总时间-当前任务总时间）
-                                        long timeDifference = remainingTime - task.getTeDurTotal();
+                                        long timeDifference = remainingTime - task.getWntDurTotal();
                                         // 判断时间差大于等于0
                                         if (timeDifference >= 0) {
                                             System.out.println(JSON.toJSONString(tasks));
                                             // 任务集合按照指定下标（i1（任务下标）+1）添加任务信息
                                             tasks.add(j + 1, TaskObj.getTaskX(contrastTaskOneNew.getTePFinish()
-                                                    , (contrastTaskOneNew.getTePFinish() + task.getTeDurTotal())
-                                                    , task.getTeDurTotal(), task));
+                                                    , (contrastTaskOneNew.getTePFinish() + task.getWntDurTotal())
+                                                    , task.getWntDurTotal(), task));
                                             System.out.println(JSON.toJSONString(tasks));
-                                            tePFinish = (contrastTaskOneNew.getTePFinish() + task.getTeDurTotal());
+                                            tePFinish = (contrastTaskOneNew.getTePFinish() + task.getWntDurTotal());
                                             endTime = tasks.get(0).getTePStart();
                                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                             addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                                    ,teDate,task.getTeDurTotal());
+                                                    ,teDate,task.getWntDurTotal());
                                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                            putTeDate(task.getId_O(), task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
+                                            putTeDate(task.getId_O(), task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
                                                     ,newestLastCurrentTimestamp),prodState,storageTaskWhereTime);
                                             setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
                                                     ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                                    , task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                                    , task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                                             // 任务余剩时间累减
-                                            zon -= task.getTeDurTotal();
-                                            task.setTeDurTotal(0L);
+                                            zon -= task.getWntDurTotal();
+                                            task.setWntDurTotal(0L);
                                             result.put("zon", zon);
                                             // taskIsProcessedComplete：用于外部判断任务是否被处理完参数，jie == 0 没有被处理完、jie == 2 已经被处理完了
                                             result.put("taskIsProcessedComplete", 2);
@@ -2162,10 +2548,11 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             System.out.println("进入这里再出-1-2");
                                             storageTaskIsProcessedComplete = 1;
                                             conflictHandlePattern = conflictHandlePatternCopy;
+                                            setThisInfoTimeCount(thisInfo);
                                             break;
                                         } else {
                                             // 获取时间差2（当前任务总时间-余剩总时间）
-                                            long timeDifferenceNew = task.getTeDurTotal() - remainingTime;
+                                            long timeDifferenceNew = task.getWntDurTotal() - remainingTime;
                                             System.out.println(JSON.toJSONString(tasks));
                                             // 任务集合按照指定下标（i1（任务下标）+1）添加任务信息
                                             tasks.add(j + 1, TaskObj.getTaskX(contrastTaskOneNew.getTePFinish()
@@ -2176,21 +2563,22 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                                             addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,remainingTime);
                                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                            putTeDate(task.getId_O(), task.getIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
+                                            putTeDate(task.getId_O(), task.getDateIndex(),getTeS(random,grpB,dep,onlyFirstTimeStamp
                                                     ,newestLastCurrentTimestamp),prodState,storageTaskWhereTime);
                                             setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
                                                     ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                                     , remainingTime,allImageTeDate,isGetTaskPattern,endTime);
                                             // 更新当前任务的总时间
-                                            task.setTeDurTotal(timeDifferenceNew);
+                                            task.setWntDurTotal(timeDifferenceNew);
                                             // 更新当前任务的开始时间
                                             task.setTePStart((contrastTaskOneNew.getTePFinish() + remainingTime));
                                             // 更新当前任务的结束时间
-                                            task.setTePFinish((contrastTaskOneNew.getTePFinish() + remainingTime) + task.getTeDurTotal());
+                                            task.setTePFinish((contrastTaskOneNew.getTePFinish() + remainingTime) + task.getWntDurTotal());
                                             // 任务余剩时间累减
                                             zon -= remainingTime;
                                             System.out.println("进入这里再出-2-2");
                                             conflictHandlePattern = 7;
+                                            setThisInfoTimeCount(thisInfo);
                                         }
                                     }
                                 }

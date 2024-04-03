@@ -141,8 +141,19 @@ public class FlowServiceImpl implements FlowService {
 
             // 创建递归存储的时间处理信息
             List<OrderODate> oDates = new ArrayList<>();
-            // 创建递归存储的时间任务信息
-            List<Task> oTasks = new ArrayList<>();
+            /*
+            * 内部结构
+            * {
+            *   "父产品编号":{
+            *       "oDates":[],
+            *       "time开始时间":"",
+            *       "time结束时间":""
+            *   }
+            * }
+            */
+            JSONObject oDateObj = new JSONObject();
+//            // 创建递归存储的时间任务信息
+//            List<Task> oTasks = new ArrayList<>();
             // 创建存储零件编号的合并信息记录合并时的下标
             JSONObject mergeJ = new JSONObject();
             // 遍历订单内所有产品
@@ -163,7 +174,6 @@ public class FlowServiceImpl implements FlowService {
                 //dgType: 1 = firstLayer (sales Items), 2 = regular/subTask or subProd, 3 = depSplit regular
                 // T/P - T/P -T/P.... problem is id_P == ""?
 
-
                 this.dgProcess(
                         1, myCompId, id_OParent,
                         objOItem, objAction,
@@ -171,7 +181,9 @@ public class FlowServiceImpl implements FlowService {
                         oParent_objItem, item,
                         objOItemCollection, objActionCollection,
                         pidActionCollection,
-                        objOItem.getId_P(), oDates, oTasks, mergeJ, 0, null, isJsLj);
+                        objOItem.getId_P(), oDates
+//                        , oTasks
+                        , mergeJ, 0, null, isJsLj,oDateObj);
             }
         }
 
@@ -289,7 +301,8 @@ public class FlowServiceImpl implements FlowService {
                     // make sales order Action
 
                     this.updateSalesOrder(casItemData,unitAction,unitOItem,salesOrderData,grpBGroup, grpGroup, prodCompId
-                    ,oDates,oTasks);
+                    ,oDates,oDateObj
+                    );
 
                 } else
                 {
@@ -475,8 +488,8 @@ public class FlowServiceImpl implements FlowService {
 
         // 创建递归存储的时间处理信息
         List<OrderODate> oDates = new ArrayList<>();
-        // 创建递归存储的时间任务信息
-        List<Task> oTasks = new ArrayList<>();
+//        // 创建递归存储的时间任务信息
+//        List<Task> oTasks = new ArrayList<>();
         // 创建存储零件编号的合并信息记录合并时的下标
         JSONObject mergeJ = new JSONObject();
         // 遍历订单内所有产品
@@ -500,7 +513,9 @@ public class FlowServiceImpl implements FlowService {
                oParent_objItem, index,
                objOItemCollection, objActionCollection,
                pidActionCollection,
-               objOItem.getId_P(), oDates, oTasks, mergeJ, 0, null, isJsLj);
+               objOItem.getId_P(), oDates
+//               , oTasks
+               , mergeJ, 0, null, isJsLj,new JSONObject());
 
         // 判断递归结果是否为空
         if (objActionCollection.size() == 0){
@@ -626,7 +641,9 @@ public class FlowServiceImpl implements FlowService {
                 // make sales order Action
 
                     this.updateSalesOrderSingle(index, casItemData, unitAction, unitOItem, salesOrderData, grpBGroup, grpGroup, prodCompId
-                            , oDates, oTasks);
+                            , oDates
+//                            , oTasks
+                    );
                     qt.errPrint("3... unitAction", unitAction);
             } else
             {
@@ -720,7 +737,9 @@ public class FlowServiceImpl implements FlowService {
          */
         public void updateSalesOrder(JSONArray casItemData,List<OrderAction> salesAction, List<OrderOItem> salesOItem,
                                      Order orderParentData,JSONObject grpBGroup,JSONObject grpGroup, String myCompId,
-                                     List<OrderODate> oDates,List<Task> oTasks)
+                                     List<OrderODate> oDates,JSONObject oDateObj
+//                ,List<Task> oTasks
+        )
         {
 
             // 添加订单基础信息存储
@@ -728,6 +747,11 @@ public class FlowServiceImpl implements FlowService {
             JSONObject nowData = new JSONObject();
             nowData.put("objOrder", casItemData);
             casItemx.put(myCompId,nowData);
+            JSONObject java = new JSONObject();
+            java.put("oDates",oDates);
+            System.out.println("oDateObj:");
+            System.out.println(JSON.toJSONString(oDateObj));
+            casItemx.put("java",java);
 
             // 创建产品零件递归信息
             JSONObject salesOrder_Action = new JSONObject();
@@ -796,7 +820,9 @@ public class FlowServiceImpl implements FlowService {
 
     public void updateSalesOrderSingle(Integer index, JSONArray casItemData,List<OrderAction> salesAction, List<OrderOItem> salesOItem,
                                  Order orderParentData,JSONObject grpBGroup,JSONObject grpGroup, String myCompId,
-                                 List<OrderODate> oDates,List<Task> oTasks)
+                                 List<OrderODate> oDates
+//            ,List<Task> oTasks
+    )
     {
 
         // 添加订单基础信息存储
@@ -847,7 +873,7 @@ public class FlowServiceImpl implements FlowService {
 
         //ZJ
         salesOrder_Action.put("oDates",oDates);
-        salesOrder_Action.put("oTasks",oTasks);
+//        salesOrder_Action.put("oTasks",oTasks);
         //ZJ
 
         // 设置action信息
@@ -919,11 +945,12 @@ public class FlowServiceImpl implements FlowService {
              Map<String, List<OrderOItem>> objOItemCollection,
              Map<String, List<OrderAction>> objActionCollection,
              Map<String, OrderAction> pidActionCollection,
-
-            String id_PF,List<OrderODate> oDates,List<Task> oTasks,JSONObject mergeJ,int csSta,String csId_P,JSONObject isJsLj)
+            String id_PF,List<OrderODate> oDates
+//            ,List<Task> oTasks
+            ,JSONObject mergeJ,int csSta,String csId_P,JSONObject isJsLj
+            ,JSONObject oDateObj)
     {
         //ZJ
-
         isJsLj.put("1",(isJsLj.getInteger("1")+1));
         int dq = isJsLj.getInteger("1");
         // 存储序号是否为1层级
@@ -1030,12 +1057,12 @@ public class FlowServiceImpl implements FlowService {
             // 添加信息
             orderODate.setCsSta(timeHandleSerialNoIsOneInside);
             oDates.add(orderODate);
-            // 创建一个任务类
-            Task task = new Task();
-            // 随便添加一个信息
-            task.setPriority(-2);
-            // 使用一个空任务对象来与时间处理信息对齐
-            oTasks.add(task);
+//            // 创建一个任务类
+//            Task task = new Task();
+//            // 随便添加一个信息
+//            task.setPriority(-2);
+//            // 使用一个空任务对象来与时间处理信息对齐
+//            oTasks.add(task);
             //ZJ
 
 
@@ -1362,6 +1389,11 @@ public class FlowServiceImpl implements FlowService {
             {
                 JSONArray partArrayNext = thisProd.getPart().getJSONArray("objItem");
                 objAction.setBmdpt(2);
+                JSONObject thisPInfo = new JSONObject();
+                thisPInfo.put("oDates",new JSONArray());
+                thisPInfo.put("tePStart",0);
+                thisPInfo.put("tePFinish",0);
+                oDateObj.put(thisProd.getId(),thisPInfo);
                 // the first item's bmdpt != 6, if ==6 then ALL parts in that part will == 6, then need pick by igura
                 if (partArrayNext.getJSONObject(0).getInteger("bmdpt") != 6) {
 //                        partArrayNext.sort((o1, o2) -> {
@@ -1390,7 +1422,9 @@ public class FlowServiceImpl implements FlowService {
                                     partArrayNext, item,
                                     objOItemCollection, objActionCollection,
                                     pidActionCollection,
-                                    thisProd.getId(),oDates,oTasks,mergeJ,timeHandleSerialNoIsOneInside,csId_P,isJsLj);
+                                    thisProd.getId(),oDates
+//                                    ,oTasks
+                                    ,mergeJ,timeHandleSerialNoIsOneInside,csId_P,isJsLj,oDateObj);
                             //changed dgType
                             // now check the last time and put into objAction a key
                             if (dgType == 2 && item + 1 == partArrayNext.size()) {
@@ -1427,12 +1461,7 @@ public class FlowServiceImpl implements FlowService {
             // 添加时间操作处理信息
             orderODate.setId_PF(id_PF);
             orderODate.setId_P(objOItem.getId_P());
-            //            orderODate.setPriority(0);
-
-//            orderODate.setPriority(upperOItem.getPriority() == null? 1 : upperOItem.getPriority());
             orderODate.setPriorItem(partInfo.getInteger("wn0prior"));
-            orderODate.setTeStart(0L);
-            orderODate.setTaFin(0L);
             // 判断层级为第一层并且序号为1
             if (timeHandleSerialNoIsOneInside == 1 && objOItem.getWn0prior() == 1) {
                 // 添加信息
@@ -1456,7 +1485,7 @@ public class FlowServiceImpl implements FlowService {
             //++ZJ
             orderODate.setPriority(0);
             //ZJ
-            orderODate.setTeDurTotal(0L);
+            orderODate.setWntDurTotal(0L);
             orderODate.setWn2qtyneed(objOItem.getWn2qtyneed());
             // 判断bmdpt等于部件
             if (objAction.getBmdpt() == 2) {
@@ -1471,14 +1500,15 @@ public class FlowServiceImpl implements FlowService {
                     orderODate.setKaiJie(5);
                 }
             }
-            //System.out.println("wn2qtyneed:"+objOItem.getWn2qtyneed()+" - teDurTotal:"
-//                    +orderODate.getTeDurTotal()+" - wntPrep:"+orderODate.getTePrep()+" - prior:"+objOItem.getWn0prior());
+            //System.out.println("wn2qtyneed:"+objOItem.getWn2qtyneed()+" - wntDurTotal:"
+//                    +orderODate.getWntDurTotal()+" - wntPrep:"+orderODate.getTePrep()+" - prior:"+objOItem.getWn0prior());
             //System.out.println("csTeJ:"+" - id_P:"+objOItem.getId_P()+" - id_PF:"+id_PF+" - dq:"+dq);
             // 添加信息
             orderODate.setId_O(objAction.getId_O());
             orderODate.setId_C(myCompId);
             orderODate.setIndex(objAction.getIndex());
             orderODate.setGrpB(objOItem.getGrpB());
+            orderODate.setWrdN(qt.setJson("cn",objOItem.getWrdN().getString("cn")));
             oDates.add(orderODate);
             // 判断存储零件编号的合并信息记录合并时的下标为空
             if (null == mergeJ.getInteger(objOItem.getId_P())) {
@@ -1486,20 +1516,12 @@ public class FlowServiceImpl implements FlowService {
                 // 添加下标信息
                 mergeJ.put(objOItem.getId_P(),oDates.size()-1);
             }
-            // 获取零件名称
-            String itemWrdN = objOItem.getWrdN().getString("cn");
-            boolean isNextPart = null != objAction.getPrtNext() && objAction.getPrtNext().size() == 0 && dgType == 2;
 
-            // 调用生成任务信息
-            Task task = TaskObj.getTask(orderODate.getTeStart(), orderODate.getTeFin(), orderODate.getId_O()
-                    , orderODate.getIndex(), 0L
-                    , orderODate.getPriority(), itemWrdN, orderODate.getWntPrep(),orderODate.getTeDelayDate()
-                    ,myCompId,0L,0L,-1, isNextPart);
-            // 设置任务公司编号
-            task.setId_C(myCompId);
-            //System.out.println("task:");
-            //System.out.println(JSON.toJSONString(task));
-            oTasks.add(task);
+            JSONObject thisPInfo = oDateObj.getJSONObject(upperOItem.getId_P());
+            JSONArray oDatesP = thisPInfo.getJSONArray("oDatesP");
+            oDatesP.add(orderODate);
+            thisPInfo.put("oDates",oDatesP);
+            oDateObj.put(upperOItem.getId_P(),thisPInfo);
         }
         //ZJ
 

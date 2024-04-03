@@ -9,12 +9,24 @@ import java.util.List;
 /**
  * @ClassName Task
  * @Description 作者很懒什么也没写
- * @authortang tang
+ * @author tang
  * @Date 2021/9/23 10:54
  * @ver 1.0.0
  */
 @Data
 public class Task {
+    public Task(){}
+    public Task(int priority,String id_O,int index,long wntPrep,long wntDurTotal
+            ,String id_C,int dateIndex,JSONObject wrdN){
+        this.priority = priority;
+        this.id_O = id_O;
+        this.index = index;
+        this.wntPrep = wntPrep;
+        this.wntDurTotal = wntDurTotal;
+        this.id_C = id_C;
+        this.dateIndex = dateIndex;
+        this.wrdN = wrdN;
+    }
     /**
      * 优先级
      */
@@ -42,13 +54,9 @@ public class Task {
     /**
      * 准备时间
      */
-    private Long prep;
-//    /**
-//     * 当天时间
-//     */
-//    private Long dang;
+    private Long wntPrep;
     /**
-     * 用户名称
+     * 名称
      */
     private JSONObject wrdN;
     /**
@@ -88,12 +96,29 @@ public class Task {
      */
     private Long taOver = 0L;
     /**
-     * 合并任务列表
+     * 订单名称
      */
-    private JSONArray mergeTasks;
+    private JSONObject wrdNO;
+    /**
+     * 主订单编号
+     */
+    private String refOP;
+    /**
+     * 数量
+     */
+    private double wn2qtyneed;
+    /**
+     * 是否有时间更新
+     */
+    private boolean updateTime = false;
 
     /**
-     * 是否有下一个零件
+     * 层级
      */
-    private Boolean isNextPart;
+    private int layer;
+
+    /**
+     * 父产品id
+     */
+    private String id_PF;
 }

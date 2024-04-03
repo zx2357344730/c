@@ -11,8 +11,8 @@
         <module name="action" />
         <module name="login" />
         <module name="tools" />
-        <module name="chat" />
         <module name="gateway" />
+        <module name="chat" />
       </profile>
     </annotationProcessing>
   </component>
@@ -21,6 +21,7 @@
       <module name="action" options="-parameters" />
       <module name="ccpl" options="-parameters" />
       <module name="chat" options="-parameters" />
+      <module name="cresign_java" options="" />
       <module name="gateway" options="-parameters" />
       <module name="login" options="-parameters" />
       <module name="purchase" options="-parameters" />

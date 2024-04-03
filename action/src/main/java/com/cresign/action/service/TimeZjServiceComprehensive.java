@@ -49,7 +49,7 @@ public interface TimeZjServiceComprehensive {
      * @ver 1.0.0
      * @date 2022/6/9 conflictHandle
      */
-    JSONObject timeComprehensiveHandle(String id_oNext, Integer indONext, JSONObject timeConflictCopy
+    JSONObject timeComprehensiveHandle(String id_oNext, Integer indONext,int dateIndex, JSONObject timeConflictCopy
             , Integer isGetTaskPattern, Integer isEmptyInsert, JSONObject sho, String id_C
             , int csSta, String randomAll, JSONObject xbAndSbAll, JSONObject actionIdO
             , JSONObject objTaskAll, JSONObject recordId_OIndexState, JSONObject storageTaskWhereTime
@@ -57,7 +57,7 @@ public interface TimeZjServiceComprehensive {
             , JSONObject onlyFirstTimeStamp, JSONObject newestLastCurrentTimestamp, JSONObject onlyRefState
             , JSONObject recordNoOperation,Long tePFinish,JSONObject id_OAndIndexTaskInfo
             ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,long endTime
-            ,JSONObject depAllTime,String randomJiu);
+            ,JSONObject depAllTime,String randomJiu,boolean isEndPart,String id_PF,String layer);
 
 //    JSONObject timeComprehensiveHandleCopy(String id_oNext, Integer indONext, JSONObject timeConflictCopy
 //            , Integer isGetTaskPattern, Integer isEmptyInsert, JSONObject sho, String id_C
@@ -87,7 +87,8 @@ public interface TimeZjServiceComprehensive {
      */
     void taskLastHandle(JSONObject timeConflictCopy, String id_C, String randomAll, JSONObject objTaskAll, JSONObject storageTaskWhereTime
             , JSONObject allImageTotalTime, Map<String,Map<String, Map<Long, List<Task>>>> allImageTasks, JSONObject recordNoOperation
-            , String id_O, JSONArray objOrderList,JSONObject actionIdO,JSONObject allImageTeDate,JSONObject depAllTime);
+            , String id_O, JSONArray objOrderList,JSONObject actionIdO,JSONObject allImageTeDate
+            ,JSONObject depAllTime,JSONObject thisInfo);
 
     /**
      * 时间处理收尾（结束）方法 ( TimeZjServiceImplX.timeHandle()方法的，分割到该类 )
@@ -142,8 +143,56 @@ public interface TimeZjServiceComprehensive {
             , JSONObject onlyRefState, JSONObject recordNoOperation,JSONObject clearStatus,JSONObject thisInfo
             ,JSONObject allImageTeDate,boolean isSetEnd,long endTime,JSONObject depAllTime);
 
+//    /**
+//     * 处理时间冲突收尾（结束）方法 ( TimeZjServiceTimeConflictImpl.handleTimeConflict()方法的，分割到该类 )
+//     * @param i	当前任务对应循环下标
+//     * @param tasks	任务集合
+//     * @param conflict	用于存储被冲突的任务集合
+//     * @param zon	当前任务余剩时间
+//     * @param random	当前唯一编号
+//     * @param dep	部门
+//     * @param grpB	组别
+//     * @param timeConflictCopy	当前任务所在日期
+//     * @param isGetTaskPattern	 = 0 获取数据库任务信息、 = 1 获取镜像任务信息
+//     * @param getCurrentTimeStampPattern	ts = 0 获取当前第一次初始时间戳、ts = 1 获取最新的（最后一个）当前时间戳
+//     * @param sho	用于存储判断镜像是否是第一个被冲突的产品
+//     * @param csSta	时间处理的序号是否为1层级
+//     * @param randomAll	全局唯一编号
+//     * @param xbAndSbAll	全局上班下班信息
+//     * @param actionIdO	存储casItemx内订单列表的订单action数据
+//     * @param objTaskAll	全局任务信息
+//     * @param recordId_OIndexState	统一id_O和index存储记录状态信息
+//     * @param storageTaskWhereTime	存储任务所在日期
+//     * @param allImageTotalTime	全局镜像任务余剩总时间信息
+//     * @param allImageTasks	全局镜像任务列表信息
+//     * @param onlyFirstTimeStamp	存储当前唯一编号的第一个当前时间戳
+//     * @param newestLastCurrentTimestamp	根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
+//     * @param onlyRefState	存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
+//     * @param recordNoOperation	定义存储进入未操作到的地方记录
+//     * @param tePFinish 任务最后结束时间
+//     * @param clearStatus 清理状态信息
+//     * @param thisInfo 当前处理通用信息存储
+//     * @param allImageTeDate 镜像任务所在日期
+//     * @param isSetImage 是否写入镜像状态信息
+//     * @param endTime 任务结束日期
+//     * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
+//     * @author tang
+//     * @ver 1.0.0
+//     * @date 2022/6/9 conflictHandleCore
+//     */
+//    JSONObject handleTimeConflictEnd(int i, List<Task> tasks, List<Task> conflict, Long zon, String random
+//            , String dep, String grpB, JSONObject timeConflictCopy, Integer isGetTaskPattern
+//            , Integer getCurrentTimeStampPattern, JSONObject sho, int csSta, String randomAll, JSONObject xbAndSbAll
+//            , JSONObject actionIdO, JSONObject objTaskAll, JSONObject recordId_OIndexState
+//            , JSONObject storageTaskWhereTime, JSONObject allImageTotalTime
+//            , Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks
+//            , JSONObject onlyFirstTimeStamp, JSONObject newestLastCurrentTimestamp
+//            , JSONObject onlyRefState, JSONObject recordNoOperation,Long tePFinish
+//            ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,JSONObject isSetImage,long endTime
+//            ,JSONObject depAllTime);
+
     /**
-     * 处理时间冲突收尾（结束）方法 ( TimeZjServiceTimeConflictImpl.handleTimeConflict()方法的，分割到该类 )
+     * 处理时间冲突收尾（结束）方法 新的 ( TimeZjServiceTimeConflictImpl.handleTimeConflict()方法的，分割到该类 )
      * @param i	当前任务对应循环下标
      * @param tasks	任务集合
      * @param conflict	用于存储被冲突的任务集合
@@ -168,25 +217,22 @@ public interface TimeZjServiceComprehensive {
      * @param newestLastCurrentTimestamp	根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
      * @param onlyRefState	存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
      * @param recordNoOperation	定义存储进入未操作到的地方记录
-     * @param tePFinish 任务最后结束时间
      * @param clearStatus 清理状态信息
      * @param thisInfo 当前处理通用信息存储
      * @param allImageTeDate 镜像任务所在日期
-     * @param isSetImage 是否写入镜像状态信息
-     * @param endTime 任务结束日期
      * @return com.alibaba.fastjson.JSONObject  返回结果: 结果
      * @author tang
      * @ver 1.0.0
      * @date 2022/6/9 conflictHandleCore
      */
-    JSONObject handleTimeConflictEnd(int i, List<Task> tasks, List<Task> conflict, Long zon, String random
+    JSONObject handleTimeConflictEndNew(int i, List<Task> tasks, List<Task> conflict, Long zon, String random
             , String dep, String grpB, JSONObject timeConflictCopy, Integer isGetTaskPattern
             , Integer getCurrentTimeStampPattern, JSONObject sho, int csSta, String randomAll, JSONObject xbAndSbAll
             , JSONObject actionIdO, JSONObject objTaskAll, JSONObject recordId_OIndexState
             , JSONObject storageTaskWhereTime, JSONObject allImageTotalTime
             , Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks
             , JSONObject onlyFirstTimeStamp, JSONObject newestLastCurrentTimestamp
-            , JSONObject onlyRefState, JSONObject recordNoOperation,Long tePFinish
-            ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate,JSONObject isSetImage,long endTime
-            ,JSONObject depAllTime);
+            , JSONObject onlyRefState, JSONObject recordNoOperation
+            ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate
+            ,JSONObject depAllTime,JSONObject id_OAndIndexTaskInfo,Integer operateIndex);
 }

@@ -2088,6 +2088,7 @@ public class ZjTestServiceImpl implements ZjTestService {
             for (Prod prod : prodIdList) {
                 idArr.add(prod.getId());
             }
+
             List<Prod> prodList = qt.getMDContentFast(idArr, qt.strList("part"), Prod.class);
             System.out.println("prodList-size:"+prodList.size());
             List<JSONObject> list = new ArrayList<>();

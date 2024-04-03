@@ -128,8 +128,19 @@ public class FlowNewServiceImpl implements FlowNewService {
 
         // 创建递归存储的时间处理信息
         List<OrderODate> oDates = new ArrayList<>();
-        // 创建递归存储的时间任务信息
-        List<Task> oTasks = new ArrayList<>();
+        /*
+         * 内部结构
+         * {
+         *   "父产品编号":{
+         *       "oDates":[],
+         *       "time开始时间":"",
+         *       "time结束时间":""
+         *   }
+         * }
+         */
+        JSONObject oDateObj = new JSONObject();
+//        // 创建递归存储的时间任务信息
+//        List<Task> oTasks = new ArrayList<>();
         // 创建存储零件编号的合并信息记录合并时的下标
         JSONObject mergeJ = new JSONObject();
         // 遍历订单内所有产品
@@ -149,7 +160,6 @@ public class FlowNewServiceImpl implements FlowNewService {
                 isJsLj.put("1", 0);
                 //dgType: 1 = firstLayer (sales Items), 2 = regular/subTask or subProd, 3 = depSplit regular
                 // T/P - T/P -T/P.... problem is id_P == ""?
-
                 this.dgProcess(
                         1, myCompId, id_OParent,
                         objOItem, objAction,
@@ -157,7 +167,9 @@ public class FlowNewServiceImpl implements FlowNewService {
                         oParent_objItem, item,
                         objOItemCollection, objActionCollection,
                         pidActionCollection,
-                        objOItem.getId_P(), oDates, oTasks, mergeJ, 0, null, isJsLj, dgProd,divideOrder);
+                        objOItem.getId_P(), oDates
+//                        , oTasks
+                        , mergeJ, 0, null, isJsLj, dgProd,divideOrder,oDateObj,0);
             }
         }
 
@@ -184,6 +196,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         // before getting so many id_A, get myComp id_A first for future use
         Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
         List<Order> addOrder = new ArrayList<>();
+        boolean isSet = true;
         // 遍历键，并创建采购单
         for (String thisOrderId : actionCollection) {
 
@@ -236,6 +249,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                     grpBGroup.put(grpB, defResultBP.getJSONObject(grpB));
                 }
             }
+
             Asset asset2 = null;
             if (!prodCompId.equals(myCompId)) {
                 asset2 = qt.getConfig(prodCompId, "a-auth", "def");
@@ -249,7 +263,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             }
 
             JSONObject defResultSP = asset2.getDef().getJSONObject("objlSP");
-            
+
             for (OrderOItem orderOItem : unitOItem) {
                 String grp = orderOItem.getGrp();
 
@@ -258,6 +272,58 @@ public class FlowNewServiceImpl implements FlowNewService {
                     grpGroup.put(grp, defResultSP.getJSONObject(grp));
                 }
             }
+            for (String layer : oDateObj.keySet()) {
+                JSONObject prodInfo = oDateObj.getJSONObject(layer);
+                for (String prodId : prodInfo.keySet()) {
+                    JSONObject partInfo = prodInfo.getJSONObject(prodId);
+                    JSONArray oDatesP = partInfo.getJSONArray("oDates");
+                    for (int i = 0; i < oDatesP.size(); i++) {
+                        JSONObject oDate = oDatesP.getJSONObject(i);
+//                        if (null == oDate.getString("grpB") || "".equals(oDate.getString("grpB"))) {
+//                            oDate.put("grpB","test");
+//                            oDate.put("dep","665591821169");
+//                            oDatesP.set(i,oDate);
+//                            partInfo.put("oDates",oDatesP);
+//                            prodInfo.put(prodId,partInfo);
+//                            oDateObj.put(layer,prodInfo);
+//                        } else {
+//                            JSONObject jsonObject = grpBGroup.getJSONObject(oDate.getString("grpB"));
+//                            if (null != jsonObject) {
+//                                oDate.put("dep",jsonObject.getString("dep"));
+//                                oDatesP.set(i,oDate);
+//                                partInfo.put("oDates",oDatesP);
+//                                prodInfo.put(prodId,partInfo);
+//                                oDateObj.put(layer,prodInfo);
+//                            }
+//                        }
+                        JSONObject jsonObject = grpBGroup.getJSONObject(oDate.getString("grpB"));
+                        if (null != jsonObject) {
+                            oDate.put("dep",jsonObject.getString("dep"));
+                            oDatesP.set(i,oDate);
+                            partInfo.put("oDates",oDatesP);
+                            prodInfo.put(prodId,partInfo);
+                            oDateObj.put(layer,prodInfo);
+                        } else {
+                            jsonObject = grpGroup.getJSONObject(oDate.getString("grpB"));
+                            if (null != jsonObject) {
+                                oDate.put("dep",jsonObject.getString("dep"));
+                                oDatesP.set(i,oDate);
+                                partInfo.put("oDates",oDatesP);
+                                prodInfo.put(prodId,partInfo);
+                                oDateObj.put(layer,prodInfo);
+                            }
+                        }
+                    }
+                }
+            }
+//            for (int i = 0; i < oDates.size(); i++) {
+//                OrderODate oDate = oDates.get(i);
+//                JSONObject jsonObject = grpBGroup.getJSONObject(oDate.getGrpB());
+//                if (null != jsonObject) {
+//                    oDate.setDep(jsonObject.getString("dep"));
+//                    oDates.set(i,oDate);
+//                }
+//            }
 
             qt.errPrint("grpO", defResultBP, unitOItem.get(0).getGrpB(), unitOItem.get(0).getGrp());
             String grpO = "1000";
@@ -273,93 +339,101 @@ public class FlowNewServiceImpl implements FlowNewService {
             }
 
             if (id_OParent.equals(thisOrderId)) {
+                System.out.println("-创建主订单-写入?:"+isSet);
+                System.out.println(JSON.toJSONString(casItemData));
                 // make sales order Action
-                this.updateSalesOrder(casItemData, unitAction, unitOItem, salesOrderData, grpBGroup, grpGroup, prodCompId
-                        , oDates, oTasks);
-            } else {
-                // else make Purchase Order
-//                // 创建订单
-                Order newPO = new Order();
-
-                // 根据键设置订单id
-                newPO.setId(thisOrderId);
-                // **System.out.print("got1" + thisOrderId);
-
-                // priority is BY order, get from info and write into ALL oItem
-                OrderInfo newPO_Info = new OrderInfo(prodCompId, targetCompId, unitOItem.get(0).getId_CP(), "", id_OParent, "", "",
-                        grpO, grpOB, oParent_prior, unitOItem.get(0).getPic(), 4, 0, orderNameCas, null);
-
-                // 设置订单info信息
-                newPO.setInfo(newPO_Info);
-
-                // 添加View信息
-                JSONArray view = new JSONArray();
-                view.add("info");
-                view.add("action");
-                view.add("oItem");
-                view.add("oStock");
-                newPO.setView(view);
-
-                JSONArray objCard = new JSONArray();
-                objCard.add("action");
-                objCard.add("oStock");
-
-                Double wn2qty = 0.0;
-                Double wn4price = 0.0;
-                JSONArray arrayId_P = new JSONArray();
-
-                for (OrderOItem orderOItem : unitOItem) {
-                    wn2qty += orderOItem.getWn2qtyneed();
-                    wn4price += orderOItem.getWn4price();
-                    arrayId_P.add(orderOItem.getId_P());
+                if (isSet) {
+                    this.updateSalesOrder(casItemData, unitAction, unitOItem, salesOrderData, grpBGroup, grpGroup, prodCompId
+                            , oDates,isSet);
                 }
+            } else {
+                System.out.println("创建子订单-写入?:"+isSet);
+                // else make Purchase Order
+                if (isSet) {
+                    // 创建订单
+                    Order newPO = new Order();
 
-                // 添加OItem信息
-                JSONObject newPO_OItem = new JSONObject();
-                newPO_OItem.put("objItem", unitOItem);
-                newPO_OItem.put("wn2qty", wn2qty);
-                newPO_OItem.put("arrP", arrayId_P);
-                newPO_OItem.put("wn4price", wn4price);
-                newPO_OItem.put("objCard", objCard);
-                newPO.setOItem(newPO_OItem);
+                    // 根据键设置订单id
+                    newPO.setId(thisOrderId);
+                    // **System.out.print("got1" + thisOrderId);
 
-                // 创建采购单的Action
-                JSONObject newPO_Action = new JSONObject();
-                newPO_Action.put("objAction", unitAction);
-                newPO_Action.put("grpBGroup", grpBGroup);
-                newPO_Action.put("grpGroup", grpGroup);
-                newPO_Action.put("wn2progress", 0.0);
+                    // priority is BY order, get from info and write into ALL oItem
+                    OrderInfo newPO_Info = new OrderInfo(prodCompId, targetCompId, unitOItem.get(0).getId_CP(), "", id_OParent, "", "",
+                            grpO, grpOB, oParent_prior, unitOItem.get(0).getPic(), 4, 0, orderNameCas, null);
 
-                //Create oStock
-                JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(unitOItem));
-                newPO.setOStock(newPO_oStock);
+                    // 设置订单info信息
+                    newPO.setInfo(newPO_Info);
 
-                newPO.setAction(newPO_Action);
+                    // 添加View信息
+                    JSONArray view = new JSONArray();
+                    view.add("info");
+                    view.add("action");
+                    view.add("oItem");
+                    view.add("oStock");
+                    newPO.setView(view);
 
-                JSONObject listCol = new JSONObject();
+                    JSONArray objCard = new JSONArray();
+                    objCard.add("action");
+                    objCard.add("oStock");
 
-                dbu.summOrder(newPO, listCol);
-                // 新增订单
+                    Double wn2qty = 0.0;
+                    Double wn4price = 0.0;
+                    JSONArray arrayId_P = new JSONArray();
+
+                    for (OrderOItem orderOItem : unitOItem) {
+                        wn2qty += orderOItem.getWn2qtyneed();
+                        wn4price += orderOItem.getWn4price();
+                        arrayId_P.add(orderOItem.getId_P());
+                    }
+
+                    // 添加OItem信息
+                    JSONObject newPO_OItem = new JSONObject();
+                    newPO_OItem.put("objItem", unitOItem);
+                    newPO_OItem.put("wn2qty", wn2qty);
+                    newPO_OItem.put("arrP", arrayId_P);
+                    newPO_OItem.put("wn4price", wn4price);
+                    newPO_OItem.put("objCard", objCard);
+                    newPO.setOItem(newPO_OItem);
+
+                    // 创建采购单的Action
+                    JSONObject newPO_Action = new JSONObject();
+                    newPO_Action.put("objAction", unitAction);
+                    newPO_Action.put("grpBGroup", grpBGroup);
+                    newPO_Action.put("grpGroup", grpGroup);
+                    newPO_Action.put("wn2progress", 0.0);
+
+                    //Create oStock
+                    JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(unitOItem));
+                    newPO.setOStock(newPO_oStock);
+
+                    newPO.setAction(newPO_Action);
+
+                    JSONObject listCol = new JSONObject();
+
+                    dbu.summOrder(newPO, listCol);
+                    // 新增订单
 //                qt.addMD(newPO);
-                addOrder.add(newPO);
+                    addOrder.add(newPO);
 //                // **System.out.println("sales order SAVED " + newPO.getInfo().getWrdN().getString("cn"));
 
 //              // 创建lSBOrder订单
-                lSBOrder lsbOrder = new lSBOrder(prodCompId, targetCompId, "", "", id_OParent, thisOrderId, arrayId_P,
-                        "", "", grpO, grpOB, unitOItem.get(0).getPic(), 4, 0, orderNameCas, null, null);
-                // 新增lsbOrder信息
-                qt.addES("lsborder", lsbOrder);
+                    lSBOrder lsbOrder = new lSBOrder(prodCompId, targetCompId, "", "", id_OParent, thisOrderId, arrayId_P,
+                            "", "", grpO, grpOB, unitOItem.get(0).getPic(), 4, 0, orderNameCas, null, null);
+                    // 新增lsbOrder信息
+                    qt.addES("lsborder", lsbOrder);
+                }
             }
         }
-        qt.addAllMD(addOrder);
-
+        System.out.println(JSON.toJSONString(oDateObj));
+        if (isSet) {
+            qt.setMDContent(id_OParent,qt.setJson("casItemx.java.oDateObj",oDateObj), Order.class);
+            qt.addAllMD(addOrder);
+        }
         qt.errPrint("结束-时间:",null,DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         // END FOR
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "");
     }
-
-
 
     @Override
     public ApiResponse dgCheckOrder(String myCompId,String id_O) {
@@ -562,14 +636,17 @@ public class FlowNewServiceImpl implements FlowNewService {
     private void dgProcess(
             Integer dgType, String myCompId, String id_OParent,
             OrderOItem upperOItem, OrderAction upperAction,
-            JSONArray casItemData,
-            JSONArray partArray, Integer partIndex,
+            JSONArray casItemData,JSONArray partArray, Integer partIndex,
             Map<String, List<OrderOItem>> objOItemCollection,
             Map<String, List<OrderAction>> objActionCollection,
             Map<String, OrderAction> pidActionCollection,
-            String id_PF, List<OrderODate> oDates, List<Task> oTasks, JSONObject mergeJ
-            , int csSta, String csId_P, JSONObject isJsLj, Map<String, Prod> dgProd,String divideOrder) {
+            String id_PF, List<OrderODate> oDates, JSONObject mergeJ
+            , int csSta, String csId_P, JSONObject isJsLj, Map<String, Prod> dgProd
+            ,String divideOrder,JSONObject oDateObj,int layer) {
         //ZJ
+//        if (upperAction.getBmdpt() == 2) {
+//            layer++;
+//        }
 
         isJsLj.put("1", (isJsLj.getInteger("1") + 1));
         int dq = isJsLj.getInteger("1");
@@ -622,8 +699,10 @@ public class FlowNewServiceImpl implements FlowNewService {
                 newOrderId = casItemData.getJSONObject(casIndex - 1).getString("id_O");
                 newOrderIndex = partIndex;
                 casItemData.getJSONObject(casIndex - 1).put("size", partIndex + 1);
+                System.out.println("进入问号-1?");
             }
-        } else if (null != pidActionCollection.get(id_P)) {
+        } else if (null != pidActionCollection.get(id_P))
+        {
             //Now, it is prod not task， Must Merge if id_P is in pidActionCollection
             // as long as you have it in pidArray, you MUST merge
 //            // **System.out.println("I merged2////" + upperAction);
@@ -631,6 +710,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 //                cun2.add(grpB);
 //            }
             //ZJ
+            System.out.println("进入问号-2?");
             String fin_O = pidActionCollection.get(id_P).getId_O();
             Integer fin_Ind = pidActionCollection.get(id_P).getIndex();
             partInfo.put("fin_O", fin_O);
@@ -657,12 +737,12 @@ public class FlowNewServiceImpl implements FlowNewService {
             // 添加信息
             orderODate.setCsSta(timeHandleSerialNoIsOneInside);
             oDates.add(orderODate);
-            // 创建一个任务类
-            Task task = new Task();
-            // 随便添加一个信息
-            task.setPriority(-2);
-            // 使用一个空任务对象来与时间处理信息对齐
-            oTasks.add(task);
+//            // 创建一个任务类
+//            Task task = new Task();
+//            // 随便添加一个信息
+//            task.setPriority(-2);
+//            // 使用一个空任务对象来与时间处理信息对齐
+//            oTasks.add(task);
             //ZJ
 
             this.mergePart(id_P, partArray, partIndex, upperAction, upperOItem, dgType,
@@ -678,6 +758,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 //            // **System.out.println(objActionCollection.get(id_OParent));
             return;
         } else if (dgType.equals(1)) {
+            System.out.println("进入问号-3?");
             newOrderId = id_OParent;
             newOrderIndex = partIndex;
         } else {
@@ -710,6 +791,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                     }
                 }
             }
+            System.out.println("进入问号-4?"+isNew);
             if (isNew) {
 
                 // 赋值随机id
@@ -760,7 +842,6 @@ public class FlowNewServiceImpl implements FlowNewService {
         } else {
             orderActionList = new ArrayList<>();
         }
-
 
         OrderOItem objOItem;
         OrderAction objAction;
@@ -944,6 +1025,8 @@ public class FlowNewServiceImpl implements FlowNewService {
         if (!id_P.equals("")) {
 //            Prod thisProd = qt.getMDContent(id_P, Arrays.asList("_id", "part", "info"), Prod.class);
             Prod thisProd = dgProd.get(id_P);
+            System.out.println("thisProd:"+id_P);
+            System.out.println(JSON.toJSONString(thisProd));
 //            // **System.out.println("thisProd" + thisProd);
 
 //            if (thisProd != null && thisProd.getPart() != null && thisProd.getPart().getJSONArray("objItem").size() > 0 &&
@@ -952,9 +1035,11 @@ public class FlowNewServiceImpl implements FlowNewService {
                     thisProd.getInfo().getId_C().equals(myCompId)) {
                 JSONArray partArrayNext = thisProd.getPart().getJSONArray("objItem");
                 objAction.setBmdpt(2);
+                layer++;
+                OrderODate orderODate = setODate(id_PF, objOItem, partInfo, objAction, timeHandleSerialNoIsOneInside
+                        , oDates, mergeJ, oDateObj, layer, upperOItem.getId_P(), dq,false);
                 // the first item's bmdpt != 6, if ==6 then ALL parts in that part will == 6, then need pick by igura
                 if (partArrayNext.getJSONObject(0).getInteger("bmdpt") != 6) {
-
                     // 进下一层处理part递归
                     for (int item = 0; item < partArrayNext.size(); item++) {
 
@@ -965,8 +1050,10 @@ public class FlowNewServiceImpl implements FlowNewService {
                                 partArrayNext, item,
                                 objOItemCollection, objActionCollection,
                                 pidActionCollection,
-                                thisProd.getId(), oDates, oTasks, mergeJ, timeHandleSerialNoIsOneInside
-                                , csId_P, isJsLj, dgProd,divideOrder);
+                                thisProd.getId(), oDates
+//                                , oTasks
+                                , mergeJ, timeHandleSerialNoIsOneInside
+                                , csId_P, isJsLj, dgProd,divideOrder,oDateObj,layer);
                         //changed dgType
                         // now check the last time and put into objAction a key
                         if (dgType == 2 && item + 1 == partArrayNext.size()) {
@@ -974,90 +1061,256 @@ public class FlowNewServiceImpl implements FlowNewService {
 //                            qt.errPrint("last item", null, objAction, objActionCollection);
                         }
                     }
-
                 }
-            }
-        }
-        //ZJ
-        if (dq != 1) {
-            // 创建订单时间操作处理专用类
-            OrderODate orderODate = new OrderODate();
-            // 添加时间操作处理信息
-            orderODate.setId_PF(id_PF);
-            orderODate.setId_P(objOItem.getId_P());
-            orderODate.setPriorItem(partInfo.getInteger("wn0prior"));
-            orderODate.setTeStart(0L);
-            orderODate.setTaFin(0L);
-            orderODate.setBmdpt(partInfo.getInteger("bmdpt"));
-            orderODate.setIsSto(partInfo.getBoolean("isSto") != null && partInfo.getBoolean("isSto"));
-            // 判断层级为第一层并且序号为1
-            if (timeHandleSerialNoIsOneInside == 1 && objOItem.getWn0prior() == 1) {
-                // 添加信息
-                orderODate.setKaiJie(1);
+                JSONObject layerObj = oDateObj.getJSONObject(layer + "");
+                JSONObject prodObj;
+                boolean isSetProdObj = false;
+                if (null == layerObj) {
+                    layerObj = new JSONObject();
+                    prodObj = new JSONObject();
+                    isSetProdObj = true;
+                } else {
+                    prodObj = layerObj.getJSONObject(thisProd.getId());
+                    if (null == prodObj) {
+                        prodObj = new JSONObject();
+                        isSetProdObj = true;
+                    }
+                }
+                if (isSetProdObj) {
+                    prodObj.put("tePStart",0);
+                    prodObj.put("tePFinish",0);
+                    prodObj.put("arrPStart",new JSONArray());
+                    prodObj.put("layer",layer-1);
+                }
+                JSONArray oDatesP = prodObj.getJSONArray("oDates");
+                if (null == oDatesP) {
+                    oDatesP = new JSONArray();
+                }
+                orderODate.setId_PF(orderODate.getId_P());
+                oDatesP.add(orderODate);
+//                prodObj.put("index",partIndex);
+                prodObj.put("id_PF",id_PF);
+                layerObj.put(thisProd.getId(),prodObj);
+                oDateObj.put(layer+"",layerObj);
             } else {
-                // 判断序号为1 - 如果是第一层并且是部件
-                if (objOItem.getWn0prior() == 1) {
-                    // 添加信息
-                    orderODate.setKaiJie(4);
-                } else {
-                    // 添加信息
-                    orderODate.setKaiJie(2);
-                }
+                setODate(id_PF,objOItem,partInfo,objAction,timeHandleSerialNoIsOneInside
+                        ,oDates,mergeJ,oDateObj,layer, upperOItem.getId_P(),dq,true);
             }
-            // 添加信息
-            orderODate.setCsSta(timeHandleSerialNoIsOneInside);
-            // 设置订单时间操作信息
-            orderODate.setWntDur(partInfo.getLong("wntDur") == null ? 0 : partInfo.getLong("wntDur"));
-            orderODate.setWntPrep(partInfo.getLong("wntPrep") == null ? 0 : partInfo.getLong("wntPrep"));
-            // action里面的
-            //++ZJ
-            orderODate.setPriority(0);
-            //ZJ
-            orderODate.setTeDurTotal(0L);
-            orderODate.setWn2qtyneed(objOItem.getWn2qtyneed());
-            // 判断bmdpt等于部件
-            if (objAction.getBmdpt() == 2) {
-                // 设置订单时间操作信息
-                orderODate.setWntPrep(partInfo.getLong("wntPrep") == null ? 0 : partInfo.getLong("wntPrep"));
-                orderODate.setWntDur(0L);
-                // 判断层级为第一层
-                if (timeHandleSerialNoIsOneInside == 1) {
-                    orderODate.setKaiJie(3);
-                } else {
-                    // 添加信息
-                    orderODate.setKaiJie(5);
-                }
-            }
-//            // **System.out.println("wn2qtyneed:" + objOItem.getWn2qtyneed() + " - teDurTotal:"
-//                    + orderODate.getTeDurTotal() + " - wntPrep:" + orderODate.getTePrep() + " - prior:" + objOItem.getWn0prior());
-//            // **System.out.println("csTeJ:" + " - id_P:" + objOItem.getId_P() + " - id_PF:" + id_PF + " - dq:" + dq);
-            // 添加信息
-            orderODate.setId_O(objAction.getId_O());
-            orderODate.setId_C(partInfo.getString("id_C"));
-            orderODate.setIndex(objAction.getIndex());
-            orderODate.setGrpB(objOItem.getGrpB());
-            oDates.add(orderODate);
-            // 判断存储零件编号的合并信息记录合并时的下标为空
-            if (null == mergeJ.getInteger(objOItem.getId_P())) {
-                // 添加下标信息
-                mergeJ.put(objOItem.getId_P(), oDates.size() - 1);
-            }
-            // 获取零件名称
-            String itemWrdN = objOItem.getWrdN().getString("cn");
-            boolean isNextPart = null != objAction.getPrtNext() && objAction.getPrtNext().size() == 0 && dgType == 2;
-
-            // 调用生成任务信息
-            Task task = TaskObj.getTask(orderODate.getTeStart(), orderODate.getTeFin(), orderODate.getId_O()
-                    , orderODate.getIndex(), 0L
-                    , orderODate.getPriority(), itemWrdN, orderODate.getWntPrep(), orderODate.getTeDelayDate()
-                    , myCompId, 0L, 0L, -1, isNextPart);
-            // 设置任务公司编号
-            task.setId_C(myCompId);
-//            // **System.out.println("task:");
-//            // **System.out.println(JSON.toJSONString(task));
-            oTasks.add(task);
         }
         //ZJ
+//        if (dq != 1) {
+//            // 创建订单时间操作处理专用类
+//            OrderODate orderODate = new OrderODate();
+//            // 添加时间操作处理信息
+//            orderODate.setId_PF(id_PF);
+//            orderODate.setId_P(objOItem.getId_P());
+//            orderODate.setPriorItem(partInfo.getInteger("wn0prior"));
+////            orderODate.setTeStart(0L);
+////            orderODate.setTaFin(0L);
+//            orderODate.setBmdpt(partInfo.getInteger("bmdpt"));
+//            orderODate.setIsSto(partInfo.getBoolean("isSto") != null && partInfo.getBoolean("isSto"));
+//            // 判断层级为第一层并且序号为1
+//            if (timeHandleSerialNoIsOneInside == 1 && objOItem.getWn0prior() == 1) {
+//                // 添加信息
+//                orderODate.setKaiJie(1);
+//            } else {
+//                // 判断序号为1 - 如果是第一层并且是部件
+//                if (objOItem.getWn0prior() == 1) {
+//                    // 添加信息
+//                    orderODate.setKaiJie(4);
+//                } else {
+//                    // 添加信息
+//                    orderODate.setKaiJie(2);
+//                }
+//            }
+//            // 添加信息
+//            orderODate.setCsSta(timeHandleSerialNoIsOneInside);
+//            // 设置订单时间操作信息
+//            orderODate.setWntDur(partInfo.getLong("wntDur") == null ? 0 : partInfo.getLong("wntDur"));
+//            orderODate.setWntPrep(partInfo.getLong("wntPrep") == null ? 0 : partInfo.getLong("wntPrep"));
+//            // action里面的
+//            //++ZJ
+//            orderODate.setPriority(0);
+//            //ZJ
+//            orderODate.setWntDurTotal(0L);
+//            orderODate.setWn2qtyneed(objOItem.getWn2qtyneed());
+//            // 判断bmdpt等于部件
+//            if (objAction.getBmdpt() == 2) {
+//                // 设置订单时间操作信息
+//                orderODate.setWntPrep(partInfo.getLong("wntPrep") == null ? 0 : partInfo.getLong("wntPrep"));
+//                orderODate.setWntDur(0L);
+//                // 判断层级为第一层
+//                if (timeHandleSerialNoIsOneInside == 1) {
+//                    orderODate.setKaiJie(3);
+//                } else {
+//                    // 添加信息
+//                    orderODate.setKaiJie(5);
+//                }
+//            }
+//            System.out.println("csTeJ:" + " - id_P:" + objOItem.getId_P() + " - id_PF:" + id_PF + " - dq:" + dq+" - cj:"+layer);
+//            System.out.println(JSON.toJSONString(objOItem));
+////             System.out.println("wn2qtyneed:" + objOItem.getWn2qtyneed() + " - wntDurTotal:"
+////                    + orderODate.getWntDurTotal() + " - wntPrep:" + orderODate.getWntPrep() + " - prior:" + objOItem.getWn0prior());
+//            System.out.println();
+//            // 添加信息
+//            orderODate.setId_O(objAction.getId_O());
+//            orderODate.setId_C(partInfo.getString("id_C"));
+//            orderODate.setIndex(objAction.getIndex());
+//            orderODate.setGrpB(objOItem.getGrpB());
+//            orderODate.setWrdN(qt.setJson("cn",objOItem.getWrdN().getString("cn")));
+//            oDates.add(orderODate);
+//            // 判断存储零件编号的合并信息记录合并时的下标为空
+//            if (null == mergeJ.getInteger(objOItem.getId_P())) {
+//                // 添加下标信息
+//                mergeJ.put(objOItem.getId_P(), oDates.size() - 1);
+//            }
+//
+////            System.out.println(JSON.toJSONString(oDateObj));
+//            JSONObject thisPInfo = oDateObj.getJSONObject(upperOItem.getId_P()+"_"+layer);
+//            if (null == thisPInfo) {
+//                thisPInfo = new JSONObject();
+//            }
+//            JSONArray oDatesP = thisPInfo.getJSONArray("oDates");
+//            if (null == oDatesP) {
+//                oDatesP = new JSONArray();
+//            }
+//            oDatesP.add(orderODate);
+//            thisPInfo.put("oDates",oDatesP);
+//            thisPInfo.put("id_PF",id_PF);
+//            thisPInfo.put("layer",layer);
+//            oDateObj.put(upperOItem.getId_P()+"_"+layer,thisPInfo);
+//        } else {
+//            System.out.println("====else");
+//            System.out.println(JSON.toJSONString(objOItem));
+//            System.out.println(JSON.toJSONString(objAction));
+//            System.out.println();
+//        }
+        //ZJ
+    }
+
+    private OrderODate setODate(String id_PF,OrderOItem objOItem,JSONObject partInfo,OrderAction objAction
+            ,int timeHandleSerialNoIsOneInside,List<OrderODate> oDates,JSONObject mergeJ
+            ,JSONObject oDateObj,int layer,String uppId_P,int dq,boolean isSetODateObj){
+        // 创建订单时间操作处理专用类
+        OrderODate orderODate = new OrderODate();
+        // 添加时间操作处理信息
+        orderODate.setId_PF(id_PF);
+        orderODate.setId_P(objOItem.getId_P());
+        orderODate.setPriorItem(partInfo.getInteger("wn0prior"));
+//            orderODate.setTeStart(0L);
+//            orderODate.setTaFin(0L);
+        orderODate.setBmdpt(null==partInfo.getInteger("bmdpt")? objAction.getBmdpt() : partInfo.getInteger("bmdpt"));
+        orderODate.setIsSto(partInfo.getBoolean("isSto") != null && partInfo.getBoolean("isSto"));
+        // 判断层级为第一层并且序号为1
+        if (timeHandleSerialNoIsOneInside == 1 && objOItem.getWn0prior() == 1) {
+            // 添加信息
+            orderODate.setKaiJie(1);
+        } else {
+            // 判断序号为1 - 如果是第一层并且是部件
+            if (objOItem.getWn0prior() == 1) {
+                // 添加信息
+                orderODate.setKaiJie(4);
+            } else {
+                // 添加信息
+                orderODate.setKaiJie(2);
+            }
+        }
+        // 添加信息
+        orderODate.setCsSta(timeHandleSerialNoIsOneInside);
+        // 设置订单时间操作信息
+        orderODate.setWntDur(partInfo.getLong("wntDur") == null ? 30 :
+                (partInfo.getLong("wntDur")==0?30:partInfo.getLong("wntDur")));
+        orderODate.setWntPrep(partInfo.getLong("wntPrep") == null ? 900 :
+                (partInfo.getLong("wntPrep")==0?900:partInfo.getLong("wntPrep")));
+        // action里面的
+        //++ZJ
+        orderODate.setPriority(0);
+        //ZJ
+        orderODate.setWntDurTotal(0L);
+        orderODate.setWn2qtyneed(objOItem.getWn2qtyneed());
+        // 判断bmdpt等于部件
+        if (objAction.getBmdpt() == 2) {
+            // 设置订单时间操作信息
+            orderODate.setWntPrep(partInfo.getLong("wntPrep") == null ? 1800 : (partInfo.getLong("wntPrep")==0?1800:partInfo.getLong("wntPrep")));
+            orderODate.setWntDur(0L);// 修改默认2秒
+            // 判断层级为第一层
+            if (timeHandleSerialNoIsOneInside == 1) {
+                orderODate.setKaiJie(3);
+            } else {
+                // 添加信息
+                orderODate.setKaiJie(5);
+            }
+        }
+        System.out.println("csTeJ:" + " - id_P:" + objOItem.getId_P() + " - id_PF:" + id_PF + " - dq:" + dq+" - cj:"+layer);
+        System.out.println(JSON.toJSONString(objOItem));
+//             System.out.println("wn2qtyneed:" + objOItem.getWn2qtyneed() + " - wntDurTotal:"
+//                    + orderODate.getWntDurTotal() + " - wntPrep:" + orderODate.getWntPrep() + " - prior:" + objOItem.getWn0prior());
+        System.out.println();
+        // 添加信息
+        orderODate.setId_O(objAction.getId_O());
+        orderODate.setId_C(partInfo.getString("id_C"));
+        orderODate.setIndex(objAction.getIndex());
+        orderODate.setGrpB("".equals(objOItem.getGrpB())?objOItem.getGrp():objOItem.getGrpB());
+        orderODate.setWrdN(qt.setJson("cn",objOItem.getWrdN().getString("cn")));
+        orderODate.setLayer(layer);
+        oDates.add(orderODate);
+        // 判断存储零件编号的合并信息记录合并时的下标为空
+        if (null == mergeJ.getInteger(objOItem.getId_P())) {
+            // 添加下标信息
+            mergeJ.put(objOItem.getId_P(), oDates.size() - 1);
+        }
+
+//            System.out.println(JSON.toJSONString(oDateObj));
+//        JSONObject thisPInfo = oDateObj.getJSONObject(uppId_P+"_"+layer);
+//        if (null == thisPInfo) {
+//            thisPInfo = new JSONObject();
+//            thisPInfo.put("id_PF",id_PF);
+//            thisPInfo.put("tePStart",0);
+//            thisPInfo.put("tePFinish",0);
+//            thisPInfo.put("arrPStart",new JSONArray());
+//            thisPInfo.put("layer",layer-1);
+//        }
+//        JSONArray oDatesP = thisPInfo.getJSONArray("oDates");
+//        if (null == oDatesP) {
+//            oDatesP = new JSONArray();
+//        }
+//        oDatesP.add(orderODate);
+//        thisPInfo.put("oDates",oDatesP);
+//        oDateObj.put(uppId_P+"_"+layer,thisPInfo);
+
+        if (!isSetODateObj) {
+            return orderODate;
+        }
+        JSONObject layerObj = oDateObj.getJSONObject(layer + "");
+        JSONObject prodObj;
+        boolean isSetProdObj = false;
+        if (null == layerObj) {
+            layerObj = new JSONObject();
+            prodObj = new JSONObject();
+            isSetProdObj = true;
+        } else {
+            prodObj = layerObj.getJSONObject(uppId_P);
+            if (null == prodObj) {
+                prodObj = new JSONObject();
+                isSetProdObj = true;
+            }
+        }
+        if (isSetProdObj) {
+            prodObj.put("id_PF",id_PF);
+            prodObj.put("tePStart",0);
+            prodObj.put("tePFinish",0);
+            prodObj.put("arrPStart",new JSONArray());
+            prodObj.put("layer",layer-1);
+        }
+        JSONArray oDatesP = prodObj.getJSONArray("oDates");
+        if (null == oDatesP) {
+            oDatesP = new JSONArray();
+        }
+        oDatesP.add(orderODate);
+        prodObj.put("oDates",oDatesP);
+        layerObj.put(uppId_P,prodObj);
+        oDateObj.put(layer+"",layerObj);
+        return orderODate;
     }
 
     /**
@@ -1070,7 +1323,9 @@ public class FlowNewServiceImpl implements FlowNewService {
     public void updateSalesOrder(JSONArray casItemData, List<OrderAction> salesAction
             , List<OrderOItem> salesOItem, Order orderParentData
             , JSONObject grpBGroup, JSONObject grpGroup, String myCompId
-            , List<OrderODate> oDates, List<Task> oTasks) {
+            , List<OrderODate> oDates,boolean isSet
+//            , List<Task> oTasks
+    ) {
         // 添加订单基础信息存储
         JSONObject casItemx = new JSONObject();
         JSONObject nowData = new JSONObject();
@@ -1078,7 +1333,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         casItemx.put(myCompId, nowData);
         JSONObject java = new JSONObject();
         java.put("oDates",oDates);
-        java.put("oTasks",oTasks);
+//        java.put("oTasks",oTasks);
         casItemx.put("java",java);
 
         // 创建产品零件递归信息
@@ -1130,9 +1385,10 @@ public class FlowNewServiceImpl implements FlowNewService {
 
         orderParentData.setView(view);
 
-        // 新增订单
-
-        qt.saveMD(orderParentData);
+        if (isSet) {
+            // 新增订单
+            qt.saveMD(orderParentData);
+        }
 //        saveOrder.add(orderParentData);
     }
 

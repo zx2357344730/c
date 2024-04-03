@@ -16,6 +16,7 @@ import com.cresign.tools.pojo.po.Prod;
 import com.cresign.tools.pojo.po.assetCard.AssetInfo;
 import com.cresign.tools.pojo.po.chkin.Task;
 import com.cresign.tools.pojo.po.orderCard.OrderAction;
+import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -519,19 +520,19 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             JSONObject oDate = oDates.getJSONObject(i);
             // 获取类别
             Integer bmdpt = oDate.getInteger("bmdpt");
-            // 判断不为空
-            if (null == bmdpt) {
-                // 调用方法获取订单信息
-//                Order orderData = coupaUtil.getOrderByListKey(
-//                        oDate.getString("id_O"), Collections.singletonList("action"));
-                Order orderData = qt.getMDContent(oDate.getString("id_O"),"action", Order.class);
-                // 获取进度卡片数据
-                JSONObject actionNew = orderData.getAction();
-                // 获取进度信息
-                JSONArray objAction = actionNew.getJSONArray("objAction");
-                // 获取类别
-                bmdpt = objAction.getJSONObject(oDate.getInteger("index")).getInteger("bmdpt");
-            }
+//            // 判断不为空
+//            if (null == bmdpt) {
+//                // 调用方法获取订单信息
+////                Order orderData = coupaUtil.getOrderByListKey(
+////                        oDate.getString("id_O"), Collections.singletonList("action"));
+//                Order orderData = qt.getMDContent(oDate.getString("id_O"),"action", Order.class);
+//                // 获取进度卡片数据
+//                JSONObject actionNew = orderData.getAction();
+//                // 获取进度信息
+//                JSONArray objAction = actionNew.getJSONArray("objAction");
+//                // 获取类别
+//                bmdpt = objAction.getJSONObject(oDate.getInteger("index")).getInteger("bmdpt");
+//            }
             // 判断是物料
             if (bmdpt == 3) {
                 // 添加下标
@@ -572,11 +573,11 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 grpUNum = (long) Math.ceil((double) (taskTotalTime / oDate.getInteger("grpUNum")));
             }
             // 获取时间处理的总任务时间
-            long teDurTotal = grpUNum+wntPrep;
+            long wntDurTotal = grpUNum+wntPrep;
 
 
-            if (teDurTotal > maxTeDurTotal) {
-                maxTeDurTotal = teDurTotal;
+            if (wntDurTotal > maxTeDurTotal) {
+                maxTeDurTotal = wntDurTotal;
             }
 //            oDates.remove(index);
 //            oTasks.remove(index);
@@ -618,23 +619,25 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         if (isTest)
             // 调用根据公司编号清空所有任务信息方法
             setTaskAndZonKai(id_C);
-        if (isTestAddOrder) {
-            // 调用添加测试数据方法
-            TaskObj.addOrder(teStart,qt);
-            TaskObj.addOrder2(teStart,qt);
-            TaskObj.addOrder3(teStart,qt);
-            // 全部任务存储
-            JSONObject objTaskAll = new JSONObject();
-            // 调用添加测试数据方法
-            TaskObj.addTasks(teStart,"1001","1xx2",id_C,objTaskAll);
-            TaskObj.addTasksAndOrder(teStart,id_C,objTaskAll);
-            TaskObj.addTasksAndOrder3(teStart,id_C,objTaskAll);
-
-            // 调用任务最后处理方法
-            timeZjServiceComprehensive.taskLastHandle(new JSONObject(),id_C,new ObjectId().toString(),objTaskAll
-                    ,new JSONObject(),new JSONObject(),new HashMap<>(16),new JSONObject()
-                    ,id_O,new JSONArray(),new JSONObject(),new JSONObject(),null);
-        }
+//        if (isTestAddOrder) {
+//            // 调用添加测试数据方法
+//            TaskObj.addOrder(teStart,qt);
+//            TaskObj.addOrder2(teStart,qt);
+//            TaskObj.addOrder3(teStart,qt);
+//            // 全部任务存储
+//            JSONObject objTaskAll = new JSONObject();
+//            // 调用添加测试数据方法
+//            TaskObj.addTasks(teStart,"1001","1xx2",id_C,objTaskAll);
+//            TaskObj.addTasksAndOrder(teStart,id_C,objTaskAll);
+//            TaskObj.addTasksAndOrder3(teStart,id_C,objTaskAll);
+//
+//            // 调用任务最后处理方法
+//            timeZjServiceComprehensive.taskLastHandle(new JSONObject(),id_C,new ObjectId().toString(),objTaskAll
+//                    ,new JSONObject(),new JSONObject(),new HashMap<>(16),new JSONObject()
+//                    ,id_O,new JSONArray(),new JSONObject(),new JSONObject(),null);
+//        }
+//        atFirst(wn0TPrior,teStart,id_O,id_C);
+        System.out.println();
 //        TimeZj.isZ = 6;
 //        System.out.println(id_O);
 //        // 调用方法获取订单信息
@@ -1209,7 +1212,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //            // 获取时间处理的实际准备时间
 ////            Long wntPrep = oDate.getLong("wntPrep");
 //            Long wntPrep = oTasks.getJSONObject(i).getLong("prep");
-//            Long teDurTotal = oTasks.getJSONObject(i).getLong("teDurTotal");
+//            Long wntDurTotal = oTasks.getJSONObject(i).getLong("wntDurTotal");
 ////            Long wntDur = oDate.getLong("wntDur");
 ////            Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
 //////            System.out.println(JSON.toJSONString(oDa));
@@ -1224,15 +1227,15 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 ////            }
 //////            long grpUNum = taskTotalTime / oDate.getInteger("grpUNum");
 ////            // 获取时间处理的总任务时间
-////            long teDurTotal = grpUNum;
+////            long wntDurTotal = grpUNum;
 //////            if (bcdState == 5) {
-//////                teDurTotal = 0L;
+//////                wntDurTotal = 0L;
 //////                wntPrep = 0L;
 //////            }
-////            System.out.println("teDurTotal:" +teDurTotal+" - wntPrep:"
+////            System.out.println("wntDurTotal:" +wntDurTotal+" - wntPrep:"
 ////                    +wntPrep+" - prior:"+priorItem);
 ////            System.out.println("csTeJTe:"+" - id_PF:"+id_PF);
-////            if (teDurTotal == 0 && wntPrep == 0) {
+////            if (wntDurTotal == 0 && wntPrep == 0) {
 ////                continue;
 ////            }
 //            // 判断当前唯一ID存储时间处理的最初开始时间为0
@@ -1288,13 +1291,13 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //            // 获取任务的最初开始时间备份
 //            Long teStartBackups = oDate.getLong("teStart");
 //            // 设置最初结束时间
-//            oDate.put("teFin",(teStartBackups+(teDurTotal+wntPrep)));
+//            oDate.put("teFin",(teStartBackups+(wntDurTotal+wntPrep)));
 //            // 获取最初结束时间
 //            Long teFin = oDate.getLong("teFin");
 //            // 获取任务信息，并且转换为任务类
 //            Task task = JSON.parseObject(JSON.toJSONString(oTasks.get(i)),Task.class);
 //            // 设置最初任务信息的时间信息
-//            task.setTeDurTotal((teFin - teStartBackups));
+//            task.setWntDurTotal((teFin - teStartBackups));
 //            task.setTePStart(teStartBackups);
 //            task.setTePFinish(teFin);
 //            task.setTeCsStart(teStartBackups);
@@ -1443,6 +1446,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //        onlyRefState.remove(random);
 
         // 抛出操作成功异常
+        System.out.println();
+//        atFirst(wn0TPrior,teStart,id_O,id_C);
         return retResult.ok(CodeEnum.OK.getCode(), "时间处理成功!");
     }
 
@@ -1464,7 +1469,10 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             String id_O = orderInfo.getString("id_O");
             Integer wn0TPrior = orderInfo.getInteger("wn0TPrior");
             Long teStart = orderInfo.getLong("teStart");
-            atFirst(wn0TPrior,teStart,id_O,id_C);
+            System.out.println(o+"- 订单开始:"+id_O);
+//            atFirst(wn0TPrior,teStart,id_O,id_C);
+            atFirstODateObj(wn0TPrior,teStart,id_O,id_C);
+            System.out.println("--- 分割 ---");
 //            TimeZj.isZ = 6;
 //            System.out.println(id_O);
 //            // 调用方法获取订单信息
@@ -1691,7 +1699,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //                Integer kaiJie = oDate.getInteger("kaiJie");
 //                // 获取时间处理的实际准备时间
 //                Long wntPrep = oTasks.getJSONObject(i).getLong("prep");
-//                Long teDurTotal = oTasks.getJSONObject(i).getLong("teDurTotal");
+//                Long wntDurTotal = oTasks.getJSONObject(i).getLong("wntDurTotal");
 //                // 判断当前唯一ID存储时间处理的最初开始时间为0
 //                if (hTeStart == 0) {
 //                    // 调用获取当前时间戳方法设置开始时间
@@ -1742,13 +1750,13 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //                // 获取任务的最初开始时间备份
 //                Long teStartBackups = oDate.getLong("teStart");
 //                // 设置最初结束时间
-//                oDate.put("teFin",(teStartBackups+(teDurTotal+wntPrep)));
+//                oDate.put("teFin",(teStartBackups+(wntDurTotal+wntPrep)));
 //                // 获取最初结束时间
 //                Long teFin = oDate.getLong("teFin");
 //                // 获取任务信息，并且转换为任务类
 //                Task task = JSON.parseObject(JSON.toJSONString(oTasks.get(i)),Task.class);
 //                // 设置最初任务信息的时间信息
-//                task.setTeDurTotal((teFin - teStartBackups));
+//                task.setWntDurTotal((teFin - teStartBackups));
 //                task.setTePStart(teStartBackups);
 //                task.setTePFinish(teFin);
 //                task.setTeCsStart(teStartBackups);
@@ -1903,432 +1911,1190 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
      * @author tang
      * @ver 1.0.0
      */
-    public void atFirst(int wn0TPrior,long teStart,String id_O,String id_C){
+//    public void atFirst(int wn0TPrior,long teStart,String id_O,String id_C){
+//        TimeZj.isZ = 6;
+////        System.out.println(id_O);
+//        // 调用方法获取订单信息
+//        Order salesOrderData = qt.getMDContent(id_O,qt.strList("oItem", "info", "view", "action", "casItemx"), Order.class);
+////        System.out.println("--------");
+////        System.out.println(JSON.toJSONString(salesOrderData));
+//        // 判断订单是否为空
+//        if (null == salesOrderData || null == salesOrderData.getAction() || null == salesOrderData.getOItem()
+//                || null == salesOrderData.getCasItemx() || null == salesOrderData.getInfo()) {
+//            // 返回为空错误信息
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+//        }
+//        // 定义，存储进入未操作到的地方记录
+//        JSONObject recordNoOperation = new JSONObject();
+//        // 存储任务所在日期
+//        JSONObject storageTaskWhereTime = new JSONObject();
+//        // 镜像任务存储
+//        Map<String,Map<String,Map<Long,List<Task>>>> allImageTasks = new HashMap<>(16);
+//        // 镜像总时间存储
+//        JSONObject allImageTotalTime = new JSONObject();
+//        // 全部任务存储
+//        JSONObject objTaskAll = new JSONObject();
+////            // 判断是测试
+////            if (isTest) {
+////                // 调用根据公司编号清空所有任务信息方法
+////                setTaskAndZonKai(id_C);
+////                // 调用添加测试数据方法
+////                TaskObj.addOrder(teStart,qt);
+////                TaskObj.addOrder2(teStart,qt);
+////                TaskObj.addOrder3(teStart,qt);
+////                // 调用添加测试数据方法
+////                TaskObj.addTasks(teStart,"1001","1xx1",id_C,objTaskAll);
+////                TaskObj.addTasksAndOrder(teStart,id_C,objTaskAll);
+////                TaskObj.addTasksAndOrder3(teStart,id_C,objTaskAll);
+////
+////                String randomAll = new ObjectId().toString();
+////
+////                // 调用任务最后处理方法
+////                timeZjServiceComprehensive.taskLastHandle(new JSONObject(),id_C,randomAll,objTaskAll
+////                        ,storageTaskWhereTime,allImageTotalTime,allImageTasks,recordNoOperation,id_O,new JSONArray()
+////                        ,new JSONObject(),new JSONObject(),null);
+////                objTaskAll = new JSONObject();
+////                storageTaskWhereTime = new JSONObject();
+////                allImageTasks = new HashMap<>(16);
+////                allImageTotalTime = new JSONObject();
+////            }
+//        // 根据组别存储部门信息
+//        JSONObject grpBGroupIdOJ = new JSONObject();
+//        // 存储casItemx内订单列表的订单oDates数据
+//        JSONObject actionIdO = new JSONObject();
+//        // 存储部门对应组别的职位总人数
+//        JSONObject grpUNumAll = new JSONObject();
+//        // 存储部门对应组别的上班和下班时间
+//        JSONObject xbAndSbAll = new JSONObject();
+//        // 统一id_O和index存储记录状态信息
+//        JSONObject recordId_OIndexState = new JSONObject();
+//        // 存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
+//        JSONObject onlyRefState = new JSONObject();
+//        // 根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
+//        JSONObject newestLastCurrentTimestamp = new JSONObject();
+//        // 存储当前唯一编号的第一个当前时间戳
+//        JSONObject onlyFirstTimeStamp = new JSONObject();
+//        // 获取唯一下标
+//        String random = new ObjectId().toString();
+//        // 获取全局唯一下标
+//        String randomAll = new ObjectId().toString();
+//
+//        // 设置问题记录的初始值
+//        yiShu.put(randomAll,0);
+//        leiW.put(randomAll,0);
+//        xin.put(randomAll,0);
+//        isQzTz.put(randomAll,0);
+//        recordNoOperation.put(randomAll,new JSONArray());
+//
+//        // 设置存储当前唯一编号的第一个当前时间戳
+//        onlyFirstTimeStamp.put(random,teStart);
+//        // 设置存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
+//        onlyRefState.put(random,0);
+//        // 存储最初开始时间
+//        long initialStartTime = 0L;
+//        // 存储最后结束时间
+//        long lastEndTime = 0L;
+//        // 获取递归订单列表
+//        JSONArray objOrder = salesOrderData.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
+//        // 存储递归订单列表的订单编号集合
+//        JSONArray objOrderList = new JSONArray();
+//        for (int i = 0; i < objOrder.size() - 1; i++) {
+//            // 添加订单编号
+//            objOrderList.add(objOrder.getJSONObject(i).getString("id_O"));
+//        }
+//        JSONObject depAllTime = new JSONObject();
+//        System.out.println("--- 分割 ---");
+//        // 遍历订单列表
+//        Map<String,Asset> assetMap = new HashMap<>();
+//        // 当前处理信息
+//        JSONObject thisInfo = new JSONObject();
+////        JSONObject id_OPConflictObj = new JSONObject();
+////        for (int i = 0; i < objOrder.size(); i++) {
+////            // 获取订单列表的订单编号
+////            String id_OInside = objOrder.getJSONObject(i).getString("id_O");
+//////            id_OPConflictObj.put(id_OInside,0);
+////            // 判断订单等于主订单，则通过循环
+////            if (id_OInside.equals(id_O)) {
+////                continue;
+////            }
+////            // 添加订单编号
+////            objOrderList.add(id_OInside);
+////            // 根据订单编号查询action卡片信息
+////            Order insideAction = qt.getMDContent(id_OInside,"action", Order.class);
+//////            // 获取递归信息
+//////            JSONArray objAction = insideAction.getAction().getJSONArray("objAction");
+////            // 获取组别对应部门信息
+////            JSONObject grpBGroup = insideAction.getAction().getJSONObject("grpBGroup");
+//////            if ("65a8eb50d295bb70738c506c".equals(id_OInside)) {
+//////                System.out.println("65a8eb50d295bb70738c506c-订单:");
+//////                System.out.println(JSON.toJSONString(insideAction));
+//////            }
+////            getGrpB(grpBGroup,assetMap,id_C,depAllTime,grpUNumAll,xbAndSbAll,grpBGroupIdOJ,id_OInside);
+////            // 根据订单编号添加订单信息存储
+//////            actionIdO.put(id_OInside,objAction);
+//////            if ("65a8eb50d295bb70738c506c".equals(id_OInside)) {
+//////                System.out.println("65a8eb50d295bb70738c506c-订单:");
+//////                System.out.println(JSON.toJSONString(grpBGroupIdOJ));
+//////            }
+////        }
+////        // 设置当前冲突订单的父订单编号
+////        setThisInfoId_OPConflictObj(thisInfo,id_OPConflictObj);
+//        System.out.println("xbAndSbAll:");
+//        System.out.println(JSON.toJSONString(xbAndSbAll));
+//
+//        JSONObject casItemx = salesOrderData.getCasItemx();
+//        OrderInfo info = salesOrderData.getInfo();
+//        // 获取递归存储的时间处理信息
+//        JSONArray oDates = casItemx.getJSONObject("java").getJSONArray("oDates");
+//        JSONArray oDateObj = casItemx.getJSONObject("java").getJSONArray("oDateObj");
+////        // 获取递归存储的时间任务信息
+////        JSONArray oTasks = casItemx.getJSONObject("java").getJSONArray("oTasks");
+//        // 用于存储时间冲突的副本
+//        JSONObject timeConflictCopy = new JSONObject();
+//        // 用于存储判断镜像是否是第一个被冲突的产品
+//        JSONObject sho = new JSONObject();
+//        // 用于存储控制只进入一次的判断，用于记录第一个数据处理的结束时间
+//        boolean canOnlyEnterOnce = true;
+//        // 定义用来存储最大结束时间
+//        long maxSte = 0;
+//
+//        // 用于存储每一个时间任务的结束时间
+//        JSONArray teFinList = new JSONArray();
+//        // 用于存储，产品序号为1处理的，按照父零件编号存储每个序号的最后结束时间
+//        JSONObject serialOneFatherLastTime = new JSONObject();
+//        // 用于存储，产品序号为1处理的，按照父零件编号存储每个序号的预计开始时间
+//        JSONObject serialOneFatherStartTime = new JSONObject();
+//        // 清理状态
+//        JSONObject clearStatus = new JSONObject();
+//
+//        setThisInfoRef(thisInfo,"time");
+//        // 镜像任务所在时间
+//        JSONObject allImageTeDate = new JSONObject();
+//
+////        JSONObject resultTask = mergeTaskByPrior(oDates
+//////                , oTasks
+////                , grpUNumAll);
+////        oDates = resultTask.getJSONArray("oDates");
+//        oDates = mergeTaskByPrior(oDates,grpUNumAll);
+////        oTasks = resultTask.getJSONArray("oTasks");
+//        for (int i = 0; i < oDates.size(); i++) {
+//            JSONObject oDate = oDates.getJSONObject(i);
+//            getGrpB(oDate.getString("grpB"),oDate.getString("dep"), assetMap,id_C
+//                    ,depAllTime,grpUNumAll,xbAndSbAll,grpBGroupIdOJ,oDate.getString("id_O"));
+//        }
+////        for (int i = 0; i < objOrder.size(); i++) {
+////            // 获取订单列表的订单编号
+////            String id_OInside = objOrder.getJSONObject(i).getString("id_O");
+//////            id_OPConflictObj.put(id_OInside,0);
+////            // 判断订单等于主订单，则通过循环
+////            if (id_OInside.equals(id_O)) {
+////                continue;
+////            }
+////            // 添加订单编号
+////            objOrderList.add(id_OInside);
+////            // 根据订单编号查询action卡片信息
+////            Order insideAction = qt.getMDContent(id_OInside,"action", Order.class);
+//////            // 获取递归信息
+//////            JSONArray objAction = insideAction.getAction().getJSONArray("objAction");
+////            // 获取组别对应部门信息
+////            JSONObject grpBGroup = insideAction.getAction().getJSONObject("grpBGroup");
+//////            if ("65a8eb50d295bb70738c506c".equals(id_OInside)) {
+//////                System.out.println("65a8eb50d295bb70738c506c-订单:");
+//////                System.out.println(JSON.toJSONString(insideAction));
+//////            }
+////            getGrpB(grpBGroup,assetMap,id_C,depAllTime,grpUNumAll,xbAndSbAll,grpBGroupIdOJ,id_OInside);
+////            // 根据订单编号添加订单信息存储
+//////            actionIdO.put(id_OInside,objAction);
+//////            if ("65a8eb50d295bb70738c506c".equals(id_OInside)) {
+//////                System.out.println("65a8eb50d295bb70738c506c-订单:");
+//////                System.out.println(JSON.toJSONString(grpBGroupIdOJ));
+//////            }
+////        }
+//        qt.setMDContent(id_O,qt.setJson("casItemx.java.oDates",oDates
+////                ,"casItemx.java.oTasks",oTasks
+//        ), Order.class);
+//        setOrderFatherId(id_O,thisInfo,actionIdO,objOrder,oDates);
+//
+////        // 抛出操作成功异常
+////        return retResult.ok(CodeEnum.OK.getCode(), "时间处理成功!");
+//
+//        boolean isOne = false;
+//        setThisInfoFinalPartDateIndex(thisInfo,(oDates.size()-1));
+//        setThisInfoFinalPartDateId_O(thisInfo,oDates.getJSONObject((oDates.size()-1)).getString("id_O"));
+//        setThisInfoIsConflict(thisInfo,false);
+//        // 遍历时间处理信息集合
+//        for (int i = 0; i < oDates.size(); i++) {
+//            setThisInfoIsFinalPart(thisInfo, i >= oDates.size() - 1);
+//            // 获取i对应的时间处理信息
+//            JSONObject oDate = oDates.getJSONObject(i);
+////                Integer bmdpt = oDate.getInteger("bmdpt");
+////                if (bmdpt == 3) {
+////                    continue;
+////                }
+//            // 获取订单编号
+//            String id_OInside = oDate.getString("id_O");
+//            // 获取订单下标
+//            int indexInside = oDate.getInteger("index");
+////                JSONArray objAction = actionIdO.getJSONArray(id_OInside);
+////                JSONObject indexAction = objAction.getJSONObject(indexInside);
+////                int bcdStatus = indexAction.getInteger("bcdStatus") == null?0:indexAction.getInteger("bcdStatus");
+////                if (bcdStatus == 8 || bcdStatus == 2) {
+////                    continue;
+////                }
+//            // 获取时间处理的序号
+//            Integer priorItem = oDate.getInteger("priorItem");
+//            // 获取时间处理的父零件编号
+//            String id_PF = oDate.getString("id_PF");
+//            // 获取时间处理的序号是否为1层级 csSta - timeHandleSerialNoIsOne
+//            Integer csSta = oDate.getInteger("csSta");
+//            // 获取时间处理的判断是否是空时间信息
+//            Boolean empty = oDate.getBoolean("empty");
+//            // 判断当前时间处理为空时间信息
+//            if (empty) {
+//                // 获取时间处理的链接下标
+//                Integer linkInd = oDate.getInteger("linkInd");
+//                // 根据链接下标获取指定的结束时间
+//                Long indexEndTime = teFinList.getLong(linkInd);
+//                // 判断父id的预计开始时间为空，并且序号为第一个
+//                if (null == serialOneFatherStartTime.getLong(id_PF) && priorItem == 1) {
+//                    serialOneFatherStartTime.put(id_PF,indexEndTime);
+//                }
+//                // 根据父零件编号获取序号信息
+//                JSONObject fatherSerialInfo = serialOneFatherLastTime.getJSONObject(id_PF);
+//                // 判断序号信息为空
+//                if (null == fatherSerialInfo) {
+//                    // 创建序号信息
+//                    fatherSerialInfo = new JSONObject();
+//                    // 添加序号的结束时间，默认为0
+//                    fatherSerialInfo.put(priorItem.toString(),0);
+//                }
+//                // 获取序号结束时间
+//                Long serialEndTime = fatherSerialInfo.getLong(priorItem.toString());
+//                // 添加链接结束时间到当前空时间处理结束时间列表内
+//                teFinList.add(indexEndTime);
+//                // 判断链接结束时间大于当前结束时间
+//                if (indexEndTime > serialEndTime) {
+//                    // 修改当前结束时间为链接结束时间
+//                    fatherSerialInfo.put(priorItem.toString(),indexEndTime);
+//                    // 根据父零件编号添加序号信息
+//                    serialOneFatherLastTime.put(id_PF,fatherSerialInfo);
+//                }
+//                continue;
+//            }
+//
+//            // 获取当前唯一ID存储时间处理的最初开始时间
+//            Long hTeStart = initialStartTime;
+//            // 根据当前递归信息创建添加存储判断镜像是否是第一个被冲突的产品信息
+//            JSONObject firstConflictId_O = new JSONObject();
+//            JSONObject firstConflictIndex = new JSONObject();
+//            // 设置为-1代表的是递归的零件
+//            firstConflictIndex.put("prodState",-1);
+//            firstConflictIndex.put("z","-1");
+//            firstConflictId_O.put(oDate.getString("index"),firstConflictIndex);
+//            sho.put(oDate.getString("id_O"),firstConflictId_O);
+//            // 获取时间处理的组别
+//            String grpB = oDate.getString("grpB");
+//            String dep = oDate.getString("dep");
+//
+//            // 获取时间处理的零件产品编号
+//            String id_P = oDate.getString("id_P");
+//            // 获取时间处理的记录，存储是递归第一层的，序号为1和序号为最后一个状态
+//            Integer kaiJie = oDate.getInteger("kaiJie");
+////            // 获取时间处理的实际准备时间
+////            Long wntPrep = oTasks.getJSONObject(i).getLong("prep");
+////            Long wntDurTotal = oTasks.getJSONObject(i).getLong("wntDurTotal");
+//            // 获取时间处理的实际准备时间
+//            Long wntPrep = oDate.getLong("wntPrep");
+//            Long wntDurTotal = oDate.getLong("wntDurTotal");
+//            long initialTeStart;
+//            // 判断当前唯一ID存储时间处理的最初开始时间为0
+//            if (hTeStart == 0) {
+//                // 调用获取当前时间戳方法设置开始时间
+////                oDate.put("teStart",getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp));
+//                initialTeStart = getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp);
+//            } else {
+//                // 判断序号是为1层级并且记录，存储是递归第一层的，序号为1和序号为最后一个状态为第一层
+//                if (csSta == 1 && kaiJie == 1) {
+//                    // 获取当前唯一ID存储时间处理的第一个时间信息的结束时间
+//                    hTeStart = lastEndTime;
+//                }
+////                oDate.put("teStart",hTeStart);
+//                initialTeStart = hTeStart;
+//                System.out.println("这里开始时间-1:"+hTeStart);
+//            }
+//            boolean isExecutionMethod = (csSta == 0 && priorItem != 1) || (kaiJie != 1 && csSta == 1);
+//
+//            // 序号是不为1层级
+//            // 判断执行方法为true
+//            if (isExecutionMethod) {
+//                // 定义获取存储，产品序号为1处理的，按照父零件编号存储每个序号的最后结束时间
+//                JSONObject serialOneEndTime;
+//                System.out.println("serialOneFatherLastTime:id_P:"+id_P+" - id_PF:"+id_PF);
+//                System.out.println(JSON.toJSONString(serialOneFatherLastTime));
+//                // 获取判断自己的id是否等于已存在的父id
+//                boolean b = serialOneFatherLastTime.containsKey(id_P);
+//                // 判断自己的id是已存在的父id
+//                if (b) {
+//                    // 根据自己的id获取按照父零件编号存储每个序号的最后结束时间
+//                    serialOneEndTime = serialOneFatherLastTime.getJSONObject(id_P);
+//                    // 转换键信息
+//                    List<String> list = new ArrayList<>(serialOneEndTime.keySet());
+//                    // 获取最后一个时间信息
+//                    String s = list.get(list.size() - 1);
+//                    // 赋值为最后一个时间信息
+//                    hTeStart = serialOneEndTime.getLong(s);
+//                } else {
+//                    // 根据父id获取按照父零件编号存储每个序号的最后结束时间
+//                    serialOneEndTime = serialOneFatherLastTime.getJSONObject(id_PF);
+//                    if (null != serialOneEndTime) {
+//                        // 获取上一个序号的时间信息并赋值
+//                        hTeStart = serialOneEndTime.getLong(((priorItem - 1) + ""));
+//                    }
+//                }
+//                // 设置开始时间
+////                oDate.put("teStart",hTeStart);
+//                initialTeStart = hTeStart;
+//                System.out.println("这里开始时间-3:"+hTeStart);
+//            }
+//
+//            // 获取任务的最初开始时间备份
+////            Long teStartBackups = oDate.getLong("teStart");
+//            Long teStartBackups = initialTeStart;
+////            // 设置最初结束时间
+////            oDate.put("teFin",(teStartBackups+(wntDurTotal+wntPrep)));
+////            // 获取最初结束时间
+////            Long teFin = oDate.getLong("teFin");
+//            // 获取最初结束时间
+//            Long teFin = (teStartBackups+(wntDurTotal+wntPrep));
+////            // 获取任务信息，并且转换为任务类
+////            Task task = JSON.parseObject(JSON.toJSONString(oTasks.get(i)),Task.class);
+//            // 获取任务信息，并且转换为任务类
+//            Task task = new Task(oDate.getInteger("priority"),id_OInside,indexInside,wntPrep
+//                    ,wntDurTotal+wntPrep,id_C,i,oDate.getJSONObject("wrdN"));
+//            // 设置最初任务信息的时间信息
+//            task.setTePStart(teStartBackups);
+//            task.setTePFinish(teFin);
+//            task.setTeCsStart(teStartBackups);
+//            task.setTeCsSonOneStart(0L);
+//            task.setWrdNO(info.getWrdN());
+//            task.setRefOP(id_O);
+//            task.setWn2qtyneed(oDate.getDouble("wn2qtyneed"));
+//            // 判断优先级不等于-1
+//            if (wn0TPrior != -1) {
+//                // 设置优先级为传参的优先级
+//                task.setPriority(wn0TPrior);
+//            }
+//            // 判断父id的预计开始时间为空并且，序号为1，并且不是部件并且不是递归的最后一个
+//            if (null == serialOneFatherStartTime.getLong(id_PF) && priorItem == 1
+//                    && kaiJie != 5 && kaiJie != 3
+////                    && !isGetIntoNull
+//            ) {
+//                // 根据父id添加开始时间
+//                serialOneFatherStartTime.put(id_PF,task.getTeCsStart());
+//            } else if (kaiJie == 3 || kaiJie == 5) {
+//                // 添加子最初开始时间
+//                task.setTeCsSonOneStart(serialOneFatherStartTime.getLong(id_P));
+//            }
+//
+//            // 创建当前处理的任务的所在日期对象
+//            JSONObject teDate = new JSONObject();
+//            System.out.println();
+//            System.out.println("++ taskTe: ++ "+dep+" - "+grpB);
+//            System.out.println();
+//            System.out.println(JSON.toJSONString(task));
+//            System.out.println(JSON.toJSONString(objTaskAll));
+//            System.out.println(JSON.toJSONString(allImageTasks));
+//
+////            JSONObject conflictInfo = new JSONObject();
+//            JSONObject conflictInfo = getThisInfoConflictInfo(thisInfo);
+//            if (null == conflictInfo) {
+//                conflictInfo = new JSONObject();
+//            }
+//            JSONObject thisConfInfo = new JSONObject();
+//            thisConfInfo.put("dep",dep);
+//            thisConfInfo.put("grpB",grpB);
+//            thisConfInfo.put("status",0);
+//            conflictInfo.put(task.getDateIndex()+"",thisConfInfo);
+//            setThisInfoConflictInfo(thisInfo,conflictInfo);
+////            System.out.println("getThisInfoConflictInfo:");
+////            System.out.println(JSON.toJSONString(getThisInfoConflictInfo(thisInfo)));
+//            if (isOne) {
+//                JSONObject thisInfoConflictInfo = getThisInfoConflictInfo(thisInfo);
+//                JSONObject upConfInfo = thisInfoConflictInfo.getJSONObject((task.getDateIndex() - 1) + "");
+//                for (int upI = (task.getDateIndex()-1); upI >= 0; upI--) {
+//                    upConfInfo = thisInfoConflictInfo.getJSONObject((upI) + "");
+//                    if (null != upConfInfo) {
+//                        break;
+//                    }
+//                }
+//                if (null != upConfInfo) {
+//                    Integer status = upConfInfo.getInteger("status");
+//                    if (status == 1) {
+//                        String upDep = upConfInfo.getString("dep");
+//                        String upGrpB = upConfInfo.getString("grpB");
+//                        if (!upDep.equals(dep) || !upGrpB.equals(grpB)) {
+//                            System.out.println("--+ 进入前置修改全局任务信息 +-- :");
+//                            updateObjTaskAllSetAllImageTasks(objTaskAll,allImageTasks,allImageTotalTime);
+//                            System.out.println("修改后:");
+//                            System.out.println(JSON.toJSONString(objTaskAll));
+//                            System.out.println(JSON.toJSONString(allImageTasks));
+//                        }
+//                    }
+//                }
+//            } else {
+//                isOne = true;
+//            }
+//
+//            // 调用时间处理方法
+//            JSONObject timeHandleInfo = timeHandle(task,hTeStart,grpB,dep,id_OInside,indexInside
+//                    ,0,random,1,teDate,timeConflictCopy,0
+//                    ,sho,0,csSta,randomAll,xbAndSbAll,actionIdO,objTaskAll
+//                    ,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime,allImageTasks
+//                    ,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,recordNoOperation
+//                    ,clearStatus,thisInfo,allImageTeDate,false,depAllTime);
+//            // 更新任务最初始开始时间
+//            hTeStart = timeHandleInfo.getLong("hTeStart");
+//            System.out.println("最外层-3-1:"+hTeStart);
+//            System.out.println(JSON.toJSONString(timeHandleInfo));
+//            // 添加结束时间
+//            teFinList.add(hTeStart);
+//
+//            String id_OP = sonGetOrderFatherId(id_OInside, id_C, thisInfo, actionIdO, grpUNumAll);
+//            JSONObject oPDateInfo = actionIdO.getJSONObject(id_OP);
+//            JSONArray oDatesNew = oPDateInfo.getJSONArray("oDates");
+//            JSONObject thisODate = oDatesNew.getJSONObject(i);
+//            thisODate.put("teDate",teDate);
+//            oDatesNew.set(i,thisODate);
+//            oPDateInfo.put("oDates",oDatesNew);
+//            actionIdO.put(id_OP,oPDateInfo);
+//
+//            // 定义存储最后结束时间参数
+//            long storageLastEndTime;
+//            // 判断序号是为1层级
+//            if (csSta == 1) {
+//                // 获取实际结束时间
+//                Long actualEndTime = timeHandleInfo.getLong("xFin");
+////                System.out.println("xFinW:"+xFin);
+//                // 定义存储判断实际结束时间是否为空
+//                boolean isActualEndTime = false;
+//                // 判断实际结束时间不等于空
+//                if (null != actualEndTime) {
+////                    System.out.println("xFin:"+xFin);
+//                    // 赋值实际结束时间
+//                    hTeStart = actualEndTime;
+//                    // 判断当前实际结束时间大于最大结束时间
+//                    if (actualEndTime > maxSte) {
+//                        // 判断大于则更新最大结束时间为当前结束时间
+//                        maxSte = actualEndTime;
+//                    }
+//                    // 设置不为空
+//                    isActualEndTime = true;
+//                } else {
+//                    // 判断当前实际结束时间大于最大结束时间：注 ： xFin 和 task.getTePFinish() 有时候是不一样的，不能随便改
+//                    if (task.getTePFinish() > maxSte) {
+//                        // 判断大于则更新最大结束时间为当前结束时间
+//                        maxSte = task.getTePFinish();
+//                    }
+//                }
+////                System.out.println("maxSte:"+maxSte);
+//                // 判断实际结束时间不为空
+//                if (isActualEndTime) {
+//                    // 赋值结束时间
+//                    storageLastEndTime = actualEndTime;
+//                } else {
+//                    // 赋值结束时间
+//                    storageLastEndTime = task.getTePFinish();
+//                }
+//                // 判断是第一次进入
+//                if (canOnlyEnterOnce) {
+//                    // 添加设置第一层的开始时间
+//                    lastEndTime=task.getTePStart();
+//                    // 设置只能进入一次
+//                    canOnlyEnterOnce = false;
+//                }
+//            } else {
+//                // 直接赋值最后结束时间
+//                storageLastEndTime = hTeStart;
+//            }
+//            // 根据父id获取最后结束时间信息
+//            JSONObject fatherGetEndTimeInfo = serialOneFatherLastTime.getJSONObject(id_PF);
+//            // 判断最后结束时间信息为空
+//            if (null == fatherGetEndTimeInfo) {
+//                // 创建并且赋值最后结束时间
+//                fatherGetEndTimeInfo = new JSONObject();
+//                fatherGetEndTimeInfo.put(priorItem.toString(),0);
+//            }
+//            // 根据序号获取最后结束时间
+//            Long aLong = fatherGetEndTimeInfo.getLong(priorItem.toString());
+//            // 判断最后结束时间为空
+//            if (null == aLong) {
+//                // 为空，则直接添加最后结束时间信息
+//                fatherGetEndTimeInfo.put(priorItem.toString(),storageLastEndTime);
+//                serialOneFatherLastTime.put(id_PF,fatherGetEndTimeInfo);
+//            } else {
+//                // 不为空，则判断当前最后结束时间大于已存在的最后结束时间
+//                if (storageLastEndTime > aLong) {
+//                    // 判断当前最后结束时间大于，则更新最后结束时间为当前结束时间
+//                    fatherGetEndTimeInfo.put(priorItem.toString(),storageLastEndTime);
+//                    serialOneFatherLastTime.put(id_PF,fatherGetEndTimeInfo);
+//                }
+//            }
+//            initialStartTime=hTeStart;
+//            if (getThisInfoIsFinalPart(thisInfo) && getThisInfoIsConflict(thisInfo)) {
+//                System.out.println("开始处理冲突任务:");
+//                JSONObject thisInfoConflictInfo = getThisInfoConflictInfo(thisInfo);
+////                System.out.println(JSON.toJSONString(thisInfoConflictInfo));
+//                JSONObject thisInfoConflictInfoSon = thisInfoConflictInfo.getJSONObject( i+ "");
+//                thisInfoConflictInfoSon.put("status",1);
+//                thisInfoConflictInfo.put(i+"",thisInfoConflictInfoSon);
+//                setThisInfoConflictInfo(thisInfo,thisInfoConflictInfo);
+//
+//                JSONObject thisInfoQuiltConflictInfo = getThisInfoQuiltConflictInfo(thisInfo);
+////                System.out.println(JSON.toJSONString(thisInfoQuiltConflictInfo));
+//                List<Task> conflict = new ArrayList<>();
+//                JSONArray conflictArr = thisInfoQuiltConflictInfo.getJSONArray("conflict");
+//                for (int c = 0; c < conflictArr.size(); c++) {
+//                    conflict.add(JSONObject.parseObject(JSON.toJSONString(conflictArr.getJSONObject(c)), Task.class));
+//                }
+////                System.out.println("排序前:");
+////                System.out.println(JSON.toJSONString(conflict));
+//                conflict.sort(Comparator.comparing(Task::getPriority));
+////                System.out.println("排序后:");
+////                System.out.println(JSON.toJSONString(conflict));
+//                JSONObject indexInfo = thisInfoQuiltConflictInfo.getJSONObject("indexInfo");
+//                JSONObject indexInfoNew = new JSONObject();
+//                for (int conf = 0; conf < conflict.size(); conf++) {
+//                    Task taskConflict = conflict.get(conf);
+//                    String id_OConf = taskConflict.getId_O();
+//                    Integer dateIndexConf = taskConflict.getDateIndex();
+//                    for (String indInfoKey : indexInfo.keySet()) {
+//                        JSONObject object = indexInfo.getJSONObject(indInfoKey);
+//                        if (object.getString("id_O").equals(id_OConf)
+//                                && Objects.equals(object.getInteger("dateIndex"), dateIndexConf)) {
+////                            System.out.println("id_O:"+id_OConf+",dateIndex:"+dateIndexConf);
+////                            System.out.println(JSON.toJSONString(object));
+//                            indexInfoNew.put(conf+"", object);
+//                        }
+//                    }
+//                }
+//                thisInfoQuiltConflictInfo.put("indexInfo",indexInfoNew);
+//                thisInfoQuiltConflictInfo.put("conflict",conflict);
+//                System.out.println(JSON.toJSONString(thisInfoQuiltConflictInfo));
+//                setThisInfoQuiltConflictInfo(thisInfo,thisInfoQuiltConflictInfo);
+//
+//                updateAllImageTasksSetObjTaskAll(objTaskAll,allImageTasks,allImageTotalTime);
+//
+//                dgHandleFollowUpConflict(thisInfo,grpB,dep,id_C,objTaskAll,depAllTime,random,timeConflictCopy,sho,csSta
+//                        ,randomAll,xbAndSbAll,actionIdO,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime
+//                        ,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,recordNoOperation
+//                        ,clearStatus,allImageTeDate,conflict);
+//            }
+////            System.out.println();
+//        }
+//
+//        // 调用任务最后处理方法
+//        timeZjServiceComprehensive.taskLastHandle(timeConflictCopy,id_C,randomAll,objTaskAll
+//                ,storageTaskWhereTime,allImageTotalTime,allImageTasks,recordNoOperation,id_O
+//                ,objOrderList,actionIdO,allImageTeDate,depAllTime,thisInfo);
+//
+//        // 递归完成了，删除存储当前唯一编号的第一个当前时间戳
+//        onlyFirstTimeStamp.remove(random);
+//        // 递归完成了，删除根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
+//        newestLastCurrentTimestamp.remove(random);
+//        // 根据当前唯一标识删除信息
+//        onlyRefState.remove(random);
+//    }
+    public void atFirstODateObj(int wn0TPrior,long teStart,String id_O,String id_C){
         TimeZj.isZ = 6;
-        System.out.println(id_O);
         // 调用方法获取订单信息
         Order salesOrderData = qt.getMDContent(id_O,qt.strList("oItem", "info", "view", "action", "casItemx"), Order.class);
-        System.out.println("--------");
-        System.out.println(JSON.toJSONString(salesOrderData));
         // 判断订单是否为空
         if (null == salesOrderData || null == salesOrderData.getAction() || null == salesOrderData.getOItem()
-                || null == salesOrderData.getCasItemx()) {
+                || null == salesOrderData.getCasItemx() || null == salesOrderData.getInfo()) {
             // 返回为空错误信息
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
-        // 定义，存储进入未操作到的地方记录
-        JSONObject recordNoOperation = new JSONObject();
-        // 存储任务所在日期
-        JSONObject storageTaskWhereTime = new JSONObject();
-        // 镜像任务存储
-        Map<String,Map<String,Map<Long,List<Task>>>> allImageTasks = new HashMap<>(16);
-        // 镜像总时间存储
-        JSONObject allImageTotalTime = new JSONObject();
-        // 全部任务存储
-        JSONObject objTaskAll = new JSONObject();
-//            // 判断是测试
-//            if (isTest) {
-//                // 调用根据公司编号清空所有任务信息方法
-//                setTaskAndZonKai(id_C);
-//                // 调用添加测试数据方法
-//                TaskObj.addOrder(teStart,qt);
-//                TaskObj.addOrder2(teStart,qt);
-//                TaskObj.addOrder3(teStart,qt);
-//                // 调用添加测试数据方法
-//                TaskObj.addTasks(teStart,"1001","1xx1",id_C,objTaskAll);
-//                TaskObj.addTasksAndOrder(teStart,id_C,objTaskAll);
-//                TaskObj.addTasksAndOrder3(teStart,id_C,objTaskAll);
-//
-//                String randomAll = new ObjectId().toString();
-//
-//                // 调用任务最后处理方法
-//                timeZjServiceComprehensive.taskLastHandle(new JSONObject(),id_C,randomAll,objTaskAll
-//                        ,storageTaskWhereTime,allImageTotalTime,allImageTasks,recordNoOperation,id_O,new JSONArray()
-//                        ,new JSONObject(),new JSONObject(),null);
-//                objTaskAll = new JSONObject();
-//                storageTaskWhereTime = new JSONObject();
-//                allImageTasks = new HashMap<>(16);
-//                allImageTotalTime = new JSONObject();
-//            }
-        // 根据组别存储部门信息
-        JSONObject grpBGroupIdOJ = new JSONObject();
-        // 存储casItemx内订单列表的订单action数据
-        JSONObject actionIdO = new JSONObject();
-        // 存储部门对应组别的职位总人数
-
-        JSONObject grpUNumAll = new JSONObject();
-        // 存储部门对应组别的上班和下班时间
-        JSONObject xbAndSbAll = new JSONObject();
-        // 统一id_O和index存储记录状态信息
-        JSONObject recordId_OIndexState = new JSONObject();
-        // 存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
-        JSONObject onlyRefState = new JSONObject();
-        // 根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
-        JSONObject newestLastCurrentTimestamp = new JSONObject();
-        // 存储当前唯一编号的第一个当前时间戳
-        JSONObject onlyFirstTimeStamp = new JSONObject();
-        // 获取唯一下标
-        String random = new ObjectId().toString();
-        // 获取全局唯一下标
-        String randomAll = new ObjectId().toString();
-
-        // 设置问题记录的初始值
-        yiShu.put(randomAll,0);
-        leiW.put(randomAll,0);
-        xin.put(randomAll,0);
-        isQzTz.put(randomAll,0);
-        recordNoOperation.put(randomAll,new JSONArray());
-
-        // 设置存储当前唯一编号的第一个当前时间戳
-        onlyFirstTimeStamp.put(random,teStart);
-        // 设置存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
-        onlyRefState.put(random,0);
-        // 存储最初开始时间
-        long initialStartTime = 0L;
-        // 存储最后结束时间
-        long lastEndTime = 0L;
-        // 获取递归订单列表
-        JSONArray objOrder = salesOrderData.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
-        // 存储递归订单列表的订单编号集合
-        JSONArray objOrderList = new JSONArray();
-        JSONObject depAllTime = new JSONObject();
-        System.out.println("--- 分割 ---");
-        // 遍历订单列表
-        Map<String,Asset> assetMap = new HashMap<>();
-        for (int i = 0; i < objOrder.size(); i++) {
-            // 获取订单列表的订单编号
-            String id_OInside = objOrder.getJSONObject(i).getString("id_O");
-            // 判断订单等于主订单，则通过循环
-            if (id_OInside.equals(id_O)) {
-                continue;
-            }
-            // 添加订单编号
-            objOrderList.add(id_OInside);
-            // 根据订单编号查询action卡片信息
-            Order insideAction = qt.getMDContent(id_OInside,"action", Order.class);
-            // 获取递归信息
-            JSONArray objAction = insideAction.getAction().getJSONArray("objAction");
-            // 获取组别对应部门信息
-            JSONObject grpBGroup = insideAction.getAction().getJSONObject("grpBGroup");
-            getGrpB(grpBGroup,assetMap,id_C,depAllTime,grpUNumAll,xbAndSbAll,grpBGroupIdOJ,id_OInside);
-            // 根据订单编号添加订单信息存储
-            actionIdO.put(id_OInside,objAction);
-        }
-        System.out.println("xbAndSbAll:");
-        System.out.println(JSON.toJSONString(xbAndSbAll));
-
         JSONObject casItemx = salesOrderData.getCasItemx();
         // 获取递归存储的时间处理信息
-        JSONArray oDates = casItemx.getJSONObject("java").getJSONArray("oDates");
-        // 获取递归存储的时间任务信息
-        JSONArray oTasks = casItemx.getJSONObject("java").getJSONArray("oTasks");
-        // 用于存储时间冲突的副本
-        JSONObject timeConflictCopy = new JSONObject();
-        // 用于存储判断镜像是否是第一个被冲突的产品
-        JSONObject sho = new JSONObject();
-        // 用于存储控制只进入一次的判断，用于记录第一个数据处理的结束时间
-        boolean canOnlyEnterOnce = true;
-        // 定义用来存储最大结束时间
-        long maxSte = 0;
-        // 用于存储每一个时间任务的结束时间
-        JSONArray teFinList = new JSONArray();
-        // 用于存储，产品序号为1处理的，按照父零件编号存储每个序号的最后结束时间
-        JSONObject serialOneFatherLastTime = new JSONObject();
-        // 用于存储，产品序号为1处理的，按照父零件编号存储每个序号的预计开始时间
-        JSONObject serialOneFatherStartTime = new JSONObject();
-        // 清理状态
-        JSONObject clearStatus = new JSONObject();
-        // 当前处理信息
-        JSONObject thisInfo = new JSONObject();
-        setThisInfoRef(thisInfo,"time");
-        // 镜像任务所在时间
-        JSONObject allImageTeDate = new JSONObject();
-
-        JSONObject resultTask = mergeTaskByPrior(oDates, oTasks, grpBGroupIdOJ, grpUNumAll);
-        oDates = resultTask.getJSONArray("oDates");
-        oTasks = resultTask.getJSONArray("oTasks");
+        JSONObject oDateObj = casItemx.getJSONObject("java").getJSONObject("oDateObj");
+        // 存储部门对应组别的职位总人数
+        JSONObject grpUNumAll = new JSONObject();
+        oDateObj = mergeTaskByPriorODateObj(oDateObj,grpUNumAll);
 
 //        // 抛出操作成功异常
 //        return retResult.ok(CodeEnum.OK.getCode(), "时间处理成功!");
+        System.out.println("开始oDateObj:");
+        System.out.println(JSON.toJSONString(oDateObj));
+        qt.setMDContent(id_O,qt.setJson("casItemx.java.oDateObj",oDateObj), Order.class);
+        List<Integer> layerList = new ArrayList<>();
+        for (String layer : oDateObj.keySet()) {
+            layerList.add(Integer.parseInt(layer));
 
-        // 遍历时间处理信息集合
-        for (int i = 0; i < oDates.size(); i++) {
-            // 获取i对应的时间处理信息
-            JSONObject oDate = oDates.getJSONObject(i);
-//                Integer bmdpt = oDate.getInteger("bmdpt");
-//                if (bmdpt == 3) {
-//                    continue;
-//                }
-            // 获取订单编号
-            String id_OInside = oDate.getString("id_O");
-            // 获取订单下标
-            int indexInside = oDate.getInteger("index");
-//                JSONArray objAction = actionIdO.getJSONArray(id_OInside);
-//                JSONObject indexAction = objAction.getJSONObject(indexInside);
-//                int bcdStatus = indexAction.getInteger("bcdStatus") == null?0:indexAction.getInteger("bcdStatus");
-//                if (bcdStatus == 8 || bcdStatus == 2) {
-//                    continue;
-//                }
-            // 获取时间处理的序号
-            Integer priorItem = oDate.getInteger("priorItem");
-            // 获取时间处理的父零件编号
-            String id_PF = oDate.getString("id_PF");
-            // 获取时间处理的序号是否为1层级 csSta - timeHandleSerialNoIsOne
-            Integer csSta = oDate.getInteger("csSta");
-            // 获取时间处理的判断是否是空时间信息
-            Boolean empty = oDate.getBoolean("empty");
-            // 判断当前时间处理为空时间信息
-            if (empty) {
-                // 获取时间处理的链接下标
-                Integer linkInd = oDate.getInteger("linkInd");
-                // 根据链接下标获取指定的结束时间
-                Long indexEndTime = teFinList.getLong(linkInd);
-                // 判断父id的预计开始时间为空，并且序号为第一个
-                if (null == serialOneFatherStartTime.getLong(id_PF) && priorItem == 1) {
-                    serialOneFatherStartTime.put(id_PF,indexEndTime);
-                }
-                // 根据父零件编号获取序号信息
-                JSONObject fatherSerialInfo = serialOneFatherLastTime.getJSONObject(id_PF);
-                // 判断序号信息为空
-                if (null == fatherSerialInfo) {
-                    // 创建序号信息
-                    fatherSerialInfo = new JSONObject();
-                    // 添加序号的结束时间，默认为0
-                    fatherSerialInfo.put(priorItem.toString(),0);
-                }
-                // 获取序号结束时间
-                Long serialEndTime = fatherSerialInfo.getLong(priorItem.toString());
-                // 添加链接结束时间到当前空时间处理结束时间列表内
-                teFinList.add(indexEndTime);
-                // 判断链接结束时间大于当前结束时间
-                if (indexEndTime > serialEndTime) {
-                    // 修改当前结束时间为链接结束时间
-                    fatherSerialInfo.put(priorItem.toString(),indexEndTime);
-                    // 根据父零件编号添加序号信息
-                    serialOneFatherLastTime.put(id_PF,fatherSerialInfo);
-                }
-                continue;
+            JSONObject layerInfo = oDateObj.getJSONObject(layer);
+            for (String id_PF : layerInfo.keySet()) {
+                JSONObject pfInfo = layerInfo.getJSONObject(id_PF);
+                pfInfo.put("arrPStart",new JSONArray());
+                layerInfo.put(id_PF,pfInfo);
+                oDateObj.put(layer,layerInfo);
             }
+        }
+        layerList.sort(Comparator.reverseOrder());
+        dgTime(layerList.get(0),oDateObj,salesOrderData,id_C,grpUNumAll,wn0TPrior,true,teStart);
+        qt.setMDContent(id_O,qt.setJson("casItemx.java.oDateObj",oDateObj), Order.class);
+    }
 
-            // 获取当前唯一ID存储时间处理的最初开始时间
-            Long hTeStart = initialStartTime;
-            // 根据当前递归信息创建添加存储判断镜像是否是第一个被冲突的产品信息
-            JSONObject firstConflictId_O = new JSONObject();
-            JSONObject firstConflictIndex = new JSONObject();
-            // 设置为-1代表的是递归的零件
-            firstConflictIndex.put("prodState",-1);
-            firstConflictIndex.put("z","-1");
-            firstConflictId_O.put(oDate.getString("index"),firstConflictIndex);
-            sho.put(oDate.getString("id_O"),firstConflictId_O);
-            // 获取时间处理的组别
-            String grpB = oDate.getString("grpB");
-            String dep = oDate.getString("dep");
-
-            // 获取时间处理的零件产品编号
-            String id_P = oDate.getString("id_P");
-            // 获取时间处理的记录，存储是递归第一层的，序号为1和序号为最后一个状态
-            Integer kaiJie = oDate.getInteger("kaiJie");
-            // 获取时间处理的实际准备时间
-            Long wntPrep = oTasks.getJSONObject(i).getLong("prep");
-            Long teDurTotal = oTasks.getJSONObject(i).getLong("teDurTotal");
-            // 判断当前唯一ID存储时间处理的最初开始时间为0
-            if (hTeStart == 0) {
-                // 调用获取当前时间戳方法设置开始时间
-                oDate.put("teStart",getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp));
-            } else {
-                // 判断序号是为1层级并且记录，存储是递归第一层的，序号为1和序号为最后一个状态为第一层
-                if (csSta == 1 && kaiJie == 1) {
-                    // 获取当前唯一ID存储时间处理的第一个时间信息的结束时间
-                    hTeStart = lastEndTime;
-                }
-                oDate.put("teStart",hTeStart);
-                System.out.println("这里开始时间-1:"+hTeStart);
-            }
-            boolean isExecutionMethod = (csSta == 0 && priorItem != 1) || (kaiJie != 1 && csSta == 1);
-
-            // 序号是不为1层级
-            // 判断执行方法为true
-            if (isExecutionMethod) {
-                // 定义获取存储，产品序号为1处理的，按照父零件编号存储每个序号的最后结束时间
-                JSONObject serialOneEndTime;
-                System.out.println("serialOneFatherLastTime:id_P:"+id_P+" - id_PF:"+id_PF);
-                System.out.println(JSON.toJSONString(serialOneFatherLastTime));
-                // 获取判断自己的id是否等于已存在的父id
-                boolean b = serialOneFatherLastTime.containsKey(id_P);
-                // 判断自己的id是已存在的父id
-                if (b) {
-                    // 根据自己的id获取按照父零件编号存储每个序号的最后结束时间
-                    serialOneEndTime = serialOneFatherLastTime.getJSONObject(id_P);
-                    // 转换键信息
-                    List<String> list = new ArrayList<>(serialOneEndTime.keySet());
-                    // 获取最后一个时间信息
-                    String s = list.get(list.size() - 1);
-                    // 赋值为最后一个时间信息
-                    hTeStart = serialOneEndTime.getLong(s);
-                } else {
-                    // 根据父id获取按照父零件编号存储每个序号的最后结束时间
-                    serialOneEndTime = serialOneFatherLastTime.getJSONObject(id_PF);
-                    if (null != serialOneEndTime) {
-                        // 获取上一个序号的时间信息并赋值
-                        hTeStart = serialOneEndTime.getLong(((priorItem - 1) + ""));
+    private void dgTime(int layer,JSONObject oDateObj,Order salesOrderData
+            ,String id_C,JSONObject grpUNumAll,int wn0TPrior,boolean isFirst,long teStart){
+        if (layer > 0) {
+            System.out.println("layer:"+layer);
+            JSONObject prodInfo = oDateObj.getJSONObject(layer + "");
+            for (String prodId : prodInfo.keySet()) {
+                JSONObject partInfo = prodInfo.getJSONObject(prodId);
+                long maxStaTime = teStart;
+                if (!isFirst) {
+                    JSONArray arrPStartThis = partInfo.getJSONArray("arrPStart");
+                    maxStaTime = arrPStartThis.getJSONObject(0).getLong("lastTePFin");
+                    teStart = arrPStartThis.getJSONObject(0).getLong("time");
+                    if (arrPStartThis.size() > 0) {
+                        for (int i = 1; i < arrPStartThis.size(); i++) {
+                            Long time = arrPStartThis.getJSONObject(i).getLong("lastTePFin");
+                            if (time > maxStaTime) {
+                                maxStaTime = time;
+                                teStart = arrPStartThis.getJSONObject(i).getLong("time");
+                            }
+                        }
                     }
                 }
-                // 设置开始时间
-                oDate.put("teStart",hTeStart);
-                System.out.println("这里开始时间-3:"+hTeStart);
-            }
+                partInfo.put("tePStart",maxStaTime);
+                // 定义，存储进入未操作到的地方记录
+                JSONObject recordNoOperation = new JSONObject();
+                // 存储任务所在日期
+                JSONObject storageTaskWhereTime = new JSONObject();
+                // 镜像任务存储
+                Map<String,Map<String,Map<Long,List<Task>>>> allImageTasks = new HashMap<>(16);
+                // 镜像总时间存储
+                JSONObject allImageTotalTime = new JSONObject();
+                // 全部任务存储
+                JSONObject objTaskAll = new JSONObject();
+                JSONObject grpBGroupIdOJ = new JSONObject();
+                // 存储casItemx内订单列表的订单oDates数据
+                JSONObject actionIdO = new JSONObject();
+                // 存储部门对应组别的上班和下班时间
+                JSONObject xbAndSbAll = new JSONObject();
+                // 统一id_O和index存储记录状态信息
+                JSONObject recordId_OIndexState = new JSONObject();
+                // 存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
+                JSONObject onlyRefState = new JSONObject();
+                // 根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
+                JSONObject newestLastCurrentTimestamp = new JSONObject();
+                // 存储当前唯一编号的第一个当前时间戳
+                JSONObject onlyFirstTimeStamp = new JSONObject();
+                // 获取唯一下标
+                String random = new ObjectId().toString();
+                // 获取全局唯一下标
+                String randomAll = new ObjectId().toString();
 
-            // 获取任务的最初开始时间备份
-            Long teStartBackups = oDate.getLong("teStart");
-            // 设置最初结束时间
-            oDate.put("teFin",(teStartBackups+(teDurTotal+wntPrep)));
-            // 获取最初结束时间
-            Long teFin = oDate.getLong("teFin");
-            // 获取任务信息，并且转换为任务类
-            Task task = JSON.parseObject(JSON.toJSONString(oTasks.get(i)),Task.class);
-            // 设置最初任务信息的时间信息
-            task.setTeDurTotal((teFin - teStartBackups));
-            task.setTePStart(teStartBackups);
-            task.setTePFinish(teFin);
-            task.setTeCsStart(teStartBackups);
-            task.setTeCsSonOneStart(0L);
-            task.setDateIndex(i);
-            // 判断优先级不等于-1
-            if (wn0TPrior != -1) {
-                // 设置优先级为传参的优先级
-                task.setPriority(wn0TPrior);
-            }
-            // 判断父id的预计开始时间为空并且，序号为1，并且不是部件并且不是递归的最后一个
-            if (null == serialOneFatherStartTime.getLong(id_PF) && priorItem == 1
-                    && kaiJie != 5 && kaiJie != 3
-//                    && !isGetIntoNull
-            ) {
-                // 根据父id添加开始时间
-                serialOneFatherStartTime.put(id_PF,task.getTeCsStart());
-            } else if (kaiJie == 3 || kaiJie == 5) {
-                // 添加子最初开始时间
-                task.setTeCsSonOneStart(serialOneFatherStartTime.getLong(id_P));
-            }
+                // 设置问题记录的初始值
+                yiShu.put(randomAll,0);
+                leiW.put(randomAll,0);
+                xin.put(randomAll,0);
+                isQzTz.put(randomAll,0);
+                recordNoOperation.put(randomAll,new JSONArray());
 
-            // 创建当前处理的任务的所在日期对象
-            JSONObject teDate = new JSONObject();
-            System.out.println("++ taskTe: ++ "+dep+" - "+grpB);
-            System.out.println(JSON.toJSONString(task));
+                // 设置存储当前唯一编号的第一个当前时间戳
+                onlyFirstTimeStamp.put(random,teStart);
+                // 设置存储当前唯一编号状态，== 0 未被第一次操作、 == 1 被第一次操作
+                onlyRefState.put(random,0);
+                // 存储最初开始时间
+                long initialStartTime = 0L;
+                // 存储最后结束时间
+                long lastEndTime = 0L;
+                // 获取递归订单列表
+                JSONArray objOrder = salesOrderData.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
+                // 存储递归订单列表的订单编号集合
+                JSONArray objOrderList = new JSONArray();
+                for (int i = 0; i < objOrder.size() - 1; i++) {
+                    // 添加订单编号
+                    objOrderList.add(objOrder.getJSONObject(i).getString("id_O"));
+                }
+                JSONObject depAllTime = new JSONObject();
+                System.out.println("--- 分割 ---");
+                // 遍历订单列表
+                Map<String,Asset> assetMap = new HashMap<>();
+                // 当前处理信息
+                JSONObject thisInfo = new JSONObject();
+                setThisInfoLayer(thisInfo,layer);
+                setThisInfoLayerProdId(thisInfo,prodId);
+//                System.out.println("xbAndSbAll:");
+//                System.out.println(JSON.toJSONString(xbAndSbAll));
+
+                OrderInfo info = salesOrderData.getInfo();
+                // 用于存储时间冲突的副本
+                JSONObject timeConflictCopy = new JSONObject();
+                // 用于存储判断镜像是否是第一个被冲突的产品
+                JSONObject sho = new JSONObject();
+                // 用于存储控制只进入一次的判断，用于记录第一个数据处理的结束时间
+                boolean canOnlyEnterOnce = true;
+                // 定义用来存储最大结束时间
+                long maxLastTime = 0;
+
+                // 用于存储每一个时间任务的结束时间
+                JSONArray teFinList = new JSONArray();
+                // 用于存储，产品序号为1处理的，按照父零件编号存储每个序号的最后结束时间
+                JSONObject serialOneFatherLastTime = new JSONObject();
+                // 用于存储，产品序号为1处理的，按照父零件编号存储每个序号的预计开始时间
+                JSONObject serialOneFatherStartTime = new JSONObject();
+                // 清理状态
+                JSONObject clearStatus = new JSONObject();
+
+                setThisInfoRef(thisInfo,"time");
+                // 镜像任务所在时间
+                JSONObject allImageTeDate = new JSONObject();
+                JSONArray oDates = partInfo.getJSONArray("oDates");
+                for (int i = 0; i < oDates.size(); i++) {
+                    JSONObject oDate = oDates.getJSONObject(i);
+                    getGrpB(oDate.getString("grpB"),oDate.getString("dep"), assetMap,id_C
+                            ,depAllTime,grpUNumAll,xbAndSbAll,grpBGroupIdOJ,oDate.getString("id_O"));
+                }
+                setOrderFatherId(salesOrderData.getId(),thisInfo,actionIdO,objOrder,oDateObj);
+
+                boolean isOne = false;
+                setThisInfoFinalPartDateIndex(thisInfo,(oDates.size()-1));
+                setThisInfoFinalPartDate(thisInfo,oDates.getJSONObject((oDates.size()-1)).getString("id_O")
+                        ,oDates.getJSONObject((oDates.size()-1)).getString("layer")
+                        ,oDates.getJSONObject((oDates.size()-1)).getString("id_PF"));
+                setThisInfoIsConflict(thisInfo,false);
+                // 遍历时间处理信息集合
+                for (int i = 0; i < oDates.size(); i++) {
+                    setThisInfoIsFinalPart(thisInfo, i >= oDates.size() - 1);
+                    // 获取i对应的时间处理信息
+                    JSONObject oDate = oDates.getJSONObject(i);
+                    // 获取订单编号
+                    String id_OInside = oDate.getString("id_O");
+                    // 获取订单下标
+                    int indexInside = oDate.getInteger("index");
+                    // 获取时间处理的序号
+                    Integer priorItem = oDate.getInteger("priorItem");
+                    // 获取时间处理的父零件编号
+                    String id_PF = oDate.getString("id_PF");
+                    // 获取时间处理的序号是否为1层级 csSta - timeHandleSerialNoIsOne
+                    Integer csSta = oDate.getInteger("csSta");
+                    // 获取时间处理的判断是否是空时间信息
+                    Boolean empty = oDate.getBoolean("empty");
+                    // 判断当前时间处理为空时间信息
+                    if (empty) {
+                        // 获取时间处理的链接下标
+                        Integer linkInd = oDate.getInteger("linkInd");
+                        // 根据链接下标获取指定的结束时间
+                        Long indexEndTime = teFinList.getLong(linkInd);
+                        // 判断父id的预计开始时间为空，并且序号为第一个
+                        if (null == serialOneFatherStartTime.getLong(id_PF) && priorItem == 1) {
+                            serialOneFatherStartTime.put(id_PF,indexEndTime);
+                        }
+                        // 根据父零件编号获取序号信息
+                        JSONObject fatherSerialInfo = serialOneFatherLastTime.getJSONObject(id_PF);
+                        // 判断序号信息为空
+                        if (null == fatherSerialInfo) {
+                            // 创建序号信息
+                            fatherSerialInfo = new JSONObject();
+                            // 添加序号的结束时间，默认为0
+                            fatherSerialInfo.put(priorItem.toString(),0);
+                        }
+                        // 获取序号结束时间
+                        Long serialEndTime = fatherSerialInfo.getLong(priorItem.toString());
+                        // 添加链接结束时间到当前空时间处理结束时间列表内
+                        teFinList.add(indexEndTime);
+                        // 判断链接结束时间大于当前结束时间
+                        if (indexEndTime > serialEndTime) {
+                            // 修改当前结束时间为链接结束时间
+                            fatherSerialInfo.put(priorItem.toString(),indexEndTime);
+                            // 根据父零件编号添加序号信息
+                            serialOneFatherLastTime.put(id_PF,fatherSerialInfo);
+                        }
+                        continue;
+                    }
+                    // 获取当前唯一ID存储时间处理的最初开始时间
+                    Long hTeStart = initialStartTime;
+                    // 根据当前递归信息创建添加存储判断镜像是否是第一个被冲突的产品信息
+                    JSONObject firstConflictId_O = new JSONObject();
+                    JSONObject firstConflictIndex = new JSONObject();
+                    // 设置为-1代表的是递归的零件
+                    firstConflictIndex.put("prodState",-1);
+                    firstConflictIndex.put("z","-1");
+                    firstConflictId_O.put(oDate.getString("index"),firstConflictIndex);
+                    sho.put(oDate.getString("id_O"),firstConflictId_O);
+                    // 获取时间处理的组别
+                    String grpB = oDate.getString("grpB");
+                    String dep = oDate.getString("dep");
+                    // 获取时间处理的零件产品编号
+                    String id_P = oDate.getString("id_P");
+                    // 获取时间处理的记录，存储是递归第一层的，序号为1和序号为最后一个状态
+                    Integer kaiJie = oDate.getInteger("kaiJie");
+                    // 获取时间处理的实际准备时间
+                    Long wntPrep = oDate.getLong("wntPrep");
+                    Long wntDurTotal = oDate.getLong("wntDurTotal");
+                    long initialTeStart;
+                    // 判断当前唯一ID存储时间处理的最初开始时间为0
+                    if (hTeStart == 0) {
+                        // 调用获取当前时间戳方法设置开始时间
+                        initialTeStart = getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp);
+                    } else {
+                        // 判断序号是为1层级并且记录，存储是递归第一层的，序号为1和序号为最后一个状态为第一层
+                        if (csSta == 1 && kaiJie == 1) {
+                            // 获取当前唯一ID存储时间处理的第一个时间信息的结束时间
+                            hTeStart = lastEndTime;
+                        }
+                        initialTeStart = hTeStart;
+                        System.out.println("这里开始时间-1:"+hTeStart);
+                    }
+                    boolean isExecutionMethod = (csSta == 0 && priorItem != 1) || (kaiJie != 1 && csSta == 1);
+
+                    // 序号是不为1层级
+                    // 判断执行方法为true
+                    if (isExecutionMethod) {
+                        // 定义获取存储，产品序号为1处理的，按照父零件编号存储每个序号的最后结束时间
+                        JSONObject serialOneEndTime;
+                        System.out.println("serialOneFatherLastTime:id_P:"+id_P+" - id_PF:"+id_PF);
+                        System.out.println(JSON.toJSONString(serialOneFatherLastTime));
+                        // 获取判断自己的id是否等于已存在的父id
+                        boolean b = serialOneFatherLastTime.containsKey(id_P);
+                        // 判断自己的id是已存在的父id
+                        if (b) {
+                            // 根据自己的id获取按照父零件编号存储每个序号的最后结束时间
+                            serialOneEndTime = serialOneFatherLastTime.getJSONObject(id_P);
+                            // 转换键信息
+                            List<String> list = new ArrayList<>(serialOneEndTime.keySet());
+                            // 获取最后一个时间信息
+                            String s = list.get(list.size() - 1);
+                            // 赋值为最后一个时间信息
+                            hTeStart = serialOneEndTime.getLong(s);
+                        } else {
+                            // 根据父id获取按照父零件编号存储每个序号的最后结束时间
+                            serialOneEndTime = serialOneFatherLastTime.getJSONObject(id_PF);
+                            if (null != serialOneEndTime) {
+                                // 获取上一个序号的时间信息并赋值
+                                hTeStart = serialOneEndTime.getLong(((priorItem - 1) + ""));
+                            }
+                        }
+                        // 设置开始时间
+                        initialTeStart = hTeStart;
+                        System.out.println("这里开始时间-3:"+hTeStart);
+                    }
+
+                    // 获取任务的最初开始时间备份
+                    long teStartBackups = initialTeStart;
+                    if (!isFirst && !isOne) {
+                        teStartBackups = maxStaTime;
+                    }
+                    // 获取最初结束时间
+                    Long teFin = (teStartBackups+(wntDurTotal+wntPrep));
+                    // 获取任务信息，并且转换为任务类
+                    Task task = new Task(oDate.getInteger("priority"),id_OInside,indexInside,wntPrep
+                            ,wntDurTotal+wntPrep,id_C,i,oDate.getJSONObject("wrdN"));
+                    // 设置最初任务信息的时间信息
+                    task.setTePStart(teStartBackups);
+                    task.setTePFinish(teFin);
+                    task.setTeCsStart(teStartBackups);
+                    task.setTeCsSonOneStart(0L);
+                    task.setWrdNO(info.getWrdN());
+                    task.setRefOP(salesOrderData.getId());
+                    task.setWn2qtyneed(oDate.getDouble("wn2qtyneed"));
+                    task.setId_PF(getThisInfoLayerProdId(thisInfo));
+                    task.setLayer(getThisInfoLayer(thisInfo));
+                    // 判断优先级不等于-1
+                    if (wn0TPrior != -1) {
+                        // 设置优先级为传参的优先级
+                        task.setPriority(wn0TPrior);
+                    }
+                    // 判断父id的预计开始时间为空并且，序号为1，并且不是部件并且不是递归的最后一个
+                    if (null == serialOneFatherStartTime.getLong(id_PF) && priorItem == 1
+                            && kaiJie != 5 && kaiJie != 3
+                    ) {
+                        // 根据父id添加开始时间
+                        serialOneFatherStartTime.put(id_PF,task.getTeCsStart());
+                    } else if (kaiJie == 3 || kaiJie == 5) {
+                        // 添加子最初开始时间
+                        task.setTeCsSonOneStart(serialOneFatherStartTime.getLong(id_P));
+                    }
+
+                    // 创建当前处理的任务的所在日期对象
+                    JSONObject teDate = new JSONObject();
+                    System.out.println();
+                    System.out.println("++ taskTe: ++ "+dep+" - "+grpB);
+                    System.out.println();
+                    System.out.println(JSON.toJSONString(task));
+                    System.out.println(JSON.toJSONString(objTaskAll));
+                    System.out.println(JSON.toJSONString(allImageTasks));
+
+                    JSONObject conflictInfo = getThisInfoConflictInfo(thisInfo);
+                    if (null == conflictInfo) {
+                        conflictInfo = new JSONObject();
+                    }
+                    JSONObject thisConfInfo = new JSONObject();
+                    thisConfInfo.put("dep",dep);
+                    thisConfInfo.put("grpB",grpB);
+                    thisConfInfo.put("status",0);
+                    conflictInfo.put(task.getDateIndex()+"",thisConfInfo);
+                    setThisInfoConflictInfo(thisInfo,conflictInfo);
+                    int isCanOnly = 1;
+                    if (isOne) {
+                        JSONObject thisInfoConflictInfo = getThisInfoConflictInfo(thisInfo);
+                        JSONObject upConfInfo = thisInfoConflictInfo.getJSONObject((task.getDateIndex() - 1) + "");
+                        for (int upI = (task.getDateIndex()-1); upI >= 0; upI--) {
+                            upConfInfo = thisInfoConflictInfo.getJSONObject((upI) + "");
+                            if (null != upConfInfo) {
+                                break;
+                            }
+                        }
+                        if (null != upConfInfo) {
+                            Integer status = upConfInfo.getInteger("status");
+                            if (status == 1) {
+                                String upDep = upConfInfo.getString("dep");
+                                String upGrpB = upConfInfo.getString("grpB");
+                                if (!upDep.equals(dep) || !upGrpB.equals(grpB)) {
+                                    System.out.println("--+ 进入前置修改全局任务信息 +-- :");
+                                    updateObjTaskAllSetAllImageTasks(objTaskAll,allImageTasks,allImageTotalTime);
+                                    System.out.println("修改后:");
+                                    System.out.println(JSON.toJSONString(objTaskAll));
+                                    System.out.println(JSON.toJSONString(allImageTasks));
+                                }
+                            }
+                        }
+                    } else {
+                        isOne = true;
+                        if (!isFirst) {
+                            isCanOnly = 0;
+                            onlyRefState.put(random,1);
+                            hTeStart = maxStaTime;
+                        }
+                    }
+                    // 调用时间处理方法
+                    JSONObject timeHandleInfo = timeHandle(task,hTeStart,grpB,dep,id_OInside,indexInside
+                            ,0,random,isCanOnly,teDate,timeConflictCopy,0
+                            ,sho,0,csSta,randomAll,xbAndSbAll,actionIdO,objTaskAll
+                            ,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime,allImageTasks
+                            ,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,recordNoOperation
+                            ,clearStatus,thisInfo,allImageTeDate,false,depAllTime);
+                    // 更新任务最初始开始时间
+                    hTeStart = timeHandleInfo.getLong("hTeStart");
+//                    System.out.println("最外层-3-2:"+hTeStart);
+//                    System.out.println(JSON.toJSONString(timeHandleInfo));
+                    // 添加结束时间
+                    teFinList.add(hTeStart);
+
+                    String id_OP = sonGetOrderFatherId(id_OInside, id_C, thisInfo, actionIdO, grpUNumAll);
+                    JSONObject actByOPInfo = actionIdO.getJSONObject(id_OP);
+                    JSONObject layerInfo = actByOPInfo.getJSONObject(oDate.getString("layer"));
+                    JSONObject oPDateInfo = layerInfo.getJSONObject(oDate.getString("id_PF"));
+//                    JSONObject oPDateInfo = actionIdO.getJSONObject(id_OP).getJSONObject(oDate.getString("layer")).getJSONObject(oDate.getString("id_PF"));
+                    JSONArray oDatesNew = oPDateInfo.getJSONArray("oDates");
+                    JSONObject thisODate = oDatesNew.getJSONObject(i);
+                    thisODate.put("teDate",teDate);
+                    oDatesNew.set(i,thisODate);
+                    oPDateInfo.put("oDates",oDatesNew);
+//                    actionIdO.put(id_OP,oPDateInfo);
+                    layerInfo.put(oDate.getString("id_PF"),oPDateInfo);
+                    actByOPInfo.put(oDate.getString("layer"),layerInfo);
+                    actionIdO.put(id_OP,actByOPInfo);
+
+                    // 定义存储最后结束时间参数
+                    long storageLastEndTime;
+                    // 判断序号是为1层级
+                    if (csSta == 1) {
+                        // 获取实际结束时间
+                        Long actualEndTime = timeHandleInfo.getLong("xFin");
+//                System.out.println("xFinW:"+xFin);
+                        // 定义存储判断实际结束时间是否为空
+                        boolean isActualEndTime = false;
+                        // 判断实际结束时间不等于空
+                        if (null != actualEndTime) {
+//                    System.out.println("xFin:"+xFin);
+                            // 赋值实际结束时间
+                            hTeStart = actualEndTime;
+                            // 判断当前实际结束时间大于最大结束时间
+                            if (actualEndTime > maxLastTime) {
+                                // 判断大于则更新最大结束时间为当前结束时间
+                                maxLastTime = actualEndTime;
+                            }
+                            // 设置不为空
+                            isActualEndTime = true;
+                        } else {
+                            // 判断当前实际结束时间大于最大结束时间：注 ： xFin 和 task.getTePFinish() 有时候是不一样的，不能随便改
+                            if (task.getTePFinish() > maxLastTime) {
+                                // 判断大于则更新最大结束时间为当前结束时间
+                                maxLastTime = task.getTePFinish();
+                            }
+                        }
+//                System.out.println("maxSte:"+maxSte);
+                        // 判断实际结束时间不为空
+                        if (isActualEndTime) {
+                            // 赋值结束时间
+                            storageLastEndTime = actualEndTime;
+                        } else {
+                            // 赋值结束时间
+                            storageLastEndTime = task.getTePFinish();
+                        }
+                        // 判断是第一次进入
+                        if (canOnlyEnterOnce) {
+                            // 添加设置第一层的开始时间
+                            lastEndTime=task.getTePStart();
+                            // 设置只能进入一次
+                            canOnlyEnterOnce = false;
+                        }
+                    } else {
+                        // 直接赋值最后结束时间
+                        storageLastEndTime = hTeStart;
+                    }
+                    // 根据父id获取最后结束时间信息
+                    JSONObject fatherGetEndTimeInfo = serialOneFatherLastTime.getJSONObject(id_PF);
+                    // 判断最后结束时间信息为空
+                    if (null == fatherGetEndTimeInfo) {
+                        // 创建并且赋值最后结束时间
+                        fatherGetEndTimeInfo = new JSONObject();
+                        fatherGetEndTimeInfo.put(priorItem.toString(),0);
+                    }
+                    // 根据序号获取最后结束时间
+                    Long aLong = fatherGetEndTimeInfo.getLong(priorItem.toString());
+                    // 判断最后结束时间为空
+                    if (null == aLong) {
+                        // 为空，则直接添加最后结束时间信息
+                        fatherGetEndTimeInfo.put(priorItem.toString(),storageLastEndTime);
+                        serialOneFatherLastTime.put(id_PF,fatherGetEndTimeInfo);
+                    } else {
+                        // 不为空，则判断当前最后结束时间大于已存在的最后结束时间
+                        if (storageLastEndTime > aLong) {
+                            // 判断当前最后结束时间大于，则更新最后结束时间为当前结束时间
+                            fatherGetEndTimeInfo.put(priorItem.toString(),storageLastEndTime);
+                            serialOneFatherLastTime.put(id_PF,fatherGetEndTimeInfo);
+                        }
+                    }
+                    initialStartTime=hTeStart;
+                    if (getThisInfoIsFinalPart(thisInfo) && getThisInfoIsConflict(thisInfo)) {
+                        System.out.println("开始处理冲突任务:");
+                        JSONObject thisInfoConflictInfo = getThisInfoConflictInfo(thisInfo);
+                        JSONObject thisInfoConflictInfoSon = thisInfoConflictInfo.getJSONObject( i+ "");
+                        thisInfoConflictInfoSon.put("status",1);
+                        thisInfoConflictInfo.put(i+"",thisInfoConflictInfoSon);
+                        setThisInfoConflictInfo(thisInfo,thisInfoConflictInfo);
+
+                        JSONObject thisInfoQuiltConflictInfo = getThisInfoQuiltConflictInfo(thisInfo);
+                        List<Task> conflict = new ArrayList<>();
+                        JSONArray conflictArr = thisInfoQuiltConflictInfo.getJSONArray("conflict");
+                        for (int c = 0; c < conflictArr.size(); c++) {
+                            conflict.add(JSONObject.parseObject(JSON.toJSONString(conflictArr.getJSONObject(c)), Task.class));
+                        }
+                        conflict.sort(Comparator.comparing(Task::getPriority));
+                        JSONObject indexInfo = thisInfoQuiltConflictInfo.getJSONObject("indexInfo");
+                        JSONObject indexInfoNew = new JSONObject();
+                        for (int conf = 0; conf < conflict.size(); conf++) {
+                            Task taskConflict = conflict.get(conf);
+                            String id_OConf = taskConflict.getId_O();
+                            Integer dateIndexConf = taskConflict.getDateIndex();
+                            for (String indInfoKey : indexInfo.keySet()) {
+                                JSONObject object = indexInfo.getJSONObject(indInfoKey);
+                                if (object.getString("id_O").equals(id_OConf)
+                                        && Objects.equals(object.getInteger("dateIndex"), dateIndexConf)) {
+                                    indexInfoNew.put(conf+"", object);
+                                }
+                            }
+                        }
+                        thisInfoQuiltConflictInfo.put("indexInfo",indexInfoNew);
+                        thisInfoQuiltConflictInfo.put("conflict",conflict);
+                        System.out.println(JSON.toJSONString(thisInfoQuiltConflictInfo));
+                        setThisInfoQuiltConflictInfo(thisInfo,thisInfoQuiltConflictInfo);
+
+                        updateAllImageTasksSetObjTaskAll(objTaskAll,allImageTasks,allImageTotalTime);
+
+                        dgHandleFollowUpConflict(thisInfo,grpB,dep,id_C,objTaskAll,depAllTime,random,timeConflictCopy,sho,csSta
+                                ,randomAll,xbAndSbAll,actionIdO,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime
+                                ,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,recordNoOperation
+                                ,clearStatus,allImageTeDate,conflict);
+                    }
+                }
+
+                // 调用任务最后处理方法
+                timeZjServiceComprehensive.taskLastHandle(timeConflictCopy,id_C,randomAll,objTaskAll
+                        ,storageTaskWhereTime,allImageTotalTime,allImageTasks,recordNoOperation,salesOrderData.getId()
+                        ,objOrderList,actionIdO,allImageTeDate,depAllTime,thisInfo);
+
+                // 递归完成了，删除存储当前唯一编号的第一个当前时间戳
+                onlyFirstTimeStamp.remove(random);
+                // 递归完成了，删除根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
+                newestLastCurrentTimestamp.remove(random);
+                // 根据当前唯一标识删除信息
+                onlyRefState.remove(random);
+                JSONObject thisInfoLastTeInfo = getThisInfoLastTeInfo(thisInfo);
+                Long lastTePFin = thisInfoLastTeInfo.getLong("lastTePFin");
+                partInfo.put("tePFinish",lastTePFin);
+                prodInfo.put(prodId,partInfo);
+                oDateObj.put(layer + "",prodInfo);
+                int layerUp = layer-1;
+                if (layerUp > 0) {
+                    String id_PF = partInfo.getString("id_PF");
+                    JSONObject prodInfoUp = oDateObj.getJSONObject(layerUp + "");
+                    JSONObject partInfoUp = prodInfoUp.getJSONObject(id_PF);
+                    JSONArray arrPStart = partInfoUp.getJSONArray("arrPStart");
+                    arrPStart.add(qt.setJson("lastTePFin",lastTePFin,"time",thisInfoLastTeInfo.getLong("time")));
+                    partInfoUp.put("arrPStart",arrPStart);
+                    prodInfoUp.put(id_PF,partInfoUp);
+                    oDateObj.put(layerUp + "",prodInfoUp);
+                }
+            }
+            dgTime(layer-1,oDateObj,salesOrderData,id_C,grpUNumAll,wn0TPrior,false,teStart);
+        }
+    }
+
+    /**
+     * 递归处理后续冲突
+     */
+    @SuppressWarnings("unchecked")
+    private void dgHandleFollowUpConflict(JSONObject thisInfo,String grpB,String dep,String id_C,JSONObject objTaskAll
+            ,JSONObject depAllTime,String random,JSONObject timeConflictCopy,JSONObject sho,int csSta,String randomAll
+            ,JSONObject xbAndSbAll,JSONObject actionIdO,JSONObject recordId_OIndexState,JSONObject storageTaskWhereTime
+            ,JSONObject allImageTotalTime,Map<String,Map<String,Map<Long,List<Task>>>> allImageTasks
+            ,JSONObject onlyFirstTimeStamp,JSONObject newestLastCurrentTimestamp,JSONObject onlyRefState
+            ,JSONObject recordNoOperation,JSONObject clearStatus,JSONObject allImageTeDate,List<Task> conflict){
+        JSONObject thisInfoQuiltConflictInfo = getThisInfoQuiltConflictInfo(thisInfo);
+        Integer operateIndex = getQuiltConflictInfoOperateIndex(thisInfo);
+        JSONObject indexInfo = thisInfoQuiltConflictInfo.getJSONObject("indexInfo");
+        JSONObject indexInfoSon = indexInfo.getJSONObject(operateIndex + "");
+        if (null != indexInfoSon) {
+            Integer thisI = indexInfoSon.getInteger("thisI");
+            Long thisTime = indexInfoSon.getLong("thisTime");
+            JSONObject id_oAndIndexTaskInfo = indexInfoSon.getJSONObject("id_OAndIndexTaskInfo");
+//            List<Task> conflict = new ArrayList<>();
+//            JSONArray conflictArr = thisInfoQuiltConflictInfo.getJSONArray("conflict");
+//            for (int c = 0; c < conflictArr.size(); c++) {
+//                conflict.add(JSONObject.parseObject(JSON.toJSONString(conflictArr.getJSONObject(c)), Task.class));
+//            }
+//            System.out.println("排序前:");
+//            System.out.println(JSON.toJSONString(conflict));
+//            conflict.sort(Comparator.comparing(Task::getPriority));
+//            System.out.println("排序后:");
+//            System.out.println(JSON.toJSONString(conflict));
+            // 获取指定的全局任务信息方法
+            JSONObject tasksAndZon = getTasksAndZon(thisTime, grpB, dep, id_C,objTaskAll,depAllTime);
+            // 获取任务信息
+            Object[] tasksIs = isTasksNull(tasksAndZon,depAllTime.getLong(dep));
+            List<Task> tasks = (List<Task>) tasksIs[0];
+            long zon = (long) tasksIs[1];
             System.out.println(JSON.toJSONString(objTaskAll));
             System.out.println(JSON.toJSONString(allImageTasks));
-            // 调用时间处理方法
-            JSONObject timeHandleInfo = timeHandle(task,hTeStart,grpB,dep,id_OInside,indexInside
-                    ,0,random,1,teDate,timeConflictCopy,0
-                    ,sho,0,csSta,randomAll,xbAndSbAll,actionIdO,objTaskAll
-                    ,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime,allImageTasks
-                    ,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,recordNoOperation
-                    ,clearStatus,thisInfo,allImageTeDate,false,depAllTime);
-            // 更新任务最初始开始时间
-            hTeStart = timeHandleInfo.getLong("hTeStart");
-            System.out.println("最外层-3:"+hTeStart);
-            System.out.println(JSON.toJSONString(timeHandleInfo));
-            // 添加结束时间
-            teFinList.add(hTeStart);
-
-            // 根据订单编号获取递归集合
-            JSONArray dgList = actionIdO.getJSONArray(id_OInside);
-            // 根据订单下标获取递归信息并且转换为递归类
-            OrderAction orderAction = JSON.parseObject(
-                    JSON.toJSONString(dgList.getJSONObject(indexInside)),OrderAction.class);
-            // 更新递归信息
-            orderAction.setDep(dep);
-            orderAction.setGrpB(grpB);
-            orderAction.setTeDate(teDate);
-            // 将更新的递归信息写入回去
-            dgList.set(indexInside,orderAction);
-            actionIdO.put(id_OInside,dgList);
-
-            // 定义存储最后结束时间参数
-            long storageLastEndTime;
-            // 判断序号是为1层级
-            if (csSta == 1) {
-                // 获取实际结束时间
-                Long actualEndTime = timeHandleInfo.getLong("xFin");
-//                System.out.println("xFinW:"+xFin);
-                // 定义存储判断实际结束时间是否为空
-                boolean isActualEndTime = false;
-                // 判断实际结束时间不等于空
-                if (null != actualEndTime) {
-//                    System.out.println("xFin:"+xFin);
-                    // 赋值实际结束时间
-                    hTeStart = actualEndTime;
-                    // 判断当前实际结束时间大于最大结束时间
-                    if (actualEndTime > maxSte) {
-                        // 判断大于则更新最大结束时间为当前结束时间
-                        maxSte = actualEndTime;
-                    }
-                    // 设置不为空
-                    isActualEndTime = true;
-                } else {
-                    // 判断当前实际结束时间大于最大结束时间：注 ： xFin 和 task.getTePFinish() 有时候是不一样的，不能随便改
-                    if (task.getTePFinish() > maxSte) {
-                        // 判断大于则更新最大结束时间为当前结束时间
-                        maxSte = task.getTePFinish();
-                    }
-                }
-//                System.out.println("maxSte:"+maxSte);
-                // 判断实际结束时间不为空
-                if (isActualEndTime) {
-                    // 赋值结束时间
-                    storageLastEndTime = actualEndTime;
-                } else {
-                    // 赋值结束时间
-                    storageLastEndTime = task.getTePFinish();
-                }
-                // 判断是第一次进入
-                if (canOnlyEnterOnce) {
-                    // 添加设置第一层的开始时间
-                    lastEndTime=task.getTePStart();
-                    // 设置只能进入一次
-                    canOnlyEnterOnce = false;
-                }
-            } else {
-                // 直接赋值最后结束时间
-                storageLastEndTime = hTeStart;
-            }
-            // 根据父id获取最后结束时间信息
-            JSONObject fatherGetEndTimeInfo = serialOneFatherLastTime.getJSONObject(id_PF);
-            // 判断最后结束时间信息为空
-            if (null == fatherGetEndTimeInfo) {
-                // 创建并且赋值最后结束时间
-                fatherGetEndTimeInfo = new JSONObject();
-                fatherGetEndTimeInfo.put(priorItem.toString(),0);
-            }
-            // 根据序号获取最后结束时间
-            Long aLong = fatherGetEndTimeInfo.getLong(priorItem.toString());
-            // 判断最后结束时间为空
-            if (null == aLong) {
-                // 为空，则直接添加最后结束时间信息
-                fatherGetEndTimeInfo.put(priorItem.toString(),storageLastEndTime);
-                serialOneFatherLastTime.put(id_PF,fatherGetEndTimeInfo);
-            } else {
-                // 不为空，则判断当前最后结束时间大于已存在的最后结束时间
-                if (storageLastEndTime > aLong) {
-                    // 判断当前最后结束时间大于，则更新最后结束时间为当前结束时间
-                    fatherGetEndTimeInfo.put(priorItem.toString(),storageLastEndTime);
-                    serialOneFatherLastTime.put(id_PF,fatherGetEndTimeInfo);
-                }
-            }
-            initialStartTime=hTeStart;
-//            System.out.println();
+            System.out.println("最后循序的输出: zon:"+zon+" - thisI:"+thisI+" - thisTime:"+thisTime);
+            System.out.println(JSON.toJSONString(id_oAndIndexTaskInfo));
+            System.out.println(JSON.toJSONString(conflict));
+            System.out.println(JSON.toJSONString(tasks));
+            timeZjServiceComprehensive.handleTimeConflictEndNew(thisI,tasks,conflict,zon,random,dep,grpB
+                    ,timeConflictCopy,0,1,sho,csSta,randomAll,xbAndSbAll,actionIdO,objTaskAll
+                    ,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
+                    ,newestLastCurrentTimestamp,onlyRefState,recordNoOperation,clearStatus,thisInfo,allImageTeDate
+                    ,depAllTime,id_oAndIndexTaskInfo,operateIndex);
+            updateObjTaskAllSetAllImageTasks(objTaskAll,allImageTasks,allImageTotalTime);
+            dgHandleFollowUpConflict(thisInfo,grpB,dep,id_C,objTaskAll,depAllTime,random,timeConflictCopy,sho,csSta
+                    ,randomAll,xbAndSbAll,actionIdO,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime
+                    ,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,recordNoOperation
+                    ,clearStatus,allImageTeDate,conflict);
         }
-
-        // 调用任务最后处理方法
-        timeZjServiceComprehensive.taskLastHandle(timeConflictCopy,id_C,randomAll,objTaskAll
-                ,storageTaskWhereTime,allImageTotalTime,allImageTasks,recordNoOperation,id_O
-                ,objOrderList,actionIdO,allImageTeDate,depAllTime);
-
-        // 递归完成了，删除存储当前唯一编号的第一个当前时间戳
-        onlyFirstTimeStamp.remove(random);
-        // 递归完成了，删除根据random（当前唯一编号）,grpB（组别）,dep（部门）存储最新的（最后一个）当前时间戳
-        newestLastCurrentTimestamp.remove(random);
-        // 根据当前唯一标识删除信息
-        onlyRefState.remove(random);
     }
 
     /**
@@ -2538,21 +3304,27 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //        System.out.println("输出外sho-q:");
 //        System.out.println(sho);
         // 产品状态，== -1 当前递归产品、== 1 第一个被处理时间的产品、== 2 不是被第一个处理时间的产品
-        Integer prodState = sho.getJSONObject(
-                task.getId_O()).getJSONObject(task.getIndex().toString()).getInteger("prodState");
+        JSONObject shoObj = sho.getJSONObject(task.getId_O());
+        if (null != shoObj) {
+            JSONObject shoObjIndex = shoObj.getJSONObject(task.getIndex().toString());
+            if (null != shoObjIndex) {
+                Integer prodState = shoObjIndex.getInteger("prodState");
 //        System.out.println("输出外sho-h:");
 //        System.out.println(sho);
-        if (prodState != -1) {
-            // 调用获取获取统一id_O和index存储记录状态信息方法
-            Integer storage = getStorage(task.getId_O(), task.getIndex(),recordId_OIndexState);
-            // storage == 0 正常状态存储、storage == 1 冲突状态存储、storage == 2 调用时间处理状态存储
-            if (storage == 0) {
-                // 调用写入存储记录状态方法
-                setStorage(2, task.getId_O(), task.getIndex(),recordId_OIndexState);
+                if (null!=prodState && prodState != -1) {
+                    // 调用获取获取统一id_O和index存储记录状态信息方法
+                    Integer storage = getStorage(task.getId_O(), task.getIndex(),recordId_OIndexState);
+                    // storage == 0 正常状态存储、storage == 1 冲突状态存储、storage == 2 调用时间处理状态存储
+                    if (storage == 0) {
+                        // 调用写入存储记录状态方法
+                        setStorage(2, task.getId_O(), task.getIndex(),recordId_OIndexState);
+                    }
+                }
             }
-        }
 //        System.out.println("输出外sho-h2:");
 //        System.out.println(sho);
+        }
+
         // 调用时间处理方法2
         JSONObject jsonObject = timeHandleCore(zon, hTeStart, tasks, grpB, dep, id_O, index, task
                 , isJumpDays, random, isCanOnlyOnceTimeEmptyInsert, teDate, timeConflictCopy
@@ -2666,7 +3438,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                 timeZjServiceEmptyInsert.calculationEmptyInsertTime( task, contrastTaskOne
                                 , contrastTaskTwo, tasks, i, zon,0,random,teDate,dep,grpB
                                 ,prodState,storageTaskWhereTime,onlyFirstTimeStamp,newestLastCurrentTimestamp
-                                        ,isGetTaskPattern,allImageTeDate,onlyRefState);
+                                        ,isGetTaskPattern,allImageTeDate,onlyRefState,thisInfo);
                         System.out.println("emptyInsertTimeInfo-h:");
                         System.out.println(JSON.toJSONString(tasks));
                         // 获取存储问题状态参数
@@ -2714,13 +3486,16 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                 JSONObject emptyInsertTimeInfo;
                                 // 判断当前任务的结束时间小于对比任务信息2的开始时间
                                 if (task.getTePFinish() < contrastTaskTwo.getTePStart()) {
+                                    System.out.println(JSON.toJSONString(task));
+                                    System.out.println(JSON.toJSONString(contrastTaskOne));
+                                    System.out.println(JSON.toJSONString(contrastTaskTwo));
                                     System.out.println("进入这里-1-1-q:");
                                     // 调用计算空插时间方法并赋值
                                     emptyInsertTimeInfo = timeZjServiceEmptyInsert.calculationEmptyInsertTime(
                                             task, contrastTaskOne, contrastTaskTwo, tasks, i, zon
                                             , 1,random,teDate
                                             ,dep,grpB,prodState,storageTaskWhereTime,onlyFirstTimeStamp
-                                            ,newestLastCurrentTimestamp,isGetTaskPattern,allImageTeDate,onlyRefState);
+                                            ,newestLastCurrentTimestamp,isGetTaskPattern,allImageTeDate,onlyRefState,thisInfo);
                                     hTeStart = emptyInsertTimeInfo.getLong("tePFinish");
                                     endTime = emptyInsertTimeInfo.getLong("endTime");
                                     System.out.println("进入这里-1-1-h:"+hTeStart);
@@ -2734,7 +3509,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                             task, contrastTaskOne, contrastTaskTwo, tasks, i, zon
                                             , 2,random,teDate
                                             ,dep,grpB,prodState,storageTaskWhereTime,onlyFirstTimeStamp
-                                            ,newestLastCurrentTimestamp,isGetTaskPattern,allImageTeDate,onlyRefState);
+                                            ,newestLastCurrentTimestamp,isGetTaskPattern,allImageTeDate,onlyRefState,thisInfo);
                                     endTime = emptyInsertTimeInfo.getLong("endTime");
 //                                    System.out.println("进入这里-1-2-h:");
 //                                    System.out.println(JSON.toJSONString(tasks));
@@ -2831,7 +3606,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                                     ,recordId_OIndexState,storageTaskWhereTime
                                                     ,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
                                                     ,newestLastCurrentTimestamp,onlyRefState,recordNoOperation
-                                                    ,clearStatus,thisInfo,allImageTeDate,isComprehensiveHandle,depAllTime);
+                                                    ,clearStatus,thisInfo,allImageTeDate,isComprehensiveHandle
+                                                    ,depAllTime);
                                             // 获取任务余剩时间
                                             zon = timeConflictInfo.getLong("zon");
                                             // 存储问题状态参数: isProblemState = 0 正常、isPd = 1 订单编号为空、isPd = 2 主生产部件
@@ -2863,7 +3639,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                                     ,objTaskAll,recordId_OIndexState,storageTaskWhereTime
                                                     ,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
                                                     ,newestLastCurrentTimestamp,onlyRefState,recordNoOperation
-                                                    ,clearStatus,thisInfo,allImageTeDate,isComprehensiveHandle,depAllTime);
+                                                    ,clearStatus,thisInfo,allImageTeDate,isComprehensiveHandle
+                                                    ,depAllTime);
                                             // 获取任务余剩时间
                                             zon = timeConflictInfo.getLong("zon");
                                             // 存储问题状态参数: isProblemState = 0 正常、isPd = 1 订单编号为空、isPd = 2 主生产部件
@@ -2944,7 +3721,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                                 , contrastTaskOne, contrastTaskTwo
                                                 , tasks, i, zon,0,random,teDate,dep,grpB
                                                 ,prodState,storageTaskWhereTime,onlyFirstTimeStamp
-                                                ,newestLastCurrentTimestamp,isGetTaskPattern,allImageTeDate,onlyRefState);
+                                                ,newestLastCurrentTimestamp,isGetTaskPattern,allImageTeDate,onlyRefState,thisInfo);
                                         System.out.println("进入输出ji---1-h:");
                                         // 获取控制是否结束循环参数
                                         isEndLoop = emptyInsertTimeInfo.getInteger("isEndLoop");
@@ -2986,7 +3763,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                                 ,objTaskAll,recordId_OIndexState,storageTaskWhereTime
                                                 ,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
                                                 ,newestLastCurrentTimestamp,onlyRefState,recordNoOperation
-                                                ,clearStatus,thisInfo,allImageTeDate,isComprehensiveHandle,depAllTime);
+                                                ,clearStatus,thisInfo,allImageTeDate,isComprehensiveHandle
+                                                ,depAllTime);
                                         // 获取任务余剩时间
                                         zon = timeConflictInfo.getLong("zon");
                                         // 获取存储问题状态参数
@@ -2996,7 +3774,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                         endTime = timeConflictInfo.getLong("endTime");
                                         System.out.println("进入-冲突-最后面-这里-2-h:");
                                         break;
-                                    } else if (task.getTePFinish() > contrastTaskTwo.getTePStart()
+                                    } else
+                                    if (task.getTePFinish() > contrastTaskTwo.getTePStart()
                                             && task.getTePFinish() < contrastTaskTwo.getTePFinish()) {
                                         System.out.println("进入-冲突-最后面-这里-3-q:");
 //                                        addRecordGetIntoOperation(randomAll,"进入-冲突-最后面-这里-3",recordNoOperation);
@@ -3011,7 +3790,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                                 ,objTaskAll,recordId_OIndexState,storageTaskWhereTime
                                                 ,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
                                                 ,newestLastCurrentTimestamp,onlyRefState,recordNoOperation
-                                                ,clearStatus,thisInfo,allImageTeDate,isComprehensiveHandle,depAllTime);
+                                                ,clearStatus,thisInfo,allImageTeDate,isComprehensiveHandle
+                                                ,depAllTime);
                                         // 获取任务余剩时间
                                         zon = timeConflictInfo.getLong("zon");
                                         // 获取存储问题状态参数
@@ -3022,6 +3802,9 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                         System.out.println("进入-冲突-最后面-这里-3-h:");
                                         break;
                                     } else {
+                                        System.out.println(JSON.toJSONString(task));
+                                        System.out.println(JSON.toJSONString(contrastTaskOne));
+                                        System.out.println(JSON.toJSONString(contrastTaskTwo));
                                         System.out.println("进入输出ji---1-2-q:");
 
                                         // 调用计算空插时间方法
@@ -3031,7 +3814,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                                 , contrastTaskTwo, tasks, i, zon,0
                                                 ,random,teDate,dep,grpB,prodState,storageTaskWhereTime
                                                 ,onlyFirstTimeStamp,newestLastCurrentTimestamp
-                                                ,isGetTaskPattern,allImageTeDate,onlyRefState);
+                                                ,isGetTaskPattern,allImageTeDate,onlyRefState,thisInfo);
 
                                         System.out.println("进入输出ji---1-2-h:");
                                         // 获取控制是否结束循环参数
@@ -3057,7 +3840,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                     // 判断余剩时间大于0
                                     if (remainingTime > 0) {
                                         // 获取时间差（余剩时间-当前任务总时间）
-                                        long timeDifference = remainingTime - task.getTeDurTotal();
+                                        long timeDifference = remainingTime - task.getWntDurTotal();
 //                                        System.out.println("优先级:");
 //                                        System.out.println(JSON.toJSONString(task));
 //                                        System.out.println(JSON.toJSONString(contrastTaskOne));
@@ -3067,8 +3850,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                             System.out.println("--优先级跳过--1");
                                             Task contrastTaskThree = TaskObj.getTaskX(
                                                     contrastTaskOne.getTePFinish()
-                                                    ,(contrastTaskOne.getTePFinish()+task.getTeDurTotal())
-                                                    ,task.getTeDurTotal(),task);
+                                                    ,(contrastTaskOne.getTePFinish()+task.getWntDurTotal())
+                                                    ,task.getWntDurTotal(),task);
 //                                            System.out.println(JSON.toJSONString(contrastTaskThree));
                                             // 指定任务集合下标为任务下标+1添加任务信息
                                             tasks.add(i+1,contrastTaskThree);
@@ -3077,15 +3860,15 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                             teDate.put(getTeS(random,grpB,dep,onlyFirstTimeStamp
                                                     ,newestLastCurrentTimestamp)+"",0);
                                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                            putTeDate(task.getId_O(), task.getIndex(),getTeS(random,grpB,dep
+                                            putTeDate(task.getId_O(), task.getDateIndex(),getTeS(random,grpB,dep
                                                     ,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                                     ,prodState,storageTaskWhereTime);
                                             setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
                                                     ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
-                                                    , task.getTeDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
+                                                    , task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                                             result.put("xFin",contrastTaskThree.getTePFinish());
                                             // 任务余剩时间累减
-                                            zon -= task.getTeDurTotal();
+                                            zon -= task.getWntDurTotal();
                                             // 控制是否跳天参数：isR == 0 继续跳天操作、isR == 1 | 2 停止跳天操作
                                             isJumpDay = 1;
                                             hTeStart = contrastTaskThree.getTePFinish();
@@ -3093,7 +3876,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                         } else {
                                             System.out.println("--优先级跳过--2");
                                             // 获取时间差2（当前任务总时间-余剩时间）
-                                            long timeDifferenceNew = task.getTeDurTotal() - remainingTime;
+                                            long timeDifferenceNew = task.getWntDurTotal() - remainingTime;
                                             Task contrastTaskThree = TaskObj.getTaskX(contrastTaskOne.getTePFinish()
                                                     ,(contrastTaskOne.getTePFinish()+remainingTime),remainingTime,task);
 //                                            System.out.println(JSON.toJSONString(contrastTaskThree));
@@ -3104,14 +3887,14 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                             teDate.put(getTeS(random,grpB,dep,onlyFirstTimeStamp
                                                     ,newestLastCurrentTimestamp)+"",0);
                                             // 调用判断产品状态再调用写入任务所在日期方法的方法
-                                            putTeDate(task.getId_O(), task.getIndex(),getTeS(random,grpB,dep
+                                            putTeDate(task.getId_O(), task.getDateIndex(),getTeS(random,grpB,dep
                                                     ,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                                     ,prodState,storageTaskWhereTime);
                                             setAllImageTeDateAndDate(task.getId_O(), task.getDateIndex()
                                                     ,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp)
                                                     , remainingTime,allImageTeDate,isGetTaskPattern,endTime);
                                             // 更新任务总时间
-                                            task.setTeDurTotal(timeDifferenceNew);
+                                            task.setWntDurTotal(timeDifferenceNew);
                                             // 更新任务开始时间
                                             task.setTePStart(contrastTaskOne.getTePStart());
                                             // 更新任务结束时间
@@ -3161,7 +3944,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                             = timeZjServiceEmptyInsert.calculationEmptyInsertTime( task, contrastTaskOne
                                             , contrastTaskTwo, tasks, i, zon,0,random,teDate,dep,grpB
                                             ,prodState,storageTaskWhereTime,onlyFirstTimeStamp,newestLastCurrentTimestamp
-                                            ,isGetTaskPattern,allImageTeDate,onlyRefState);
+                                            ,isGetTaskPattern,allImageTeDate,onlyRefState,thisInfo);
 //                                    System.out.println("进入else-1-h:");
                                     // 获取控制是否结束循环参数
                                     isEndLoop = emptyInsertTimeInfo.getInteger("isEndLoop");
@@ -3215,7 +3998,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                         = timeZjServiceEmptyInsert.calculationEmptyInsertTime( task, contrastTaskOne, contrastTaskTwo
                                         , tasks, i, zon,0,random,teDate,dep,grpB,prodState
                                         ,storageTaskWhereTime,onlyFirstTimeStamp,newestLastCurrentTimestamp
-                                        ,isGetTaskPattern,allImageTeDate,onlyRefState);
+                                        ,isGetTaskPattern,allImageTeDate,onlyRefState,thisInfo);
 //                                System.out.println("进入else-2-h:");
 //                                System.out.println(JSON.toJSONString(tasks));
                                 // 获取控制是否结束循环参数
@@ -3337,11 +4120,13 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                     System.out.println("进入-x-冲突-最开始-这里-1--1");
                                     isTaskConflictInfo = 33;
                                     // 调用处理时间冲突方法
-                                    JSONObject timeConflictInfo = timeZjServiceTimeConflict.handleTimeConflict(task, contrastTaskOne, contrastTaskTwo, zon, tasks, i, random, grpB
-                                            , dep, teDate, timeConflictCopy, isGetTaskPattern, 0, sho,csSta,randomAll,xbAndSbAll,actionIdO
-                                            ,objTaskAll,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime,allImageTasks
-                                            ,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,recordNoOperation
-                                            ,clearStatus,thisInfo,allImageTeDate,isComprehensiveHandle,depAllTime);
+                                    JSONObject timeConflictInfo = timeZjServiceTimeConflict.handleTimeConflict(task
+                                            , contrastTaskOne, contrastTaskTwo, zon, tasks, i, random, grpB
+                                            , dep, teDate, timeConflictCopy, isGetTaskPattern, 0
+                                            , sho,csSta,randomAll,xbAndSbAll,actionIdO,objTaskAll,recordId_OIndexState
+                                            ,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
+                                            ,newestLastCurrentTimestamp,onlyRefState,recordNoOperation,clearStatus
+                                            ,thisInfo,allImageTeDate,isComprehensiveHandle,depAllTime);
                                     // 获取任务余剩时间
                                     zon = timeConflictInfo.getLong("zon");
                                     // 存储问题状态参数: isProblemState = 0 正常、isPd = 1 订单编号为空、isPd = 2 主生产部件
@@ -3403,9 +4188,12 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                     isTaskConflictInfo = 4;
                                     System.out.println("进入-x-冲突-最后面-这里-2");
                                     // 调用处理时间冲突方法
-                                    JSONObject timeConflictInfo = timeZjServiceTimeConflict.handleTimeConflict(task, contrastTaskOne, contrastTaskTwo, zon, tasks, i, random, grpB
-                                            , dep, teDate, timeConflictCopy, isGetTaskPattern, 0, sho,csSta,randomAll,xbAndSbAll,actionIdO
-                                            ,objTaskAll,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime,allImageTasks,onlyFirstTimeStamp
+                                    JSONObject timeConflictInfo = timeZjServiceTimeConflict.handleTimeConflict(task
+                                            , contrastTaskOne, contrastTaskTwo, zon, tasks, i, random, grpB
+                                            , dep, teDate, timeConflictCopy, isGetTaskPattern, 0
+                                            , sho,csSta,randomAll,xbAndSbAll,actionIdO
+                                            ,objTaskAll,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime
+                                            ,allImageTasks,onlyFirstTimeStamp
                                             ,newestLastCurrentTimestamp,onlyRefState,recordNoOperation,clearStatus
                                             ,thisInfo,allImageTeDate,isComprehensiveHandle,depAllTime);
                                     // 获取任务余剩时间
@@ -3472,45 +4260,44 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             hTeStart = timeHandleEndInfo.getLong("hTeStart");
             endTime = timeHandleEndInfo.getLong("endTime");
         }
+
         result.put("hTeStart",hTeStart);
         result.put("endTime",endTime);
         return result;
     }
 
-    public void getGrpB(JSONObject grpBGroup, Map<String,Asset> assetMap, String id_C, JSONObject depAllTime
+    public void getGrpB(String grpB,String dep, Map<String,Asset> assetMap, String id_C, JSONObject depAllTime
             , JSONObject grpUNumAll, JSONObject xbAndSbAll, JSONObject grpBGroupIdOJ, String id_OInside){
-        // 遍历组别对应部门信息
-        for (String grpB : grpBGroup.keySet()) {
-            // 创建存储部门字典
-            JSONObject depMap = new JSONObject();
-            // 根据组别获取组别信息
-            JSONObject grpBGroupInfo = grpBGroup.getJSONObject(grpB);
-            // 获取组别的部门
-            String dep = grpBGroupInfo.getString("dep");
-            Asset assetDep;
-            if (assetMap.containsKey(dep)) {
-                assetDep = assetMap.get(dep);
-            } else {
-                assetDep = qt.getConfig(id_C,"d-"+dep,"chkin");
-                assetMap.put(dep,assetDep);
-            }
-            JSONObject chkGrpB;
-            if (null == assetDep || null == assetDep.getChkin() || null == assetDep.getChkin().getJSONObject("objChkin")) {
-                chkGrpB = TaskObj.getChkinJava();
-            } else {
-                JSONObject chkin = assetDep.getChkin();
-                JSONObject objChkin = chkin.getJSONObject("objChkin");
-                chkGrpB = objChkin.getJSONObject(grpB);
-            }
-            JSONArray arrTime = chkGrpB.getJSONArray("arrTime");
-            Integer wn0UserCount = chkGrpB.getInteger("wn0UserCount");
-            JSONArray objSb = new JSONArray();
-            JSONArray objXb = new JSONArray();
-            // 用于保存上一个时间段的结束时间
+        // 创建存储部门字典
+        JSONObject depMap = new JSONObject();
+//        // 根据组别获取组别信息
+//        JSONObject grpBGroupInfo = grpBGroup.getJSONObject(grpB);
+//        // 获取组别的部门
+//        String dep = grpBGroupInfo.getString("dep");
+        Asset assetDep;
+        if (assetMap.containsKey(dep)) {
+            assetDep = assetMap.get(dep);
+        } else {
+            assetDep = qt.getConfig(id_C,"d-"+dep,"chkin");
+            assetMap.put(dep,assetDep);
+        }
+        JSONObject chkGrpB;
+        if (null == assetDep || null == assetDep.getChkin() || null == assetDep.getChkin().getJSONObject("objChkin") || null == assetDep.getChkin().getJSONObject("objChkin").getJSONObject(grpB)) {
+            chkGrpB = TaskObj.getChkinJava();
+        } else {
+            JSONObject chkin = assetDep.getChkin();
+            JSONObject objChkin = chkin.getJSONObject("objChkin");
+            chkGrpB = objChkin.getJSONObject(grpB);
+        }
+        JSONArray arrTime = chkGrpB.getJSONArray("arrTime");
+        Integer wn0UserCount = chkGrpB.getInteger("wn0UserCount");
+        JSONArray objSb = new JSONArray();
+        JSONArray objXb = new JSONArray();
+        // 用于保存上一个时间段的结束时间
 //            long belowTimeData = 0;
 //            int priority = 0;
 //            long allTime = 0;
-            long allTime = getArrTime(arrTime,objSb,objXb);
+        long allTime = getArrTime(arrTime,objSb,objXb);
 //            for (int j = 0; j < arrTime.size(); j+=2) {
 //                String timeUpper = arrTime.getString(j);
 //                String timeBelow = arrTime.getString(j+1);
@@ -3564,60 +4351,200 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 //                }
 //                belowTimeData = belowTime;
 //            }
-            if (!depAllTime.containsKey(dep)) {
-                depAllTime.put(dep,allTime);
-            }
-            // 创建时间处理打卡信息存储
-            JSONObject xbAndSb = new JSONObject();
-            // 添加信息
-            xbAndSb.put("xb",objXb);
-            xbAndSb.put("sb",objSb);
+        if (!depAllTime.containsKey(dep)) {
+            depAllTime.put(dep,allTime);
+        }
+        // 创建时间处理打卡信息存储
+        JSONObject xbAndSb = new JSONObject();
+        // 添加信息
+        xbAndSb.put("xb",objXb);
+        xbAndSb.put("sb",objSb);
 
-            // 根据部门，获取部门对应的全局职位人数信息
-            JSONObject depAllInfo = grpUNumAll.getJSONObject(dep);
-            // 判断部门全局职位人数信息为空
-            if (null == depAllInfo) {
-                // 创建部门全局职位人数信息
-                depAllInfo = new JSONObject();
-                // 根据组别添加职位人数
+        // 根据部门，获取部门对应的全局职位人数信息
+        JSONObject depAllInfo = grpUNumAll.getJSONObject(dep);
+        // 判断部门全局职位人数信息为空
+        if (null == depAllInfo) {
+            // 创建部门全局职位人数信息
+            depAllInfo = new JSONObject();
+            // 根据组别添加职位人数
+            depAllInfo.put(grpB,wn0UserCount);
+            grpUNumAll.put(dep,depAllInfo);
+        } else {
+            // 直接根据组别获取全局职位人数
+            Integer grpBAllInfo = depAllInfo.getInteger(grpB);
+            // 判断为空
+            if (null == grpBAllInfo) {
+                // 添加全局职位人数信息
                 depAllInfo.put(grpB,wn0UserCount);
                 grpUNumAll.put(dep,depAllInfo);
-            } else {
-                // 直接根据组别获取全局职位人数
-                Integer grpBAllInfo = depAllInfo.getInteger(grpB);
-                // 判断为空
-                if (null == grpBAllInfo) {
-                    // 添加全局职位人数信息
-                    depAllInfo.put(grpB,wn0UserCount);
-                    grpUNumAll.put(dep,depAllInfo);
-                }
             }
+        }
 
-            // 根据部门获取全局上班下班信息
-            JSONObject depAllChKin = xbAndSbAll.getJSONObject(dep);
-            // 判断为空
-            if (null == depAllChKin) {
-                // 创建
-                depAllChKin = new JSONObject();
+        // 根据部门获取全局上班下班信息
+        JSONObject depAllChKin = xbAndSbAll.getJSONObject(dep);
+        // 判断为空
+        if (null == depAllChKin) {
+            // 创建
+            depAllChKin = new JSONObject();
+            // 添加全局上班下班信息
+            depAllChKin.put(grpB, xbAndSb);
+            xbAndSbAll.put(dep,depAllChKin);
+        } else {
+            // 根据组别获取全局上班下班信息
+            JSONObject grpBAllChKin = depAllChKin.getJSONObject(grpB);
+            if (null == grpBAllChKin) {
                 // 添加全局上班下班信息
                 depAllChKin.put(grpB, xbAndSb);
                 xbAndSbAll.put(dep,depAllChKin);
-            } else {
-                // 根据组别获取全局上班下班信息
-                JSONObject grpBAllChKin = depAllChKin.getJSONObject(grpB);
-                if (null == grpBAllChKin) {
-                    // 添加全局上班下班信息
-                    depAllChKin.put(grpB, xbAndSb);
-                    xbAndSbAll.put(dep,depAllChKin);
-                }
             }
-            // 添加部门信息
-            depMap.put("dep",dep);
-            depMap.put("id_O",id_OInside);
-            // 添加信息
-            grpBGroupIdOJ.put(grpB,depMap);
         }
+        // 添加部门信息
+        depMap.put("dep",dep);
+        depMap.put("id_O",id_OInside);
+        // 添加信息
+        grpBGroupIdOJ.put(grpB,depMap);
     }
+//    public void getGrpB(JSONObject grpBGroup, Map<String,Asset> assetMap, String id_C, JSONObject depAllTime
+//            , JSONObject grpUNumAll, JSONObject xbAndSbAll, JSONObject grpBGroupIdOJ, String id_OInside){
+//        // 遍历组别对应部门信息
+//        for (String grpB : grpBGroup.keySet()) {
+//            // 创建存储部门字典
+//            JSONObject depMap = new JSONObject();
+//            // 根据组别获取组别信息
+//            JSONObject grpBGroupInfo = grpBGroup.getJSONObject(grpB);
+//            // 获取组别的部门
+//            String dep = grpBGroupInfo.getString("dep");
+//            Asset assetDep;
+//            if (assetMap.containsKey(dep)) {
+//                assetDep = assetMap.get(dep);
+//            } else {
+//                assetDep = qt.getConfig(id_C,"d-"+dep,"chkin");
+//                assetMap.put(dep,assetDep);
+//            }
+//            JSONObject chkGrpB;
+//            if (null == assetDep || null == assetDep.getChkin() || null == assetDep.getChkin().getJSONObject("objChkin")) {
+//                chkGrpB = TaskObj.getChkinJava();
+//            } else {
+//                JSONObject chkin = assetDep.getChkin();
+//                JSONObject objChkin = chkin.getJSONObject("objChkin");
+//                chkGrpB = objChkin.getJSONObject(grpB);
+//            }
+//            JSONArray arrTime = chkGrpB.getJSONArray("arrTime");
+//            Integer wn0UserCount = chkGrpB.getInteger("wn0UserCount");
+//            JSONArray objSb = new JSONArray();
+//            JSONArray objXb = new JSONArray();
+//            // 用于保存上一个时间段的结束时间
+////            long belowTimeData = 0;
+////            int priority = 0;
+////            long allTime = 0;
+//            long allTime = getArrTime(arrTime,objSb,objXb);
+////            for (int j = 0; j < arrTime.size(); j+=2) {
+////                String timeUpper = arrTime.getString(j);
+////                String timeBelow = arrTime.getString(j+1);
+////                String[] splitUpper = timeUpper.split(":");
+////                String[] splitBelow = timeBelow.split(":");
+////                int upper = Integer.parseInt(splitUpper[0]);
+////                int upperDivide = Integer.parseInt(splitUpper[1]);
+////                int below = Integer.parseInt(splitBelow[0]);
+////                int belowDivide = Integer.parseInt(splitBelow[1]);
+////                long upperTime = (((long) upper * 60) * 60)+((long) upperDivide * 60);
+////                long belowTime = (((long) below * 60) * 60)+((long) belowDivide * 60);
+////                JSONObject objSbZ = new JSONObject();
+////                objSbZ.put("priority",priority);
+////                priority++;
+////                objSbZ.put("tePStart",upperTime);
+////                objSbZ.put("tePFinish",belowTime);
+////                objSbZ.put("zon",belowTime-upperTime);
+////                allTime+=(belowTime-upperTime);
+////                objSb.add(objSbZ);
+////                if (j == 0) {
+////                    if (upperTime != 0) {
+////                        JSONObject objXbZ = new JSONObject();
+////                        objXbZ.put("priority",-1);
+////                        objXbZ.put("tePStart",0);
+////                        objXbZ.put("tePFinish",upperTime);
+////                        objXbZ.put("zon",upperTime);
+////                        objXb.add(objXbZ);
+////                    }
+////                } else if ((j + 1) + 1 >= arrTime.size()) {
+////                    JSONObject objXbZ = new JSONObject();
+////                    objXbZ.put("priority",-1);
+////                    objXbZ.put("tePStart",belowTimeData);
+////                    objXbZ.put("tePFinish",upperTime);
+////                    objXbZ.put("zon",upperTime-belowTimeData);
+////                    objXb.add(objXbZ);
+////                    if (belowTime != 86400) {
+////                        objXbZ = new JSONObject();
+////                        objXbZ.put("priority",-1);
+////                        objXbZ.put("tePStart",belowTime);
+////                        objXbZ.put("tePFinish",86400);
+////                        objXbZ.put("zon",86400-belowTime);
+////                        objXb.add(objXbZ);
+////                    }
+////                } else {
+////                    JSONObject objXbZ = new JSONObject();
+////                    objXbZ.put("priority",-1);
+////                    objXbZ.put("tePStart",belowTimeData);
+////                    objXbZ.put("tePFinish",upperTime);
+////                    objXbZ.put("zon",upperTime-belowTimeData);
+////                    objXb.add(objXbZ);
+////                }
+////                belowTimeData = belowTime;
+////            }
+//            if (!depAllTime.containsKey(dep)) {
+//                depAllTime.put(dep,allTime);
+//            }
+//            // 创建时间处理打卡信息存储
+//            JSONObject xbAndSb = new JSONObject();
+//            // 添加信息
+//            xbAndSb.put("xb",objXb);
+//            xbAndSb.put("sb",objSb);
+//
+//            // 根据部门，获取部门对应的全局职位人数信息
+//            JSONObject depAllInfo = grpUNumAll.getJSONObject(dep);
+//            // 判断部门全局职位人数信息为空
+//            if (null == depAllInfo) {
+//                // 创建部门全局职位人数信息
+//                depAllInfo = new JSONObject();
+//                // 根据组别添加职位人数
+//                depAllInfo.put(grpB,wn0UserCount);
+//                grpUNumAll.put(dep,depAllInfo);
+//            } else {
+//                // 直接根据组别获取全局职位人数
+//                Integer grpBAllInfo = depAllInfo.getInteger(grpB);
+//                // 判断为空
+//                if (null == grpBAllInfo) {
+//                    // 添加全局职位人数信息
+//                    depAllInfo.put(grpB,wn0UserCount);
+//                    grpUNumAll.put(dep,depAllInfo);
+//                }
+//            }
+//
+//            // 根据部门获取全局上班下班信息
+//            JSONObject depAllChKin = xbAndSbAll.getJSONObject(dep);
+//            // 判断为空
+//            if (null == depAllChKin) {
+//                // 创建
+//                depAllChKin = new JSONObject();
+//                // 添加全局上班下班信息
+//                depAllChKin.put(grpB, xbAndSb);
+//                xbAndSbAll.put(dep,depAllChKin);
+//            } else {
+//                // 根据组别获取全局上班下班信息
+//                JSONObject grpBAllChKin = depAllChKin.getJSONObject(grpB);
+//                if (null == grpBAllChKin) {
+//                    // 添加全局上班下班信息
+//                    depAllChKin.put(grpB, xbAndSb);
+//                    xbAndSbAll.put(dep,depAllChKin);
+//                }
+//            }
+//            // 添加部门信息
+//            depMap.put("dep",dep);
+//            depMap.put("id_O",id_OInside);
+//            // 添加信息
+//            grpBGroupIdOJ.put(grpB,depMap);
+//        }
+//    }
 
     /**
      * 获取上班时间戳与休息时间戳
@@ -3836,5 +4763,68 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             }
         }
         return maxTime;
+    }
+
+    @Override
+    public ApiResponse updateODate() {
+        JSONArray ids = qt.setArray("65a8d523ec65d36e9095034b","65b338bcec65d36e909503bb","65b33b86ec65d36e909503bc");
+        List<Order> orders = qt.getMDContentFast(ids, qt.strList("casItemx"), Order.class);
+        List<JSONObject> list = new ArrayList<>();
+        for (Order order : orders) {
+            JSONObject java = order.getCasItemx().getJSONObject("java");
+            JSONArray oDates = java.getJSONArray("oDates");
+//            JSONArray jsonArray = java.getJSONArray("");
+            for (int i = 0; i < oDates.size(); i++) {
+                JSONObject date = oDates.getJSONObject(i);
+                date.put("wntDur",date.getLong("teDur"));
+                date.put("wntDurTotal",date.getLong("teDurTotal"));
+                date.put("wntPrep",date.getLong("tePrep"));
+//                date.remove("teDur");
+//                date.remove("teDurTotal");
+//                date.remove("tePrep");
+                oDates.set(i,date);
+            }
+//            qt.setMDContent(order.getId(),qt.setJson("casItemx.java.oDates",oDates), Order.class);
+            list.add(qt.setJson("id",order.getId(),"updateData",qt.setJson("casItemx.java.oDates",oDates)));
+        }
+        qt.setMDContentFast(list, Order.class);
+        return retResult.ok(CodeEnum.OK.getCode(), "成功");
+    }
+
+    @Override
+    public ApiResponse delExcessiveODateField() {
+        JSONArray ids = qt.setArray("65a8d523ec65d36e9095034b","65b338bcec65d36e909503bb","65b33b86ec65d36e909503bc");
+        List<Order> orders = qt.getMDContentFast(ids, qt.strList("casItemx"), Order.class);
+        List<JSONObject> list = new ArrayList<>();
+        for (Order order : orders) {
+            JSONObject java = order.getCasItemx().getJSONObject("java");
+            JSONArray oDates = java.getJSONArray("oDates");
+            JSONArray oTasks = java.getJSONArray("oTasks");
+            for (int i = 0; i < oDates.size(); i++) {
+//                JSONObject date = oDates.getJSONObject(i);
+//                date.remove("teDur");
+//                date.remove("tePrep");
+//                date.remove("teDurTotal");
+//                date.remove("teStart");
+//                date.remove("taStart");
+//                date.remove("teFin");
+//                date.remove("taFin");
+//                oDates.set(i,date);
+
+                JSONObject date = oDates.getJSONObject(i);
+                JSONObject task = oTasks.getJSONObject(i);
+                date.put("wrdN",task.getJSONObject("wrdN"));
+                oDates.set(i,date);
+            }
+            list.add(qt.setJson("id",order.getId(),"updateData",qt.setJson("casItemx.java.oDates",oDates)));
+        }
+        qt.setMDContentFast(list, Order.class);
+        return retResult.ok(CodeEnum.OK.getCode(), "成功");
+    }
+
+    @Override
+    public ApiResponse getClearOldTask(String id_O, int dateIndex, String id_C) {
+        clearOldTaskNew(id_O,dateIndex,id_C);
+        return retResult.ok(CodeEnum.OK.getCode(), "成功");
     }
 }

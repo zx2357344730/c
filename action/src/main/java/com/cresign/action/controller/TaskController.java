@@ -206,4 +206,43 @@ public class TaskController {
         }
     }
 
+    /**
+     *
+     * @return  开始时间
+     */
+    @SecurityParameter
+    @PostMapping("/v1/updateODate")
+    public ApiResponse updateODate(){
+        try {
+            return timeZjService.updateODate();
+        } catch (Exception e) {
+            return getUserToken.err(null, "TaskController.updateODate", e);
+        }
+    }
+
+    /**
+     *
+     * @return  开始时间
+     */
+    @SecurityParameter
+    @PostMapping("/v1/delExcessiveODateField")
+    public ApiResponse delExcessiveODateField(){
+        try {
+            return timeZjService.delExcessiveODateField();
+        } catch (Exception e) {
+            return getUserToken.err(null, "TaskController.delExcessiveODateField", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getClearOldTask")
+    public ApiResponse getClearOldTask(@RequestBody JSONObject reqJson){
+        try {
+            return timeZjService.getClearOldTask(reqJson.getString("id_O"), reqJson.getInteger("dateIndex")
+                    , reqJson.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(null, "TaskController.getClearOldTask", e);
+        }
+    }
+
 }

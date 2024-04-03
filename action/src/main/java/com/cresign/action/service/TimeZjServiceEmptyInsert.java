@@ -31,8 +31,8 @@ public interface TimeZjServiceEmptyInsert {
      * @param teS	当前时间戳
      * @param emptyInsertHandlePattern	emptyInsertHandlePattern == 0 正常第一次调用空插处理方法、is == 1 空插处理方法调用空插处理方法
      * @param teDate	当前处理任务所在时间对象
-     * @param objAction	所有递归信息
-     * @param dgInfo	递归信息
+     * @param oDates	当前任务基础信息集合
+     * @param dgInfo	当前任务基础信息
      * @param taskTimeKeyFirstVal	任务所在时间键的第一个键的值（时间戳）
      * @param timeConflictCopy	当前任务所在日期
      * @param isGetTaskPattern	 = 0 获取数据库任务信息、 = 1 获取镜像任务信息
@@ -63,7 +63,7 @@ public interface TimeZjServiceEmptyInsert {
      * @date 2022/6/9
      */
     int emptyInsertHandle(List<Task> tasks, int conflictInd, List<Task> conflict, Task currentHandleTask, Long zon, String grpB
-            , String dep, String random, int isTimeStopState, Long teS, int emptyInsertHandlePattern, JSONObject teDate, JSONArray objAction
+            , String dep, String random, int isTimeStopState, Long teS, int emptyInsertHandlePattern, JSONObject teDate, JSONArray oDates
             , JSONObject dgInfo, Long taskTimeKeyFirstVal, JSONObject timeConflictCopy, Integer isGetTaskPattern, JSONObject sho
             , int isProblemState, int csSta, String randomAll, JSONObject xbAndSbAll, JSONObject actionIdO
             , JSONObject objTaskAll, JSONObject recordId_OIndexState, JSONObject storageTaskWhereTime
@@ -86,8 +86,8 @@ public interface TimeZjServiceEmptyInsert {
      * @param random	当前唯一编号
      * @param dep	部门
      * @param grpB	组别
-     * @param objAction	所有递归信息
-     * @param actZ	递归信息
+     * @param oDates	当前任务基础信息集合
+     * @param dgInfo	当前任务基础信息
      * @param taskTimeKeyFirstVal	任务所在时间键的第一个键的值（时间戳）
      * @param timeConflictCopy	当前任务所在日期对象
      * @param isGetTaskPattern	 = 0 获取数据库任务信息、 = 1 获取镜像任务信息
@@ -117,7 +117,7 @@ public interface TimeZjServiceEmptyInsert {
      */
     JSONObject emptyInsertAndEmptyInsertConflictHandle(Task currentHandleTask,Task contrastTaskOne,Task contrastTaskTwo,List<Task> tasks,int i
             ,int conflictInd,long zon,List<Task> conflict,JSONObject teDate,String random,String dep,String grpB
-            ,JSONArray objAction,JSONObject actZ,Long taskTimeKeyFirstVal,JSONObject timeConflictCopy
+            ,JSONArray oDates,JSONObject dgInfo,Long taskTimeKeyFirstVal,JSONObject timeConflictCopy
             ,Integer isGetTaskPattern,JSONObject sho,int csSta,String randomAll
             ,JSONObject xbAndSbAll,JSONObject actionIdO,JSONObject objTaskAll
             ,JSONObject recordId_OIndexState,JSONObject storageTaskWhereTime,JSONObject allImageTotalTime
@@ -164,5 +164,6 @@ public interface TimeZjServiceEmptyInsert {
     JSONObject calculationEmptyInsertTime(Task task, Task task1, Task task2, List<Task> tasks
             , Integer i, Long zon, Integer isControlCalculationMode,String random,JSONObject teDate,String dep
             ,String grpB,int prodState,JSONObject storageTaskWhereTime,JSONObject onlyFirstTimeStamp
-            ,JSONObject newestLastCurrentTimestamp,Integer isGetTaskPattern,JSONObject allImageTeDate,JSONObject onlyRefState);
+            ,JSONObject newestLastCurrentTimestamp,Integer isGetTaskPattern,JSONObject allImageTeDate
+            ,JSONObject onlyRefState,JSONObject thisInfo);
 }

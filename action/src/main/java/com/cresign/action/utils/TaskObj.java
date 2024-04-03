@@ -59,7 +59,7 @@ public class TaskObj {
             JSONObject wrdN = new JSONObject();
             wrdN.put("cn","测试-父名称");
             upObj.put("wrdN",wrdN);
-            upObj.put("wn2qtyneed","1.0");
+            upObj.put("wn2qtyneed",1.0);
             upPrnts.add(upObj);
             actZ.put("upPrnts",upPrnts);
         }
@@ -96,18 +96,18 @@ public class TaskObj {
     }
 
     public static JSONObject getTaskThis(Integer priority,String id_O,Integer index,Long tePStart
-            ,Long prep,String wrdNStr,Long teDurTotal,Long teDelayDate,String id_C,Long teCsStart
+            ,Long wntPrep,String wrdNStr,Long wntDurTotal,Long teDelayDate,String id_C,Long teCsStart
             ,Long teCsSonOneStart){
         JSONObject task = new JSONObject();
         task.put("priority",priority);
         task.put("id_O",id_O);
         task.put("index",index);
         task.put("tePStart",tePStart);
-        task.put("prep",prep);
+        task.put("wntPrep",wntPrep);
         JSONObject wrdN = new JSONObject();
         wrdN.put("cn",wrdNStr);
         task.put("wrdN",wrdN);
-        task.put("teDurTotal",teDurTotal);
+        task.put("wntDurTotal",wntDurTotal);
         task.put("teDelayDate",teDelayDate);
         task.put("id_C",id_C);
         task.put("teCsStart",teCsStart);
@@ -116,7 +116,7 @@ public class TaskObj {
     }
 
     public static JSONObject getDateThis(Double wn2qtyneed,String id_C,Integer kaiJie,Integer csSta
-            ,String grpB,Integer priority,Long wntDur,Long teDurTotal,Long teStart,Long taFin,Long wntPrep
+            ,String grpB,Integer priority,Long wntDur,Long wntDurTotal,Long teStart,Long taFin,Long wntPrep
             ,String id_O,Integer index,Long teDelayDate,String id_PF,String id_P,Integer priorItem
             ,boolean empty,int bmdpt){
         JSONObject date = new JSONObject();
@@ -127,7 +127,7 @@ public class TaskObj {
         date.put("grpB",grpB);
         date.put("priority",priority);
         date.put("wntDur",wntDur);
-        date.put("teDurTotal",teDurTotal);
+        date.put("wntDurTotal",wntDurTotal);
         date.put("teStart",teStart);
         date.put("taFin",taFin);
         date.put("wntPrep",wntPrep);
@@ -148,10 +148,10 @@ public class TaskObj {
      * @param tePFinish	预计完成时间
      * @param id_O	订单编号
      * @param index	零件位置，配合订单编号使用
-     * @param teDurTotal	总共时间
+     * @param wntDurTotal	总共时间
      * @param priority	优先级
      * @param wrdNs	用户名称
-     * @param prep	准备时间
+     * @param wntPrep	准备时间
      * @param teDelayDate	延迟总时间
      * @return com.cresign.tools.pojo.po.chkin.Task  返回结果: 结果
      * @author tang
@@ -159,7 +159,7 @@ public class TaskObj {
      * @date 2022/2/18 16:58
      */
     public static Task getTask(Long tePStart, Long tePFinish, String id_O, Integer index
-            , Long teDurTotal, Integer priority, String wrdNs, Long prep
+            , Long wntDurTotal, Integer priority, String wrdNs, Long wntPrep
             , Long teDelayDate
             , String id_C,Long teCsStart,Long teCsSonOneStart,Integer dateIndex,boolean isNextPart){
         Task task1 = new Task();
@@ -172,8 +172,8 @@ public class TaskObj {
         JSONObject wrdN = new JSONObject();
         wrdN.put("cn",wrdNs);
         task1.setWrdN(wrdN);
-        task1.setPrep(prep);
-        task1.setTeDurTotal(teDurTotal);
+        task1.setWntPrep(wntPrep);
+        task1.setWntDurTotal(wntDurTotal);
 //        task1.setTeDelayDate(teDelayDate);
         if (priority == -1) {
             task1.setTeCsStart(0L);
@@ -183,9 +183,16 @@ public class TaskObj {
             task1.setTeCsStart(teCsStart);
             task1.setTeCsSonOneStart(teCsSonOneStart);
             task1.setTeDelayDate((tePStart-teCsStart));
+//            task1.setWn2qtyneed(task.getWn2qtyneed());
+//            task1.setRefOP(task.getRefOP());
+//            JSONObject wrdNONew = new JSONObject();
+//            JSONObject wrdNO = task.getWrdNO();
+//            String cnNew = wrdNO.getString("cn");
+//            wrdNONew.put("cn",cnNew);
+//            task1.setWrdNO(wrdNONew);
         }
         task1.setDateIndex(dateIndex);
-        task1.setIsNextPart(isNextPart);
+//        task1.setIsNextPart(isNextPart);
         return task1;
     }
 
@@ -193,17 +200,17 @@ public class TaskObj {
      * 获取全新的任务信息对象方法-计算真实使用的
      * @param tePStart	预计开始时间
      * @param tePFinish	预计完成时间
-     * @param teDurTotal 任务总时间
+     * @param wntDurTotal 任务总时间
      * @return com.cresign.tools.pojo.po.chkin.Task  返回结果: 结果
      * @author tang
      * @ver 1.0.0
      * @date 2022/2/18 16:58
      */
-    public static Task getTaskX(Long tePStart, Long tePFinish,Long teDurTotal,Task task){
+    public static Task getTaskX(Long tePStart, Long tePFinish,Long wntDurTotal,Task task){
         Task taskNew = new Task();
         taskNew.setTePStart(tePStart);
         taskNew.setTePFinish(tePFinish);
-        taskNew.setTeDurTotal(teDurTotal);
+        taskNew.setWntDurTotal(wntDurTotal);
         taskNew.setId_O(task.getId_O());
         taskNew.setIndex(task.getIndex());
         taskNew.setPriority(task.getPriority());
@@ -215,25 +222,34 @@ public class TaskObj {
         taskNew.setWrdN(wrdN);
 
 //        taskNew.setWrdN(task.getWrdN());
-
-        taskNew.setPrep(task.getPrep());
+        taskNew.setId_PF(task.getId_PF());
+        taskNew.setWntPrep(task.getWntPrep());
         taskNew.setDateIndex(task.getDateIndex());
-        if (null != task.getMergeTasks() && task.getMergeTasks().size() > 0) {
-            taskNew.setMergeTasks(task.getMergeTasks());
-        }
+        taskNew.setId_PF(task.getId_PF());
+        taskNew.setLayer(task.getLayer());
+//        if (null != task.getMergeTasks() && task.getMergeTasks().size() > 0) {
+//            taskNew.setMergeTasks(task.getMergeTasks());
+//        }
 //        taskNew.setTeDelayDate(teDelayDate);
         if (taskNew.getPriority() == -1) {
             taskNew.setTeCsStart(0L);
             taskNew.setTeCsSonOneStart(0L);
             taskNew.setTeDelayDate(0L);
             taskNew.setTaOver(0L);
-            taskNew.setIsNextPart(false);
+//            taskNew.setIsNextPart(false);
         } else {
             taskNew.setTeCsStart(task.getTeCsStart());
             taskNew.setTeCsSonOneStart(task.getTeCsSonOneStart());
             taskNew.setTeDelayDate((taskNew.getTePStart()-task.getTeCsStart()));
             taskNew.setTaOver(task.getTaOver());
-            taskNew.setIsNextPart(task.getIsNextPart());
+            taskNew.setWn2qtyneed(task.getWn2qtyneed());
+            taskNew.setRefOP(task.getRefOP());
+            JSONObject wrdNONew = new JSONObject();
+            JSONObject wrdNO = task.getWrdNO();
+            String cnNew = wrdNO.getString("cn");
+            wrdNONew.put("cn",cnNew);
+            taskNew.setWrdNO(wrdNONew);
+//            taskNew.setIsNextPart(task.getIsNextPart());
         }
         return taskNew;
     }
@@ -248,7 +264,7 @@ public class TaskObj {
 //
 ////        task1.setId_O(task.getId_O());
 ////        task1.setIndex(task.getIndex());
-////        task1.setTeDurTotal(task.getTeDurTotal());
+////        task1.setWntDurTotal(task.getWntDurTotal());
 ////        task1.setPriority(task.getPriority());
 ////        task1.setId_C(task.getId_C());
 ////        task1.setPrep(task.getPrep());
@@ -263,14 +279,14 @@ public class TaskObj {
         taskNew.setTePStart(task.getTePStart());
         taskNew.setTePFinish(task.getTePFinish());
         taskNew.setWrdN(task.getWrdN());
-        taskNew.setTeDurTotal(task.getTeDurTotal());
+        taskNew.setWntDurTotal(task.getWntDurTotal());
         taskNew.setTeCsStart(task.getTeCsStart());
         taskNew.setTeCsSonOneStart(task.getTeCsSonOneStart());
         taskNew.setTeDelayDate(task.getTePStart()-task.getTeCsStart());
 
 //        task1.setId_O(task.getId_O());
 //        task1.setIndex(task.getIndex());
-//        task1.setTeDurTotal(task.getTeDurTotal());
+//        task1.setWntDurTotal(task.getWntDurTotal());
 //        task1.setPriority(task.getPriority());
 //        task1.setId_C(task.getId_C());
 //        task1.setPrep(task.getPrep());
@@ -284,7 +300,7 @@ public class TaskObj {
         Task taskNew = getTaskC(task,2);
         taskNew.setTePStart(task.getTePStart());
         taskNew.setTePFinish(task.getTePFinish());
-        taskNew.setTeDurTotal(task.getTeDurTotal());
+        taskNew.setWntDurTotal(task.getWntDurTotal());
         taskNew.setTeCsStart(task.getTeCsStart());
         taskNew.setTeCsSonOneStart(task.getTeCsSonOneStart());
         JSONObject wrdN = new JSONObject();
@@ -294,7 +310,7 @@ public class TaskObj {
 
 //        task1.setId_O(task.getId_O());
 //        task1.setIndex(task.getIndex());
-//        task1.setTeDurTotal(task.getTeDurTotal());
+//        task1.setWntDurTotal(task.getWntDurTotal());
 //        task1.setPriority(task.getPriority());
 //        task1.setId_C(task.getId_C());
 //        task1.setPrep(task.getPrep());
@@ -313,24 +329,33 @@ public class TaskObj {
         }
         taskNew.setId_O(task.getId_O());
         taskNew.setIndex(task.getIndex());
-        taskNew.setTeDurTotal(task.getTeDurTotal());
+        taskNew.setWntDurTotal(task.getWntDurTotal());
         taskNew.setPriority(task.getPriority());
         taskNew.setId_C(task.getId_C());
-        taskNew.setPrep(task.getPrep());
+        taskNew.setWntPrep(task.getWntPrep());
         taskNew.setDateIndex(task.getDateIndex());
+        taskNew.setId_PF(task.getId_PF());
+        taskNew.setLayer(task.getLayer());
 //        task1.setTeDelayDate(task.getTeDelayDate());
         if (taskNew.getPriority() == -1) {
             taskNew.setTeCsStart(0L);
             taskNew.setTeCsSonOneStart(0L);
             taskNew.setTeDelayDate(0L);
             taskNew.setTaOver(0L);
-            taskNew.setIsNextPart(false);
+//            taskNew.setIsNextPart(false);
         } else {
             taskNew.setTeCsStart(task.getTeCsStart());
             taskNew.setTeCsSonOneStart(task.getTeCsSonOneStart());
             taskNew.setTeDelayDate(taskNew.getTePStart()-taskNew.getTeCsStart());
             taskNew.setTaOver(task.getTaOver());
-            taskNew.setIsNextPart(task.getIsNextPart());
+            taskNew.setWn2qtyneed(task.getWn2qtyneed());
+            taskNew.setRefOP(task.getRefOP());
+            JSONObject wrdNONew = new JSONObject();
+            JSONObject wrdNO = task.getWrdNO();
+            String cn = wrdNO.getString("cn");
+            wrdNONew.put("cn",cn);
+            taskNew.setWrdNO(wrdNONew);
+//            taskNew.setIsNextPart(task.getIsNextPart());
         }
         return taskNew;
     }
@@ -384,33 +409,33 @@ public class TaskObj {
         action.put("grpBGroup",grpBGroup);
 
         JSONArray oDates = new JSONArray();
-        JSONArray oTasks = new JSONArray();
+//        JSONArray oTasks = new JSONArray();
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1001"
                 ,1,12000L,0L,0L,0L,600L,"t-1",0
                 ,0L,"t","t-1-1",0,false,1));
 
-        oTasks.add(getTaskThis(1,"t-1",0,0L,600L,"t-1-1",0L
-                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
+//        oTasks.add(getTaskThis(1,"t-1",0,0L,600L,"t-1-1",0L
+//                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1000"
                 ,1,12000L,0L,0L,0L,600L,"t-1",1
                 ,0L,"t","t-1-2",0,false,1));
 
-        oTasks.add(getTaskThis(1,"t-1",1,0L,600L,"t-1-2",0L
-                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
+//        oTasks.add(getTaskThis(1,"t-1",1,0L,600L,"t-1-2",0L
+//                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1000"
                 ,1,12000L,0L,0L,0L,600L,"t-1",2
                 ,0L,"t","t-1-3",0,false,1));
 
-        oTasks.add(getTaskThis(1,"t-1",2,0L,600L,"t-1-3",0L
-                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
+//        oTasks.add(getTaskThis(1,"t-1",2,0L,600L,"t-1-3",0L
+//                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
         casItemx = new JSONObject();
         java = new JSONObject();
         java.put("oDates",oDates);
-        java.put("oTasks",oTasks);
+//        java.put("oTasks",oTasks);
         casItemx.put("java",java);
 
         order.setCasItemx(casItemx);
@@ -532,19 +557,19 @@ public class TaskObj {
         action.put("grpBGroup",grpBGroup);
 
         JSONArray oDates = new JSONArray();
-        JSONArray oTasks = new JSONArray();
+//        JSONArray oTasks = new JSONArray();
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1001"
                 ,1,12000L,0L,0L,0L,600L,"t-2",0
                 ,0L,"t2","t-2-1",0,false,1));
 
-        oTasks.add(getTaskThis(1,"t-2",0,0L,600L,"t-2-1",0L
-                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
+//        oTasks.add(getTaskThis(1,"t-2",0,0L,600L,"t-2-1",0L
+//                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
         casItemx = new JSONObject();
         java = new JSONObject();
         java.put("oDates",oDates);
-        java.put("oTasks",oTasks);
+//        java.put("oTasks",oTasks);
         casItemx.put("java",java);
 
         order.setCasItemx(casItemx);
@@ -641,33 +666,33 @@ public class TaskObj {
         action.put("grpBGroup",grpBGroup);
 
         JSONArray oDates = new JSONArray();
-        JSONArray oTasks = new JSONArray();
+//        JSONArray oTasks = new JSONArray();
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1000"
                 ,1,12000L,0L,0L,0L,600L,"t-3",0
                 ,0L,"t3","t-3-1",0,false,1));
 
-        oTasks.add(getTaskThis(1,"t-3",0,0L,600L,"t-3-1",0L
-                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
+//        oTasks.add(getTaskThis(1,"t-3",0,0L,600L,"t-3-1",0L
+//                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1000"
                 ,1,12000L,0L,0L,0L,600L,"t-3",1
                 ,0L,"t3","t-3-2",0,false,1));
 
-        oTasks.add(getTaskThis(1,"t-3",1,0L,600L,"t-3-2",0L
-                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
+//        oTasks.add(getTaskThis(1,"t-3",1,0L,600L,"t-3-2",0L
+//                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
         oDates.add(getDateThis(1.0,"6076a1c7f3861e40c87fd294",2,0,"1000"
                 ,1,12000L,0L,0L,0L,600L,"t-3",2
                 ,0L,"t3","t-3-3",0,false,1));
 
-        oTasks.add(getTaskThis(1,"t-3",2,0L,600L,"t-3-3",0L
-                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
+//        oTasks.add(getTaskThis(1,"t-3",2,0L,600L,"t-3-3",0L
+//                ,0L,"6076a1c7f3861e40c87fd294",0L,0L));
 
         casItemx = new JSONObject();
         java = new JSONObject();
         java.put("oDates",oDates);
-        java.put("oTasks",oTasks);
+//        java.put("oTasks",oTasks);
         casItemx.put("java",java);
 
         order.setCasItemx(casItemx);
