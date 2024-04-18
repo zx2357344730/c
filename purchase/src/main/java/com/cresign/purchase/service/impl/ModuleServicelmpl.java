@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -467,7 +468,9 @@ public class ModuleServicelmpl implements ModuleService {
                     {
                         //a-mes
                         String modRef = mod.getJSONObject("val").getString("mod");
-                        JSONObject authObject = init.getNewComp().getJSONObject(modRef);
+                        Info initComp = qt.getMDContent(qt.idJson.getString("newComp"), "jsonInfo", Info.class);
+
+                        JSONObject authObject = initComp.getJsonInfo().getJSONObject(modRef);
 
                         authObject.getJSONObject("info").put("id_C", id_C);
                         authObject.getJSONObject("info").put("id_CP", id_C);
@@ -908,9 +911,9 @@ public class ModuleServicelmpl implements ModuleService {
 
             if (null == control || null == control.getJSONObject("objMod")) {
 //                result.put("status",4);
-                InitJava initMod = qt.getInitData();
+                Info initMod = qt.getMDContent(qt.idJson.getString("newComp"), "jsonInfo", Info.class);
 //                InitJava initMod = qt.getMDContent("cn_java", "newComp.a-core.control.objMod", InitJava.class);
-                control = initMod.getNewComp().getJSONObject("a-core").getJSONObject("control");
+                control = initMod.getJsonInfo().getJSONObject("a-core").getJSONObject("control");
                 qt.setMDContent(asset.getId(), qt.setJson("control", control), Asset.class);
             }
             result.put("control", control);
@@ -1396,12 +1399,14 @@ public class ModuleServicelmpl implements ModuleService {
     @Override
     @Transactional(noRollbackFor = ResponseException.class)
     public ApiResponse addBlankComp(JSONObject tokData, JSONObject wrdN, JSONObject wrddesc,
-                                    String pic, String ref) throws IOException {
+                                    String pic, String ref) {
 
         String new_id_C = qt.GetObjectId();
 
-        InitJava init = qt.getInitData();
-        JSONObject newComp = init.getNewComp();
+//        InitJava init = qt.getInitData();
+
+        Info init = qt.getMDContent(qt.idJson.getString("newComp"), "jsonInfo", Info.class);
+        JSONObject newComp = init.getJsonInfo().getJSONObject("objData");
         Comp comp = qt.jsonTo(newComp.getJSONObject("comp"), Comp.class);
         String uid = tokData.getString("id_U");
 

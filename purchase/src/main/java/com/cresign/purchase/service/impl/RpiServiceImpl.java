@@ -48,7 +48,7 @@ public class RpiServiceImpl implements RpiService {
     /**
      * 二维码前缀
      */
-    public static final String RPI_URL_PREFIX = "https://www.cresign.cn/qrCodeTest?qrType=rpi&t=";
+    public static final String RPI_URL_PREFIX = "https://www.cresign.cn/qrCode?qrType=rpi&t=";
 
 //    /**
 //     * 注入redis数据库下标1模板

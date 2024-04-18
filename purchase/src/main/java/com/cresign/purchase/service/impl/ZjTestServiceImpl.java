@@ -721,8 +721,10 @@ public class ZjTestServiceImpl implements ZjTestService {
             id_C = new_id_C;
         }
 
-        InitJava init = qt.getInitData();
-        JSONObject newSpace = init.getNewSpace();
+//        InitJava init = qt.getInitData();
+
+        JSONObject newSpace = qt.getInitFormat("newSpace","");
+//        JSONObject newSpace = init.get;
         Comp comp = qt.jsonTo(newSpace.getJSONObject("comp"), Comp.class);
 //        String uid = tokData.getString("id_U");
 
@@ -1005,8 +1007,8 @@ public class ZjTestServiceImpl implements ZjTestService {
      */
     @Override
     public ApiResponse genChkinCode(String id_C) {
-        String QR_URL = "https://www.cresign.cn/qrCodeTest?qrType=qrChkIn&t=";
-//        String QR_URL = "http://127.0.0.1:8080/qrCodeTest?qrType=qrChkIn&t=";
+        String QR_URL = "https://www.cresign.cn/qrCode?qrType=qrChkIn&t=";
+//        String QR_URL = "http://127.0.0.1:8080/qrCode?qrType=qrChkIn&t=";
         String token = UUID19.uuid();
 
         qt.setRDSet("chk_in",token,id_C,60L);

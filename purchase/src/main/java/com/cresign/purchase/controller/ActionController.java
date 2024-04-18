@@ -76,17 +76,51 @@ public class ActionController {
 
             return actionService.dgActivateAll(
                     reqJson.getString("id_O"),
-                    tokData.getString("id_C"),
-                    tokData.getString("id_U"),
-                    tokData.getString("grpU"),
-                    tokData.getString("dep"),
-                    tokData.getJSONObject("wrdNU"));
+                    tokData);
 
         } catch (Exception e) {
 
             return getUserToken.err(reqJson, "ActionController.dgActivateAll", e);
         }
     }
+
+
+    @SecurityParameter
+    @PostMapping("/v1/dgActivateStorage")
+    public ApiResponse dgActivateStorage(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+
+        try {
+
+            return actionService.dgActivateStorage(
+                    tokData,
+                    reqJson.getString("id_O"));
+
+        } catch (Exception e) {
+
+            return getUserToken.err(reqJson, "ActionController.dgActivateAll", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/dgActivateStoSingle")
+    public ApiResponse dgActivateStoSingle(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+
+        try {
+
+            String re =  actionService.dgActivateStoSingle(
+                    tokData,
+                    reqJson.getString("id_O"),
+                    reqJson.getInteger("index"));
+            return retResult.ok(CodeEnum.OK.getCode(), re);
+
+        } catch (Exception e) {
+
+            return getUserToken.err(reqJson, "ActionController.dgActivateAll", e);
+        }
+    }
+
 
     @SecurityParameter
     @PostMapping("/v1/taskToProd")
@@ -248,7 +282,7 @@ public class ActionController {
      */
     @SecurityParameter
     @PostMapping("/v1/subStatusChange")
-    public ApiResponse subStatusChange(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse subStatusChange(@RequestBody JSONObject reqJson) {
         try {
             JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
             return actionService.subStatusChange(
@@ -283,16 +317,14 @@ public class ActionController {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
 
         try {
-            return actionService.createTask(
+            String result = actionService.createTask(
+                    tokData,
                     reqJson.getString("logType"),
                     reqJson.getString("id_FC"),
                     reqJson.getString("id_O"),
-                    tokData.getString("id_C"),
-                    tokData.getString("id_U"),
-                    tokData.getString("grpU"),
-                    tokData.getString("dep"),
-                    reqJson.getJSONObject("oItemData"),
-                    tokData.getJSONObject("wrdNU"));
+                    reqJson.getJSONObject("oItemData"));
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+
         } catch (Exception e) {
             return getUserToken.err(reqJson, "createTask", e);
         }
@@ -346,18 +378,17 @@ public class ActionController {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
 
         try {
-            return actionService.createQuest(
-                    tokData.getString("id_C"),
+            String re = actionService.createQuest(
+                    tokData,
                     reqJson.getString("id_O"),
                     reqJson.getInteger("index"),
                     reqJson.getString("id_Prob"),
                     reqJson.getString("id_FC"),
                     reqJson.getString("id_FQ"),
-                    tokData.getString("id_U"),
-                    tokData.getString("grpU"),
-                    tokData.getString("dep"),
-                    tokData.getJSONObject("wrdNU"),
                     reqJson.getJSONObject("probData"));
+
+            return retResult.ok(CodeEnum.OK.getCode(), re);
+
         } catch (Exception e) {
             return getUserToken.err(reqJson, "createQuest", e);
         }

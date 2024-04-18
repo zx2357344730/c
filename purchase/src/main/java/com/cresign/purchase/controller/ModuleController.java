@@ -251,7 +251,7 @@ public class ModuleController {
 
     @SecurityParameter
     @PostMapping("/v1/addBlankComp")
-    public ApiResponse addBlankComp(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse addBlankComp(@RequestBody JSONObject reqJson) {
         try {
             JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
 
