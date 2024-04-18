@@ -63,4 +63,6 @@ public class lSUser {
     private String mbn;
 
     private String cnty;
+
+    private JSONObject wrdTag;
 }

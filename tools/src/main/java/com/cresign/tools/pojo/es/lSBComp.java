@@ -88,4 +88,8 @@ public class lSBComp {
     private String tmd;
 
     private String tmk;
+
+    private JSONObject wrdTag;
+
+    private JSONObject wrdTagB;
 }

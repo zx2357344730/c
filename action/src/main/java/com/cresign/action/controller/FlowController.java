@@ -275,10 +275,12 @@ public class FlowController {
             return flowNewService.getDgResult(
                     reqJson.getString("id_O"),
                     tokData.getString("id_U"),
-//                    tokData.getString("id_C"),
-                    reqJson.getString("id_C"),
+                    tokData.getString("id_C"),
+//                    reqJson.getString("id_C"),
                     reqJson.getLong("teStart"),
-                    reqJson.getString("isSplit"),reqJson.getBoolean("setOrder"));
+                    reqJson.getString("isSplit")
+//                    reqJson.getBoolean("setOrder")
+            );
         } catch (Exception e) {
             return getUserToken.err(reqJson, "flowService.getDgResult", e);
         }

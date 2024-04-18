@@ -67,4 +67,6 @@ public class AssetInfo {
     private String tmd;
 
     private String tmk;
+
+    private JSONObject wrdTag;
 }

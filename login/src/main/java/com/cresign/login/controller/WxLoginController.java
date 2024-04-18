@@ -76,8 +76,6 @@ public class WxLoginController {
     @SecurityParameter
     @PostMapping("/v1/decodeUserInfo")
     public ApiResponse decodeUserInfo(@RequestBody JSONObject reqJson) {
-        System.out.println("进入微信小程序解密用户数据接口：");
-        System.out.println(JSON.toJSONString(reqJson));
         try {
             return wxLoginService.decodeUserInfo(reqJson);
         } catch (Exception e) {

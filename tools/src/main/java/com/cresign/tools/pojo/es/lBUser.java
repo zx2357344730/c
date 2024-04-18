@@ -85,4 +85,6 @@ public class lBUser implements Serializable {
     private String cnty;
 
     private String dep;
+
+    private JSONObject wrdTag;  //+dep grpU refU <--- rolex 卡片
 }

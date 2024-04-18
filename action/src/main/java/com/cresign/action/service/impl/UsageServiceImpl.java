@@ -128,13 +128,12 @@ public class UsageServiceImpl implements UsageService {
             user.getFav().put("objLog", new JSONArray());
         }
 
-        JSONObject result = user.getFav();
         if (!type.equals(""))
         {
-            result = user.getFav().getJSONObject(type);
+            return retResult.ok(CodeEnum.OK.getCode(), user.getFav().getJSONArray(type));
         }
         // return all those I init or already in user.getFav
-        return retResult.ok(CodeEnum.OK.getCode(), result);
+            return retResult.ok(CodeEnum.OK.getCode(), user.getFav());
     }
 
     // del Fav from oItem objFav
@@ -242,10 +241,11 @@ public class UsageServiceImpl implements UsageService {
         if (!asset.getId().equals("none")) {
             JSONObject jsonPowerup = asset.getPowerup();
             if (asset.getPowerup() == null) {
-                jsonPowerup = qt.getInitData().getNewComp().getJSONObject("a-core").getJSONObject("powerup");
+
+                JSONObject cap = qt.setJson("total", 1024000000, "used", 0, "status", true);
                 JSONArray newView = asset.getView();
                 newView.add("powerup");
-                qt.setMDContent(asset.getId(), qt.setJson("powerup", jsonPowerup, "view", newView), Asset.class);
+                qt.setMDContent(asset.getId(), qt.setJson("powerup", qt.setJson("capacity", cap), "view", newView), Asset.class);
             }
             System.out.println("jsonPowerup=" + jsonPowerup);
             return retResult.ok(CodeEnum.OK.getCode(), jsonPowerup);
@@ -324,15 +324,26 @@ public class UsageServiceImpl implements UsageService {
     }
 
     @Override
-    public ApiResponse notifyLog(String id_U, String id_C, JSONObject wrdNU, String id, String id_I, JSONObject wrdN, JSONObject wrddesc) {
+    public ApiResponse notifyLog(String id_U, String id_C, JSONObject wrdNU, String id, String id_I, JSONObject objLink, JSONObject wrdN, JSONObject wrddesc) {
         Asset asset = qt.getConfig(id_C, "a-auth", "flowControl");
         JSONArray arrayFlow = asset.getFlowControl().getJSONArray("objData");
+
         JSONObject jsonNotify = qt.setJson("id_U", id_U,
                 "wrdNU", wrdNU,
                 "wrdN", wrdN,
                 "wrddesc", wrddesc,
-                "id_I", id_I,
+                "id_I", "",
                 "tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+
+        if (id_I != "")
+        {
+            //if it is Id_I, use objLink's wrdN, wrddesc, grpB, pic etc all here
+            qt.upJson(jsonNotify, "id_I", id_I,
+                    "wrdN", objLink.getJSONObject("wrdN"),
+                    "wrddesc", objLink.getJSONObject("wrddesc"),
+                    "grpB", objLink.getString("grpB"),
+                    "pic", objLink.getString("pic"));
+        }
         for (int i = 0; i < arrayFlow.size(); i++) {
             JSONObject jsonFlow = arrayFlow.getJSONObject(i);
             // find out the id_flow that wants to notify

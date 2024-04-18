@@ -11,6 +11,7 @@ import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.common.Constants;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.DbUtils;
+import com.cresign.tools.dbTools.DoubleUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
@@ -2312,6 +2313,7 @@ public class FlowServiceImpl implements FlowService {
                         } else {
                             JSONArray nextPart = part.getJSONArray("objItem");
                             if (null == nextPart || nextPart.size() == 0) {
+                                qt.setMDContent(thisItem.getString("id_P"), qt.setJson("part", null), Prod.class);
                                 bmdptValue = 1;
                             } else {
                                 this.updatePartInfo(id_C, nextPart, thisItem.get("id_P").toString(), stat);
@@ -2398,14 +2400,13 @@ public class FlowServiceImpl implements FlowService {
     public ApiResponse dgRemove(String id_O,String id_C,String id_U) {
 
 
-        Order orderParent = qt.getMDContent(id_O, Arrays.asList("info","action", "oItem", "casItemx", "view"),Order.class);
+        Order orderParent = qt.getMDContent(id_O, Arrays.asList("info", "action", "oItem", "casItemx", "view"), Order.class);
 
-        if (orderParent == null)
-        {
+        if (orderParent == null) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
         JSONArray casList = orderParent.getCasItemx().getJSONObject(id_C).getJSONArray("objOrder");
-
+        JSONArray orderIdList = new JSONArray();
 //        if (orderParent.getCasItemx().getJSONObject(id_C) == null)
 //        {
 //            casList = orderParent.getCasItemx().getJSONArray("objOrder");
@@ -2418,22 +2419,61 @@ public class FlowServiceImpl implements FlowService {
         casList.add(myOrder);
 
         // loop casItemx orders
-        for (int i = 0; i < casList.size(); i++)
-        {
+        for (int i = 0; i < casList.size(); i++) {
             // check if orders are final, if need request Cancel, send request
             // if ok, open order
             //TODO KEV Check 1 - loop thru all my suppliers and see if they are real or myself, if one of them is real, we need them to agree cancel / both cancel lST
 
 
             String subOrderId = casList.getJSONObject(i).getString("id_O");
+            orderIdList.add(subOrderId);
+            qt.delES("action", qt.setESFilt("id_O", "exact", subOrderId));
+            qt.delES("action", qt.setESFilt("id_OP", "exact", subOrderId));
+            qt.delES("assetflow", qt.setESFilt("id_O", "exact", subOrderId));
+            qt.delES("assetflow", qt.setESFilt("id_OP", "exact", subOrderId));
 
-            qt.delES("action", qt.setESFilt("id_O", "exact",subOrderId));
-            qt.delES("assetflow", qt.setESFilt("data.id_OP", "exact",subOrderId));
-            qt.delES("assetflow", qt.setESFilt("id_O", "exact",subOrderId));
+            qt.delES("msg", qt.setESFilt("id_O", "exact", subOrderId));
+        }
 
-            qt.delES("msg", qt.setESFilt("id_O", "exact",subOrderId));
+        List<Order> oDataList = qt.getMDContentFast(orderIdList, Arrays.asList("action"), Order.class);
 
-                // delete that order        // 删除订单
+        //collect ALL id_P and start removing qtySafex
+        JSONArray set_id_P = new JSONArray();
+        for (int i = 0; i < oDataList.size(); i++) {
+            JSONArray actionData = oDataList.get(i).getAction().getJSONArray("objAction");
+            for (int j = 0; j < actionData.size(); j++) {
+                if (actionData.getJSONObject(j).getInteger("bmdpt").equals(3)) {
+                    set_id_P.add(actionData.getJSONObject(j).getString("id_P"));
+                }
+            }
+        }
+        List<Prod> prodList = qt.getMDContentFast(set_id_P, Arrays.asList("qtySafex." + id_C), Prod.class);
+        qt.errPrint("i am in thisSafex3", prodList, set_id_P, oDataList);
+
+        for (int i = 0; i < prodList.size(); i++)
+        {
+            if (prodList.get(i).getQtySafex() != null && prodList.get(i).getQtySafex().getJSONObject(id_C) != null) {
+                JSONObject thisSafex = prodList.get(i).getQtySafex().getJSONObject(id_C);
+
+                for (int j = 0; j < thisSafex.getJSONArray("objSafex").size(); j++) {
+                    if (thisSafex.getJSONArray("objSafex").getJSONObject(j).getString("refOP").equals(orderParent.getInfo().getRef())) {
+                        qt.errPrint("i am in thisSafex", thisSafex, set_id_P.get(j));
+                        thisSafex.put("wn2buy",
+                                DoubleUtils.subtract(thisSafex.getDouble("wn2buy"),
+                                        thisSafex.getJSONArray("objSafex").getJSONObject(j).getDouble("wn2qty")));
+                        thisSafex.getJSONArray("objSafex").remove(j);
+                        qt.setMDContent(set_id_P.getString(i), qt.setJson("qtySafex." + id_C, thisSafex), Prod.class);
+                        break;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < casList.size(); i++)
+        {
+            String subOrderId = casList.getJSONObject(i).getString("id_O");
+
+            // delete that order        // 删除订单
             if (!subOrderId.equals(id_O)) {
                 // 创建es删除请求
                 qt.delES("lsborder", qt.setESFilt("id_O", subOrderId));

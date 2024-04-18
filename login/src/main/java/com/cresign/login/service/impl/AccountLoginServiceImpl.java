@@ -54,7 +54,7 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 
     public static final String SCANCODE_LOGINCOMP = "scancode_login";
 
-    public static final String QR_URL = "https://www.cresign.cn/qrCodeTest?qrType=logincomp&t=";
+    public static final String QR_URL = "https://www.cresign.cn/qrCode?qrType=logincomp&t=";
 
 //    /**
 //     * 根据id_U修改appId

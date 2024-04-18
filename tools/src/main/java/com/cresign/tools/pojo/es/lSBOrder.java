@@ -149,9 +149,15 @@ public class lSBOrder {
     private String taStart;
     private String taFin;
 
-    private long wn0Dur;
+    private long wntDur;
 
     private String qr;
+
+    private JSONObject wrdTag;
+
+    private JSONObject wrdTagB;
+
+    private Long wn0fsize;
 
 
 }

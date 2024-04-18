@@ -69,7 +69,7 @@ public class Asset {
 
     private JSONObject flowControl;
 
-    private JSONObject qrShareCode;
+//    private JSONObject qrShareCode;
 
     @JsonProperty("aStock")
     private JSONObject aStock;

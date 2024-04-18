@@ -71,4 +71,6 @@ public class ProdInfo {
 
     private String qr;
 
+    private JSONObject wrdTag;
+
 }

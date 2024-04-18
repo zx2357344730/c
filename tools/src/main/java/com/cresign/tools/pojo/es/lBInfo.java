@@ -53,6 +53,8 @@ public class lBInfo {
 
     private String id_CP;
 
+    private String id_PP;
+
     private JSONObject wrdN;
 
     private JSONObject wrddesc;
@@ -76,5 +78,9 @@ public class lBInfo {
     private String tmd;
 
     private String tmk;
+
+    private JSONObject wrdTagB;
+
+    private Long wn0fsize;
 
 }

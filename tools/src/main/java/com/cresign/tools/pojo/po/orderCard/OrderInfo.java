@@ -122,4 +122,6 @@ public class OrderInfo implements Cloneable{
     private String tmd;
 
     private String tmk;
+
+    private JSONObject wrdTag;
 }

@@ -57,7 +57,6 @@ public class LoginResult {
         infoData.put("id_C", def_C);
 
 
-//        if (!"refreshToken".equals(loginType)) {
             token = oauth.setToken(
                     user,
                     def_C,
@@ -66,9 +65,6 @@ public class LoginResult {
                     clientType);
 
             newAssignRFToken = oauth.setRefreshToken(user.getId(), clientType);
-
-
-//        }
 
         if (null != user.getInfo().getDefNG())
             infoData.put("defNG", user.getInfo().getDefNG());
@@ -95,7 +91,7 @@ public class LoginResult {
         if (null != user.getInfo().getPic())
             infoData.put("user_pic", user.getInfo().getPic());
 
-        infoData.put("user_wrdN", user.getInfo().getWrdN()); // 用户中文名
+        infoData.put("user_wrdN", user.getInfo().getWrdNReal()); // 用户中文名
 
         infoData.put("token", token);               // 存储token
         infoData.put("mbn", user.getInfo().getMbn());

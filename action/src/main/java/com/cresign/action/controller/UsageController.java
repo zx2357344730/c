@@ -239,6 +239,7 @@ public class UsageController {
                     tokData.getJSONObject("wrdNU"),
                     json.getString("id"),
                     json.getString("id_I"),
+                    json.getJSONObject("objLink"),
                     json.getJSONObject("wrdN"),
                     json.getJSONObject("wrddesc")
             );

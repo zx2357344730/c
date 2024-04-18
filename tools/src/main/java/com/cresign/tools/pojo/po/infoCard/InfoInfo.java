@@ -66,4 +66,6 @@ public class InfoInfo {
 
     private String qr;
 
+    private JSONObject wrdTag;
+
 }

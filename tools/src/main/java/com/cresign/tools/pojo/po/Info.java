@@ -47,7 +47,9 @@ public class Info {
 
     private JSONObject ch00s;
 
-    private JSONObject qrShareCode;
+//    private JSONObject qrShareCode;
+
+    private JSONObject logList00s;
 
     private JSONObject tempa;
 
@@ -58,6 +60,8 @@ public class Info {
     private JSONObject en;
 
     private Integer tvs = 1;
+
+    private Long wn0fsize;
 
 
 

@@ -93,4 +93,5 @@ public class lNUser implements Serializable {
 
     private JSONArray arrCV;
 
+
 }

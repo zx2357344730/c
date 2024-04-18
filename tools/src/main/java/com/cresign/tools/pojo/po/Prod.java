@@ -59,7 +59,7 @@ public class Prod {
 
     private JSONObject buyInit;
 
-    private JSONObject qrShareCode;
+//    private JSONObject qrShareCode;
 
     private JSONObject summx;
 
@@ -70,6 +70,8 @@ public class Prod {
 
 
     private Integer tvs = 1;
+
+    private Long wn0fsize;
 
 
 

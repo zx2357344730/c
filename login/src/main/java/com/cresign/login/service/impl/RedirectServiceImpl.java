@@ -38,10 +38,10 @@ import java.util.Map;
 public class RedirectServiceImpl implements RedirectService {
 
     public static final String SCANCODE_SHAREPROD = "scancode_shareprod";
-    public static final String HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T = "https://www.cresign.cn/qrCodeTest?qrType=shareprod&t=";
+    public static final String URL_QRSHARE_PROD = "https://www.cresign.cn/qrCode?qrType=shareprod&t=";
     public static final String SCANCODE_JOINCOMP = "scancode_joincomp";
-    public static final String HTTP_JOINCOMP = "https://www.cresign.cn/qrCodeTest?qrType=joinComp&t=";
-    public static final String HTTP_LOG = "https://www.cresign.cn/qrCodeTest?qrType=log&t=";
+    public static final String HTTP_JOINCOMP = "https://www.cresign.cn/qrCode?qrType=joinComp&t=";
+    public static final String HTTP_LOG = "https://www.cresign.cn/qrCode?qrType=log&t=";
 
 
     @Autowired
@@ -139,312 +139,311 @@ public class RedirectServiceImpl implements RedirectService {
         return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
     }
 
-    @Override
-    @Transactional
-    public ApiResponse generateProdCode(String id_C, String id_P, String id_U, String mode, JSONObject data) {
-
-        /**
-         * 1. 从mongodb获取到token，到redis中查找是否有该token
-         * 2. 将前端传入的参数，存放到redis，用随机生成的uuid作为key, 前端传入参数作为val
-         * 3. 并返回 url 拼接 key返回给前端
-         */
-
-        // 1.
-//        Query prodQ = new Query(new Criteria("_id").is(id_P).and("info.id_C").is(id_C));
-//        Prod prod = mongoTemplate.findOne(prodQ, Prod.class);
-        Prod prod = qt.getMDContent(id_P,qt.strList("info","qrShareCode"), Prod.class);
-        if (ObjectUtils.isEmpty(prod)) {
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
-        }
-        if (ObjectUtils.isNotEmpty(prod.getQrShareCode())) {
-            if (StringUtils.isNotEmpty(prod.getQrShareCode().getString("token"))) {
-                JSONObject qrShareCode = prod.getQrShareCode();
-                String code_token = qrShareCode.getString("token");
-//                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-                    String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token;
-                    return retResult.ok(CodeEnum.OK.getCode(), url);
-//                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_CODE_IS_EXIST.getCode(), code_token);
-                }
-            }
-        }
-        
-        
-        // 2.
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("id_C", id_C);
-        jsonObject.put("id_P", id_P);
-        jsonObject.put("grp", prod.getInfo().getGrp());
-        jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-        String token = UUID19.uuid();
-        String keyName = SCANCODE_SHAREPROD + token;
-
-        if ("frequency".equals(mode)) {
-            jsonObject.put("mode", mode);
-            jsonObject.put("count", data.getString("count"));
-            jsonObject.put("used_count", "0");
-//            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token, jsonObject, -1L);
-        } else if ("time".equals(mode)) {
-            jsonObject.put("mode", mode);
-            jsonObject.put("endTimeSec", data.getString("endTimeSec"));
-//            qt.putRDAll(keyName,jsonObject,data.getInteger("endTimeSec"));
-//            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-//            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token, jsonObject,data.getLong("endTimeSec"));
-        } else {
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
-        }
-
-//        Update update = new Update();
-//        update.set("qrShareCode.token",token);
-//        update.set("qrShareCode.data", jsonObject);
+//    @Override
+//    @Transactional
+//    public ApiResponse generateProdCode(String id_C, String id_P, String id_U, String mode, JSONObject data) {
 //
-//        mongoTemplate.updateFirst(prodQ, update, Prod.class);
-        qt.setMDContent(id_P,qt.setJson("qrShareCode.token",token,"qrShareCode.data",jsonObject), Prod.class);
-
-        // 3.
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + token;
-        return retResult.ok(CodeEnum.OK.getCode(), url);
-    }
-
-
-
-    @Override
-    @Transactional
-    public ApiResponse generateUserCode(String id_C,  String id_U, String mode, JSONObject data) {
-
-        /**
-         * 1. 从mongodb获取到token，到redis中查找是否有该token
-         * 2. 将前端传入的参数，存放到redis，用随机生成的uuid作为key, 前端传入参数作为val
-         * 3. 并返回 url 拼接 key返回给前端
-         */
-
-        // 1.
-//        Query userQ = new Query(new Criteria("_id").is(id_U));
+//        /**
+//         * 1. 从mongodb获取到token，到redis中查找是否有该token
+//         * 2. 将前端传入的参数，存放到redis，用随机生成的uuid作为key, 前端传入参数作为val
+//         * 3. 并返回 url 拼接 key返回给前端
+//         */
 //
-//        userQ.fields().include("rolex.objComp."+id_C).include("qrShareCode");
-//        User user = mongoTemplate.findOne(userQ, User.class);
-        User user = qt.getMDContent(id_U,qt.strList("rolex","qrShareCode"), User.class);
-        if (ObjectUtils.isEmpty(user)) {
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
-        }
-        if (ObjectUtils.isNotEmpty(user.getQrShareCode())) {
-            if (StringUtils.isNotEmpty(user.getQrShareCode().getString("token"))) {
-                JSONObject qrShareCode = user.getQrShareCode();
-                String code_token = qrShareCode.getString("token");
-//                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-PROD_CODE_IS_EXIST.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
-                }
-            }
-        }
-
-
-        // 2.
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("id_C", id_C);
-        jsonObject.put("id", id_U);
-
-//        ArrayList rolexList = (ArrayList) user.getRolex().get("objComp");
-//        HashMap<String, Object> rolexMap = (HashMap<String, Object>) rolexList.get(0);
-//        jsonObject.put("grp",rolexMap.get("grpU"));
-        jsonObject.put("grp","1099");
-        jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-        String token = UUID19.uuid();
-        String keyName = SCANCODE_SHAREPROD + token;
-
-        if ("frequency".equals(mode)) {
-            jsonObject.put("mode", mode);
-            jsonObject.put("count", data.getString("count"));
-            jsonObject.put("used_count", "0");
-//            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,-1L);
-        } else if ("time".equals(mode)) {
-            jsonObject.put("mode", mode);
-            jsonObject.put("endTimeSec", data.getString("endTimeSec"));
-//            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-//            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
-//            qt.putRDAll(keyName,jsonObject,data.getInteger("endTimeSec"));
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,data.getLong("endTimeSec"));
-        } else {
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
-        }
-
-//        Update update = new Update();
-//        update.set("qrShareCode.token",token);
-//        update.set("qrShareCode.data", jsonObject);
+//        // 1.
+////        Query prodQ = new Query(new Criteria("_id").is(id_P).and("info.id_C").is(id_C));
+////        Prod prod = mongoTemplate.findOne(prodQ, Prod.class);
+//        Prod prod = qt.getMDContent(id_P,qt.strList("info","qrShareCode"), Prod.class);
+//        if (ObjectUtils.isEmpty(prod)) {
+//            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
+//        }
+//        if (ObjectUtils.isNotEmpty(prod.getQrShareCode())) {
+//            if (StringUtils.isNotEmpty(prod.getQrShareCode().getString("token"))) {
+//                JSONObject qrShareCode = prod.getQrShareCode();
+//                String code_token = qrShareCode.getString("token");
+////                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+//                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
+//                    String url = URL_QRSHARE_PROD + code_token;
+//                    return retResult.ok(CodeEnum.OK.getCode(), url);
+////                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_CODE_IS_EXIST.getCode(), code_token);
+//                }
+//            }
+//        }
 //
-//        mongoTemplate.updateFirst(userQ, update, User.class);
-        qt.setMDContent(id_U,qt.setJson("qrShareCode.token",token,"qrShareCode.data",jsonObject), User.class);
-
-        // 3.
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + token;
-        return retResult.ok(CodeEnum.OK.getCode(), url);
-    }
-
-    @Override
-    @Transactional
-    public ApiResponse generateCompCode(String id_C,  String id_U, String mode, JSONObject data) {
-
-        /**
-         * 1. 从mongodb获取到token，到redis中查找是否有该token
-         * 2. 将前端传入的参数，存放到redis，用随机生成的uuid作为key, 前端传入参数作为val
-         * 3. 并返回 url 拼接 key返回给前端
-         */
-
-        // 1.
-//        Query compQ = new Query(new Criteria("_id").is(id_C));//.and("info.id_C").is(id_C)
 //
-//        compQ.fields().include("qrShareCode");
-//        Comp comp = mongoTemplate.findOne(compQ, Comp.class);
-        Comp comp = qt.getMDContent(id_C,"qrShareCode", Comp.class);
-        if (ObjectUtils.isEmpty(comp)) {
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
-        }
-        if (ObjectUtils.isNotEmpty(comp.getQrShareCode())) {
-            if (StringUtils.isNotEmpty(comp.getQrShareCode().getString("token"))) {
-                JSONObject qrShareCode = comp.getQrShareCode();
-                String code_token = qrShareCode.getString("token");
-//                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-                    String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token;
-                    return retResult.ok(CodeEnum.OK.getCode(), url);
-//                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-//PROD_CODE_IS_EXIST.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
-                }
-            }
-        }
-
-
-        // 2.
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("id_C", id_C);
-        jsonObject.put("id", id_C);
-        jsonObject.put("grp","1099");
-        jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-        String token = UUID19.uuid();
-        String keyName = SCANCODE_SHAREPROD + token;
-
-        if ("frequency".equals(mode)) {
-            jsonObject.put("mode", mode);
-            jsonObject.put("count", data.getString("count"));
-            jsonObject.put("used_count", "0");
-//            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,-1L);
-        } else if ("time".equals(mode)) {
-            jsonObject.put("mode", mode);
-            jsonObject.put("endTimeSec", data.getString("endTimeSec"));
-//            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-//            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
-//            qt.putRDAll(keyName, jsonObject, data.getInteger("endTimeSec"));
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,data.getLong("endTimeSec"));
-        } else {
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
-        }
-
-//        Update update = new Update();
-//        update.set("qrShareCode.token",token);
-//        update.set("qrShareCode.data", jsonObject);
+//        // 2.
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("id_C", id_C);
+//        jsonObject.put("id_P", id_P);
+//        jsonObject.put("grp", prod.getInfo().getGrp());
+//        jsonObject.put("create_id_U", id_U);
+//        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
 //
-//        mongoTemplate.updateFirst(compQ, update, Comp.class);
-        qt.setMDContent(id_C,qt.setJson("qrShareCode.token",token,"qrShareCode.data",jsonObject), Comp.class);
-
-        // 3.
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + token;
-        return retResult.ok(CodeEnum.OK.getCode(), url);
-    }
-
-    @Override
-    @Transactional
-    public ApiResponse generateOrderCode(String id_C,  String id_U,String id_O,String listType, String mode, JSONObject data) {
-
-        /**
-         * 1. 从mongodb获取到token，到redis中查找是否有该token
-         * 2. 将前端传入的参数，存放到redis，用随机生成的uuid作为key, 前端传入参数作为val
-         * 3. 并返回 url 拼接 key返回给前端
-         */
-
-        // 1.
-//        Query orderQ = new Query(new Criteria("_id").is(id_O));
+//        String token = UUID19.uuid();
+//        String keyName = SCANCODE_SHAREPROD + token;
 //
-//        orderQ.fields().include("qrShareCode").include("info");
-//        Order order = mongoTemplate.findOne(orderQ, Order.class);
-        Order order = qt.getMDContent(id_O, qt.strList("qrShareCode","info"), Order.class);
-        if (ObjectUtils.isEmpty(order) && order.getInfo().getLST() == null
-                && Integer.parseInt(order.getInfo().getLST().toString()) < 8) {
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
-        }
-        if (ObjectUtils.isNotEmpty(order.getQrShareCode())) {
-            if (StringUtils.isNotEmpty(order.getQrShareCode().getString("token"))) {
-                JSONObject qrShareCode = order.getQrShareCode();
-                String code_token = qrShareCode.getString("token");
-//                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-                    String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token;
-                    return retResult.ok(CodeEnum.OK.getCode(), url);
-//                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-//PROD_CODE_IS_EXIST.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + code_token);
-                }
-            }
-        }
-
-
-        // 2.
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("id_C", id_C);
-        jsonObject.put("id", id_O);
-        if (listType.equals("lSOrder") && order.getInfo().getGrp() != null){
-            jsonObject.put("grp",order.getInfo().getGrp());
-        }else if (listType.equals("lBOrder") && order.getInfo().getGrpB() != null){
-            jsonObject.put("grp",order.getInfo().getGrpB());
-        }else{
-            jsonObject.put("grp","1099");
-        }
-
-
-        jsonObject.put("create_id_U", id_U);
-        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-        String token = UUID19.uuid();
-        String keyName = SCANCODE_SHAREPROD + token;
-
-        if ("frequency".equals(mode)) {
-            jsonObject.put("mode", mode);
-            jsonObject.put("count", data.getString("count"));
-            jsonObject.put("used_count", "0");
-//            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,-1L);
-        } else if ("time".equals(mode)) {
-            jsonObject.put("mode", mode);
-            jsonObject.put("endTimeSec", data.getString("endTimeSec"));
-//            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
-//            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
-//            qt.putRDAll(keyName, jsonObject, data.getInteger("endTimeSec"));
-            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,data.getLong("endTimeSec"));
-        } else {
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
-        }
-
-//        Update update = new Update();
-//        update.set("qrShareCode.token",token);
-//        update.set("qrShareCode.data", jsonObject);
+//        if ("frequency".equals(mode)) {
+//            jsonObject.put("mode", mode);
+//            jsonObject.put("count", data.getString("count"));
+//            jsonObject.put("used_count", "0");
+////            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD,token, jsonObject, -1L);
+//        } else if ("time".equals(mode)) {
+//            jsonObject.put("mode", mode);
+//            jsonObject.put("endTimeSec", data.getString("endTimeSec"));
+////            qt.putRDAll(keyName,jsonObject,data.getInteger("endTimeSec"));
+////            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+////            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD,token, jsonObject,data.getLong("endTimeSec"));
+//        } else {
+//            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+//        }
 //
-//        mongoTemplate.updateFirst(orderQ, update, Order.class);
-        qt.setMDContent(id_O,qt.setJson("qrShareCode.token",token,"qrShareCode.data", jsonObject), Order.class);
-
-        // 3.
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + token;
-        return retResult.ok(CodeEnum.OK.getCode(), url);
-    }
-
+////        Update update = new Update();
+////        update.set("qrShareCode.token",token);
+////        update.set("qrShareCode.data", jsonObject);
+////
+////        mongoTemplate.updateFirst(prodQ, update, Prod.class);
+//        qt.setMDContent(id_P,qt.setJson("qrShareCode.token",token,"qrShareCode.data",jsonObject), Prod.class);
+//
+//        // 3.
+//        String url = URL_QRSHARE_PROD + token;
+//        return retResult.ok(CodeEnum.OK.getCode(), url);
+//    }
+//
+//
+//
+//    @Override
+//    @Transactional
+//    public ApiResponse generateUserCode(String id_C,  String id_U, String mode, JSONObject data) {
+//
+//        /**
+//         * 1. 从mongodb获取到token，到redis中查找是否有该token
+//         * 2. 将前端传入的参数，存放到redis，用随机生成的uuid作为key, 前端传入参数作为val
+//         * 3. 并返回 url 拼接 key返回给前端
+//         */
+//
+//        // 1.
+////        Query userQ = new Query(new Criteria("_id").is(id_U));
+////
+////        userQ.fields().include("rolex.objComp."+id_C).include("qrShareCode");
+////        User user = mongoTemplate.findOne(userQ, User.class);
+//        User user = qt.getMDContent(id_U,qt.strList("rolex","qrShareCode"), User.class);
+//        if (ObjectUtils.isEmpty(user)) {
+//            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
+//        }
+//        if (ObjectUtils.isNotEmpty(user.getQrShareCode())) {
+//            if (StringUtils.isNotEmpty(user.getQrShareCode().getString("token"))) {
+//                JSONObject qrShareCode = user.getQrShareCode();
+//                String code_token = qrShareCode.getString("token");
+////                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+//                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
+//                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_CODE_IS_EXIST.getCode(), URL_QRSHARE_PROD + code_token);
+//                }
+//            }
+//        }
+//
+//
+//        // 2.
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("id_C", id_C);
+//        jsonObject.put("id", id_U);
+//
+////        ArrayList rolexList = (ArrayList) user.getRolex().get("objComp");
+////        HashMap<String, Object> rolexMap = (HashMap<String, Object>) rolexList.get(0);
+////        jsonObject.put("grp",rolexMap.get("grpU"));
+//        jsonObject.put("grp","1099");
+//        jsonObject.put("create_id_U", id_U);
+//        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//        String token = UUID19.uuid();
+//        String keyName = SCANCODE_SHAREPROD + token;
+//
+//        if ("frequency".equals(mode)) {
+//            jsonObject.put("mode", mode);
+//            jsonObject.put("count", data.getString("count"));
+//            jsonObject.put("used_count", "0");
+////            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,-1L);
+//        } else if ("time".equals(mode)) {
+//            jsonObject.put("mode", mode);
+//            jsonObject.put("endTimeSec", data.getString("endTimeSec"));
+////            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+////            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
+////            qt.putRDAll(keyName,jsonObject,data.getInteger("endTimeSec"));
+//            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,data.getLong("endTimeSec"));
+//        } else {
+//            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+//        }
+//
+////        Update update = new Update();
+////        update.set("qrShareCode.token",token);
+////        update.set("qrShareCode.data", jsonObject);
+////
+////        mongoTemplate.updateFirst(userQ, update, User.class);
+//        qt.setMDContent(id_U,qt.setJson("qrShareCode.token",token,"qrShareCode.data",jsonObject), User.class);
+//
+//        // 3.
+//        String url = URL_QRSHARE_PROD + token;
+//        return retResult.ok(CodeEnum.OK.getCode(), url);
+//    }
+//
+//    @Override
+//    @Transactional
+//    public ApiResponse generateCompCode(String id_C,  String id_U, String mode, JSONObject data) {
+//
+//        /**
+//         * 1. 从mongodb获取到token，到redis中查找是否有该token
+//         * 2. 将前端传入的参数，存放到redis，用随机生成的uuid作为key, 前端传入参数作为val
+//         * 3. 并返回 url 拼接 key返回给前端
+//         */
+//
+//        // 1.
+////        Query compQ = new Query(new Criteria("_id").is(id_C));//.and("info.id_C").is(id_C)
+////
+////        compQ.fields().include("qrShareCode");
+////        Comp comp = mongoTemplate.findOne(compQ, Comp.class);
+//        Comp comp = qt.getMDContent(id_C,"qrShareCode", Comp.class);
+//        if (ObjectUtils.isEmpty(comp)) {
+//            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
+//        }
+//        if (ObjectUtils.isNotEmpty(comp.getQrShareCode())) {
+//            if (StringUtils.isNotEmpty(comp.getQrShareCode().getString("token"))) {
+//                JSONObject qrShareCode = comp.getQrShareCode();
+//                String code_token = qrShareCode.getString("token");
+////                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+//                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
+//                    String url = URL_QRSHARE_PROD + code_token;
+//                    return retResult.ok(CodeEnum.OK.getCode(), url);
+////                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+////PROD_CODE_IS_EXIST.getCode(), URL_QRSHARE_PROD + code_token);
+//                }
+//            }
+//        }
+//
+//
+//        // 2.
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("id_C", id_C);
+//        jsonObject.put("id", id_C);
+//        jsonObject.put("grp","1099");
+//        jsonObject.put("create_id_U", id_U);
+//        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//        String token = UUID19.uuid();
+//        String keyName = SCANCODE_SHAREPROD + token;
+//
+//        if ("frequency".equals(mode)) {
+//            jsonObject.put("mode", mode);
+//            jsonObject.put("count", data.getString("count"));
+//            jsonObject.put("used_count", "0");
+////            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,-1L);
+//        } else if ("time".equals(mode)) {
+//            jsonObject.put("mode", mode);
+//            jsonObject.put("endTimeSec", data.getString("endTimeSec"));
+////            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+////            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
+////            qt.putRDAll(keyName, jsonObject, data.getInteger("endTimeSec"));
+//            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,data.getLong("endTimeSec"));
+//        } else {
+//            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+//        }
+//
+////        Update update = new Update();
+////        update.set("qrShareCode.token",token);
+////        update.set("qrShareCode.data", jsonObject);
+////
+////        mongoTemplate.updateFirst(compQ, update, Comp.class);
+//        qt.setMDContent(id_C,qt.setJson("qrShareCode.token",token,"qrShareCode.data",jsonObject), Comp.class);
+//
+//        // 3.
+//        String url = URL_QRSHARE_PROD + token;
+//        return retResult.ok(CodeEnum.OK.getCode(), url);
+//    }
+//
+//    @Override
+//    @Transactional
+//    public ApiResponse generateOrderCode(String id_C,  String id_U,String id_O,String listType, String mode, JSONObject data) {
+//
+//        /**
+//         * 1. 从mongodb获取到token，到redis中查找是否有该token
+//         * 2. 将前端传入的参数，存放到redis，用随机生成的uuid作为key, 前端传入参数作为val
+//         * 3. 并返回 url 拼接 key返回给前端
+//         */
+//
+//        // 1.
+////        Query orderQ = new Query(new Criteria("_id").is(id_O));
+////
+////        orderQ.fields().include("qrShareCode").include("info");
+////        Order order = mongoTemplate.findOne(orderQ, Order.class);
+//        Order order = qt.getMDContent(id_O, qt.strList("qrShareCode","info"), Order.class);
+//        if (ObjectUtils.isEmpty(order) && order.getInfo().getLST() == null
+//                && Integer.parseInt(order.getInfo().getLST().toString()) < 8) {
+//            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
+//        }
+//        if (ObjectUtils.isNotEmpty(order.getQrShareCode())) {
+//            if (StringUtils.isNotEmpty(order.getQrShareCode().getString("token"))) {
+//                JSONObject qrShareCode = order.getQrShareCode();
+//                String code_token = qrShareCode.getString("token");
+////                if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+//                if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
+//                    String url = URL_QRSHARE_PROD + code_token;
+//                    return retResult.ok(CodeEnum.OK.getCode(), url);
+////                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
+////PROD_CODE_IS_EXIST.getCode(), URL_QRSHARE_PROD + code_token);
+//                }
+//            }
+//        }
+//
+//
+//        // 2.
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("id_C", id_C);
+//        jsonObject.put("id", id_O);
+//        if (listType.equals("lSOrder") && order.getInfo().getGrp() != null){
+//            jsonObject.put("grp",order.getInfo().getGrp());
+//        }else if (listType.equals("lBOrder") && order.getInfo().getGrpB() != null){
+//            jsonObject.put("grp",order.getInfo().getGrpB());
+//        }else{
+//            jsonObject.put("grp","1099");
+//        }
+//
+//
+//        jsonObject.put("create_id_U", id_U);
+//        jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//        String token = UUID19.uuid();
+//        String keyName = SCANCODE_SHAREPROD + token;
+//
+//        if ("frequency".equals(mode)) {
+//            jsonObject.put("mode", mode);
+//            jsonObject.put("count", data.getString("count"));
+//            jsonObject.put("used_count", "0");
+////            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,-1L);
+//        } else if ("time".equals(mode)) {
+//            jsonObject.put("mode", mode);
+//            jsonObject.put("endTimeSec", data.getString("endTimeSec"));
+////            redisTemplate0.opsForHash().putAll(keyName, jsonObject);
+////            redisTemplate0.expire(keyName, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
+////            qt.putRDAll(keyName, jsonObject, data.getInteger("endTimeSec"));
+//            qt.putRDHashMany(SCANCODE_SHAREPROD,token,jsonObject,data.getLong("endTimeSec"));
+//        } else {
+//            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+//        }
+//
+////        Update update = new Update();
+////        update.set("qrShareCode.token",token);
+////        update.set("qrShareCode.data", jsonObject);
+////
+////        mongoTemplate.updateFirst(orderQ, update, Order.class);
+//        qt.setMDContent(id_O,qt.setJson("qrShareCode.token",token,"qrShareCode.data", jsonObject), Order.class);
+//
+//        // 3.
+//        String url = URL_QRSHARE_PROD + token;
+//        return retResult.ok(CodeEnum.OK.getCode(), url);
+//    }
+//
 
     @Override
     public ApiResponse generateJoinCompCode(String id_U, String id_C, String mode, JSONObject data) {
@@ -463,8 +462,7 @@ PROD_CODE_IS_EXIST.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPRO
         }
         if (ObjectUtils.isNotEmpty(comp.getJoinCode())) {
             if (StringUtils.isNotEmpty(comp.getJoinCode().getString("token"))) {
-                JSONObject qrShareCode = comp.getJoinCode();
-                String code_token = qrShareCode.getString("token");
+                String code_token = comp.getJoinCode().getString("token");
                 System.out.println("code_token"+ code_token);
                 if (qt.hasRDKey(SCANCODE_JOINCOMP, code_token)) {
                     System.out.println("code_token2"+ code_token);
@@ -666,73 +664,76 @@ PROD_CODE_IS_EXIST.getCode(), HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPRO
           type: 0 = joinComp, 1 = joinVisitor
          */
 
-
-        Comp compOne = qt.getMDContent(entries.get("id_C").toString(), "info", Comp.class);
-        if (ObjectUtils.isEmpty(compOne)) {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null) ;
+        if (join_user.equals("5f28bf314f65cc7dc2e60262")) {
+            return retResult.ok(CodeEnum.OK.getCode(), null);
         }
 
-        // 判断用户存不存在
-        User userJson = qt.getMDContent(join_user,"info", User.class);
-        //JSONObject userJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(userQ, User.class));
-        User userOne = qt.getMDContent(join_user, "rolex.objComp", User.class);
+            Comp compOne = qt.getMDContent(entries.get("id_C").toString(), "info", Comp.class);
+            if (ObjectUtils.isEmpty(compOne)) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null) ;
+            }
 
-        // 不存在则返回出去
-        if (null == userOne) {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_IS_NO_FOUND.getCode(), null);
-        }
+            // 判断用户存不存在
+            User userJson = qt.getMDContent(join_user,"info", User.class);
+            //JSONObject userJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(userQ, User.class));
+            User userOne = qt.getMDContent(join_user, "rolex.objComp", User.class);
 
-        if (null != userOne.getRolex().getJSONObject("objComp").getJSONObject(entries.get("id_C").toString())) {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_JOIN_IS_HAVE.getCode(), null);
-        }
+            // 不存在则返回出去
+            if (null == userOne) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_IS_NO_FOUND.getCode(), null);
+            }
 
-        JSONObject rolex = new JSONObject(3);
+            if (null != userOne.getRolex().getJSONObject("objComp").getJSONObject(entries.get("id_C").toString())) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_JOIN_IS_HAVE.getCode(), null);
+            }
 
-        JSONObject objMod = new JSONObject(5);
-        objMod.put("ref", "a-core-0");
-        objMod.put("mod", "a-core");
-        objMod.put("bcdState", 1);
-        objMod.put("bcdLevel", 0);
-        objMod.put("tfin", -1);
-        JSONObject modAuth = new JSONObject();
-        modAuth.put("a-core-0", objMod);
+            JSONObject rolex = new JSONObject(3);
 
-        rolex.put("modAuth", modAuth);
-        rolex.put("wrdNC", compOne.getInfo().getWrdN());
-        rolex.put("picC", compOne.getInfo().getPic());
-        rolex.put("id_C", entries.get("id_C"));
+            JSONObject objMod = new JSONObject(5);
+            objMod.put("ref", "a-core-0");
+            objMod.put("mod", "a-core");
+            objMod.put("bcdState", 1);
+            objMod.put("bcdLevel", 0);
+            objMod.put("tfin", -1);
+            JSONObject modAuth = new JSONObject();
+            modAuth.put("a-core-0", objMod);
 
-        if (type==0) {
-            rolex.put("grpU", "1009");
-        } else {
-            rolex.put("grpU", entries.get("grpU"));
-        }
-        rolex.put("dep", "1000");
+            rolex.put("modAuth", modAuth);
+            rolex.put("wrdNC", compOne.getInfo().getWrdN());
+            rolex.put("picC", compOne.getInfo().getPic());
+            rolex.put("id_C", entries.get("id_C"));
 
-        qt.setMDContent(join_user,qt.setJson("rolex.objComp."+entries.get("id_C"),rolex,"info.def_C", entries.get("id_C")), User.class);
+            if (type==0) {
+                rolex.put("grpU", "1009");
+            } else {
+                rolex.put("grpU", entries.get("grpU"));
+            }
+            rolex.put("dep", "1000");
 
-        JSONArray searchResult = qt.getES("lbuser", qt.setESFilt("id_CB", entries.get("id_C"), "id_U", join_user ),1);
-
-        if (searchResult.size() > 0)
-        {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_JOIN_IS_HAVE.getCode(), null);
-        }
-
-        lBUser addLBUser = new lBUser(join_user, entries.get("id_C").toString(), userJson.getInfo().getWrdN(),
-                compOne.getInfo().getWrdN(), userJson.getInfo().getWrdNReal(),userJson.getInfo().getWrddesc(), "1009",
-                userJson.getInfo().getMbn(), "", userJson.getInfo().getId_WX(), userJson.getInfo().getPic(),"1000");
-
-        qt.addES("lbuser",qt.toJson(addLBUser));
-
-        //在这里发switchComp 的日志
-        JSONObject data = qt.setJson("type", "addComp");
-        LogFlow log = new LogFlow();
-        log.setSysLog(entries.get("id_C").toString(), "mut_switch", "加入新公司", 3, qt.setJson("cn", "系统权限更新"));
-        log.setId_Us(qt.setArray(join_user));
-        log.setData(data);
-        ws.sendWS(log);
+            qt.setMDContent(join_user, qt.setJson("rolex.objComp." + entries.get("id_C"), rolex, "info.def_C", entries.get("id_C")), User.class);
 
 
+            JSONArray searchResult = qt.getES("lBUser", qt.setESFilt("id_CB", entries.get("id_C"), "id_U", join_user), 1);
+
+            if (searchResult.size() > 0) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_JOIN_IS_HAVE.getCode(), null);
+            }
+
+            lBUser addLBUser = new lBUser(join_user, entries.get("id_C").toString(), userJson.getInfo().getWrdN(),
+                    compOne.getInfo().getWrdN(), userJson.getInfo().getWrdNReal(), userJson.getInfo().getWrddesc(), "1009",
+                    userJson.getInfo().getMbn(), "", userJson.getInfo().getId_WX(), userJson.getInfo().getPic(), "1000");
+
+            qt.addES("lbuser", qt.toJson(addLBUser));
+
+            //在这里发switchComp 的日志
+            JSONObject data = qt.setJson("type", "addComp");
+            LogFlow log = new LogFlow();
+            log.setSysLog(entries.get("id_C").toString(), "mut_switch", "加入新公司", 3, qt.setJson("cn", "系统权限更新"));
+            log.setId_Us(qt.setArray(join_user));
+            log.setData(data);
+            ws.sendWS(log);
+
+        
         return retResult.ok(CodeEnum.OK.getCode(), null);
 
     }
@@ -775,15 +776,15 @@ PROD_CODE_OVERDUE.getCode(),null);
 
                 ApiResponse apiResponse = null;
                 try {
-                    if (listType.equals("lNUser")){
-                        apiResponse = shareUserCode(id_U, prodJson);
-                    }else if (listType.equals("lSProd")){
-                        apiResponse = shareProdCode(id_U, prodJson);
-                    }else if (listType.equals("lNComp")){
-                        apiResponse = shareCompCode(id_U, prodJson);
-                    }else if (listType.equals("lSOrder") || listType.equals("lBOrder")){
-                        apiResponse = shareOrderCode(id_U, prodJson,listType);
-                    }
+//                    if (listType.equals("lNUser")){
+//                        apiResponse = shareUserCode(id_U, prodJson);
+//                    }else if (listType.equals("lSProd")){
+//                        apiResponse = shareProdCode(id_U, prodJson);
+//                    }else if (listType.equals("lNComp")){
+//                        apiResponse = shareCompCode(id_U, prodJson);
+//                    }else if (listType.equals("lSOrder") || listType.equals("lBOrder")){
+//                        apiResponse = shareOrderCode(id_U, prodJson,listType);
+//                    }
 
 //                    redisTemplate0.delete(keyName);
                     qt.delRD(SCANCODE_SHAREPROD, token);
@@ -845,246 +846,246 @@ PROD_CODE_OVERDUE.getCode(), null);
 
     }
 
-    @Transactional
-    @Override
-    public ApiResponse resetProdCode(String id_U, String id_P, String id_C) {
-
-        /**
-         * 1. 判断该产品是否存在
-         * 2. 将原来的二维码数据提取出来，再重新设置到redis中
-         * 3. 判断原来的二维码token在redis中是否还存在，存在则删除
-         * 4. 并返回 url 拼接 key返回给前端
-         */
-
-        // 1.
-//        Query prodQ = new Query(new Criteria("_id").is(id_P).and("info.id_C").is(id_C));
-//        Prod prod = mongoTemplate.findOne(prodQ, Prod.class);
-        Prod prod = qt.getMDContent(id_P,"qrShareCode", Prod.class);
-        if (ObjectUtils.isEmpty(prod)) {
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
-        }
-
-        // 2.
-        JSONObject dataJson = prod.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-        String token = UUID19.uuid();
-        String keyName = SCANCODE_SHAREPROD + token;
-
-        String mode = dataJson.getString("mode");
-
-        if ("frequency".equals(mode)) {
-            dataJson.put("used_count","0");
-//            redisTemplate0.opsForHash().putAll(keyName, dataJson);
-            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,60000L);
-        } else if ("time".equals(mode)) {
-//            redisTemplate0.opsForHash().putAll(keyName, dataJson);
-//            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
-            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,dataJson.getLong("endTimeSec"));
-        } else {
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
-        }
-
-        // 3.
-        if (StringUtils.isNotEmpty(prod.getQrShareCode().getString("token"))) {
-            String code_token = prod.getQrShareCode().getString("token");
-//            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-//                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
-                qt.delRD(SCANCODE_SHAREPROD , code_token);
-            }
-        }
-
-        //mongoTemplate.updateFirst(prodQ, Update.update("qrShareCode.token",token), Prod.class);
-        prod.getQrShareCode().put("token",token);
-//        mongoTemplate.updateFirst(prodQ, Update.update("qrShareCode",prod.getQrShareCode()), Prod.class);
-        qt.setMDContent(id_P,qt.setJson("qrShareCode",prod.getQrShareCode()), Prod.class);
-
-        // 4.
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + token;
-        return retResult.ok(CodeEnum.OK.getCode(), url);
-    }
-
-
-    @Transactional
-    @Override
-    public ApiResponse resetUserCode(String id_U,  String id_C) {
-
-        /**
-         * 1. 判断该用户是否存在
-         * 2. 将原来的二维码数据提取出来，再重新设置到redis中
-         * 3. 判断原来的二维码token在redis中是否还存在，存在则删除
-         * 4. 并返回 url 拼接 key返回给前端
-         */
-
-        // 1.
-//        Query userQ = new Query(new Criteria("_id").is(id_U));//.and("info.id_C").is(id_C)
-//        User user = mongoTemplate.findOne(userQ, User.class);
-        User user = qt.getMDContent(id_U,"qrShareCode", User.class);
-        if (ObjectUtils.isEmpty(user)) {
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
-        }
-
-        // 2.
-        JSONObject dataJson = user.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-        String token = UUID19.uuid();
-        String keyName = SCANCODE_SHAREPROD + token;
-
-        String mode = dataJson.getString("mode");
-
-        if ("frequency".equals(mode)) {
-            dataJson.put("used_count","0");
-//            redisTemplate0.opsForHash().putAll(keyName, dataJson);
-            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,60000L);
-        } else if ("time".equals(mode)) {
-//            redisTemplate0.opsForHash().putAll(keyName, dataJson);
-//            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
-            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,dataJson.getLong("endTimeSec"));
-        } else {
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
-        }
-
-        // 3.
-        if (StringUtils.isNotEmpty(user.getQrShareCode().getString("token"))) {
-            String code_token = user.getQrShareCode().getString("token");
-//            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-//                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
-                qt.delRD(SCANCODE_SHAREPROD, code_token);
-            }
-        }
-
-        user.getQrShareCode().put("token",token);
-//        mongoTemplate.updateFirst(userQ, Update.update("qrShareCode",user.getQrShareCode()), User.class);
-        qt.setMDContent(id_U,qt.setJson("qrShareCode",user.getQrShareCode()), User.class);
-
-        // 4.
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + token;
-        return retResult.ok(CodeEnum.OK.getCode(), url);
-    }
-
-
-    @Transactional
-    @Override
-    public ApiResponse resetCompCode(String id_U,  String id_C) {
-
-        /**
-         * 1. 判断该公司是否存在
-         * 2. 将原来的二维码数据提取出来，再重新设置到redis中
-         * 3. 判断原来的二维码token在redis中是否还存在，存在则删除
-         * 4. 并返回 url 拼接 key返回给前端
-         */
-
-        // 1.
-//        Query compQ = new Query(new Criteria("_id").is(id_C));//.and("info.id_C").is(id_C)
-//        Comp comp = mongoTemplate.findOne(compQ, Comp.class);
-        Comp comp = qt.getMDContent(id_C,"qrShareCode", Comp.class);
-        if (ObjectUtils.isEmpty(comp)) {
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
-        }
-
-        // 2.
-        JSONObject dataJson = comp.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-        String token = UUID19.uuid();
-        String keyName = SCANCODE_SHAREPROD + token;
-
-        String mode = dataJson.getString("mode");
-
-        if ("frequency".equals(mode)) {
-            dataJson.put("used_count","0");
-//            redisTemplate0.opsForHash().putAll(keyName, dataJson);
-            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,60000L);
-        } else if ("time".equals(mode)) {
-//            redisTemplate0.opsForHash().putAll(keyName, dataJson);
-//            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
-            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,dataJson.getLong("endTimeSec"));
-        } else {
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
-        }
-
-        // 3.
-        if (StringUtils.isNotEmpty(comp.getQrShareCode().getString("token"))) {
-            String code_token = comp.getQrShareCode().getString("token");
-//            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-//                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
-                qt.delRD(SCANCODE_SHAREPROD, code_token);
-            }
-        }
-
-        comp.getQrShareCode().put("token",token);
-//        mongoTemplate.updateFirst(compQ, Update.update("qrShareCode",comp.getQrShareCode()), Comp.class);
-        qt.setMDContent(id_C,qt.setJson("qrShareCode",comp.getQrShareCode()), Comp.class);
-
-        // 4.
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + token;
-        return retResult.ok(CodeEnum.OK.getCode(), url);
-    }
-
-    @Transactional
-    @Override
-    public ApiResponse resetOrderCode(String id_U, String id_O, String id_C) {
-
-        /**
-         * 1. 判断该订单是否存在
-         * 2. 将原来的二维码数据提取出来，再重新设置到redis中
-         * 3. 判断原来的二维码token在redis中是否还存在，存在则删除
-         * 4. 并返回 url 拼接 key返回给前端
-         */
-
-        // 1.
-//        Query orderQ = new Query(new Criteria("_id").is(id_O));//.and("info.id_C").is(id_C)
-//        Order order = mongoTemplate.findOne(orderQ, Order.class);
-        Order order = qt.getMDContent(id_O,"qrShareCode", Order.class);
-        if (ObjectUtils.isEmpty(order)) {
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
-        }
-
-        // 2.
-        JSONObject dataJson = order.getQrShareCode().getJSONObject("data");
-        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-
-        String token = UUID19.uuid();
-        String keyName = SCANCODE_SHAREPROD + token;
-
-        String mode = dataJson.getString("mode");
-
-        if ("frequency".equals(mode)) {
-            dataJson.put("used_count","0");
-//            redisTemplate0.opsForHash().putAll(keyName, dataJson);
-            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,60000L);
-        } else if ("time".equals(mode)) {
-//            redisTemplate0.opsForHash().putAll(keyName, dataJson);
-//            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
-            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,dataJson.getLong("endTimeSec"));
-        } else {
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
-        }
-
-        // 3.
-        if (StringUtils.isNotEmpty(order.getQrShareCode().getString("token"))) {
-            String code_token = order.getQrShareCode().getString("token");
-//            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
-            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
-//                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
-                qt.delRD(SCANCODE_SHAREPROD, code_token);
-            }
-        }
-
-        order.getQrShareCode().put("token",token);
-//        mongoTemplate.updateFirst(orderQ, Update.update("qrShareCode",order.getQrShareCode()), Order.class);
-        qt.setMDContent(id_O,qt.setJson("qrShareCode",order.getQrShareCode()), Order.class);
-
-        // 4.
-        String url = HTTPS_WWW_CRESIGN_CN_QR_CODE_TEST_QR_TYPE_SHAREPROD_T + token;
-        return retResult.ok(CodeEnum.OK.getCode(), url);
-    }
-
-
+//    @Transactional
+//    @Override
+//    public ApiResponse resetProdCode(String id_U, String id_P, String id_C) {
+//
+//        /**
+//         * 1. 判断该产品是否存在
+//         * 2. 将原来的二维码数据提取出来，再重新设置到redis中
+//         * 3. 判断原来的二维码token在redis中是否还存在，存在则删除
+//         * 4. 并返回 url 拼接 key返回给前端
+//         */
+//
+//        // 1.
+////        Query prodQ = new Query(new Criteria("_id").is(id_P).and("info.id_C").is(id_C));
+////        Prod prod = mongoTemplate.findOne(prodQ, Prod.class);
+//        Prod prod = qt.getMDContent(id_P,"qrShareCode", Prod.class);
+//        if (ObjectUtils.isEmpty(prod)) {
+//            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
+//        }
+//
+//        // 2.
+//        JSONObject dataJson = prod.getQrShareCode().getJSONObject("data");
+//        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//        String token = UUID19.uuid();
+//        String keyName = SCANCODE_SHAREPROD + token;
+//
+//        String mode = dataJson.getString("mode");
+//
+//        if ("frequency".equals(mode)) {
+//            dataJson.put("used_count","0");
+////            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,60000L);
+//        } else if ("time".equals(mode)) {
+////            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+////            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,dataJson.getLong("endTimeSec"));
+//        } else {
+//            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+//        }
+//
+//        // 3.
+//        if (StringUtils.isNotEmpty(prod.getQrShareCode().getString("token"))) {
+//            String code_token = prod.getQrShareCode().getString("token");
+////            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+//            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
+////                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
+//                qt.delRD(SCANCODE_SHAREPROD , code_token);
+//            }
+//        }
+//
+//        //mongoTemplate.updateFirst(prodQ, Update.update("qrShareCode.token",token), Prod.class);
+//        prod.getQrShareCode().put("token",token);
+////        mongoTemplate.updateFirst(prodQ, Update.update("qrShareCode",prod.getQrShareCode()), Prod.class);
+//        qt.setMDContent(id_P,qt.setJson("qrShareCode",prod.getQrShareCode()), Prod.class);
+//
+//        // 4.
+//        String url = URL_QRSHARE_PROD + token;
+//        return retResult.ok(CodeEnum.OK.getCode(), url);
+//    }
+//
+//
+//    @Transactional
+//    @Override
+//    public ApiResponse resetUserCode(String id_U,  String id_C) {
+//
+//        /**
+//         * 1. 判断该用户是否存在
+//         * 2. 将原来的二维码数据提取出来，再重新设置到redis中
+//         * 3. 判断原来的二维码token在redis中是否还存在，存在则删除
+//         * 4. 并返回 url 拼接 key返回给前端
+//         */
+//
+//        // 1.
+////        Query userQ = new Query(new Criteria("_id").is(id_U));//.and("info.id_C").is(id_C)
+////        User user = mongoTemplate.findOne(userQ, User.class);
+//        User user = qt.getMDContent(id_U,"qrShareCode", User.class);
+//        if (ObjectUtils.isEmpty(user)) {
+//            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
+//        }
+//
+//        // 2.
+//        JSONObject dataJson = user.getQrShareCode().getJSONObject("data");
+//        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//        String token = UUID19.uuid();
+//        String keyName = SCANCODE_SHAREPROD + token;
+//
+//        String mode = dataJson.getString("mode");
+//
+//        if ("frequency".equals(mode)) {
+//            dataJson.put("used_count","0");
+////            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,60000L);
+//        } else if ("time".equals(mode)) {
+////            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+////            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,dataJson.getLong("endTimeSec"));
+//        } else {
+//            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+//        }
+//
+//        // 3.
+//        if (StringUtils.isNotEmpty(user.getQrShareCode().getString("token"))) {
+//            String code_token = user.getQrShareCode().getString("token");
+////            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+//            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
+////                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
+//                qt.delRD(SCANCODE_SHAREPROD, code_token);
+//            }
+//        }
+//
+//        user.getQrShareCode().put("token",token);
+////        mongoTemplate.updateFirst(userQ, Update.update("qrShareCode",user.getQrShareCode()), User.class);
+//        qt.setMDContent(id_U,qt.setJson("qrShareCode",user.getQrShareCode()), User.class);
+//
+//        // 4.
+//        String url = URL_QRSHARE_PROD + token;
+//        return retResult.ok(CodeEnum.OK.getCode(), url);
+//    }
+//
+//
+//    @Transactional
+//    @Override
+//    public ApiResponse resetCompCode(String id_U,  String id_C) {
+//
+//        /**
+//         * 1. 判断该公司是否存在
+//         * 2. 将原来的二维码数据提取出来，再重新设置到redis中
+//         * 3. 判断原来的二维码token在redis中是否还存在，存在则删除
+//         * 4. 并返回 url 拼接 key返回给前端
+//         */
+//
+//        // 1.
+////        Query compQ = new Query(new Criteria("_id").is(id_C));//.and("info.id_C").is(id_C)
+////        Comp comp = mongoTemplate.findOne(compQ, Comp.class);
+//        Comp comp = qt.getMDContent(id_C,"qrShareCode", Comp.class);
+//        if (ObjectUtils.isEmpty(comp)) {
+//            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
+//        }
+//
+//        // 2.
+//        JSONObject dataJson = comp.getQrShareCode().getJSONObject("data");
+//        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//        String token = UUID19.uuid();
+//        String keyName = SCANCODE_SHAREPROD + token;
+//
+//        String mode = dataJson.getString("mode");
+//
+//        if ("frequency".equals(mode)) {
+//            dataJson.put("used_count","0");
+////            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,60000L);
+//        } else if ("time".equals(mode)) {
+////            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+////            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,dataJson.getLong("endTimeSec"));
+//        } else {
+//            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+//        }
+//
+//        // 3.
+//        if (StringUtils.isNotEmpty(comp.getQrShareCode().getString("token"))) {
+//            String code_token = comp.getQrShareCode().getString("token");
+////            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+//            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
+////                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
+//                qt.delRD(SCANCODE_SHAREPROD, code_token);
+//            }
+//        }
+//
+//        comp.getQrShareCode().put("token",token);
+////        mongoTemplate.updateFirst(compQ, Update.update("qrShareCode",comp.getQrShareCode()), Comp.class);
+//        qt.setMDContent(id_C,qt.setJson("qrShareCode",comp.getQrShareCode()), Comp.class);
+//
+//        // 4.
+//        String url = URL_QRSHARE_PROD + token;
+//        return retResult.ok(CodeEnum.OK.getCode(), url);
+//    }
+//
+//    @Transactional
+//    @Override
+//    public ApiResponse resetOrderCode(String id_U, String id_O, String id_C) {
+//
+//        /**
+//         * 1. 判断该订单是否存在
+//         * 2. 将原来的二维码数据提取出来，再重新设置到redis中
+//         * 3. 判断原来的二维码token在redis中是否还存在，存在则删除
+//         * 4. 并返回 url 拼接 key返回给前端
+//         */
+//
+//        // 1.
+////        Query orderQ = new Query(new Criteria("_id").is(id_O));//.and("info.id_C").is(id_C)
+////        Order order = mongoTemplate.findOne(orderQ, Order.class);
+//        Order order = qt.getMDContent(id_O,"qrShareCode", Order.class);
+//        if (ObjectUtils.isEmpty(order)) {
+//            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
+//        }
+//
+//        // 2.
+//        JSONObject dataJson = order.getQrShareCode().getJSONObject("data");
+//        dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+//
+//        String token = UUID19.uuid();
+//        String keyName = SCANCODE_SHAREPROD + token;
+//
+//        String mode = dataJson.getString("mode");
+//
+//        if ("frequency".equals(mode)) {
+//            dataJson.put("used_count","0");
+////            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,60000L);
+//        } else if ("time".equals(mode)) {
+////            redisTemplate0.opsForHash().putAll(keyName, dataJson);
+////            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+//            qt.putRDHashMany(SCANCODE_SHAREPROD, token,dataJson,dataJson.getLong("endTimeSec"));
+//        } else {
+//            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+//        }
+//
+//        // 3.
+//        if (StringUtils.isNotEmpty(order.getQrShareCode().getString("token"))) {
+//            String code_token = order.getQrShareCode().getString("token");
+////            if (redisTemplate0.hasKey(SCANCODE_SHAREPROD + code_token)) {
+//            if (qt.hasRDKey(SCANCODE_SHAREPROD, code_token)) {
+////                redisTemplate0.delete(SCANCODE_SHAREPROD + code_token);
+//                qt.delRD(SCANCODE_SHAREPROD, code_token);
+//            }
+//        }
+//
+//        order.getQrShareCode().put("token",token);
+////        mongoTemplate.updateFirst(orderQ, Update.update("qrShareCode",order.getQrShareCode()), Order.class);
+//        qt.setMDContent(id_O,qt.setJson("qrShareCode",order.getQrShareCode()), Order.class);
+//
+//        // 4.
+//        String url = URL_QRSHARE_PROD + token;
+//        return retResult.ok(CodeEnum.OK.getCode(), url);
+//    }
+//
+//
     private ApiResponse shareProdCode(String id_U, JSONObject prodJson) {
         // 校验权限先校验如果是rolex中有这家公司则可以直接拿当前他的权限，否则就是游客
 
@@ -1152,18 +1153,11 @@ PROD_CODE_OVERDUE.getCode(), null);
 
     private ApiResponse shareUserCode(String id_U,JSONObject prodJson) {
 
-
-//        Query query = new Query(new Criteria("_id").is(id_U));
-//        User user1 = mongoTemplate.findOne(query, User.class);
         User user1 = qt.getMDContent(id_U,"", User.class);
         return retResult.ok(CodeEnum.OK.getCode(),user1);
     }
 
     private ApiResponse shareCompCode(String id_U,JSONObject prodJson) {
-
-
-//        Query query = new Query(new Criteria("_id").is(prodJson.getString("id_C")));
-//        Comp comp = mongoTemplate.findOne(query, Comp.class);
         Comp comp = qt.getMDContent(prodJson.getString("id_C"),"", Comp.class);
         return retResult.ok(CodeEnum.OK.getCode(),comp);
     }

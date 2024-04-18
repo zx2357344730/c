@@ -1,5 +1,6 @@
 package com.cresign.tools.dbTools;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.md5.MD5Util;
@@ -10,6 +11,7 @@ import com.qcloud.cos.auth.COSCredentials;
 import com.qcloud.cos.exception.CosClientException;
 import com.qcloud.cos.exception.CosServiceException;
 import com.qcloud.cos.http.HttpMethodName;
+import com.qcloud.cos.http.HttpProtocol;
 import com.qcloud.cos.model.*;
 import com.qcloud.cos.region.Region;
 import com.qcloud.cos.transfer.Download;
@@ -64,7 +66,12 @@ public class CosUpload {
     // 2 设置bucket的区域, COS地域的简称请参照
     // https://cloud.tencent.com/document/product/436/6224，根据自己创建的存储桶选择地区
     public static Region region = new Region("ap-guangzhou");
-    public static ClientConfig clientConfig = new ClientConfig(region);
+    public static ClientConfig clientConfig = getClientConfig();
+    public static ClientConfig getClientConfig() {
+        ClientConfig clientConfig = new ClientConfig(region);
+        clientConfig.setHttpProtocol(HttpProtocol.https);
+        return clientConfig;
+    }
 
     /**
      * 文件上传cos
@@ -168,12 +175,12 @@ public class CosUpload {
         if (keyPath != null && !keyPath.equals("")) {
             // 3 生成cos客户端
             COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
-            COSClient cosclient = new COSClient(cred, clientConfig);
-            boolean bool = cosclient.doesObjectExist(bucketName, keyPath);
+            COSClient cosClient = new COSClient(cred, clientConfig);
+            boolean bool = cosClient.doesObjectExist(bucketName, keyPath);
             if (bool) {
                 long size = getCresignSize(keyPath);
-                cosclient.deleteObject(bucketName, keyPath);
-                cosclient.shutdown();
+                cosClient.deleteObject(bucketName, keyPath);
+                cosClient.shutdown();
                 return size;
             }
         }
@@ -184,16 +191,72 @@ public class CosUpload {
         if (keyPath != null && !keyPath.equals("")) {
             // 3 生成cos客户端
             COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
-            COSClient cosclient = new COSClient(cred, clientConfig);
-            boolean bool = cosclient.doesObjectExist(bucketName2, keyPath);
+            COSClient cosClient = new COSClient(cred, clientConfig);
+            boolean bool = cosClient.doesObjectExist(bucketName2, keyPath);
             if (bool) {
                 long size = getCFilesSize(keyPath);
-                cosclient.deleteObject(bucketName2, keyPath);
-                cosclient.shutdown();
+                cosClient.deleteObject(bucketName2, keyPath);
+                cosClient.shutdown();
                 return size;
             }
         }
         return 0;
+    }
+
+    public long delPicroll00s(String id_C, JSONArray arrayData) {
+        long fileSize = 0L;
+        if (arrayData != null) {
+            for (int i = 0; i < arrayData.size(); i++) {
+                JSONObject jsonData = arrayData.getJSONObject(i);
+                if (jsonData != null && jsonData.getJSONArray("objPic") != null) {
+                    JSONArray arrayPic = jsonData.getJSONArray("objPic");
+                    for (int j = 0; j < arrayPic.size(); j++) {
+                        JSONObject jsonPic = arrayPic.getJSONObject(j);
+                        String pic = jsonPic.getString("pic");
+                        if (pic != null) {
+                            String[] split = pic.split("https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/");
+                            if (split.length == 2) {
+                                pic = split[1];
+                            }
+                            long size = this.delCresign("reg/" + pic);
+                            this.delCresign("small/" + pic);
+                            this.delCresign("thumb/" + pic);
+                            fileSize += size;
+                        }
+                    }
+                }
+            }
+        }
+//        qt.checkCapacity(id_C, -fileSize);
+        return fileSize;
+    }
+    public long delFile00s(String id, String id_C, JSONArray arrayData) {
+        long fileSize = 0L;
+        if (arrayData != null) {
+            for (int i = 0; i < arrayData.size(); i++) {
+                JSONObject jsonData = arrayData.getJSONObject(i);
+                if (jsonData != null && jsonData.getJSONArray("objFile") != null) {
+                    JSONArray arrayFile = jsonData.getJSONArray("objFile");
+                    for (int j = 0; j < arrayFile.size(); j++) {
+                        JSONObject jsonFile = arrayFile.getJSONObject(j);
+                        String fileSource = jsonFile.getString("fileSource");
+                        if (fileSource != null) {
+                            String[] split = fileSource.split("https://cfiles-1253919880.cos.ap-guangzhou.myqcloud.com/");
+                            if (split.length == 2) {
+                                fileSource = split[1];
+                            }
+                            long size = this.delCFiles(fileSource);
+                            fileSize += size;
+                        }
+                    }
+                }
+                this.delCFiles(id_C + "/" + id + "/file00s/" + i + "/");
+            }
+        }
+        this.delCFiles(id_C + "/" + id + "/file00s/");
+        this.delCFiles(id_C + "/" + id + "/");
+//        qt.checkCapacity(id_C, -fileSize);
+        return fileSize;
     }
 
     public String getCFiles(String keyPath) {
@@ -208,11 +271,11 @@ public class CosUpload {
     public long getCresignSize(String keyPath){
         COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         // 3 生成cos客户端
-        COSClient cosclient = new COSClient(cred, clientConfig);
+        COSClient cosClient = new COSClient(cred, clientConfig);
         // Object是否存在
-        boolean booResult = cosclient.doesObjectExist(bucketName, keyPath);
+        boolean booResult = cosClient.doesObjectExist(bucketName, keyPath);
         if (booResult){
-            ObjectMetadata objectMetadata = cosclient.getObjectMetadata(bucketName, keyPath);
+            ObjectMetadata objectMetadata = cosClient.getObjectMetadata(bucketName, keyPath);
             //获取文件字节大小
             return objectMetadata.getContentLength();
         }
@@ -222,11 +285,11 @@ public class CosUpload {
     public long getCFilesSize(String keyPath){
         COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         // 3 生成cos客户端
-        COSClient cosclient = new COSClient(cred, clientConfig);
+        COSClient cosClient = new COSClient(cred, clientConfig);
         // Object是否存在
-        boolean booResult = cosclient.doesObjectExist(bucketName2, keyPath);
+        boolean booResult = cosClient.doesObjectExist(bucketName2, keyPath);
         if (booResult){
-            ObjectMetadata objectMetadata = cosclient.getObjectMetadata(bucketName2, keyPath);
+            ObjectMetadata objectMetadata = cosClient.getObjectMetadata(bucketName2, keyPath);
             //获取文件字节大小
             return objectMetadata.getContentLength();
         }
@@ -301,6 +364,19 @@ public class CosUpload {
 
     }
 
+    public String getCFilesPath(String keyPath) {
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
+        // 3 生成cos客户端
+        COSClient cosClient = new COSClient(cred, clientConfig);
+
+        GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucketName2, keyPath, HttpMethodName.GET);
+        Date expiration = new Date(System.currentTimeMillis() + (120 * 1000));
+        request.setExpiration(expiration);
+        URL url = cosClient.generatePresignedUrl(request);
+        cosClient.shutdown();
+        return url.toString();
+    }
+
     /**--------------------------------------------------------------------------------------*/
 
 
@@ -313,7 +389,7 @@ public class CosUpload {
 
         COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         // 生成cos客户端
-        COSClient cosclient = new COSClient(cred, clientConfig);
+        COSClient cosClient = new COSClient(cred, clientConfig);
 
         // 获取文件名称
         String fileName = localFile.getName();
@@ -332,19 +408,19 @@ public class CosUpload {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName2, fileName , localFile);
 
             // 上传腾讯云cos服务器
-            cosclient.putObject(putObjectRequest);
+            cosClient.putObject(putObjectRequest);
 
             if (nameIS == 1) {
                 // 获取到图片的httpUrl
                 if (null != expiration) {
 
-                    url = cosclient.generatePresignedUrl(bucketName2, fileName, expiration);
+                    url = cosClient.generatePresignedUrl(bucketName2, fileName, expiration);
 
                 } else {
 
                     Date expirationTime = new Date(System.currentTimeMillis() + 1000*24*365*100 );
 
-                    url = cosclient.generatePresignedUrl(bucketName2, fileName, expirationTime);
+                    url = cosClient.generatePresignedUrl(bucketName2, fileName, expirationTime);
 
                 }
             } else {
@@ -358,7 +434,7 @@ public class CosUpload {
         } finally {
 
             // 关闭客户端(关闭后台线程)
-            cosclient.shutdown();
+            cosClient.shutdown();
         }
 
         if (null != url) {
@@ -380,7 +456,7 @@ public class CosUpload {
 //    public String upload2(File localFile, String filePath, Date expiration, String type, String name) throws CosClientException{
 //
 //        // 生成cos客户端
-//        COSClient cosclient = new COSClient(cred, clientConfig);
+//        COSClient cosClient = new COSClient(cred, clientConfig);
 //
 //        // 获取文件名称
 //        String fileName = localFile.getName();
@@ -407,17 +483,17 @@ public class CosUpload {
 //            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, fileName , localFile);
 //
 //            // 上传腾讯云cos服务器
-//            cosclient.putObject(putObjectRequest);
+//            cosClient.putObject(putObjectRequest);
 //
 //
 //
 //            if (null != expiration) {
 //
-//                object = cosclient.getObject(bucketName, fileName);
+//                object = cosClient.getObject(bucketName, fileName);
 //
 //            } else {
 //
-//                object = cosclient.getObject(bucketName, fileName);
+//                object = cosClient.getObject(bucketName, fileName);
 //
 //            }
 //
@@ -429,7 +505,7 @@ public class CosUpload {
 //        } finally {
 //
 //            // 关闭客户端(关闭后台线程)
-//            cosclient.shutdown();
+//            cosClient.shutdown();
 //        }
 //
 //        return object.getKey();
@@ -459,15 +535,25 @@ public class CosUpload {
     public boolean doesObjectExist (String keyPath){
         COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         // 3 生成cos客户端
-        COSClient cosclient = new COSClient(cred, clientConfig);
+        COSClient cosClient = new COSClient(cred, clientConfig);
 
         // Object是否存在
-        boolean booResult = cosclient.doesObjectExist(bucketName2, keyPath);
+        boolean booResult = cosClient.doesObjectExist(bucketName2, keyPath);
 
 
 
         return booResult ;
 
+    }
+
+    public File readExcel(String keyPath) {
+        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
+        COSClient cosClient = new COSClient(cred, clientConfig);
+        GetObjectRequest request = new GetObjectRequest(bucketName2, keyPath);
+        File file = new File("/home/jar/1.xlsx");
+        cosClient.getObject(request, file);
+        cosClient.shutdown();
+        return file;
     }
 
 
@@ -552,17 +638,17 @@ public class CosUpload {
         // 2 设置bucket的区域, COS地域的简称请参照 https://www.qcloud.com/document/product/436/6224
         ClientConfig clientConfig = new ClientConfig(new Region("ap-guangzhou"));
         // 3 生成cos客户端
-        COSClient cosclient = new COSClient(cred, clientConfig);
+        COSClient cosClient = new COSClient(cred, clientConfig);
 
         // Object是否存在
-        boolean booResult = cosclient.doesObjectExist(bucketName2, delKey);
+        boolean booResult = cosClient.doesObjectExist(bucketName2, delKey);
 
 
         if (booResult){
 
-            cosclient.deleteObject(bucketName2, delKey);
+            cosClient.deleteObject(bucketName2, delKey);
 
-            cosclient.shutdown();
+            cosClient.shutdown();
 
         }
 
@@ -584,19 +670,19 @@ public class CosUpload {
 
         ClientConfig clientConfig = new ClientConfig(new Region("ap-guangzhou"));
         // 3 生成cos客户端
-        COSClient cosclient = new COSClient(cred, clientConfig);
+        COSClient cosClient = new COSClient(cred, clientConfig);
 
         // Object是否存在
-        boolean booResult = cosclient.doesObjectExist(bucketName2, sourceObjectName);
+        boolean booResult = cosClient.doesObjectExist(bucketName2, sourceObjectName);
 
 
         if (booResult){
-            cosclient.copyObject("cfiles-1253919880", sourceObjectName,
+            cosClient.copyObject("cfiles-1253919880", sourceObjectName,
                     "cfiles-1253919880", destinationObjectName);
         }
 
         //关闭OSSClient。
-        cosclient.shutdown();
+        cosClient.shutdown();
 
     }
 
@@ -654,7 +740,7 @@ public class CosUpload {
     public long selectList(String path) {
         COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         // 生成cos客户端
-        COSClient cosclient = new COSClient(cred, clientConfig);
+        COSClient cosClient = new COSClient(cred, clientConfig);
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
         listObjectsRequest.setBucketName(bucketName);
         listObjectsRequest.setPrefix(path);
@@ -664,7 +750,7 @@ public class CosUpload {
         long size = 0L;
         do {
             try {
-                objectListing = cosclient.listObjects(listObjectsRequest);
+                objectListing = cosClient.listObjects(listObjectsRequest);
             } catch (CosServiceException e) {
                 e.printStackTrace();
             } catch (CosClientException e) {

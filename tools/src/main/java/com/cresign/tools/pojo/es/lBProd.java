@@ -57,6 +57,8 @@ public class lBProd {
 
     private String id_CBP;
 
+    private String id_PP;
+
     private JSONObject wrdN;
 
     private JSONObject wrddesc;
@@ -88,12 +90,17 @@ public class lBProd {
 
     private double wn4cost = 0.0;
 
-
+    private double wn2sum = 0.0;
+    private double wn2buy = 0.0;
 
     private String qr;
 
     private String tmd;
 
     private String tmk;
+
+    private JSONObject wrdTagB;
+
+    private Long wn0fsize;
 
 }

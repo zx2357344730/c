@@ -7,6 +7,7 @@ import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.es.lNUser;
+import com.cresign.tools.pojo.po.Info;
 import com.cresign.tools.pojo.po.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,7 +40,9 @@ public class RegisterUserUtils {
         // in here we have: info.wrdN, pic, mbn, id_WX, id_APP, phoneType, tmd, tmk
         // objectId
         String addID = qt.GetObjectId();
-        User addUser = qt.jsonTo(qt.getInitData().getNewUser(), User.class);
+        Info init = qt.getMDContent(qt.idJson.getString("newUser"), "jsonInfo", Info.class);
+        User addUser = qt.jsonTo(init.getJsonInfo().getJSONObject("objData"), User.class);
+//        User addUser = qt.jsonTo(qt.getInitData().getNewUser(), User.class);
 
         addUser.setId(addID);
         addUser.getInfo().setMbn(info.getString("mbn"));

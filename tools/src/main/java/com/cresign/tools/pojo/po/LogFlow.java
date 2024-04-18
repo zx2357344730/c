@@ -209,7 +209,7 @@ public class LogFlow {
 
     public void setUsageLog(JSONObject tokData, String updateType, String zcndesc, Integer imp, String id, String listType, JSONObject wrdN, String grp, String info)
     {
-        this.id = "";
+        this.id = "BNyYCj2P4j3zBCzSafJz6aei";
         this.id_FS = "";
         this.logType = "usageflow";
         this.subType = "update";
@@ -246,10 +246,10 @@ public class LogFlow {
         JSONObject data = this.getData();
         if (type.equals("push"))
         {
-            data.put("taPush", taStart);
+            data.put("taPush", taStart); //推送时间
         } else {
-            data.put("taStart", taStart);
-            data.put("taFin", taFin);
+            data.put("taStart", taStart); //开始
+            data.put("taFin", taFin); //完成
         }
         data.put("type", type);
     }

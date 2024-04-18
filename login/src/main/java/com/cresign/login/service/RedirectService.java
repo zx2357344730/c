@@ -54,7 +54,7 @@ public interface RedirectService {
      * @updated 2021-05-03 9:54
      * @return com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse generateProdCode(String id_C, String id_P, String id_U, String mode, JSONObject data);
+//    ApiResponse generateProdCode(String id_C, String id_P, String id_U, String mode, JSONObject data);
 
 
 
@@ -69,7 +69,7 @@ public interface RedirectService {
      * @updated 2021/5/7 11:38
      * @return com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse resetProdCode(String id_U, String id_P, String id_C);
+//    ApiResponse resetProdCode(String id_U, String id_P, String id_C);
 
     /**
      * 用戶二維碼生成
@@ -82,7 +82,7 @@ public interface RedirectService {
      * @createDate: 2021/6/7 15:50
      * @return: com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse generateUserCode(String id_C,String id_U, String mode, JSONObject data);
+//    ApiResponse generateUserCode(String id_C,String id_U, String mode, JSONObject data);
 
     /**
      * 公司二維碼生成
@@ -95,7 +95,7 @@ public interface RedirectService {
      * @createDate: 2021/6/7 15:50
      * @return: com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse generateCompCode(String id_C,String id_U, String mode, JSONObject data);
+//    ApiResponse generateCompCode(String id_C,String id_U, String mode, JSONObject data);
 
     /**
      * 订单二維碼生成
@@ -108,7 +108,7 @@ public interface RedirectService {
      * @createDate: 2021/6/7 15:50
      * @return: com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse generateOrderCode(String id_C,String id_U, String id_O,String listType,String mode, JSONObject data);
+//    ApiResponse generateOrderCode(String id_C,String id_U, String id_O,String listType,String mode, JSONObject data);
     /**
      * 所有列表二维码扫取
      * @author Jevon
@@ -130,7 +130,7 @@ public interface RedirectService {
      * @createDate: 2021/6/9 9:42
      * @return: com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse resetUserCode(String id_U,  String id_C);
+//    ApiResponse resetUserCode(String id_U,  String id_C);
 
     /**
      * 公司重置二维码
@@ -141,7 +141,7 @@ public interface RedirectService {
      * @createDate: 2021/6/9 9:42
      * @return: com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse resetCompCode(String id_U,  String id_C);
+//    ApiResponse resetCompCode(String id_U,  String id_C);
 
     /**
      * 订单重置二维码
@@ -152,7 +152,7 @@ public interface RedirectService {
      * @createDate: 2021/6/9 9:42
      * @return: com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse resetOrderCode(String id_U, String id_O, String id_C);
+//    ApiResponse resetOrderCode(String id_U, String id_O, String id_C);
 
     /**
      *

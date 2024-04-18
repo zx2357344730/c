@@ -95,6 +95,8 @@ public class lSAsset {
 
     private String tmk;
 
+    private JSONObject wrdTag;
+
     //private Integer lType; //delete
     //private String wcnN;//delete
     // private String wenN;//delete

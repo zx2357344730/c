@@ -70,7 +70,7 @@ public class Order {
     @JsonProperty("oMoney")
     private JSONObject oMoney;
 
-    private JSONObject qrShareCode;
+//    private JSONObject qrShareCode;
 
     private JSONObject summ00s;
 
@@ -88,5 +88,7 @@ public class Order {
     private JSONObject work;
 
     private Integer tvs = 1;
+
+    private Long wn0fsize;
 
 }

@@ -88,6 +88,8 @@ public class lBAsset {
 
     private String tmk;
 
+    private JSONObject wrdTagB;
+
     //private Integer lType; //delete
     //private String wcnN;//delete
     // private String wenN;//delete

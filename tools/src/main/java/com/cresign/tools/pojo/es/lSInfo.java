@@ -54,6 +54,8 @@ public class lSInfo implements Serializable {
 
     private String id_CP;
 
+    private String id_PP;
+
     private JSONObject wrdN;
 
     private JSONObject wrddesc;
@@ -77,6 +79,10 @@ public class lSInfo implements Serializable {
     private String tmk;
 
     private String qr;
+
+    private JSONObject wrdTag;
+
+    private Long wn0fsize;
 
 
 

@@ -206,26 +206,26 @@ public class RoleServiceImpl implements RoleService {
             }
 
             //check Log:
-            if (listType.equals("lSProd") || listType.equals("lBProd")) {
-                if (grpJson.getJSONObject("log") == null)
-                {
-                    grpJson.put("log", new JSONObject());
-                    resultJson.put("log", new JSONObject());
-                }
-
-                for (String key : initGrpJson.getJSONObject("log").keySet()) {
-                    //if init+, grp-, add to grp
-                    if (!grpJson.getJSONObject("log").keySet().contains(key)) {
-                        resultJson.getJSONObject("log").put(key, initGrpJson.getJSONObject("log").getIntValue(key));
-                    }
-                }
-                for (String key : grpJson.getJSONObject("log").keySet()) {
-                    //if init+, grp-, add to grp
-                    if (!initGrpJson.getJSONObject("log").keySet().contains(key)) {
-                        resultJson.getJSONObject("log").remove(key);
-                    }
-                }
-            }
+//            if (listType.equals("lSProd") || listType.equals("lBProd")) {
+//                if (grpJson.getJSONObject("log") == null)
+//                {
+//                    grpJson.put("log", new JSONObject());
+//                    resultJson.put("log", new JSONObject());
+//                }
+//
+////                for (String key : initGrpJson.getJSONObject("log").keySet()) {
+////                    //if init+, grp-, add to grp
+////                    if (!grpJson.getJSONObject("log").keySet().contains(key)) {
+////                        resultJson.getJSONObject("log").put(key, initGrpJson.getJSONObject("log").getIntValue(key));
+////                    }
+////                }
+////                for (String key : grpJson.getJSONObject("log").keySet()) {
+////                    //if init+, grp-, add to grp
+////                    if (!initGrpJson.getJSONObject("log").keySet().contains(key)) {
+////                        resultJson.getJSONObject("log").remove(key);
+////                    }
+////                }
+//            }
 //            System.out.println(asset);
 
             qt.setMDContent(asset.getId(), qt.setJson("role.objData." + grpU + "." + listType + "." + grp, resultJson), Asset.class);

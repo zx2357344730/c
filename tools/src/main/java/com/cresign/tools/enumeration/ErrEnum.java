@@ -70,6 +70,7 @@ public enum ErrEnum {
     ASSET_NOT_FOUND("021005"),
     //公司不存在     Login,Purchase服务在用
     COMP_NOT_FOUND("021006"),
+    
     //卡片不存在
     CARD_NO_HAVE("021007"),
     //redis订单不存在       Login服务在用
@@ -83,9 +84,10 @@ public enum ErrEnum {
     //找不到索引
     INDEXES_NO_HAVE("021012"),
     //格子不存在
-    SPACE_NO_HAVE("021013"),
+    SPACE_NOT_FOUND("021013"),
     //名字不存在
-    WRDN_NO_HAVE("021014"),
+
+    FLOW_NOT_FOUND("021015"),
 
 
     /**
@@ -241,6 +243,7 @@ public enum ErrEnum {
     PROD_CODE_OVERDUE("061005"),
     //统计结果为空       Login服务在用
     STAT_IS_NULL("060013"),
+    PROD_REF_DUPLICATED("061006"),
 
 
     //jobName已存在

@@ -68,7 +68,9 @@ public class FlowNewServiceImpl implements FlowNewService {
     @Override
     @Transactional(noRollbackFor = ResponseException.class)
     public ApiResponse getDgResult(String id_OParent, String id_U, String myCompId, Long teStart, String divideOrder
-            ,boolean setOrder) {
+            ) {
+
+        boolean setOrder = true;
         // **System.out.println("开始时间:");
         // **System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         // 调用方法获取订单信息

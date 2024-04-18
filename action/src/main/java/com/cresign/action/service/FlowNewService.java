@@ -21,7 +21,7 @@ public interface FlowNewService {
      * @ver 1.0.0
      * @date 2021/6/16 14:53
      */
-    ApiResponse getDgResult(String id_OParent, String id_U, String id_C, Long teStart,String divideOrder,boolean setOrder);
+    ApiResponse getDgResult(String id_OParent, String id_U, String id_C, Long teStart,String divideOrder);
     /**
      * 递归验证 - 注释完成
      * @param myCompId 公司编号

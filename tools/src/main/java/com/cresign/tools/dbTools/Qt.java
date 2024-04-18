@@ -72,7 +72,7 @@ public class Qt {
 
     private JSONObject initData = new JSONObject();
 
-    private JSONObject idJson = this.setJson(
+    public JSONObject idJson = this.setJson(
             "newComp" , "65d9dcbe2b82a159561d52ad",
             "newUser" , "65d9dccc2b82a159561d52ae",
             "newSpace" , "65d9dde12b82a159561d52b0",
@@ -81,9 +81,10 @@ public class Qt {
             "newFCOrder" , "65473a1278dd5b51122b17ab",
             "pdfFormat" , "656345f53438734bdee926e4",
             "flowInit" , "65d9dd362b82a159561d52af",
-            "initCn" , "65d9da9f2b82a159561d52ab",
-            "initJava" , "65d9db342b82a159561d52ac",
-            "initDev" , "65d9e04debc15a0bd0f8be91");
+            "cn" , "65d9da9f2b82a159561d52ab",
+            "cn_java" , "65d9db342b82a159561d52ac",
+            "initDev" , "65d9e04debc15a0bd0f8be91",
+            "taModFin", "6602602abe72600a65bd1ea4");
 
     public static final String appId = "KVB0qQq0fRArupojoL4WM9";
 
@@ -92,7 +93,6 @@ public class Qt {
     //ESS - done: get, getFilt, del, add, set
     //RED - done: set/hash, hasKey, put/set, get expire
     //Other - done: toJson, jsonTo, list2Map, getConfig, filterBuilder
-    //Other - need: getRecentLog, judgeComp, chkUnique,, checkOrder, updateSize
 
     public String GetObjectId() {
         return new ObjectId().toString();
@@ -192,7 +192,7 @@ public class Qt {
     {
         if (initData.get("cn_java") == null)
         {
-            return this.jsonTo(this.setupInit("initJava", "cn_java"), InitJava.class);
+            return this.jsonTo(this.setupInit("cn_java"), InitJava.class);
         } else {
             String ver = this.getRDSetStr("InitData", "cn_java");
 
@@ -200,14 +200,14 @@ public class Qt {
             {
                 return this.jsonTo(initData.get("cn_java"), InitJava.class);
             } else {
-                return this.jsonTo(this.setupInit("initJava", "cn_java"), InitJava.class);
+                return this.jsonTo(this.setupInit("cn_java"), InitJava.class);
             }
         }
     }
 
-    private JSONObject setupInit(String key, String setKey) // key = initJava etc idJson's key, setKey = cn_java etc lang
+    public JSONObject setupInit(String setKey) // key = initJava etc idJson's key, setKey = cn_java etc lang
     {
-        Info resultObj = this.getMDContent(idJson.getString(key), Arrays.asList("tvs","jsonInfo"), Info.class);
+        Info resultObj = this.getMDContent(idJson.getString(setKey), Arrays.asList("tvs","jsonInfo"), Info.class);
         resultObj.getJsonInfo().getJSONObject("objData").put("ver", resultObj.getTvs());
         initData.put(setKey, resultObj.getJsonInfo().getJSONObject("objData"));
         this.setRDSet("InitData", setKey, resultObj.getTvs(),7776000L);
@@ -218,7 +218,7 @@ public class Qt {
     {
         if (initData.get(lang) == null)
         {
-            return this.jsonTo(this.setupInit("initCn", lang), Init.class);
+            return this.jsonTo(this.setupInit(lang), Init.class);
         } else {
             String ver = this.getRDSetStr("InitData", lang);
 
@@ -226,7 +226,7 @@ public class Qt {
             {
                 return this.jsonTo(initData.get(lang), Init.class);
             } else {
-                return this.jsonTo(this.setupInit("initCn", lang), Init.class);
+                return this.jsonTo(this.setupInit(lang), Init.class);
             }
         }
     }
@@ -259,9 +259,8 @@ public class Qt {
 
     public JSONObject getInitFormat(String key, String subKey)
     {
-        InitJava initJava = this.getInitData();
-
-        Info jsonFormat = this.getMDContent(initJava.getIdJson().getString(key), "jsonInfo", Info.class);
+//        InitJava initJava = this.getInitData();
+        Info jsonFormat = this.getMDContent(idJson.getString(key), "jsonInfo", Info.class);
         if (!subKey.equals(""))
         {
             return jsonFormat.getJsonInfo().getJSONObject("objData").getJSONObject(subKey);
@@ -589,7 +588,7 @@ public class Qt {
 //        errPrint("结果集合大小:",list.size());
 //    }
 
-    public List<?> getMDContentMany(HashSet setIds, String field, Class<?> classType) {
+    public <T> List<T> getMDContentMany(HashSet setIds, String field, Class<T> classType) {
 
         Query query = new Query(new Criteria("_id").in(setIds));
         if (field != null && !field.equals("")) {
@@ -626,32 +625,32 @@ public class Qt {
     {
 
         try {
-//            System.out.println("****[" + title + "]****");
-//            for (Object item : vars) {
-//                if (item == null) {
-//                    System.out.println("....null");
-//                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
-//                    System.out.println(this.toJArray(item));
-//                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
-//                        item.getClass().toString().startsWith("class java.util")) {
-//
-//                    System.out.println(this.toJson(item));
-//
-//                    JSONObject looper = this.toJson(item);
-//                    looper.forEach((k, v) ->{
-//                        System.out.println(k + ":" + v);
-//                    });
-//                    System.out.println("----------------------------------------");
-//
-//
-//                } else {
-//                    System.out.println(item);
-//                }
-//            }
-//            System.out.println("*****[End]*****");
-//
-//            if (e != null)
-//                e.printStackTrace();
+            System.out.println("****[" + title + "]****");
+            for (Object item : vars) {
+                if (item == null) {
+                    System.out.println("....null");
+                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
+                    System.out.println(this.toJArray(item));
+                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
+                        item.getClass().toString().startsWith("class java.util")) {
+
+                    System.out.println(this.toJson(item));
+
+                    JSONObject looper = this.toJson(item);
+                    looper.forEach((k, v) ->{
+                        System.out.println(k + ":" + v);
+                    });
+                    System.out.println("----------------------------------------");
+
+
+                } else {
+                    System.out.println(item);
+                }
+            }
+            System.out.println("*****[End]*****");
+
+            if (e != null)
+                e.printStackTrace();
         }
         catch (Exception ex)
         {
@@ -819,7 +818,6 @@ public class Qt {
             }
             update.inc("tvs", 1);
             UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-            this.errPrint("inSetMDAP", id, keyVal, updateResult);
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -863,7 +861,6 @@ public class Qt {
             if (updateResult.getModifiedCount() == 0) {
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.DB_ERROR.getCode(), "");
             }
-            this.errPrint("inSetMD", id, keyVal, updateResult);
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -888,7 +885,6 @@ public class Qt {
             update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             update.inc("tvs", 1);
             UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-            this.errPrint("inSetMDMany", setId, keyVal, updateResult);
 
         } catch (Exception e)
         {
@@ -1281,117 +1277,92 @@ public class Qt {
     }
 
     /////////////////-------------------------------------------
-    public LogFlow getLogRecent(String id_O, Integer index, String id_C, boolean isSL) {
+//    public LogFlow getLogRecent(String logType, String id_O, Integer index, String id_C, boolean isSL) {
+//
+//        JSONArray filt = new JSONArray();
+//        this.setESFilt(filt, "id_O","eq",id_O);
+//        this.setESFilt(filt, "index","eq",index);
+//
+//        if (isSL)
+//            this.setESFilt(filt, "id_CS","eq",id_C);
+//        else
+//            this.setESFilt(filt, "id_C","eq",id_C);
+//
+//        JSONArray result = this.getES(logType, filt,1, 1, "tmd", "desc");
+//
+//        return this.jsonTo(result.getJSONObject(0), LogFlow.class);
+//    }
 
-        JSONArray filt = new JSONArray();
-        this.setESFilt(filt, "id_O","eq",id_O);
-        this.setESFilt(filt, "index","eq",index);
-
-        if (isSL)
-            this.setESFilt(filt, "id_CS","eq",id_C);
-        else
-            this.setESFilt(filt, "id_C","eq",id_C);
-
-        JSONArray result = this.getES("action/assetflow", filt,1, 1, "tmd", "desc");
-
-        return this.jsonTo(result.getJSONObject(0), LogFlow.class);
-    }
-
-    public JSONArray contentMap(String listType, JSONArray convertArray) {
+    public JSONArray mapES_IDX(String listType, JSONArray convertArray) {
         JSONArray result = new JSONArray();
         for (Object o : convertArray) {
 
             //  把id的数据换成id_P的数据
-            JSONObject contentMap = (JSONObject) JSONObject.toJSON(o);
+            JSONObject mapES_IDX = (JSONObject) JSONObject.toJSON(o);
 
-            switch (listType) {
-                case "lBProd":
-                case "lSProd":
-                    contentMap.put("id", contentMap.get("id_P"));
-                    break;
-                case "lBInfo":
-                case "lSInfo":
-                    contentMap.put("id", contentMap.get("id_I"));
-                    break;
-                case "lBOrder":
-                case "lSOrder":
-                    contentMap.put("id", contentMap.get("id_O"));
-                    break;
-                case "lBComp":
-                    contentMap.put("id", contentMap.get("id_C"));
-                    break;
-                case "lBUser":
-                    contentMap.put("id", contentMap.get("id_U"));
-                    break;
-                case "lSComp":
-                    contentMap.put("id", contentMap.get("id_CB"));
-                    break;
-                case "lSAsset":
-                    contentMap.put("id", contentMap.get("id_A"));
-                    break;
-            }
+            mapES_IDX.put("id", mapES_IDX.get(this.lTypeKeyName(listType).getString("idCol")));
 
-            result.add(contentMap);
+            result.add(mapES_IDX);
         }
 
         return result;
     }
 
-    public JSONObject listTypeSetter(String listType)
+    public JSONObject lTypeKeyName(String listType)
     {
         switch (listType) {
             case "lBProd":
                return setJson("idCol", "id_P", "compCol", "id_CB", "indexType", listType,
-                    "group", "grpB", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+                    "group", "grpB", "ref", "ref", "pic", "pic", "wrdN", "wrdN", "class", Prod.class);
             case "lSProd":
                 return setJson("idCol", "id_P", "compCol", "id_C", "indexType", listType,
-                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN", "class", Prod.class);
             case "lBUser":
                 return setJson("idCol", "id_U", "compCol", "id_CB", "indexType", listType,
-                        "group", "grpU", "ref", "refU", "pic", "pic", "wrdN", "wrdN");
+                        "group", "grpU", "ref", "refU", "pic", "pic", "wrdN", "wrdN", "class", User.class);
             case "lSUser":
                 return setJson("idCol", "id_U", "compCol", "id_C", "indexType", listType,
-                        "group", "grp", "ref", "refU", "pic", "pic", "wrdN", "wrdN");
+                        "group", "grp", "ref", "refU", "pic", "pic", "wrdN", "wrdN", "class", User.class);
 
             case "lBInfo":
                 return setJson("idCol", "id_I", "compCol", "id_CB", "indexType", listType,
-                        "group", "grpB", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+                        "group", "grpB", "ref", "ref", "pic", "pic", "wrdN", "wrdN", "class", Info.class);
             case "lSInfo":
                 return setJson("idCol", "id_I", "compCol", "id_C", "indexType", listType,
-                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN", "class", Info.class);
 
             case "lBComp":
                 return setJson("idCol", "id_C", "compCol", "id_CB", "indexType", "lSBComp",
-                        "group", "grpB", "ref", "refCB", "pic", "picCB", "wrdN", "wrdNCB");
+                        "group", "grpB", "ref", "refCB", "pic", "picCB", "wrdN", "wrdNCB", "class", Comp.class);
             case "lSComp":
                 return setJson("idCol", "id_CB", "compCol", "id_C", "indexType", "lSBComp",
-                        "group", "grp", "ref", "refC", "pic", "picC", "wrdN", "wrdNC");
+                        "group", "grp", "ref", "refC", "pic", "picC", "wrdN", "wrdNC", "class", Comp.class);
 
             case "lBOrder":
                 return setJson("idCol", "id_O", "compCol", "id_CB", "indexType", "lSBOrder",
-                        "group", "grpB", "ref", "refB", "pic", "pic", "wrdN", "wrdN");
+                        "group", "grpB", "ref", "refB", "pic", "pic", "wrdN", "wrdN", "class", Order.class);
 
             case "lSOrder":
                 return setJson("idCol", "id_O", "compCol", "id_C", "indexType", "lSBOrder",
-                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN", "class", Order.class);
 
             case "lNComp":
                 return setJson("idCol", "none", "compCol", "none", "indexType", "lNComp",
-                        "group", "", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+                        "group", "", "ref", "ref", "pic", "pic", "wrdN", "wrdN", "class", Comp.class);
 
             case "lNUser":
                 return setJson("idCol", "id_U", "compCol", "none", "indexType", "lNUser",
-                        "group", "", "ref", "refU", "pic", "pic", "wrdN", "wrdN");
+                        "group", "", "ref", "refU", "pic", "pic", "wrdN", "wrdN", "class", User.class);
 
             case "lBAsset":
                 return setJson("idCol", "id_A", "compCol", "id_CB", "indexType", listType,
-                        "group", "grpB", "ref", "refB", "pic", "pic", "wrdN", "wrdN");
+                        "group", "grpB", "ref", "refB", "pic", "pic", "wrdN", "wrdN", "class", Asset.class);
 
             case "lSAsset":
                 return setJson("idCol", "id_A", "compCol", "id_C", "indexType", listType,
-                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
+                        "group", "grp", "ref", "ref", "pic", "pic", "wrdN", "wrdN", "class", Asset.class);
 
-            default: // either lSAsset & lSProd
+            default: // impossible
                 return setJson("idCol", "none", "compCol", "none", "indexType", listType,
                         "group", "grpB", "ref", "ref", "pic", "pic", "wrdN", "wrdN");
 
@@ -1425,15 +1396,17 @@ public class Qt {
         }
     }
 
-    public <T> T getESItem(String index, String id, Class<T> classType)
+    public <T> T getESItem(String index, String id, String id_C, Class<T> classType)
     {
-        JSONArray listProdES = this.getES(index, this.setESFilt("id_P", id));
+       String idName = "id_P";
+        JSONArray listProdES = this.getES(index, this.setESFilt("id_P", "eq", id));
         if (listProdES.size() != 1)
         {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_DATA_NULL.getCode(), "");
         }
 
-        T prodES = JSONObject.parseObject(JSON.toJSONString(listProdES.getJSONObject(0)), classType);
+        T prodES = this.cloneThis(listProdES.getJSONObject(0), classType);
+
         return prodES;
     }
 
@@ -1542,10 +1515,15 @@ public class Qt {
         try {
             String[] indices = index.split("/");
 
+            System.out.println("what is c"+index+" "+ filterArray);
+
             BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
             this.filterBuilder(filterArray, queryBuilder);
+
             CountRequest countRequest = new CountRequest(indices).query(queryBuilder);
             countResponse = client.count(countRequest, RequestOptions.DEFAULT);
+            System.out.println("what is c"+filterArray+" "+ countResponse);
+
         } catch (IOException e) {
             e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ToolEnum.ES_DB_ERROR.getCode(), e.toString());
@@ -1561,7 +1539,7 @@ public class Qt {
             BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
             this.filterBuilder(filterArray, queryBuilder);
 
-            searchSourceBuilder.query(queryBuilder).size(5000);
+            searchSourceBuilder.query(queryBuilder).size(10000);
             SearchRequest srb = new SearchRequest(listType);
 
             srb.source(searchSourceBuilder);
@@ -1788,10 +1766,58 @@ public class Qt {
             return Prod.class;
         } else if (table.endsWith("Asset") || table.startsWith("id_A")) {
             return Asset.class;
-        } else {
+        } else if (table.endsWith("Info") || table.startsWith("id_I")) {
             return Info.class;
+        } else {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.TYPE_NOT_FOUND.getCode(), null);
         }
     }
+
+//    public JSONObject getListKey(String listType) {
+//        JSONObject jsonResult;
+//        switch (listType) {
+//            case "lSComp":
+//                jsonResult = this.setJson("id", "id_CB", "compId", "id_C", "grp", "grp", "def", "objlSC", "listType", "lSBComp");
+//                break;
+//            case "lBComp":
+//                jsonResult = this.setJson("id", "id_C", "compId", "id_CB", "grp", "grpB", "def", "objlBC", "listType", "lSBComp");
+//                break;
+//            case "lSOrder":
+//                jsonResult = this.setJson("id", "id_O", "compId", "id_C", "grp", "grp", "def", "objlSO", "listType", "lSBOrder");
+//                break;
+//            case "lBOrder":
+//                jsonResult = this.setJson("id", "id_O", "compId", "id_CB", "grp", "grpB", "def", "objlBO", "listType", "lSBOrder");
+//                break;
+//            case "lSUser":
+//                jsonResult = this.setJson("id", "id_U", "compId", "id_C", "grp", "grpU", "def", "objlSU", "listType", listType);
+//                break;
+//            case "lBUser":
+//                jsonResult = this.setJson("id", "id_U", "compId", "id_CB", "grp", "grpU", "def", "objlBU", "listType", listType);
+//                break;
+//            case "lSProd":
+//                jsonResult = this.setJson("id", "id_P", "compId", "id_C", "grp", "grp", "def", "objlSP", "listType", listType);
+//                break;
+//            case "lBProd":
+//                jsonResult = this.setJson("id", "id_P", "compId", "id_CB", "grp", "grpB", "def", "objlBP", "listType", listType);
+//                break;
+//            case "lSAsset":
+//                jsonResult = this.setJson("id", "id_A", "compId", "id_C", "grp", "grp", "def", "objlSA", "listType", listType);
+//                break;
+//            case "lBAsset":
+//                jsonResult = this.setJson("id", "id_A", "compId", "id_CB", "grp", "grp", "def", "objlBA", "listType", listType);
+//                break;
+//            case "lSInfo":
+//                jsonResult = this.setJson("id", "id_I", "compId", "id_C", "grp", "grp", "def", "objlSI", "listType", listType);
+//                break;
+//            case "lBInfo":
+//                jsonResult = this.setJson("id", "id_I", "compId", "id_CB", "grp", "grpB", "def", "objlBI", "listType", listType);
+//                break;
+//            default:
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.TYPE_NOT_FOUND.getCode(), null);
+//                break;
+//        }
+//        return jsonResult;
+//    }
 
     public String formatMs(Long ms) {
         Integer ss = 1000;
@@ -1821,26 +1847,52 @@ public class Qt {
     public void checkCapacity(String id_C, Long fileSize) {
 //            String id_A = getId_A(id_C, "a-core");
 //            Asset asset = getMDContent(id_A, "powerup.capacity", Asset.class);
-        Asset asset = getConfig(id_C, "a-core", Arrays.asList("powerup.capacity", "view"));
+        Asset asset = getConfig(id_C, "a-core", Arrays.asList("powerup", "view"));
         System.out.println("id_C=" + id_C);
         System.out.println("asset=" + asset);
         if (!asset.getId().equals("none")) {
             if (asset.getPowerup() == null) {
-                JSONObject power = this.getInitData().getNewComp().getJSONObject("a-core").getJSONObject("powerup");
+                JSONObject cap = this.setJson("total", 1024000000, "used", 0, "status", true);
                 JSONArray newView = asset.getView();
                 newView.add("powerup");
-                this.setMDContent(asset.getId(), this.setJson("powerup", power, "view", newView), Asset.class);
-                asset.setPowerup(power);
+                this.setMDContent(asset.getId(), this.setJson("powerup", this.setJson("capacity", cap), "view", newView), Asset.class);
+                asset.setPowerup(this.setJson("powerup", this.setJson("capacity", cap)));
             }
             JSONObject jsonCapacity = asset.getPowerup().getJSONObject("capacity");
             //超额
             if (fileSize > 0 && fileSize + jsonCapacity.getLong("used") > jsonCapacity.getLong("total")) {
                 throw new ErrorResponseException(HttpStatus.OK, ToolEnum.POWER_NOT_ENOUGH.getCode(), "");
             }
-            JSONObject jsonUpdate = setJson("powerup.capacity.used", fileSize + jsonCapacity.getLong("used"));
-            incMDContent(asset.getId(), jsonUpdate, Asset.class);
-        }
+//            JSONObject jsonUpdate = setJson("powerup.capacity.used", fileSize + jsonCapacity.getLong("used"));
+//            incMDContent(asset.getId(), jsonUpdate, Asset.class);
+            incMDContent(asset.getId(), setJson("powerup.capacity.used", fileSize), Asset.class);
 
+        }
+    }
+
+
+    public void setTaModFin(String id_C, String taModFin) {
+//            String id_A = getId_A(id_C, "a-core");
+//            Asset asset = getMDContent(id_A, "powerup.capacity", Asset.class);
+        Asset asset = getConfig(id_C, "a-core", Arrays.asList("powerup", "view"));
+        System.out.println("id_C=" + id_C);
+        System.out.println("asset=" + asset);
+        if (!asset.getId().equals("none")) {
+            if (asset.getPowerup() == null) {
+                JSONObject jsonPowerup = this.setJson("taModFin", taModFin);
+
+                JSONObject cap = this.setJson("total", 1024000000, "used", 0, "status", true);
+                JSONArray newView = asset.getView();
+                newView.add("powerup");
+                this.setMDContent(asset.getId(), this.setJson("powerup", this.setJson("capacity", cap), "view", newView), Asset.class);
+                asset.setPowerup(this.setJson("powerup", this.setJson("capacity", cap)));
+            }
+            else {
+
+            }
+            String id = idJson.getString("taModFin");
+            Info taModFinInfo = this.getMDContent(id, "jsonInfo", Info.class);
+        }
     }
 
     public void setESFilt (JSONArray filterArray, Object key, String method, Object val )

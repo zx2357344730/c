@@ -11,12 +11,14 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.lBAsset;
 import com.cresign.tools.pojo.es.lBProd;
 import com.cresign.tools.pojo.es.lSAsset;
+import com.cresign.tools.pojo.es.lSProd;
 import com.cresign.tools.pojo.po.*;
 import com.cresign.tools.pojo.po.assetCard.AssetAStock;
 import com.cresign.tools.pojo.po.assetCard.AssetInfo;
 import com.cresign.tools.reflectTools.ApplicationContextTools;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -62,151 +64,6 @@ public class DbUtils {
     private Ws ws;
 
 
-    /*
-        ES
-        lSBxxxUpdateFields
-        getES-lSBxxx data
-        getES-logFlow data
-        sendLog
-
-        Mdb
-        getCard@COUPA, setCard[]@COUPA, addCard[]@COUPA
-        getCard[]ById
-        delCOUPA saveCOUPA
-
-        redis
-        setRedis0, setRedis1
-        getRedis0, getRedis1
-
-     */
-
-
-    /**
-     * 根据id查询mongo
-     * @author Rachel
-     * @Date 2022/01/14
-     * @param id class.id
-     * @param field 返回字段
-     * @param classType 表对应的实体类
-     * @Return java.lang.Object
-     * @Card
-     **/
-
-//    //Fixed
-//    public Object getMongoOneField(String id, String field, Class<?> classType) {
-//        Query query = new Query(new Criteria("_id").is(id));
-//        if (field != null) {
-//            query.fields().include(field);
-//        }
-//        return mongoTemplate.findOne(query, classType);
-//    }
-
-    /**
-     * 根据id查询mongo
-     * @author Rachel
-     * @Date 2022/01/14
-     * @param classType 表对应的实体类
-     * @Return java.lang.Object
-     * @Card
-     **/
-
-//    //FIXED
-//    public Object getMongoOneFields(String id, List<String> listField, Class<?> classType) {
-//        Query query = new Query(new Criteria("_id").is(id));
-//        listField.forEach(query.fields()::include);
-//        return mongoTemplate.findOne(query, classType);
-//    }
-
-
-    public Map<String, ?> getMongoMapField(HashSet setId, String field, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").in(setId));
-        if (field != null) {
-            query.fields().include(field);
-        }
-        List<?> list = mongoTemplate.find(query, classType);
-        System.out.println("list=" + list);
-        Map<String, Object> mapId = new HashMap<>();
-        list.forEach(l ->{
-            System.out.println("l= " + l);
-            JSONObject json = (JSONObject) JSON.toJSON(l);
-            mapId.put(json.getString("id"), l);
-        });
-
-        return mapId;
-    }
-
-
-    /**
-     * set修改mongo
-     * @author Rachel
-     * @Date 2022/01/14
-     * @param id
-     * @param updateKey 修改字段key
-     * @param updateValue 修改字段value
-     * @param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    //FIXED
-
-    public UpdateResult setMongoValue(String id, String updateKey, Object updateValue, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        update.set(updateKey, updateValue);
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
-
-    /**
-     * set修改mongo
-     * @author Rachel
-     * @Date 2022/01/14
-     * @param jsonUpdate 多个修改字段
-     * @param classType 表对应的实体类
-     * @Return com.mongodb.client.result.UpdateResult
-     * @Card
-     **/
-    //FIXED
-    public UpdateResult setMongoValues(String id, JSONObject jsonUpdate, Class<?> classType) {
-        Query query = new Query(new Criteria("_id").is(id));
-        Update update = new Update();
-        jsonUpdate.forEach((k, v) ->{
-            update.set(k, v);
-        });
-        update.inc("tvs", 1);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update, classType);
-        return updateResult;
-    }
-
-
-    /**
-     * 批量操作mongo
-     * @author Rachel
-     * @Date 2022/05/16
-     * @Param listBulk [新增：{"type":"insert", "insert":Object} / 修改：{"type":"update", "id":"", update:Update} / 删除：{"type":"remove", "id":""}]
-     * @Param classType 表对应的实体类
-     * @Return com.mongodb.bulk.BulkWriteResult
-     * @Card
-     **/
-    public BulkWriteResult bulkMongo(List<Map> listBulk, Class<?> classType) {
-        System.out.println("listBulk=" + listBulk);
-        BulkOperations bulk = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, classType);
-        listBulk.forEach(mapBulk -> {
-            String type = mapBulk.get("type").toString();
-            if (type.equals("insert")) {
-                bulk.insert(mapBulk.get("insert"));
-            } else if (type.equals("update")) {
-                Query query = new Query(new Criteria("_id").is(mapBulk.get("id")));
-                bulk.updateOne(query, (Update) mapBulk.get("update"));
-            } else if (type.equals("delete")) {
-                Query query = new Query(new Criteria("_id").is(mapBulk.get("id")));
-                bulk.remove(query);
-            }
-        });
-        BulkWriteResult execute = bulk.execute();
-        return execute;
-    }
 
     /**
      * 获取原有日志修改后发日志
@@ -220,28 +77,9 @@ public class DbUtils {
      * @Return org.elasticsearch.action.index.IndexResponse
      * @Card
      **/
+
     public LogFlow getRecentLog(String id_O, Integer index, JSONObject tokData, String logType) {
-//        BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
-//        queryBuilder.must(QueryBuilders.termQuery("id_C", tokData.getString("id_C")))
-//                .must(QueryBuilders.termQuery("id_O", id_O))
-//                .must(QueryBuilders.termQuery("index", index));
-//
-//        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-//        sourceBuilder.query(queryBuilder).from(0).size(1).sort("tmd", SortOrder.DESC);
-//
-//        SearchRequest searchRequest = new SearchRequest(logType);
-////        searchRequest.indices(logType);
-//
-//        searchRequest.source(sourceBuilder);
-//
-//        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-//        System.out.println("result");
-//        System.out.println(id_O+" "+index+" "+tokData.getString("id_C"));
-//
-//        System.out.println(searchResponse.getHits().getHits());
-//        SearchHit[] hit = searchResponse.getHits().getHits();
         JSONArray hits = qt.getES(logType, qt.setESFilt("id_C", tokData.getString("id_C"),"id_O", id_O, "index", index),1,1,"tmd","desc");
-//        Map<String, Object> newestLog = hit.getSourceAsMap();
         if (hits.size() == 0)
         {
             Order thisOrder = qt.getMDContent(id_O, Arrays.asList("oItem", "info", "action"), Order.class);
@@ -259,199 +97,8 @@ public class DbUtils {
         newestLog.setGrpU(tokData.getString("grpU"));
         newestLog.setWrdNU(tokData.getJSONObject("wrdNU"));
 
-
-//
-//        newestLog.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//        newestLog.put("id_U", tokData.getString("id_U"));
-//        newestLog.put("dep", tokData.getString("dep"));
-//        newestLog.put("grpU", tokData.getString("grpU"));
-//        newestLog.put("wrdNU", tokData.getJSONObject("wrdNU"));
-//
-//
-//        if (jsonData != null) {
-//            JSONObject jsonHitData = (JSONObject) JSON.toJSON(newestLog.get("data"));
-//            jsonHitData.putAll(jsonData);
-//            newestLog.put("data", jsonHitData);
-//        }
-//        LogFlow log = JSONObject.parseObject(JSON.toJSONString(newestLog),LogFlow.class);
-
-
-//        //no sending, just create?
-//
-//        IndexRequest indexRequest = new IndexRequest(logType);
-//        indexRequest.source(mapHit, XContentType.JSON);
-//        IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
         return newestLog;
     }
-
-    /**
-     * 查询es
-     * @author Rachel
-     * @Date 2022/01/14
-     * @param key 查询key
-     * @param value 查询value
-     * @param logType 索引名
-     * @Return org.elasticsearch.action.search.SearchResponse
-     * @Card
-     **/
-    //FIXED
-    public JSONArray getEsKey(String key, Object value, String logType) throws IOException {
-
-        JSONArray result = new JSONArray();
-
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
-        queryBuilder.must(QueryBuilders.termQuery(key, value));
-        sourceBuilder.query(queryBuilder).from(0).size(1000);
-
-        System.out.println("VA 1 only"+value+"   ");
-
-        try {
-        SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
-        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-
-            for (SearchHit hit : response.getHits().getHits()) {
-                Map<String, Object> mapHit = hit.getSourceAsMap();
-//                mapHit.put("esId", hit.getId());
-                result.add(mapHit);
-            }
-
-            return result;
-
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-
-    }
-    //FIXED
-
-    public JSONArray getEsKey(String key, Object value, String key2, Object value2, String logType) {
-
-        JSONArray result = new JSONArray();
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
-        queryBuilder.must(QueryBuilders.termQuery(key, value))
-                .must(QueryBuilders.termQuery(key2, value2));
-        sourceBuilder.query(queryBuilder).from(0).size(1000);
-
-        System.out.println("value2"+value+"   "+ value2);
-
-        try {
-            SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
-
-            SearchResponse search = client.search(request, RequestOptions.DEFAULT);
-            for (SearchHit hit : search.getHits().getHits()) {
-                System.out.println(hit.getSourceAsMap());
-                result.add(hit.getSourceAsMap());
-            }
-
-            System.out.println("result"+result);
-            return result;
-
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * 查询es
-     * @author Rachel
-     * @Date 2022/01/14
-     * @param jsonQuery 多个查询对象
-     * @param logType 索引名
-     * @Return org.elasticsearch.action.search.SearchResponse
-     * @Card
-     **/
-    //FIXED
-
-    public SearchResponse getEsKeys(JSONObject jsonQuery, String logType) throws IOException {
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
-        jsonQuery.forEach((k, v) ->{
-            queryBuilder.must(QueryBuilders.termQuery(k, v));
-        });
-        sourceBuilder.query(queryBuilder).from(0).size(1000);
-        SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
-        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-        return response;
-    }
-
-    /**
-     * 查询es
-     * @author Rachel
-     * @Date 2022/02/27
-     * @param queryBuilder 查询语句
-     * @param logType 索引名
-     * @Return org.elasticsearch.action.search.SearchResponse
-     * @Card
-     **/
-    //FIXED
-
-    public SearchResponse getEsQuery(BoolQueryBuilder queryBuilder, String logType) throws IOException {
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.query(queryBuilder).from(0).size(5000);
-        SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
-        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-
-        return response;
-    }
-
-    //FIXED
-    public JSONArray getESListByQuery(BoolQueryBuilder queryBuilder, String logType) throws IOException {
-        JSONArray result = new JSONArray();
-
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.query(queryBuilder).from(0).size(5000);
-        SearchRequest request = new SearchRequest(logType).source(sourceBuilder);
-        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-
-        for (SearchHit hit : response.getHits().getHits()) {
-            result.add(hit.getSourceAsMap());
-        }
-
-        return result;
-    }
-
-//    /**
-//     * 新增assetflow日志
-//     * @author Jevon
-//     * @param infoObject
-//     * @ver 1.0
-//     * @updated 2020/10/26 8:30
-//     * @return void
-//     */
-
-
-//
-//    public void addES(JSONObject infoObject , String indexes ) throws IOException {
-//
-//        //8-1 indexes = indexes + "-write";
-//        infoObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-//        //指定ES索引 "assetflow" / "assetflow-write / assetflow-read
-//        IndexRequest request = new IndexRequest(indexes);
-//        //ES列表
-//        request.source(infoObject, XContentType.JSON);
-//
-//        client.index(request, RequestOptions.DEFAULT);
-//
-//    }
-
-
-
-
-    public UpdateResponse updateEs(String logType, String id, JSONObject logInfo) throws IOException {
-        UpdateRequest updateRequest = new UpdateRequest(logType, id);
-        logInfo.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-        updateRequest.doc(logInfo, XContentType.JSON);
-        UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
-        return updateResponse;
-    }
-
 
     public void updateListCol(QueryBuilder query, String listType, JSONObject listCol) throws IOException {
 
@@ -479,7 +126,163 @@ public class DbUtils {
 
     }
 
+    public void setPowerup(String id_C, JSONObject jsonUpdate) {
+        Asset asset = qt.getConfig(id_C, "a-core", Arrays.asList("powerup", "view"));
+        System.out.println("id_C=" + id_C);
+        System.out.println("asset=" + asset);
+        if (!asset.getId().equals("none")) {
+            JSONObject jsonPowerup = asset.getPowerup();
+            if (asset.getPowerup() == null) {
+                JSONObject cap = qt.setJson("total", 1024000000, "used", 0, "status", true);
+                JSONArray newView = asset.getView();
+                newView.add("powerup");
+                qt.setMDContent(asset.getId(), qt.setJson("powerup", qt.setJson("capacity", cap), "view", newView), Asset.class);
+                asset.setPowerup(qt.setJson("powerup", qt.setJson("capacity", cap)));
+
+            } else {
+                jsonPowerup = asset.getPowerup();
+                jsonPowerup.putAll(jsonUpdate);
+            }
+            qt.setMDContent(asset.getId(), qt.setJson("powerup", jsonPowerup), Asset.class);
+        }
+
+    }
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
+                         String id_OP, String refOP, JSONObject wrdN, String id_O, Integer index, Boolean isStart)
+{
+    if (id_CB == null)
+        id_CB = "";
+    if (id_CS == null)
+        id_CS = "";
+    if (id_FC == null)
+        id_FC = "";
+    if (id_FS == null)
+        id_FS = "";
+
+    Asset assetB = qt.getConfig(id_CB, "a-auth", "flowControl");
+    Asset assetS = qt.getConfig(id_CS, "a-auth", "flowControl");
+    String refInside = id_O + "_" + index;
+
+    JSONObject refOPInfo = qt.setJson("refOP", refOP, "wrdN", wrdN, "index", new JSONArray(), "id_OP", id_OP);
+
+    // check and update id_FC
+    if (!id_FC.equals("") && !assetB.getId().equals("none"))
+    {
+
+        for (int i = 0; i < assetB.getFlowControl().getJSONArray("objData").size(); i++)
+        {
+
+            JSONObject flowInfo = assetB.getFlowControl().getJSONArray("objData").getJSONObject(i);
+
+            //adding 1 index
+            if (flowInfo.getString("id").equals(id_FC) && isStart && refOP != null) {
+                // case 1: id_OP not exists in refOP, init
+                if (flowInfo.getJSONObject("refOP") == null)
+                {
+                    flowInfo.put("refOP", new JSONObject());
+                    qt.errPrint("in refOPNull;");
+                }
+
+//                    if (id_OP.equals(""))
+//                    {
+//                        flowInfo.getJSONObject("refOP").put("id_OP", flowInfo.getString("id_O"));
+//                        refOPInfo.put("id_OP", flowInfo.getString("id_O"));
+//                    }
+
+                // case 2: refOP not exists
+                if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
+                {
+                    flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
+                    qt.errPrint("in refOP not exist, new start");
+                }
+
+                // any case, add this index to index[]
+                if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
+                    flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
+
+                }
+                qt.errPrint("idFC addIndex", flowInfo, id_FC, refOP, id_OP, refOPInfo, wrdN);
+                qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+                break;
+
+            } // removing now here:
+            else if (flowInfo.getString("id").equals(id_FC) && !isStart)
+            {
+
+                // case 1: if index size == 1, remove the whole id_OP
+                try {
+                    if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
+                    {
+                        flowInfo.getJSONObject("refOP").remove(refOP);
+                    } else
+                    {
+                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
+                    }
+
+                    qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+
+                    break;
+
+                } catch (Exception e) {
+                    // here it must have an error flowcontrol
+                }
+                break;
+            }
+        }
+    }
+    if (!id_FS.equals("") && !assetS.getId().equals("none"))
+    {
+        for (int i = 0; i < assetS.getFlowControl().getJSONArray("objData").size(); i++)
+        {
+            JSONObject flowInfo = assetS.getFlowControl().getJSONArray("objData").getJSONObject(i);
+            //adding 1 index
+            if (flowInfo.getString("id").equals(id_FS) && isStart && refOP != null) {
+                // case 1: id_OP not exists in refOP, init
+                if (flowInfo.getJSONObject("refOP") == null)
+                {
+                    flowInfo.put("refOP", new JSONObject());
+                }
+//                    if (id_OP.equals(""))
+//                    {
+//                        flowInfo.getJSONObject("refOP").put("id_OP", flowInfo.getString("id_O"));
+//                    }
+                // case 2: refOP not exists
+                if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
+                {
+                    flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
+                }
+                // any case, add this index to index[]
+                if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
+                    flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
+                }
+                qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+
+                break;
+
+            } // removing now here:
+            else if (flowInfo.getString("id").equals(id_FS) && !isStart) {
+                // case 1: if index size == 1, remove the whole id_OP
+                try {
+                    if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
+                    {
+                        flowInfo.getJSONObject("refOP").remove(refOP);
+                    } else
+                    {
+                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
+                    }
+                    qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+
+                } catch (Exception e) {
+                    // here it must have an error flowcontrol
+                }
+                break;
+            }
+        }
+    }
+}
 
 
 //Order init oItem, action, oStock if needed
@@ -600,156 +403,13 @@ public class DbUtils {
     public JSONObject summOrder(Order order, JSONObject listCol) {
         return this.summOrder(order, listCol, qt.setArray("oStock", "action", "oQc"), null);
     }
-    /**
-     *
-     * @param order
-     * @return JSONObject of update String
-     */
-//    public JSONObject summOrder(Order order, JSONObject listCol, JSONArray cardList)
-//    {
-//
-//        if (order.getOItem() == null)
-//            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
-//
-//
-//        JSONArray oItem = order.getOItem().getJSONArray("objItem");
-//        JSONArray oStock = null;
-//        JSONArray action = null;
-//        JSONArray oQc = null;
-//
-//        Double wn2fin = 0.0;
-//        Double wn2made = 0.0;
-//        Double wn2progress = 0.0;
-//        Integer count = 0;
-//        Double wn2qty = 0.0;
-//        Double wn4price = 0.0;
-//        JSONArray arrP = new JSONArray();
-//
-//        if (order.getOItem().getJSONArray("objCard").contains("oStock") && order.getOStock() != null)
-//        {
-//            oStock = order.getOStock().getJSONArray("objData");
-//        }
-//        if (order.getOItem().getJSONArray("objCard").contains("action") && order.getAction() != null)
-//        {
-//            action = order.getAction().getJSONArray("objAction");
-//        }
-//        if (order.getOItem().getJSONArray("objCard").contains("oQc") && null != order.getOQc())
-//        {
-//            oQc = order.getOQc().getJSONArray("objQc");
-//        }
-//
-//        for (int i = 0; i < oItem.size(); i++)
-//        {
-//            wn2qty = DoubleUtils.add(oItem.getJSONObject(i).getDouble("wn2qtyneed"), wn2qty);
-//            wn4price = DoubleUtils.add(wn4price, DoubleUtils.multiply(oItem.getJSONObject(i).getDouble("wn2qtyneed"),oItem.getJSONObject(i).getDouble("wn4price")));
-//            arrP.add(oItem.getJSONObject(i).getString("id_P"));
-//
-//            // setup wn0prior by using seq***
-//            // if seq == 0, wn0prior = 0, seq == 1, wn0prior = prevPrior, seq == 2, wn0prior = prevPrior + 1, seq == 3, no set
-//            if (i == 0 || oItem.getJSONObject(i).getString("seq").equals("0"))
-//            {
-//                oItem.getJSONObject(i).put("wn0prior", 0);
-//            } else if (oItem.getJSONObject(i).getString("seq").equals("1")) {
-//                oItem.getJSONObject(i).put("wn0prior", oItem.getJSONObject(i - 1).getInteger("wn0prior"));
-//            } else if (oItem.getJSONObject(i).getString("seq").equals("2")) {
-//                oItem.getJSONObject(i).put("wn0prior", oItem.getJSONObject(i - 1).getInteger("wn0prior") + 1);
-//            }
-//            oItem.getJSONObject(i).put("index", i);
-//
-//            if (oStock != null && cardList.contains("oStock"))
-//            {
-//                Double madePercent = DoubleUtils.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"),oItem.getJSONObject(i).getDouble("wn2qtyneed"));
-//                wn2made = DoubleUtils.add(wn2made, madePercent);
-//                oStock.getJSONObject(i).put("index", i);
-////                "rKey" 《=Oitem
-//
-//                if (action != null)
-//                {
-//                    for (int j = 0; j < action.getJSONObject(i).getJSONArray("upPrnts").size(); j++)
-//                    {
-//                        if (oStock.getJSONObject(i).getJSONArray("objShip").size() - 1 < j)
-//                        {
-//                            // init it if it is not init yet, if bmdpt == 1 it is process, process only need 1 objShip[0]
-//                            if (j == 0 || !action.getJSONObject(i).getInteger("bmdpt").equals(1)) {
-//                                JSONObject newObjShip = qt.setJson(
-//                                        "wn2qtynow", 0.0, "wn2qtymade", 0.0,
-//                                        "wn2qtyneed", oItem.getJSONObject(i).getDouble("wn2qtyneed"));
-//                                oStock.getJSONObject(i).getJSONArray("objShip").add(newObjShip);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            if (action != null && cardList.contains("action"))
-//            {
-//                count = action.getJSONObject(i).getInteger("bcdStatus") == 2 ? 1: 0 + count;
-//                action.getJSONObject(i).put("index", i);
-//
-//                String grp = oItem.getJSONObject(i).getString("grp");
-//                String grpB = oItem.getJSONObject(i).getString("grpB");
-//
-//                // if grp not exists, need to init grpGroup
-//                if (grp != null && !grp.equals("") && order.getAction().getJSONObject("grpGroup").getJSONObject(grp) == null)
-//                {
-//                Asset asset = qt.getConfig(oItem.getJSONObject(i).getString("id_C"),"a-auth","def.objlSP."+grp);
-//                    //sales side getlSProd, and set default values
-//                    System.out.println("getGrp"+asset.getId());
-//
-//                    if (!asset.getId().equals("none")) {
-//                        JSONObject grpData = asset.getDef().getJSONObject("objlSP").getJSONObject(grp) == null? new JSONObject() : asset.getDef().getJSONObject("objlSP").getJSONObject(grp);
-//                        order.getAction().getJSONObject("grpGroup").put(grp, grpData);
-//                    }
-//                }
-//                if (grpB != null && !grpB.equals("") && order.getAction().getJSONObject("grpBGroup").getJSONObject(grpB) == null)
-//                {
-//
-//                    Asset asset = qt.getConfig(order.getInfo().getId_CB(),"a-auth","def.objlBP."+grpB);
-//                    System.out.println("getGrpB"+asset.getId());
-//
-//                    //sales side getlSProd, and set default values
-//                    if (!asset.getId().equals("none")) {
-//                        JSONObject grpData = asset.getDef().getJSONObject("objlBP").getJSONObject(grpB) == null ? new JSONObject() : asset.getDef().getJSONObject("objlBP").getJSONObject(grpB);
-//                        order.getAction().getJSONObject("grpBGroup").put(grpB, grpData);
-//                    }
-//                }
-//            }
-//            if (null != oQc && cardList.contains("oQc")){
-//                System.out.println("oQc");
-//            }
-//        }
-//        wn2fin = DoubleUtils.divide(wn2made, oItem.size());
-//        qt.errPrint("div", null, count, oItem.size());
-//        wn2progress = DoubleUtils.divide(count, oItem.size());
-//        qt.upJson(listCol, "wn2fin", wn2fin, "wn2progress", wn2progress, "wn2qty", wn2qty, "wn4price", wn4price, "arrP", arrP);
-//
-//        order.getOItem().put("wn2qty", wn2qty);
-//        order.getOItem().put("wn4price", wn4price);
-//        order.getOItem().put("arrP", arrP);
-//
-//        JSONObject result = new JSONObject();
-//        result.put("oItem", order.getOItem());
-//        result.put("view", order.getView());
-//        if (oStock != null && cardList.contains("oStock")) {
-//            order.getOStock().put("wn2fin", wn2fin);
-//            result.put("oStock", order.getOStock());
-//        }
-//        if (action != null && cardList.contains("action")) {
-//            result.put("action", order.getAction());
-//            order.getAction().put("wn2progress", wn2progress);
-//        }
-//        if (null != oQc && cardList.contains("oQc")) {
-//            result.put("oQc", order.getOQc());
-//        }
-//        return result;
-//
-//    }
+
 
     public void updateOrder(Order order)
     {
         try {
         JSONObject listCol = new JSONObject();
         this.summOrder(order, listCol);
-//        qt.saveMD(order);
         qt.setMDContent(order.getId(), qt.setJson("view", order.getView(), "info", order.getInfo(), "oItem", order.getOItem(),
                 "oStock", order.getOStock(), "action", order.getAction()), Order.class);
         qt.setES("lSBOrder", qt.setESFilt("id_O", order.getId()), listCol);
@@ -762,7 +422,6 @@ public class DbUtils {
     {
         try {
             this.summOrder(order, listCol);
-            qt.errPrint("new Order", null, order, listCol);
             qt.addMD(order);
             qt.addES("lSBOrder", listCol);
 
@@ -1806,6 +1465,124 @@ public class DbUtils {
         }
     }
 
+    public JSONObject copyCOUPA(String id_C, JSONObject jsonMongo, JSONObject jsonEs) {
+        String newId = qt.GetObjectId();
+        jsonMongo.put("id", newId);
+        JSONObject jsonInfo = jsonMongo.getJSONObject("info");
+        jsonInfo.put("id_C", id_C);
+        return null;
+    }
+//    public JSONObject copyUtil(String id_U, String id, String id_C, String grp, String listType) {
+//
+//        authCheck.getUserUpdateAuth(id_U,id_C,listType,grp,"batch",new JSONArray().fluentAdd("copy"));
+//
+////             查询id
+//        String resetGrp = "";
+//        if ("lSProd".equals(listType)) {
+//            System.out.println("lSProd");
+//            resetGrp = "grp";
+//
+//            // 获取到要复制的数据
+//            Prod sourceProd = qt.getMDContent(id, "", Prod.class);
+//            System.out.println(sourceProd);
+//            // 判断为空
+//            if (ObjectUtils.isEmpty(sourceProd)) {
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_FOUND.getCode(), null);
+//            }
+//            if (!sourceProd.getInfo().getId_C().equals(id_C))
+//            {
+//                //check if id_C is real?
+//            }
+//            sourceProd.getView().remove("tempa");
+//            sourceProd.setTempa(null);
+//
+//            return copyProd(sourceProd, listType, id_C, grp, resetGrp);
+//
+//        } else if ("lBProd".equals(listType)) {
+//            System.out.println("lBProd");
+//            resetGrp = "grpB";
+//
+//            // 获取到要复制的数据
+//            Prod sourceProd = qt.getMDContent(id, "", Prod.class);
+//
+//            // 判断为空或者bcdNet = 1（别人真公司的  不能拷贝）
+//            if (ObjectUtils.isEmpty(sourceProd) || qt.judgeComp(id_C, sourceProd.getInfo().getId_C()) == 1) {
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.BCDNET_ERROR.getCode(), null);
+//            }
+//            sourceProd.getView().remove("tempa");
+//            sourceProd.setTempa(null);
+//
+//            return copyProd(sourceProd, listType, id_C, grp, resetGrp);
+//
+//        } else if ("lSInfo".equals(listType)) {
+//            resetGrp = "grp";
+//
+//            // 获取到要复制的数据
+////            Prod sourceProd = mongoTemplate.findOne(query, Prod.class);
+//            Info sourceInfo = qt.getMDContent(id, "", Info.class);
+//            System.out.println(sourceInfo);
+//            // 判断为空
+//            if (ObjectUtils.isEmpty(sourceInfo)) {
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_FOUND.getCode(), null);
+//            }
+//            sourceInfo.getView().remove("tempa");
+//            sourceInfo.setTempa(null);
+//
+//            return copyInfo(sourceInfo, listType, id_C, grp, resetGrp);
+//
+//        } else if ("lBInfo".equals(listType)) {
+//            resetGrp = "grpB";
+//
+//            // 获取到要复制的数据
+//            Info sourceInfo = qt.getMDContent(id, "", Info.class);
+//
+//            // 判断为空或者bcdNet = 1（别人真公司的  不能拷贝）
+//            if (ObjectUtils.isEmpty(sourceInfo) || qt.judgeComp(id_C, sourceInfo.getInfo().getId_C()) == 1) {
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.BCDNET_ERROR.getCode(), null);
+//            }
+//            sourceInfo.getView().remove("tempa");
+//            sourceInfo.setTempa(null);
+//
+//            return copyInfo(sourceInfo, listType, id_C, grp, resetGrp);
+//
+//        } else if ("lSOrder".equals(listType)) {
+//            System.out.println("lSOrder");
+//            resetGrp = "grp";
+//
+//            // 获取到要复制的数据
+////            Order sourceOrder = mongoTemplate.findOne(query, Order.class);
+//            Order sourceOrder = qt.getMDContent(id, "", Order.class);
+//            System.out.println(sourceOrder);
+//            // 判断为空或者lST < 8
+//            if (ObjectUtils.isEmpty(sourceOrder) || sourceOrder.getInfo().getLST() >= 7) {
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_IS_NULL_LST.getCode(), null);
+//            }
+//            sourceOrder.getView().remove("tempa");
+//            sourceOrder.setTempa(null);
+//
+//            return copyOrder(sourceOrder, listType, id_C, grp, resetGrp);
+//
+//        } else if ("lBOrder".equals(listType)) {
+//            System.out.println("lBOrder");
+//            resetGrp = "grpB";
+//
+//            // 获取到要复制的数据
+//            Order sourceOrder = qt.getMDContent(id, "", Order.class);
+//            System.out.println(sourceOrder);
+//            // 判断为空或者lST < 8
+//            if (ObjectUtils.isEmpty(sourceOrder) || sourceOrder.getInfo().getLST() >= 7) {
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_IS_NULL_LST.getCode(), null);
+//            }
+//            sourceOrder.getView().remove("tempa");
+//            sourceOrder.setTempa(null);
+//
+//            return copyOrder(sourceOrder, listType, id_C, grp, resetGrp);
+//
+//        }
+//        return null;
+//    }
+
+
     public JSONObject tempaCOUPA(JSONArray arrayData, JSONObject jsonVar, JSONArray arrayGrpTarget, JSONObject jsonEs, String listType) {
         jsonEs.remove("grpT");
         Init init = qt.getInitData("cn");
@@ -2487,7 +2264,7 @@ public class DbUtils {
         List<?> assets = qt.getMDContentMany(setId_A, Arrays.asList("info", "aStock"), Asset.class);
         JSONObject allAssetObj = qt.list2Obj(assets, "id");
 
-        List<?> prods = qt.getMDContentMany(setId_P, "info", Prod.class);
+        List<?> prods = qt.getMDContentMany(setId_P, Arrays.asList("info", "qtySafex"), Prod.class);
         JSONObject allProdObj = qt.list2Obj(prods, "id");
 
         List<Asset> auths = qt.getMDContentMany(setAuthId, Arrays.asList("info", "def"), Asset.class);
@@ -2510,13 +2287,6 @@ public class DbUtils {
             jsonLsasset.put("jsonProd", jsonProd);
 
             String defKey = null;
-            //id_C相同id_CB不同：lSProd
-            if (id_C.equals(order.getInfo().getId_C()) && !id_C.equals(order.getInfo().getId_CB())) {
-                defKey = "objlSP";
-            } else {
-                defKey = "objlBP";
-            }
-
 
             if (jsonProd == null) {
                 jsonLsasset.put("grp", "1000");
@@ -2527,10 +2297,15 @@ public class DbUtils {
 
                 String grpP =  info.getString("grp");
 
-                if (defKey.equals("objlBP"))
+                if (jsonLsasset.getInteger("lAT").equals(3))
                 {
-                    grpP = qt.getESItem("lBProd", id_P, lBProd.class).getGrpB();
-
+                    qt.errPrint("ia m in updateAsset.... ");
+                    grpP = qt.getESItem("lBProd", id_P, id_C, lBProd.class).getGrpB();
+                    defKey = "objlBP";
+                } else if (jsonLsasset.getInteger("lAT").equals(2))
+                {
+                    grpP = qt.getESItem("lSProd", id_P, id_C, lSProd.class).getGrp();
+                    defKey = "objlSP";
                 }
 
                 Integer lUT = info.getInteger("lUT");
@@ -2623,30 +2398,6 @@ public class DbUtils {
         qt.setESMany("lBAsset", listBulkLbasset);
     }
 
-//    public JSONObject getAssetListByQuery(JSONArray arrayEs, HashSet setId_A) {
-//        JSONObject jsonResult = new JSONObject();
-//        for (int i = 0; i < arrayEs.size(); i++) {
-//            JSONObject jsonEs = arrayEs.getJSONObject(i);
-//            String locAddr = jsonEs.getString("locAddr");
-//            //if (locAddr == null || locAddr.equals("")) {
-//            if (jsonEs.getString("lAT").equals("2") || jsonEs.getString("lAT").equals("3") &&
-//                    (locAddr != null || !locAddr.equals(""))) {
-//
-//                jsonResult.put(jsonEs.getString("id_C") + "-" +
-//                                jsonEs.getString("id_CB") + "-" +
-//                                jsonEs.getString("id_P") + "-" + locAddr
-//                        , jsonEs);
-//            } else {
-//                jsonResult.put(jsonEs.getString("id_C") + "-" +
-//                                jsonEs.getString("id_CB") + "-" +
-//                                jsonEs.getString("id_P"),
-//                        jsonEs);
-//            }
-//            setId_A.add(jsonEs.getString("id_A"));
-//        }
-//        System.out.println("jsonResult=" + jsonResult);
-//        return jsonResult;
-//    }
 
     public void assetValueChange(Order order, JSONArray arrayAssetChg, List<JSONObject> listBulkAsset, List<JSONObject> listBulkLsasset,
                           List<JSONObject> listBulkLbasset, String type, Boolean isLsa) {
@@ -2680,7 +2431,8 @@ public class DbUtils {
 
 
             //K - should use lAT to check if this is Stock
-            JSONObject prodInfo = assetChgObj.getJSONObject("jsonProd").getJSONObject("info");
+            JSONObject prod = assetChgObj.getJSONObject("jsonProd");
+            JSONObject prodInfo = prod.getJSONObject("info");
             Integer lCR = prodInfo.getInteger("lCR");
             if (assetChgObj.getString("locAddr") != null) {
                 JSONObject jsonOItem = arrayOItem.getJSONObject(index);
@@ -2860,6 +2612,53 @@ public class DbUtils {
                                     "spaceQty", arrayResultSpaceQty,
                                     "arrPP", arrayArrPPA,
                                     "procQty", arrayProcQtyA,
+                                    "lUT", lUT,
+                                    "lCR", lCR);
+                            jsonBulkLsasset = qt.setJson("type", "update",
+                                    "id", jsonLsa.getString("id_ES"),
+                                    "update", jsonLsa);
+                        }
+                    }
+                    else if ("safex".equals(type)) {
+                        JSONObject jsonId_C = prod.getJSONObject("qtySafex").getJSONObject(id_C);
+                        JSONArray arraySafex = jsonId_C.getJSONArray("objSafex");
+                        JSONObject jsonResv = new JSONObject();
+                        Double wn2sum = wn2qty;
+                        for (int j = 0; j < arraySafex.size(); j++) {
+                            JSONObject jsonSafex = arraySafex.getJSONObject(j);
+                            Double wn2safex = jsonSafex.getDouble("wn2qty");
+                            if (DoubleUtils.doubleGte(wn2sum, wn2safex)) {
+                                wn2sum = DoubleUtils.subtract(wn2sum, wn2safex);
+                                jsonResv.put(jsonSafex.getString("id_O") + "-" + jsonSafex.getInteger("index"), wn2safex);
+                                arraySafex.remove(j);
+                                j --;
+                            } else if (DoubleUtils.doubleGte(wn2sum, 0.0)) {
+                                jsonResv.put(jsonSafex.getString("id_O") + "-" + jsonSafex.getInteger("index"), wn2sum);
+                                jsonSafex.put("wn2qty", wn2safex - wn2sum);
+                                break;
+                            }
+                        }
+                        JSONObject jsonUpdate = qt.setJson("qtySafex." + id_C, jsonId_C);
+                        qt.setMDContent(id_P, jsonUpdate, Prod.class);
+
+                        if (DoubleUtils.doubleEquals(aStock.getDouble("wn2qty"), -wn2qty)) {
+                            jsonBulkAsset = qt.setJson("type", "delete",
+                                    "id", id_A);
+                            jsonBulkLsasset = qt.setJson("type", "delete",
+                                    "id", jsonLsa.getString("id_ES"));
+                        } else {
+                            AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayResultLocSpace, arrayResultSpaceQty, DoubleUtils.subtract(wn2qty, wn2sum), jsonResv);
+                            assetAStock.setLUT(lUT);
+                            assetAStock.setLCR(lCR);
+                            jsonUpdate = qt.setJson("aStock", assetAStock);
+                            jsonBulkAsset = qt.setJson("type", "update",
+                                    "id", id_A,
+                                    "update", jsonUpdate);
+
+                            qt.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
+                                    "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
+                                    "locSpace", arrayResultLocSpace,
+                                    "spaceQty", arrayResultSpaceQty,
                                     "lUT", lUT,
                                     "lCR", lCR);
                             jsonBulkLsasset = qt.setJson("type", "update",

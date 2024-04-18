@@ -37,7 +37,7 @@ public class Comp {
 
     private JSONObject link00s;
 
-    private JSONObject qrShareCode;
+//    private JSONObject qrShareCode;
 
     private JSONObject joinCode;
 

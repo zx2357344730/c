@@ -46,7 +46,7 @@ public class User {
 
     private JSONObject link00s;
 
-    private JSONObject qrShareCode;
+//    private JSONObject qrShareCode;
 
     private JSONObject summ00s;
 

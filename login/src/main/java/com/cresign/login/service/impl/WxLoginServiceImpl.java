@@ -9,6 +9,7 @@ import com.cresign.login.utils.RegisterUserUtils;
 import com.cresign.login.utils.wxlogin.applets.WXAesCbcUtil;
 import com.cresign.login.utils.wxlogin.web.WxAuthUtil;
 import com.cresign.tools.advice.RetResult;
+import com.cresign.tools.annotation.SecurityParameter;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
@@ -64,6 +65,15 @@ public class WxLoginServiceImpl implements WxLoginService {
      */
     @Value("${wx.applets.appSecret}")
     private String wxSpSecret;
+
+    @Value("${wx.applets.appIdNew}")
+    private String wxSpAppIdNew;
+
+    /**
+     * 小程序的 app secret (在微信小程序管理后台获取)
+     */
+    @Value("${wx.applets.appSecretNew}")
+    private String wxSpSecretNew;
 
     /**
      * 授权（必填）
@@ -192,37 +202,44 @@ public class WxLoginServiceImpl implements WxLoginService {
     @Override
     public ApiResponse decodeUserInfo(JSONObject reqJson) {
 
-
         //获取code
         String code = reqJson.getString("code");
 
         //获取iv
         String iv = reqJson.getString("iv");
 
+
         //获取encryptedData
         String encryptedData = reqJson.getString("encryptedData");
 
-
+        Boolean isNew = reqJson.getBoolean("isNew");
 
         // 登录凭证不能为空
         if (code == null || code.length() == 0) {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
-
-
         // 1、向微信服务器 使用登录凭证 code 获取 session_key 和 openid
         //
         // 请求参数
-        String params = "appid=" + wxSpAppId + "&secret=" + wxSpSecret + "&js_code=" + code + "&grant_type="
+        String secret = wxSpSecret;
+        String appid = wxSpAppId;
+        if  (isNew != null && isNew)
+        {
+            secret = wxSpSecretNew;
+            appid = wxSpAppIdNew;
+        }
+        String params = "appid=" + appid + "&secret=" + secret + "&js_code=" + code + "&grant_type="
                 + grant_type;
-
         // 发送请求
-//        String sr = HttpRequest.sendGet("https://api.weixin.qq.com/sns/jscode2session", params);
-
         String sr = HttpClientUtil.doGet("https://api.weixin.qq.com/sns/jscode2session?" + params, "utf-8");
 
         // 解析相应内容（转换成json对象）
         JSONObject json = JSONObject.parseObject(sr);
+
+        // 登录凭证不能为空
+        if (json.get("session_key") == null) {
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+        }
 
         // 获取会话密钥（session_key）
         String session_key = json.get("session_key").toString();

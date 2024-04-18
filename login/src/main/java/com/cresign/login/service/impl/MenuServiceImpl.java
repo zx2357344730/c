@@ -13,6 +13,7 @@ import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.po.Asset;
+import com.cresign.tools.pojo.po.Info;
 import com.cresign.tools.pojo.po.InitJava;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.assetCard.MainMenuBO;
@@ -176,14 +177,9 @@ public class MenuServiceImpl implements MenuService {
             }
             //judge = true的话证明mainMenusData里面控制台被删除，去cn_java找回来（默认不给删除）
             if (judge){
-//                Query initQ = new Query(
-//                        new Criteria("_id").is("cn_java")
-//                            .and("newComp.a-auth.menu.mainMenus.1001.ref").is("PPP"));
-//                initQ.fields().include("newComp.a-auth.menu.mainMenus.1001.$");
-//                InitJava initJava = mongoTemplate.findOne(initQ, InitJava.class);
-                InitJava initJava = qt.getInitData();
+                Info init = qt.getMDContent(qt.idJson.getString("newComp"), "jsonInfo", Info.class);
                 //JSONObject转成MainMenuBO实体类添加进mainMenusData数组
-                mainMenusData.add(JSONObject.parseObject(String.valueOf(initJava.getNewComp().getJSONObject("a-auth").getJSONObject("menu")
+                mainMenusData.add(JSONObject.parseObject(String.valueOf(init.getJsonInfo().getJSONObject("a-auth").getJSONObject("menu")
                         .getJSONObject("mainMenus").getJSONArray("1001").getJSONObject(0)),MainMenuBO.class));
             }
         }
