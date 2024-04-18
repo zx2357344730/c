@@ -645,4 +645,15 @@ public class ZjTestController {
             return getUserToken.err(new JSONObject(), "ZjTestController.addAsset", e);
         }
     }
+
+    @SecurityParameter
+    @PostMapping("/v1/aiAskingQuestions")
+    public ApiResponse aiAskingQuestions(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.aiAskingQuestions(resJson.getString("user"),resJson.getString("desc"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.aiAskingQuestions", e);
+        }
+    }
 }

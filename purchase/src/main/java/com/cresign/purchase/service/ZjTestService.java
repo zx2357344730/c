@@ -205,4 +205,12 @@ public interface ZjTestService {
      * @return  添加结果
      */
     ApiResponse addAsset();
+
+    /**
+     * ai提问
+     * @param user  角色
+     * @param desc  提问内容
+     * @return  返回结果
+     */
+    ApiResponse aiAskingQuestions(String user,String desc);
 }

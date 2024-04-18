@@ -194,6 +194,18 @@ public interface TimeZjService {
 
     ApiResponse delExcessiveODateField();
 
-    ApiResponse getClearOldTask(String id_O,int dateIndex,String id_C);
+    /**
+     * 清理任务api
+     * @param id_O  订单编号
+     * @param dateIndex 要清理的起始下标
+     * @param id_C  公司编号
+     * @param layer 层级
+     * @param id_PF 父编号
+     * @return  清理结果
+     */
+    ApiResponse getClearOldTask(String id_O,int dateIndex,String id_C,String layer,String id_PF);
 
+    ApiResponse setChKinUserCountByOrder(String id_O,String id_C);
+
+//    ApiResponse delMaterial();
 }

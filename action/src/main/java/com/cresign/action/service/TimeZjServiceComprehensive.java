@@ -88,7 +88,7 @@ public interface TimeZjServiceComprehensive {
     void taskLastHandle(JSONObject timeConflictCopy, String id_C, String randomAll, JSONObject objTaskAll, JSONObject storageTaskWhereTime
             , JSONObject allImageTotalTime, Map<String,Map<String, Map<Long, List<Task>>>> allImageTasks, JSONObject recordNoOperation
             , String id_O, JSONArray objOrderList,JSONObject actionIdO,JSONObject allImageTeDate
-            ,JSONObject depAllTime,JSONObject thisInfo);
+            ,JSONObject depAllTime,JSONObject thisInfo,JSONObject oDateObj);
 
     /**
      * 时间处理收尾（结束）方法 ( TimeZjServiceImplX.timeHandle()方法的，分割到该类 )
@@ -198,8 +198,8 @@ public interface TimeZjServiceComprehensive {
      * @param conflict	用于存储被冲突的任务集合
      * @param zon	当前任务余剩时间
      * @param random	当前唯一编号
-     * @param dep	部门
-     * @param grpB	组别
+//     * @param dep	部门
+//     * @param grpB	组别
      * @param timeConflictCopy	当前任务所在日期
      * @param isGetTaskPattern	 = 0 获取数据库任务信息、 = 1 获取镜像任务信息
      * @param getCurrentTimeStampPattern	ts = 0 获取当前第一次初始时间戳、ts = 1 获取最新的（最后一个）当前时间戳
@@ -226,7 +226,7 @@ public interface TimeZjServiceComprehensive {
      * @date 2022/6/9 conflictHandleCore
      */
     JSONObject handleTimeConflictEndNew(int i, List<Task> tasks, List<Task> conflict, Long zon, String random
-            , String dep, String grpB, JSONObject timeConflictCopy, Integer isGetTaskPattern
+            , JSONObject timeConflictCopy, Integer isGetTaskPattern
             , Integer getCurrentTimeStampPattern, JSONObject sho, int csSta, String randomAll, JSONObject xbAndSbAll
             , JSONObject actionIdO, JSONObject objTaskAll, JSONObject recordId_OIndexState
             , JSONObject storageTaskWhereTime, JSONObject allImageTotalTime
@@ -234,5 +234,6 @@ public interface TimeZjServiceComprehensive {
             , JSONObject onlyFirstTimeStamp, JSONObject newestLastCurrentTimestamp
             , JSONObject onlyRefState, JSONObject recordNoOperation
             ,JSONObject clearStatus,JSONObject thisInfo,JSONObject allImageTeDate
-            ,JSONObject depAllTime,JSONObject id_OAndIndexTaskInfo,Integer operateIndex);
+            ,JSONObject depAllTime,JSONObject id_OAndIndexTaskInfo,Integer operateIndex
+            ,boolean isUp,long endTime);
 }

@@ -1,5 +1,6 @@
 package com.cresign.action.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.service.TimeZjService;
 import com.cresign.tools.annotation.SecurityParameter;
@@ -39,7 +40,7 @@ public class TaskController {
      * @date 创建时间: 2023/2/17
      * @ver 版本号: 1.0.0
      */
-//    @SecurityParameter
+    @SecurityParameter
     @PostMapping("/v1/getEstimateStartTime")
     public ApiResponse getEstimateStartTime(@RequestBody JSONObject reqJson){
         try {
@@ -239,7 +240,7 @@ public class TaskController {
     public ApiResponse getClearOldTask(@RequestBody JSONObject reqJson){
         try {
             return timeZjService.getClearOldTask(reqJson.getString("id_O"), reqJson.getInteger("dateIndex")
-                    , reqJson.getString("id_C"));
+                    , reqJson.getString("id_C"), reqJson.getString("layer"), reqJson.getString("id_PF"));
         } catch (Exception e) {
             return getUserToken.err(null, "TaskController.getClearOldTask", e);
         }

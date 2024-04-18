@@ -486,87 +486,87 @@ public class TimeZj {
         return result;
     }
 
-    /**
-     * 根据grpB，dep获取数据库职位总人数方法
-     * @param grpB  职位
-     * @param dep   部门
-     * @param id_C  公司编号
-     * @param grpUNumAll    全局职位人数信息
-     * @return java.lang.Integer  返回结果: 结果
-     * @author tang
-     * @ver 1.0.0
-     * @date 2022/6/9
-     */
-    public Integer getObjGrpUNum(String grpB,String dep,String id_C,JSONObject grpUNumAll){
-//        System.out.println("获取职位总人数:"+grpB+"-"+dep+"- id_C:"+id_C);
-        // 获取全局职位人数的部门信息
-        JSONObject depGrpUNum = grpUNumAll.getJSONObject(dep);
-        // 存储为空状态
-        int isStorageEmpty;
-        // 判断不为空
-        if (null != depGrpUNum) {
-            // 根据组别获取职位人数
-            Integer positionNum = depGrpUNum.getInteger(grpB);
-            // 判断职位人数不为空
-            if (null != positionNum) {
-                // 直接返回结果
-                return positionNum;
-            } else {
-                isStorageEmpty = 2;
-            }
-        } else {
-            isStorageEmpty = 1;
-        }
-
-//        System.out.println("获取职位总人数:"+grpB+"-"+dep+"- id_C:"+id_C);
-//        Asset asset = qt.getConfig(id_C,"a-chkin","chkin00s");
-//
-//        // 打卡卡片信息
-//        JSONObject chkin00s = asset.getChkin00s();
-//        // 获取职位人数信息
-//        JSONObject objZw = chkin00s.getJSONObject("objZw");
-//        // 判断职位人数信息为空
-//        if (null == objZw) {
-//            // 创建
-//            objZw = new JSONObject();
-//        }
-//        // 获取职位人数的部门信息
-//        JSONObject depObj = objZw.getJSONObject(dep);
-//        // 判断为空
-//        if (null == depObj) {
-//            System.out.println("grpUNum-为空-dep:"+dep+" , grpB:"+grpB);
-//            // 创建部门信息
-//            depObj = new JSONObject();
-//            // 添加职位人数
-//            depObj.put(grpB,1);
-//            objZw.put(dep,depObj);
-//            chkin00s.put("objZw",objZw);
-
-//            qt.setMDContent(asset.getId(),qt.setJson("chkin00s",chkin00s), Asset.class);
-            if (isStorageEmpty == 1) {
-                depGrpUNum = new JSONObject();
-            }
-            depGrpUNum.put(grpB, 1);
-            grpUNumAll.put(dep, depGrpUNum);
-            return 1;
-//        } else {
-//            Integer grpBObj = depObj.getInteger(grpB);
-//            if (null == grpBObj){
-//                grpBObj = 1;
-//                System.out.println("grpUNum-为空-grpB:"+grpB);
-////                depObj.put(grpB,grpBObj);
-////                objZw.put(dep,depObj);
-////                chkin00s.put("objZw",objZw);
-////                qt.setMDContent(asset.getId(),qt.setJson("chkin00s",chkin00s), Asset.class);
+//    /**
+//     * 根据grpB，dep获取数据库职位总人数方法
+//     * @param grpB  职位
+//     * @param dep   部门
+//     * @param id_C  公司编号
+//     * @param grpUNumAll    全局职位人数信息
+//     * @return java.lang.Integer  返回结果: 结果
+//     * @author tang
+//     * @ver 1.0.0
+//     * @date 2022/6/9
+//     */
+//    public Integer getObjGrpUNum(String grpB,String dep,String id_C,JSONObject grpUNumAll){
+////        System.out.println("获取职位总人数:"+grpB+"-"+dep+"- id_C:"+id_C);
+//        // 获取全局职位人数的部门信息
+//        JSONObject depGrpUNum = grpUNumAll.getJSONObject(dep);
+//        // 存储为空状态
+//        int isStorageEmpty;
+//        // 判断不为空
+//        if (null != depGrpUNum) {
+//            // 根据组别获取职位人数
+//            Integer positionNum = depGrpUNum.getInteger(grpB);
+//            // 判断职位人数不为空
+//            if (null != positionNum) {
+//                // 直接返回结果
+//                return positionNum;
+//            } else {
+//                isStorageEmpty = 2;
 //            }
+//        } else {
+//            isStorageEmpty = 1;
+//        }
+//
+////        System.out.println("获取职位总人数:"+grpB+"-"+dep+"- id_C:"+id_C);
+////        Asset asset = qt.getConfig(id_C,"a-chkin","chkin00s");
+////
+////        // 打卡卡片信息
+////        JSONObject chkin00s = asset.getChkin00s();
+////        // 获取职位人数信息
+////        JSONObject objZw = chkin00s.getJSONObject("objZw");
+////        // 判断职位人数信息为空
+////        if (null == objZw) {
+////            // 创建
+////            objZw = new JSONObject();
+////        }
+////        // 获取职位人数的部门信息
+////        JSONObject depObj = objZw.getJSONObject(dep);
+////        // 判断为空
+////        if (null == depObj) {
+////            System.out.println("grpUNum-为空-dep:"+dep+" , grpB:"+grpB);
+////            // 创建部门信息
+////            depObj = new JSONObject();
+////            // 添加职位人数
+////            depObj.put(grpB,1);
+////            objZw.put(dep,depObj);
+////            chkin00s.put("objZw",objZw);
+//
+////            qt.setMDContent(asset.getId(),qt.setJson("chkin00s",chkin00s), Asset.class);
 //            if (isStorageEmpty == 1) {
 //                depGrpUNum = new JSONObject();
 //            }
-//            depGrpUNum.put(grpB, grpBObj);
+//            depGrpUNum.put(grpB, 1);
 //            grpUNumAll.put(dep, depGrpUNum);
-//            return grpBObj;
-//        }
-    }
+//            return 1;
+////        } else {
+////            Integer grpBObj = depObj.getInteger(grpB);
+////            if (null == grpBObj){
+////                grpBObj = 1;
+////                System.out.println("grpUNum-为空-grpB:"+grpB);
+//////                depObj.put(grpB,grpBObj);
+//////                objZw.put(dep,depObj);
+//////                chkin00s.put("objZw",objZw);
+//////                qt.setMDContent(asset.getId(),qt.setJson("chkin00s",chkin00s), Asset.class);
+////            }
+////            if (isStorageEmpty == 1) {
+////                depGrpUNum = new JSONObject();
+////            }
+////            depGrpUNum.put(grpB, grpBObj);
+////            grpUNumAll.put(dep, depGrpUNum);
+////            return grpBObj;
+////        }
+//    }
 
     /**
      * 获取全局上班下班信息存储方法
@@ -1260,13 +1260,16 @@ public class TimeZj {
     protected void setTaskWhereDate(String id_O, Integer dateIndex, Long teS,JSONObject storageTaskWhereTime){
         JSONObject id_OStorage = storageTaskWhereTime.getJSONObject(id_O);
         if (null == id_OStorage) {
+            id_OStorage = new JSONObject();
             JSONObject indexStorage = new JSONObject();
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put(teS.toString(),0);
-            indexStorage.put(dateIndex.toString(),jsonObject);
-            storageTaskWhereTime.put(id_O,indexStorage);
+            indexStorage.put(teS.toString(),0);
+            id_OStorage.put(dateIndex.toString(),indexStorage);
+            storageTaskWhereTime.put(id_O,id_OStorage);
         } else {
             JSONObject indexStorage = id_OStorage.getJSONObject(dateIndex.toString());
+            if (null == indexStorage) {
+                indexStorage = new JSONObject();
+            }
             indexStorage.put(teS.toString(),0);
             id_OStorage.put(dateIndex.toString(),indexStorage);
             storageTaskWhereTime.put(id_O,id_OStorage);
@@ -1310,18 +1313,37 @@ public class TimeZj {
         Integer prodState = indexInfoGet.getInteger("prodState");
         // 判断产品状态为当前递归产品
         if (prodState == -1) {
-            // 创建订单编号存储产品状态对象
-            JSONObject id_OStateObj = new JSONObject();
-            // 创建订单下标存储产品状态对象
-            JSONObject indexStateObj = new JSONObject();
+            JSONObject id_OAddInfo = sho.getJSONObject(id_OAdd);
+            JSONObject indexAddInfo;
+            if (null == id_OAddInfo) {
+                id_OAddInfo = new JSONObject();
+                indexAddInfo = new JSONObject();
+            } else {
+                indexAddInfo = id_OAddInfo.getJSONObject(indexAdd);
+                if (null == indexAddInfo) {
+                    indexAddInfo = new JSONObject();
+                }
+            }
             // 添加产品状态为第一个产品
-            indexStateObj.put("prodState",1);
+            indexAddInfo.put("prodState",1);
             // 添加当前订单编号和订单下标记录
-            indexStateObj.put("z",id_OAdd+"+"+indexAdd);
+            indexAddInfo.put("z",id_OAdd+"+"+indexAdd);
             // 添加订单下标存储产品状态对象
-            id_OStateObj.put(indexAdd,indexStateObj);
+            id_OAddInfo.put(indexAdd,indexAddInfo);
             // 添加订单编号存储产品状态对象
-            sho.put(id_OAdd,id_OStateObj);
+            sho.put(id_OAdd,id_OAddInfo);
+//            // 创建订单编号存储产品状态对象
+//            JSONObject id_OStateObj = new JSONObject();
+//            // 创建订单下标存储产品状态对象
+//            JSONObject indexStateObj = new JSONObject();
+//            // 添加产品状态为第一个产品
+//            indexStateObj.put("prodState",1);
+//            // 添加当前订单编号和订单下标记录
+//            indexStateObj.put("z",id_OAdd+"+"+indexAdd);
+//            // 添加订单下标存储产品状态对象
+//            id_OStateObj.put(indexAdd,indexStateObj);
+//            // 添加订单编号存储产品状态对象
+//            sho.put(id_OAdd,id_OStateObj);
         } else {
             // 获取被获取产品状态的产品订单编号和订单下标记录
             String z = indexInfoGet.getString("z");
@@ -1576,1150 +1598,6 @@ public class TimeZj {
      * @date 创建时间: 2023/2/8
      * @ver 版本号: 1.0.0
      */
-//    protected JSONObject clearOldTask1(String id_O,int dateIndex,String id_C,JSONObject objThisTaskAll
-//            ,JSONObject clearStatus,Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks
-//            ,JSONObject allImageTotalTime,JSONObject allImageTeDate
-//            ,List<Task> thisTasks,JSONObject isSetImage
-//    ){
-//        // 下标加一，从下一个开始
-//        dateIndex++;
-//        System.out.println("进入清理方法:"+TimeZj.isZ+" - "+id_O+" - "+dateIndex);
-////        System.out.println(JSON.toJSONString(allImageTeDate));
-////        System.out.println(JSON.toJSONString(allImageTasks));
-//        // 调用写入清理状态方法
-//        setClearStatus(id_O,dateIndex,clearStatus,0);
-//        // 获取当前订单编号的任务所在日期
-//        JSONObject imgId_O = allImageTeDate.getJSONObject(id_O);
-//        boolean isUpdateImageTask = false;
-//        // 判断不为空
-//        if (null != imgId_O) {
-//            // 定义存储当前处理的任务的所有下一个任务的所在位置
-//            JSONObject depAndGrpB = new JSONObject();
-//            int dateIndexNew = dateIndex;
-//            // 开启循环
-//            while (true) {
-//                // 获取指定下标的镜像任务所在位置信息
-//                JSONObject imgDateIndex = imgId_O.getJSONObject(dateIndexNew + "");
-//                // 判断为空
-//                if (null == imgDateIndex) {
-//                    break;
-//                }
-//                // 获取所在日期信息
-//                JSONObject date = imgDateIndex.getJSONObject("date");
-//                if (null == date) {
-//                    break;
-//                }
-//                // 获取所在日期键
-//                Set<String> imgKeys = date.keySet();
-//                if (imgKeys.size() == 0) {
-//                    break;
-//                }
-//                // 获取位置部门
-//                String dep = imgDateIndex.getString("dep");
-//                // 获取指定部门信息
-//                JSONObject depInfo = depAndGrpB.getJSONObject(dep);
-//                // 判断为空
-//                if (null == depInfo) {
-//                    // 创建部门信息
-//                    depInfo = new JSONObject();
-//                }
-//                // 获取位置组别
-//                String grpB = imgDateIndex.getString("grpB");
-//                // 定义存储组别信息
-//                JSONObject grpBInfo;
-//                // 判断指定组别信息为空
-//                if (null == depInfo.getJSONObject(grpB)) {
-//                    // 创建组别信息
-//                    grpBInfo = new JSONObject();
-//                } else {
-//                    // 获取组别信息
-//                    grpBInfo = depInfo.getJSONObject(grpB);
-//                }
-//                // 遍历所在日期键
-//                imgKeys.forEach(key -> {
-//                    // 判断组别信息存在当前所在日期
-//                    if (grpBInfo.containsKey(key)) {
-//                        // 添加当前日期信息，原本信息加上当前日期信息
-//                        grpBInfo.put(key,(grpBInfo.getLong(key)+date.getLong(key)));
-//                    } else {
-//                        // 添加当前日期信息
-//                        grpBInfo.put(key,date.getLong(key));
-//                    }
-//                });
-//                // 添加信息
-//                depInfo.put(grpB,grpBInfo);
-//                depAndGrpB.put(dep,depInfo);
-//                // 获取下一个加一
-//                dateIndexNew++;
-//            }
-////            System.out.println("清理镜像前:");
-////            System.out.println(JSON.toJSONString(depAndGrpB));
-////            System.out.println(JSON.toJSONString(allImageTasks));
-//            // 遍历需要删除的位置信息爱
-//            for (String dep : depAndGrpB.keySet()) {
-//                // 根据指定部门获取部门信息
-//                JSONObject depInfo = depAndGrpB.getJSONObject(dep);
-//                // 遍历部门信息
-//                for (String grpB : depInfo.keySet()) {
-//                    // 根据指定组别获取组别信息
-//                    JSONObject grpBInfo = depInfo.getJSONObject(grpB);
-//                    // 遍历组别信息
-//                    for (String time : grpBInfo.keySet()) {
-//                        // 获取所在日期
-//                        long timeLong = Long.parseLong(time);
-//                        // 获取镜像任务列表
-//                        List<Task> tasks = getImageTasks(timeLong,grpB,dep,allImageTasks);
-//                        // 获取镜像任务余剩时间
-//                        Long zon = getImageZon(timeLong,grpB,dep,allImageTotalTime);
-//                        // 创建存储删除集合
-//                        JSONArray removeIndex = new JSONArray();
-//                        // 遍历镜像任务列表
-//                        for (int i = 0; i < tasks.size(); i++) {
-//                            // 获取任务
-//                            Task task = tasks.get(i);
-//                            // 判断不是系统任务
-//                            if (task.getPriority() != -1) {
-//                                // 判断当前订单编号等于处理的订单编号，并且下标对应信息不为空
-//                                if (id_O.equals(task.getId_O()) && null != imgId_O.getJSONObject(task.getDateIndex() + "")) {
-//                                    // 创建删除信息存储
-//                                    JSONObject removeInfo = new JSONObject();
-//                                    // 添加信息
-//                                    removeInfo.put("index",i);
-//                                    removeInfo.put("wntDurTotal",task.getWntDurTotal());
-//                                    removeIndex.add(removeInfo);
-//                                }
-//                            }
-//                        }
-//                        // 遍历删除集合
-//                        for (int r = removeIndex.size()-1; r >= 0; r--) {
-//                            // 获取删除信息
-//                            JSONObject indexJson = removeIndex.getJSONObject(r);
-//                            // 获取删除下标
-//                            int indexNewThis = Integer.parseInt(indexJson.getString("index"));
-//                            // 删除任务列表对应下标的任务
-//                            tasks.remove(indexNewThis);
-//                            // 累加总时间
-//                            zon+=indexJson.getLong("wntDurTotal");
-//                        }
-//                        // 将新的镜像任务列表写入镜像
-//                        setImageTasks(tasks,grpB,dep,timeLong,allImageTasks);
-//                        setImageZon(zon,grpB,dep,timeLong,allImageTotalTime);
-//                    }
-//                }
-//            }
-//            System.out.println("清理镜像后:");
-//            System.out.println(JSON.toJSONString(allImageTasks));
-//        } else {
-//            if (allImageTeDate.size() != 0) {
-//                System.out.println("清理方法 - 进入新的写入镜像");
-//                isUpdateImageTask = true;
-//            }
-//        }
-//        // 创建返回结果
-//        JSONObject result = new JSONObject();
-//        JSONObject resultNew = new JSONObject();
-//        // 根据订单编号查询action卡片信息
-////        Order insideAction = coupaUtil.getOrderByListKey(id_O, Arrays.asList("action","info"));
-//        Order insideAction = qt.getMDContent(id_O, qt.strList("action", "info"), Order.class);
-//        // 判断订单是否为空
-//        if (null == insideAction || null == insideAction.getInfo()
-//                || null == insideAction.getAction()|| null == insideAction.getAction().getJSONObject("grpBGroup")
-//                || null == insideAction.getAction().getJSONArray("objAction")) {
-//            // 返回为空错误信息
-//            System.out.println();
-//            System.out.println("-查询为空!-");
-//            System.out.println();
-//            return null;
-//        }
-//        // 调用方法获取订单信息
-////        Order salesOrderData = coupaUtil.getOrderByListKey(
-////                insideAction.getInfo().getId_OP(), Collections.singletonList("action"));
-//        Order salesOrderData = qt.getMDContent(insideAction.getInfo().getId_OP(),qt.strList("action", "casItemx"), Order.class);
-//        // 判断订单是否为空
-//        if (null == salesOrderData || null == salesOrderData.getAction()
-//                 || null == salesOrderData.getCasItemx()
-//                || null == salesOrderData.getCasItemx().getJSONArray("oDates")) {
-//            // 返回为空错误信息
-//            System.out.println();
-//            System.out.println("-查询为空!-");
-//            System.out.println();
-//            return null;
-//        }
-////        // 根据公司编号获取asset编号
-////        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-////        if (null == assetId) {
-////            // 返回为空错误信息
-////            System.out.println();
-////            System.out.println("-查询为空!-");
-////            System.out.println();
-////            return null;
-////        }
-////        // 根据asset编号获取asset的打卡卡片信息
-////        Asset asset = coupaUtil.getAssetById(assetId, Arrays.asList(timeCard,"chkin00s"));
-//        Asset asset = qt.getConfig(id_C,"a-chkin",qt.strList(timeCard,"chkin00s"));
-//        if (null == asset) {
-//            // 返回为空错误信息
-//            System.out.println();
-//            System.out.println("-查询为空!-");
-//            System.out.println();
-//            return null;
-//        }
-////        JSONObject aArrange = asset.getAArrange2();
-//        JSONObject aArrange = getAArrangeNew(asset);
-//        if (null == aArrange || null == aArrange.getJSONObject("objTask")) {
-//            // 返回为空错误信息
-//            System.out.println();
-//            System.out.println("-查询为空!-");
-//            System.out.println();
-//            return null;
-//        }
-//        // 获取数据库任务信息
-//        JSONObject objTask = aArrange.getJSONObject("objTask");
-//        // 获取进度的oDates字段信息
-//        JSONArray oDates = salesOrderData.getCasItemx().getJSONObject("java").getJSONArray("oDates");
-////        boolean isOneDel = true;
-//        // 创建存储部门和组别信息字典
-//        Map<String,String> grpBAndDep = new HashMap<>();
-//        // 获取递归信息
-//        JSONArray objAction = insideAction.getAction().getJSONArray("objAction");
-//        // 获取组别对应部门信息
-//        JSONObject grpBGroup = insideAction.getAction().getJSONObject("grpBGroup");
-//        // 遍历组别对应部门信息
-//        for (String grpB : grpBGroup.keySet()) {
-//            // 获取组别对应信息
-//            JSONObject grpBInfo = grpBGroup.getJSONObject(grpB);
-//            // 获取组别的部门
-//            String depNew = grpBInfo.getString("dep");
-//            grpBAndDep.put(grpB,depNew);
-//        }
-////        System.out.println("初始objTask:");
-////        System.out.println(JSON.toJSONString(objTask));
-////        System.out.println(JSON.toJSONString(objThisTaskAll));
-////        System.out.println(JSON.toJSONString(storageTaskWhereTime));
-////        System.out.println(JSON.toJSONString(allImageTasks));
-//        try {
-//            // 遍历时间处理信息集合
-//            for (int i = dateIndex; i < oDates.size(); i++) {
-//                // 获取i对应的时间处理信息
-//                JSONObject oDate = oDates.getJSONObject(i);
-//                // 获取时间处理的组别
-//                String grpBNew = oDate.getString("grpB");
-//                // 根据组别获取部门
-//                String depNew = grpBAndDep.get(grpBNew);
-//                // 获取订单编号
-//                String id_OThis = oDate.getString("id_O");
-//                // 根据订单编号和获取镜像任务所在日期信息
-//                JSONObject imgTeDateId_O = allImageTeDate.getJSONObject(id_OThis);
-//                // 判断为空
-//                if (null == imgTeDateId_O) {
-//                    // 创建一个
-//                    imgTeDateId_O = new JSONObject();
-//                }
-//                // 创建镜像任务所在日期信息字典
-//                JSONObject imgDate = new JSONObject();
-//                // 添加数据
-//                imgDate.put("grpB",grpBNew);
-//                imgDate.put("dep",depNew);
-//                imgDate.put("date",new JSONObject());
-//                imgTeDateId_O.put(i+"",imgDate);
-//                allImageTeDate.put(id_OThis,imgTeDateId_O);
-//
-//                // 获取下标
-//                Integer indexThis = oDate.getInteger("index");
-//                // 根据指定下标获取进度信息
-//                JSONObject actionIndex = objAction.getJSONObject(indexThis);
-//                // 获取任务所在时间
-//                JSONObject teDateNext = actionIndex.getJSONObject("teDate");
-//                System.out.println(id_OThis+" - "+indexThis+" - "+grpBNew+" - "+depNew
-//                        +" - teDateNext:"+JSON.toJSONString(teDateNext));
-////                List<String> taskWhereDate = getTaskWhereDate(id_OThis, indexThis, storageTaskWhereTime);
-////                System.out.println(JSON.toJSONString(taskWhereDate));
-//
-//                // 定义存储是否是拿全局任务，默认不是
-//                boolean isGetThisTaskAll = false;
-//                // 根据部门获取指定数据库任务信息的部门信息
-//                JSONObject depTask = objTask.getJSONObject(depNew);
-//                // 判断为空
-//                if (null == depTask) {
-//                    // 获取当前全局任务信息的部门信息
-//                    depTask = objThisTaskAll.getJSONObject(depNew);
-//                    // 更新状态
-//                    isGetThisTaskAll = true;
-//                }
-//                // 根据部门信息获取指定组别的信息
-//                JSONObject grpBTask = depTask.getJSONObject(grpBNew);
-//                // 判断为空
-//                if (null == grpBTask) {
-//                    // 获取全局任务信息
-//                    depTask = objThisTaskAll.getJSONObject(depNew);
-//                    grpBTask = depTask.getJSONObject(grpBNew);
-//                    // 更新状态
-//                    isGetThisTaskAll = true;
-//                }
-//                // 遍历任务所在时间
-//                for (String time : teDateNext.keySet()) {
-//                    // 获取所在时间任务信息
-//                    JSONObject timeTask = grpBTask.getJSONObject(time);
-//                    // 获取任务列表
-//                    JSONArray tasksNew = timeTask.getJSONArray("tasks");
-////                    System.out.println("tasksList: - time:"+time);
-////                    System.out.println(JSON.toJSONString(tasksNew));
-//                    // 获取任务余剩时间
-//                    Long zon = timeTask.getLong("zon");
-//                    // 创建存储删除信息
-//                    JSONArray removeIndex = new JSONArray();
-//                    // 遍历任务列表
-//                    for (int t = 1; t < tasksNew.size(); t++) {
-//                        // 获取任务信息
-//                        JSONObject taskInside = tasksNew.getJSONObject(t);
-//                        // 判断循环任务订单编号等于当前处理任务编号，并且循环任务下标等于当前处理任务下标
-//                        if (taskInside.getString("id_O").equals(id_OThis)
-//                                && Objects.equals(taskInside.getInteger("index"), indexThis)) {
-////                            System.out.println("清理任务的内部输出:");
-////                            System.out.println(JSON.toJSONString(taskInside));
-//                            // 创建删除信息
-//                            JSONObject removeInfo = new JSONObject();
-//                            // 添加删除信息
-//                            removeInfo.put("index",t);
-//                            removeInfo.put("wntDurTotal",taskInside.getLong("wntDurTotal"));
-//                            removeIndex.add(removeInfo);
-//                            // 定义存储是否存在
-//                            boolean isNormal = true;
-//                            // 获取订单编号信息
-//                            JSONObject id_OInfo = result.getJSONObject(id_OThis);
-//                            // 定义下标信息
-//                            JSONObject indexInfo;
-//                            // 判断订单信息为空
-//                            if (null == id_OInfo) {
-//                                // 创建信息
-//                                id_OInfo = new JSONObject();
-//                                indexInfo = new JSONObject();
-//                                // 更新状态
-//                                isNormal = false;
-//                            } else {
-//                                // 获取下标信息
-//                                indexInfo = id_OInfo.getJSONObject(indexThis+"");
-//                                // 判断为空
-//                                if (null == indexInfo) {
-//                                    // 创建信息
-//                                    indexInfo = new JSONObject();
-//                                    // 更新状态
-//                                    isNormal = false;
-//                                }
-//                            }
-//                            // 判断存在
-//                            if (isNormal) {
-//                                // 累加任务总时间
-//                                indexInfo.put("wntDurTotal",indexInfo.getLong("wntDurTotal")+taskInside.getLong("wntDurTotal"));
-//                                // 更新数据
-//                                id_OInfo.put(indexThis+"",indexInfo);
-//                            } else {
-//                                // 更新数据
-//                                id_OInfo.put(indexThis+"",taskInside);
-//                            }
-//                            result.put(id_OThis,id_OInfo);
-//                        }
-//                    }
-//                    // 遍历删除集合
-//                    for (int r = removeIndex.size()-1; r >= 0; r--) {
-//                        // 获取删除信息
-//                        JSONObject indexJson = removeIndex.getJSONObject(r);
-//                        // 获取删除下标
-//                        int indexNewThis = Integer.parseInt(indexJson.getString("index"));
-//                        // 删除任务列表对应下标的任务
-//                        tasksNew.remove(indexNewThis);
-//                        // 累加任务总时间
-//                        zon+=indexJson.getLong("wntDurTotal");
-//                    }
-//                    // 添加信息
-//                    timeTask.put("tasks",tasksNew);
-//                    timeTask.put("zon",zon);
-//                    // 创建新任务集合
-//                    List<Task> tasksList = new ArrayList<>();
-//                    // 遍历任务列表
-//                    for (int t = 0; t < tasksNew.size(); t++) {
-//                        // 把任务转换为类存入新任务集合
-//                        tasksList.add(JSONObject.parseObject(JSON.toJSONString(tasksNew.getJSONObject(t)),Task.class));
-//                    }
-//                    // 是否写入镜像任务
-//                    boolean isSetImageEnd = true;
-//                    // 判断不为空
-//                    if (null != isSetImage){
-//                        // 获取部门信息
-//                        JSONObject depSetImage = isSetImage.getJSONObject(depNew);
-//                        // 判断不为空
-//                        if (null != depSetImage) {
-//                            // 获取组别信息
-//                            long grpBSetImage = depSetImage.getLong(grpBNew) == null ? 0 : depSetImage.getLong(grpBNew);
-//                            // 判断状态不为0，并且时间不等于当前循环时间
-//                            if (0 != grpBSetImage && grpBSetImage==Long.parseLong(time)) {
-//                                // 更新状态
-//                                isSetImageEnd = false;
-//                            // 判断当前订单编号的任务所在日期不为空，并且状态不为0，并且循环时间大于当前组别时间
-//                            } else if (null != imgId_O && (0 != grpBSetImage && Long.parseLong(time)>grpBSetImage)) {
-//                                System.out.println("进入特殊条件跳入写入数据:");
-//                                // 更新状态
-//                                isSetImageEnd = false;
-//                            }
-//                        }
-//                    }
-//                    if (isSetImageEnd && null != imgId_O) {
-//                        System.out.println("--第三不写入条件--");
-//                        // 更新状态
-//                        isSetImageEnd = false;
-//                    }
-//                    // 判断写入
-//                    if (isSetImageEnd) {
-//                        if (isUpdateImageTask) {
-//                            Map<String, Map<Long, List<Task>>> depImageTask = allImageTasks.get(depNew);
-//                            if (null != depImageTask) {
-//                                Map<Long, List<Task>> grpBImageTask = depImageTask.get(grpBNew);
-//                                if (null != grpBImageTask) {
-//                                    List<Task> tasks = grpBImageTask.get(Long.parseLong(time));
-//                                    if (null != tasks) {
-//                                        long zonImage = 86400L;
-//                                        for (Task task : tasks) {
-//                                            zonImage -= task.getWntDurTotal();
-//                                        }
-//                                        // 创建存储删除信息
-//                                        removeIndex = new JSONArray();
-//                                        // 遍历任务列表
-//                                        for (int t = 1; t < tasks.size(); t++) {
-//                                            // 获取任务信息
-//                                            Task taskInside = tasks.get(t);
-//                                            // 判断循环任务订单编号等于当前处理任务编号，并且循环任务下标等于当前处理任务下标
-//                                            if (taskInside.getId_O().equals(id_OThis)
-//                                                    && Objects.equals(taskInside.getIndex(), indexThis)) {
-////                                                System.out.println("清理任务的内部输出:");
-////                                                System.out.println(JSON.toJSONString(taskInside));
-//                                                // 创建删除信息
-//                                                JSONObject removeInfo = new JSONObject();
-//                                                // 添加删除信息
-//                                                removeInfo.put("index",t);
-//                                                removeInfo.put("wntDurTotal",taskInside.getWntDurTotal());
-//                                                removeIndex.add(removeInfo);
-//                                                // 定义存储是否存在
-//                                                boolean isNormal = true;
-//                                                // 获取订单编号信息
-//                                                JSONObject id_OInfo = resultNew.getJSONObject(id_OThis);
-//                                                // 定义下标信息
-//                                                JSONObject indexInfo;
-//                                                // 判断订单信息为空
-//                                                if (null == id_OInfo) {
-//                                                    // 创建信息
-//                                                    id_OInfo = new JSONObject();
-//                                                    indexInfo = new JSONObject();
-//                                                    // 更新状态
-//                                                    isNormal = false;
-//                                                } else {
-//                                                    // 获取下标信息
-//                                                    indexInfo = id_OInfo.getJSONObject(indexThis+"");
-//                                                    // 判断为空
-//                                                    if (null == indexInfo) {
-//                                                        // 创建信息
-//                                                        indexInfo = new JSONObject();
-//                                                        // 更新状态
-//                                                        isNormal = false;
-//                                                    }
-//                                                }
-//                                                // 判断存在
-//                                                if (isNormal) {
-//                                                    // 累加任务总时间
-//                                                    indexInfo.put("wntDurTotal",indexInfo.getLong("wntDurTotal")+taskInside.getWntDurTotal());
-//                                                    // 更新数据
-//                                                    id_OInfo.put(indexThis+"",indexInfo);
-//                                                } else {
-//                                                    // 更新数据
-//                                                    id_OInfo.put(indexThis+"",taskInside);
-//                                                }
-//                                                resultNew.put(id_OThis,id_OInfo);
-//                                            }
-//                                        }
-//                                        // 遍历删除集合
-//                                        for (int r = removeIndex.size()-1; r >= 0; r--) {
-//                                            // 获取删除信息
-//                                            JSONObject indexJson = removeIndex.getJSONObject(r);
-//                                            // 获取删除下标
-//                                            int indexNewThis = Integer.parseInt(indexJson.getString("index"));
-//                                            // 删除任务列表对应下标的任务
-//                                            tasks.remove(indexNewThis);
-//                                            // 累加任务总时间
-//                                            zonImage+=indexJson.getLong("wntDurTotal");
-//                                        }
-////                                        System.out.println("tasks: -写入镜像:"+Long.valueOf(time)+" - "+grpBNew+" - "+depNew);
-////                                        System.out.println(JSON.toJSONString(tasks));
-//                                        // 写入镜像任务
-//                                        setImageTasks(tasks,grpBNew,depNew, Long.valueOf(time),allImageTasks);
-//                                        setImageZon(zonImage,grpBNew,depNew, Long.valueOf(time),allImageTotalTime);
-//                                    }
-//                                }
-//                            }
-//                        } else {
-////                            System.out.println("tasksList: -写入镜像:"+Long.valueOf(time)+" - "+grpBNew+" - "+depNew);
-////                            System.out.println(JSON.toJSONString(tasksList));
-//                            // 写入镜像任务
-//                            setImageTasks(tasksList,grpBNew,depNew, Long.valueOf(time),allImageTasks);
-//                            setImageZon(zon,grpBNew,depNew, Long.valueOf(time),allImageTotalTime);
-//                        }
-////                        System.out.println("进入覆盖当前任务列表:");
-//                        // 写入任务到全局任务信息
-//                        setTasksAndZon(tasksList,grpBNew,depNew,Long.valueOf(time),zon,objThisTaskAll);
-//                    } else {
-//                        System.out.println("tasksList: -跳过写入镜像:"+Long.valueOf(time)+" - "+grpBNew+" - "+depNew);
-////                        System.out.println(JSON.toJSONString(tasksList));
-//                    }
-//                    grpBTask.put(time,timeTask);
-//                }
-//                // 定义存储删除信息
-//                JSONArray removeIndex = new JSONArray();
-//                // 遍历当前处理任务信息列表
-//                for (int t = 1; t < thisTasks.size(); t++) {
-//                    // 获取任务信息
-//                    Task taskInside = thisTasks.get(t);
-//                    // 判断循环订单编号等于当前处理订单编号，并且循环下标等于当前处理下标
-//                    if (taskInside.getId_O().equals(id_OThis)
-//                            && Objects.equals(taskInside.getIndex(), indexThis)) {
-//                        // 添加删除下标
-//                        removeIndex.add(t);
-//                    }
-//                }
-//                // 遍历删除信息
-//                for (int r = removeIndex.size()-1; r >= 0; r--) {
-//                    // 转换信息为int
-//                    int indexNewThis = Integer.parseInt(removeIndex.getString(r));
-//                    // 删除指定下标的任务
-//                    thisTasks.remove(indexNewThis);
-//                }
-//                depTask.put(grpBNew,grpBTask);
-////                System.out.println("是否拿当前的: - "+(isGetThisTaskAll?"是":"不是"));
-////                System.out.println("清理状态:"+clearStatusThis);
-//            }
-////            setClearData(id_O,dateIndex,clearStatus,result);
-//        } catch (Exception ex) {
-//            System.out.println("循环问题:"+ex.getMessage());
-//            System.out.println(ex.getLocalizedMessage());
-//        }
-//        System.out.println("写入的objTask:");
-////        System.out.println(JSON.toJSONString(objTask));
-////        System.out.println();
-//        System.out.println(JSON.toJSONString(result));
-////        System.out.println();
-////        System.out.println(JSON.toJSONString(objThisTaskAll));
-////        System.out.println();
-////        System.out.println(JSON.toJSONString(allImageTasks));
-////        System.out.println();
-////        System.out.println(JSON.toJSONString(allImageTotalTime));
-////        System.out.println("isSetObjTask:"+isSetObjTask);
-////        System.out.println();
-////        System.out.println(JSON.toJSONString(result));
-//        return result;
-//    }
-//    protected JSONObject clearOldTask2(String id_O,int dateIndex,String id_C,JSONObject objThisTaskAll
-//            ,JSONObject clearStatus,Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks
-//            ,JSONObject allImageTotalTime,JSONObject allImageTeDate
-//            ,List<Task> thisTasks,JSONObject isSetImage,JSONObject depAllTime
-//            ,String random,JSONObject onlyFirstTimeStamp,JSONObject actionIdO
-//    ){
-//        // 下标加一，从下一个开始
-//        dateIndex++;
-//        System.out.println("进入清理方法:"+TimeZj.isZ+" - "+id_O+" - "+dateIndex);
-////        System.out.println(JSON.toJSONString(allImageTeDate));
-//        System.out.println(JSON.toJSONString(allImageTasks));
-//        // 调用写入清理状态方法
-//        setClearStatus(id_O,dateIndex,clearStatus,0);
-//        // 获取当前订单编号的任务所在日期
-//        JSONObject imgId_O = allImageTeDate.getJSONObject(id_O);
-//        boolean isUpdateImageTask = false;
-//        // 判断不为空
-//        if (null != imgId_O) {
-//            // 定义存储当前处理的任务的所有下一个任务的所在位置
-//            JSONObject depAndGrpB = new JSONObject();
-//            int dateIndexNew = dateIndex;
-//            // 开启循环
-//            while (true) {
-//                // 获取指定下标的镜像任务所在位置信息
-//                JSONObject imgDateIndex = imgId_O.getJSONObject(dateIndexNew + "");
-//                // 判断为空
-//                if (null == imgDateIndex) {
-//                    break;
-//                }
-//                // 获取所在日期信息
-//                JSONObject date = imgDateIndex.getJSONObject("date");
-//                if (null == date) {
-//                    break;
-//                }
-//                // 获取所在日期键
-//                Set<String> imgKeys = date.keySet();
-//                if (imgKeys.size() == 0) {
-//                    break;
-//                }
-//                // 获取位置部门
-//                String dep = imgDateIndex.getString("dep");
-//                // 获取指定部门信息
-//                JSONObject depInfo = depAndGrpB.getJSONObject(dep);
-//                // 判断为空
-//                if (null == depInfo) {
-//                    // 创建部门信息
-//                    depInfo = new JSONObject();
-//                }
-//                // 获取位置组别
-//                String grpB = imgDateIndex.getString("grpB");
-//                // 定义存储组别信息
-//                JSONObject grpBInfo;
-//                // 判断指定组别信息为空
-//                if (null == depInfo.getJSONObject(grpB)) {
-//                    // 创建组别信息
-//                    grpBInfo = new JSONObject();
-//                } else {
-//                    // 获取组别信息
-//                    grpBInfo = depInfo.getJSONObject(grpB);
-//                }
-//                // 遍历所在日期键
-//                imgKeys.forEach(key -> {
-//                    // 判断组别信息存在当前所在日期
-//                    if (grpBInfo.containsKey(key)) {
-//                        // 添加当前日期信息，原本信息加上当前日期信息
-//                        grpBInfo.put(key,(grpBInfo.getLong(key)+date.getLong(key)));
-//                    } else {
-//                        // 添加当前日期信息
-//                        grpBInfo.put(key,date.getLong(key));
-//                    }
-//                });
-//                // 添加信息
-//                depInfo.put(grpB,grpBInfo);
-//                depAndGrpB.put(dep,depInfo);
-//                // 获取下一个加一
-//                dateIndexNew++;
-//            }
-////            System.out.println("清理镜像前:");
-////            System.out.println(JSON.toJSONString(depAndGrpB));
-////            System.out.println(JSON.toJSONString(allImageTasks));
-//            // 遍历需要删除的位置信息
-//            for (String dep : depAndGrpB.keySet()) {
-//                // 根据指定部门获取部门信息
-//                JSONObject depInfo = depAndGrpB.getJSONObject(dep);
-//                // 遍历部门信息
-//                for (String grpB : depInfo.keySet()) {
-//                    // 根据指定组别获取组别信息
-//                    JSONObject grpBInfo = depInfo.getJSONObject(grpB);
-//                    // 遍历组别信息
-//                    for (String time : grpBInfo.keySet()) {
-//                        // 获取所在日期
-//                        long timeLong = Long.parseLong(time);
-//                        // 获取镜像任务列表
-//                        List<Task> tasks = getImageTasks(timeLong,grpB,dep,allImageTasks);
-//                        // 获取镜像任务余剩时间
-//                        Long zon = getImageZon(timeLong,grpB,dep,allImageTotalTime,depAllTime);
-//                        // 创建存储删除集合
-//                        JSONArray removeIndex = new JSONArray();
-//                        // 遍历镜像任务列表
-//                        for (int i = 0; i < tasks.size(); i++) {
-//                            // 获取任务
-//                            Task task = tasks.get(i);
-//                            // 判断不是系统任务
-//                            if (task.getPriority() != -1) {
-//                                // 判断当前订单编号等于处理的订单编号，并且下标对应信息不为空
-//                                if (id_O.equals(task.getId_O()) && null != imgId_O.getJSONObject(task.getDateIndex() + "")) {
-//                                    // 创建删除信息存储
-//                                    JSONObject removeInfo = new JSONObject();
-//                                    // 添加信息
-//                                    removeInfo.put("index",i);
-//                                    removeInfo.put("wntDurTotal",task.getWntDurTotal());
-//                                    removeIndex.add(removeInfo);
-//                                }
-//                            }
-//                        }
-//                        // 遍历删除集合
-//                        for (int r = removeIndex.size()-1; r >= 0; r--) {
-//                            // 获取删除信息
-//                            JSONObject indexJson = removeIndex.getJSONObject(r);
-//                            // 获取删除下标
-//                            int indexNewThis = Integer.parseInt(indexJson.getString("index"));
-//                            // 删除任务列表对应下标的任务
-//                            tasks.remove(indexNewThis);
-//                            // 累加总时间
-//                            zon+=indexJson.getLong("wntDurTotal");
-//                        }
-//                        // 将新的镜像任务列表写入镜像
-//                        setImageTasks(tasks,grpB,dep,timeLong,allImageTasks);
-//                        setImageZon(zon,grpB,dep,timeLong,allImageTotalTime);
-//                    }
-//                }
-//            }
-//            System.out.println("清理镜像后:");
-//            System.out.println(JSON.toJSONString(allImageTasks));
-//        } else {
-//            if (allImageTeDate.size() != 0) {
-//                System.out.println("清理方法 - 进入新的写入镜像");
-//                isUpdateImageTask = true;
-//            }
-//        }
-//        // 创建返回结果
-//        JSONObject result = new JSONObject();
-//        JSONObject resultNew = new JSONObject();
-//        // 根据订单编号查询action卡片信息
-////        Order insideAction = qt.getMDContent(id_O, qt.strList("action", "info"), Order.class);
-//        Order insideAction = qt.getMDContent(id_O, qt.strList("info"), Order.class);
-//        // 判断订单是否为空
-//        if (null == insideAction || null == insideAction.getInfo()
-////                || null == insideAction.getAction()|| null == insideAction.getAction().getJSONObject("grpBGroup")
-////                || null == insideAction.getAction().getJSONArray("objAction")
-//        ) {
-//            // 返回为空错误信息
-//            System.out.println();
-//            System.out.println("-查询为空!-"+id_O);
-//            System.out.println();
-//            return null;
-//        }
-//        // 调用方法获取订单信息
-////        Order salesOrderData = qt.getMDContent(insideAction.getInfo().getId_OP(),qt.strList("action", "casItemx"), Order.class);
-//        Order salesOrderData = qt.getMDContent(insideAction.getInfo().getId_OP(),qt.strList("casItemx"), Order.class);
-//        // 判断订单是否为空
-//        if (null == salesOrderData
-////                || null == salesOrderData.getAction()
-//                || null == salesOrderData.getCasItemx()
-//                || null == salesOrderData.getCasItemx().getJSONObject("java")
-//                || null == salesOrderData.getCasItemx().getJSONObject("java").getJSONArray("oDates")) {
-//            // 返回为空错误信息
-//            System.out.println();
-//            System.out.println("-查询为空!-"+insideAction.getInfo().getId_OP());
-//            System.out.println();
-//            return null;
-//        }
-////        // 根据公司编号获取asset编号
-////        String assetId = coupaUtil.getAssetId(id_C, "a-chkin");
-////        if (null == assetId) {
-////            // 返回为空错误信息
-////            System.out.println();
-////            System.out.println("-查询为空!-");
-////            System.out.println();
-////            return null;
-////        }
-////        // 根据asset编号获取asset的打卡卡片信息
-////        Asset asset = coupaUtil.getAssetById(assetId, Arrays.asList(timeCard,"chkin00s"));
-//
-//        // 获取进度的oDates字段信息
-//        JSONArray oDates = salesOrderData.getCasItemx().getJSONObject("java").getJSONArray("oDates");
-////        boolean isOneDel = true;
-////        // 创建存储部门和组别信息字典
-////        Map<String,String> grpBAndDep = new HashMap<>();
-////        // 获取递归信息
-////        JSONArray objAction = insideAction.getAction().getJSONArray("objAction");
-////        // 获取组别对应部门信息
-////        JSONObject grpBGroup = insideAction.getAction().getJSONObject("grpBGroup");
-////        // 遍历组别对应部门信息
-////        for (String grpB : grpBGroup.keySet()) {
-////            // 获取组别对应信息
-////            JSONObject grpBInfo = grpBGroup.getJSONObject(grpB);
-////            // 获取组别的部门
-////            String depNew = grpBInfo.getString("dep");
-////            grpBAndDep.put(grpB,depNew);
-////        }
-////        System.out.println("初始objTask:");
-////        System.out.println(JSON.toJSONString(objTask));
-////        System.out.println(JSON.toJSONString(objThisTaskAll));
-////        System.out.println(JSON.toJSONString(storageTaskWhereTime));
-////        System.out.println(JSON.toJSONString(allImageTasks));
-////        try {
-//        Map<String,Asset> assetMap = new HashMap<>();
-////            System.out.println("objAction:");
-////            System.out.println(JSON.toJSONString(objAction));
-//        Map<String,Order> orderMap = new HashMap<>();
-//        // 遍历时间处理信息集合
-//        for (int i = dateIndex; i < oDates.size(); i++) {
-//            // 获取i对应的时间处理信息
-//            JSONObject oDate = oDates.getJSONObject(i);
-//            if (oDate.getInteger("bmdpt") == 3) {
-//                continue;
-//            }
-//            // 获取订单编号
-//            String id_OThis = oDate.getString("id_O");
-//            Integer indexThis = oDate.getInteger("index");
-//            if (id_OThis.equals(id_O) && indexThis == (dateIndex - 1)) {
-//                continue;
-//            }
-//            System.out.println("oDate:");
-//            System.out.println(JSON.toJSONString(oDate));
-//            Order order;
-//            if (orderMap.containsKey(id_OThis)) {
-//                order = orderMap.get(id_OThis);
-//            } else {
-//                order = qt.getMDContent(id_OThis,"action", Order.class);
-//                orderMap.put(id_OThis,order);
-//            }
-//            if (null == order
-//                    || null == order.getAction()
-//                    || null == order.getAction().getJSONObject("grpBGroup")
-//                    || null == order.getAction().getJSONArray("objAction")
-//            ) {
-//                continue;
-//            }
-//            // 获取时间处理的组别
-//            String grpBNew = oDate.getString("grpB");
-//            // 获取组别对应部门信息
-//            JSONObject grpBGroupThis = order.getAction().getJSONObject("grpBGroup");
-//            JSONObject grpBObj = grpBGroupThis.getJSONObject(grpBNew);
-//            String depNew = grpBObj.getString("dep");
-//            // 根据组别获取部门
-////                String depNew = grpBAndDep.get(grpBNew);
-//            Asset asset;
-//            if (assetMap.containsKey(depNew)) {
-//                asset = assetMap.get(depNew);
-//            } else {
-//                asset = qt.getConfig(id_C,"d-"+depNew,timeCard);
-//                assetMap.put(depNew,asset);
-//            }
-//            if (null == asset) {
-//                // 返回为空错误信息
-//                System.out.println();
-//                System.out.println("-查询为空!-"+depNew);
-//                System.out.println();
-//                continue;
-//            }
-//            JSONObject aArrange = getAArrangeNew(asset);
-//            JSONObject objTask;
-//            if (null == aArrange || null == aArrange.getJSONObject("objTask")) {
-//                // 返回为空错误信息
-//                System.out.println();
-//                System.out.println("-查询为空!-"+depNew+"-objTask");
-//                System.out.println(JSON.toJSONString(objThisTaskAll));
-//                System.out.println(JSON.toJSONString(allImageTasks));
-//                System.out.println();
-//                objTask  = objThisTaskAll.getJSONObject(depNew);
-////                    continue;
-//            } else {
-//                // 获取数据库任务信息
-//                objTask = aArrange.getJSONObject("objTask");
-//            }
-////                // 获取订单编号
-////                String id_OThis = oDate.getString("id_O");
-//            // 根据订单编号和获取镜像任务所在日期信息
-//            JSONObject imgTeDateId_O = allImageTeDate.getJSONObject(id_OThis);
-//            // 判断为空
-//            if (null == imgTeDateId_O) {
-//                // 创建一个
-//                imgTeDateId_O = new JSONObject();
-//            }
-//            // 创建镜像任务所在日期信息字典
-//            JSONObject imgDate = new JSONObject();
-//            // 添加数据
-//            imgDate.put("grpB",grpBNew);
-//            imgDate.put("dep",depNew);
-//            imgDate.put("date",new JSONObject());
-//            imgTeDateId_O.put(indexThis+"",imgDate);
-//            allImageTeDate.put(id_OThis,imgTeDateId_O);
-//
-//            // 获取下标
-////                Integer indexThis = oDate.getInteger("index");
-//            System.out.println("indexThis:"+indexThis);
-//            // 根据指定下标获取进度信息
-//            JSONObject actionIndex = order.getAction().getJSONArray("objAction").getJSONObject(indexThis);
-////                actionIdO.put(id_OThis,order.getAction().getJSONArray("objAction"));
-//            // 获取任务所在时间
-//            JSONObject teDateNext = actionIndex.getJSONObject("teDate");
-//            System.out.println(id_OThis+" - "+indexThis+" - "+grpBNew+" - "+depNew
-//                    +" - teDateNext:"+JSON.toJSONString(teDateNext));
-//            if (null == teDateNext) {
-//                teDateNext = new JSONObject();
-//                teDateNext.put(onlyFirstTimeStamp.getString(random),0);
-//            }
-////                List<String> taskWhereDate = getTaskWhereDate(id_OThis, indexThis, storageTaskWhereTime);
-////                System.out.println(JSON.toJSONString(taskWhereDate));
-//
-////                // 定义存储是否是拿全局任务，默认不是
-////                boolean isGetThisTaskAll = false;
-////                // 根据部门获取指定数据库任务信息的部门信息
-////                JSONObject depTask = objTask.getJSONObject(depNew);
-////                // 判断为空
-////                if (null == depTask) {
-////                    // 获取当前全局任务信息的部门信息
-////                    depTask = objThisTaskAll.getJSONObject(depNew);
-////                    // 更新状态
-////                    isGetThisTaskAll = true;
-////                }
-//            // 根据部门信息获取指定组别的信息
-//            JSONObject grpBTask = objTask.getJSONObject(grpBNew);
-//            // 判断为空
-//            if (null == grpBTask) {
-//                if (null == objThisTaskAll.getJSONObject(depNew) || null == objThisTaskAll.getJSONObject(depNew).getJSONObject(grpBNew)) {
-//                    continue;
-//                }
-//                System.out.println("输出全局信息:");
-//                System.out.println(JSON.toJSONString(allImageTasks));
-//                System.out.println(JSON.toJSONString(objThisTaskAll));
-//                // 获取全局任务信息
-//                grpBTask = objThisTaskAll.getJSONObject(depNew).getJSONObject(grpBNew);
-//
-////                    // 更新状态
-////                    isGetThisTaskAll = true;
-//            }
-//            // 遍历任务所在时间
-//            for (String time : teDateNext.keySet()) {
-//                // 获取所在时间任务信息
-//                JSONObject timeTask = grpBTask.getJSONObject(time);
-//                // 获取任务列表
-//                JSONArray tasksNew = timeTask.getJSONArray("tasks");
-////                    System.out.println("tasksList: - time:"+time);
-////                    System.out.println(JSON.toJSONString(tasksNew));
-//                // 获取任务余剩时间
-//                Long zon = timeTask.getLong("zon");
-//                // 创建存储删除信息
-//                JSONArray removeIndex = new JSONArray();
-//                boolean isOne = false;
-//                // 遍历任务列表
-//                for (int t = 1; t < tasksNew.size(); t++) {
-//                    // 获取任务信息
-//                    JSONObject taskInside = tasksNew.getJSONObject(t);
-//                    // 判断循环任务订单编号等于当前处理任务编号，并且循环任务下标等于当前处理任务下标
-//                    if (taskInside.getString("id_O").equals(id_OThis)
-//                            && Objects.equals(taskInside.getInteger("index"), indexThis)) {
-////                            System.out.println("清理任务的内部输出:");
-////                            System.out.println(JSON.toJSONString(taskInside));
-//                        // 创建删除信息
-//                        JSONObject removeInfo = new JSONObject();
-//                        // 添加删除信息
-//                        removeInfo.put("index",t);
-//                        removeInfo.put("wntDurTotal",taskInside.getLong("wntDurTotal"));
-//                        removeIndex.add(removeInfo);
-//                        // 定义存储是否存在
-//                        boolean isNormal = true;
-//                        // 获取订单编号信息
-//                        JSONObject id_OInfo = result.getJSONObject(id_OThis);
-//                        // 定义下标信息
-//                        JSONObject indexInfo;
-//                        // 判断订单信息为空
-//                        if (null == id_OInfo) {
-//                            // 创建信息
-//                            id_OInfo = new JSONObject();
-//                            indexInfo = new JSONObject();
-//                            // 更新状态
-//                            isNormal = false;
-//                        } else {
-//                            // 获取下标信息
-//                            indexInfo = id_OInfo.getJSONObject(indexThis+"");
-//                            // 判断为空
-//                            if (null == indexInfo) {
-//                                // 创建信息
-//                                indexInfo = new JSONObject();
-//                                // 更新状态
-//                                isNormal = false;
-//                            }
-//                        }
-//                        // 判断存在
-//                        if (isNormal) {
-//                            // 累加任务总时间
-//                            indexInfo.put("wntDurTotal",indexInfo.getLong("wntDurTotal")+taskInside.getLong("wntDurTotal"));
-//                            // 更新数据
-//                            id_OInfo.put(indexThis+"",indexInfo);
-////                                isOne = false;
-//                        } else {
-//                            // 更新数据
-//                            id_OInfo.put(indexThis+"",taskInside);
-//                        }
-//                        isOne = true;
-//                        result.put(id_OThis,id_OInfo);
-//                    }
-//                }
-//                // 遍历删除集合
-//                for (int r = removeIndex.size()-1; r >= 0; r--) {
-//                    // 获取删除信息
-//                    JSONObject indexJson = removeIndex.getJSONObject(r);
-//                    // 获取删除下标
-//                    int indexNewThis = Integer.parseInt(indexJson.getString("index"));
-//                    // 删除任务列表对应下标的任务
-//                    tasksNew.remove(indexNewThis);
-//                    // 累加任务总时间
-//                    zon+=indexJson.getLong("wntDurTotal");
-//                }
-//                // 添加信息
-//                timeTask.put("tasks",tasksNew);
-//                timeTask.put("zon",zon);
-//                // 创建新任务集合
-//                List<Task> tasksList = new ArrayList<>();
-//                // 遍历任务列表
-//                for (int t = 0; t < tasksNew.size(); t++) {
-//                    // 把任务转换为类存入新任务集合
-//                    tasksList.add(JSONObject.parseObject(JSON.toJSONString(tasksNew.getJSONObject(t)),Task.class));
-//                }
-//                System.out.println("tasksNew-刚删除:");
-//                System.out.println(JSON.toJSONString(tasksNew));
-//                // 是否写入镜像任务
-//                boolean isSetImageEnd = true;
-//                // 判断不为空
-//                if (null != isSetImage){
-//                    // 获取部门信息
-//                    JSONObject depSetImage = isSetImage.getJSONObject(depNew);
-//                    // 判断不为空
-//                    if (null != depSetImage) {
-//                        // 获取组别信息
-//                        long grpBSetImage = depSetImage.getLong(grpBNew) == null ? 0 : depSetImage.getLong(grpBNew);
-//                        // 判断状态不为0，并且时间不等于当前循环时间
-//                        if (0 != grpBSetImage && grpBSetImage==Long.parseLong(time)) {
-//                            // 更新状态
-//                            isSetImageEnd = false;
-//                            // 判断当前订单编号的任务所在日期不为空，并且状态不为0，并且循环时间大于当前组别时间
-//                        } else if (null != imgId_O && (0 != grpBSetImage && Long.parseLong(time)>grpBSetImage)) {
-//                            System.out.println("进入特殊条件跳入写入数据:");
-//                            // 更新状态
-//                            isSetImageEnd = false;
-//                        }
-//                    }
-//                }
-//                if (isSetImageEnd && null != imgId_O) {
-//                    System.out.println("--第三不写入条件--");
-//                    // 更新状态
-//                    isSetImageEnd = false;
-//                }
-//                if (isOne) {
-//                    isSetImageEnd = true;
-//                    System.out.println("--isOne 写入条件--");
-//                }
-//                // 判断写入
-//                if (isSetImageEnd) {
-//                    if (isUpdateImageTask) {
-//                        Map<String, Map<Long, List<Task>>> depImageTask = allImageTasks.get(depNew);
-//                        if (null != depImageTask) {
-//                            Map<Long, List<Task>> grpBImageTask = depImageTask.get(grpBNew);
-//                            if (null != grpBImageTask) {
-//                                List<Task> tasks = grpBImageTask.get(Long.parseLong(time));
-//                                if (null != tasks) {
-//                                    long zonImage = 86400L;
-//                                    for (Task task : tasks) {
-//                                        zonImage -= task.getWntDurTotal();
-//                                    }
-//                                    // 创建存储删除信息
-//                                    removeIndex = new JSONArray();
-//                                    // 遍历任务列表
-//                                    for (int t = 1; t < tasks.size(); t++) {
-//                                        // 获取任务信息
-//                                        Task taskInside = tasks.get(t);
-//                                        // 判断循环任务订单编号等于当前处理任务编号，并且循环任务下标等于当前处理任务下标
-//                                        if (taskInside.getId_O().equals(id_OThis)
-//                                                && Objects.equals(taskInside.getIndex(), indexThis)) {
-////                                                System.out.println("清理任务的内部输出:");
-////                                                System.out.println(JSON.toJSONString(taskInside));
-//                                            // 创建删除信息
-//                                            JSONObject removeInfo = new JSONObject();
-//                                            // 添加删除信息
-//                                            removeInfo.put("index",t);
-//                                            removeInfo.put("wntDurTotal",taskInside.getWntDurTotal());
-//                                            removeIndex.add(removeInfo);
-//                                            // 定义存储是否存在
-//                                            boolean isNormal = true;
-//                                            // 获取订单编号信息
-//                                            JSONObject id_OInfo = resultNew.getJSONObject(id_OThis);
-//                                            // 定义下标信息
-//                                            JSONObject indexInfo;
-//                                            // 判断订单信息为空
-//                                            if (null == id_OInfo) {
-//                                                // 创建信息
-//                                                id_OInfo = new JSONObject();
-//                                                indexInfo = new JSONObject();
-//                                                // 更新状态
-//                                                isNormal = false;
-//                                            } else {
-//                                                // 获取下标信息
-//                                                indexInfo = id_OInfo.getJSONObject(indexThis+"");
-//                                                // 判断为空
-//                                                if (null == indexInfo) {
-//                                                    // 创建信息
-//                                                    indexInfo = new JSONObject();
-//                                                    // 更新状态
-//                                                    isNormal = false;
-//                                                }
-//                                            }
-//                                            // 判断存在
-//                                            if (isNormal) {
-//                                                // 累加任务总时间
-//                                                indexInfo.put("wntDurTotal",indexInfo.getLong("wntDurTotal")+taskInside.getWntDurTotal());
-//                                                // 更新数据
-//                                                id_OInfo.put(indexThis+"",indexInfo);
-//                                            } else {
-//                                                // 更新数据
-//                                                id_OInfo.put(indexThis+"",taskInside);
-//                                            }
-//                                            resultNew.put(id_OThis,id_OInfo);
-//                                        }
-//                                    }
-//                                    // 遍历删除集合
-//                                    for (int r = removeIndex.size()-1; r >= 0; r--) {
-//                                        // 获取删除信息
-//                                        JSONObject indexJson = removeIndex.getJSONObject(r);
-//                                        // 获取删除下标
-//                                        int indexNewThis = Integer.parseInt(indexJson.getString("index"));
-//                                        // 删除任务列表对应下标的任务
-//                                        tasks.remove(indexNewThis);
-//                                        // 累加任务总时间
-//                                        zonImage+=indexJson.getLong("wntDurTotal");
-//                                    }
-////                                        System.out.println("tasks: -写入镜像:"+Long.valueOf(time)+" - "+grpBNew+" - "+depNew);
-////                                        System.out.println(JSON.toJSONString(tasks));
-//                                    // 写入镜像任务
-//                                    setImageTasks(tasks,grpBNew,depNew, Long.valueOf(time),allImageTasks);
-//                                    setImageZon(zonImage,grpBNew,depNew, Long.valueOf(time),allImageTotalTime);
-//                                }
-//                            }
-//                        }
-//                    } else {
-////                            System.out.println("tasksList: -写入镜像:"+Long.valueOf(time)+" - "+grpBNew+" - "+depNew);
-////                            System.out.println(JSON.toJSONString(tasksList));
-//                        // 写入镜像任务
-//                        setImageTasks(tasksList,grpBNew,depNew, Long.valueOf(time),allImageTasks);
-//                        setImageZon(zon,grpBNew,depNew, Long.valueOf(time),allImageTotalTime);
-//                    }
-////                        System.out.println("进入覆盖当前任务列表:");
-//                    // 写入任务到全局任务信息
-//                    setTasksAndZon(tasksList,grpBNew,depNew,Long.valueOf(time),zon,objThisTaskAll);
-//                } else {
-//                    System.out.println("tasksList: -跳过写入镜像:"+Long.valueOf(time)+" - "+grpBNew+" - "+depNew);
-////                        System.out.println(JSON.toJSONString(tasksList));
-//                }
-//                grpBTask.put(time,timeTask);
-//            }
-//            // 定义存储删除信息
-//            JSONArray removeIndex = new JSONArray();
-//            // 遍历当前处理任务信息列表
-//            for (int t = 1; t < thisTasks.size(); t++) {
-//                // 获取任务信息
-//                Task taskInside = thisTasks.get(t);
-//                // 判断循环订单编号等于当前处理订单编号，并且循环下标等于当前处理下标
-//                if (taskInside.getId_O().equals(id_OThis)
-//                        && Objects.equals(taskInside.getIndex(), indexThis)) {
-//                    // 添加删除下标
-//                    removeIndex.add(t);
-//                }
-//            }
-//            // 遍历删除信息
-//            for (int r = removeIndex.size()-1; r >= 0; r--) {
-//                // 转换信息为int
-//                int indexNewThis = Integer.parseInt(removeIndex.getString(r));
-//                // 删除指定下标的任务
-//                thisTasks.remove(indexNewThis);
-//            }
-//            objTask.put(grpBNew,grpBTask);
-////                System.out.println("是否拿当前的: - "+(isGetThisTaskAll?"是":"不是"));
-////                System.out.println("清理状态:"+clearStatusThis);
-//        }
-////            setClearData(id_O,dateIndex,clearStatus,result);
-////        } catch (Exception ex) {
-////            System.out.println("循环问题:"+ex.getMessage());
-////            System.out.println(ex.getLocalizedMessage());
-////        }
-//        System.out.println("写入的objTask:");
-////        System.out.println(JSON.toJSONString(objTask));
-////        System.out.println();
-//        System.out.println(JSON.toJSONString(result));
-////        System.out.println();
-////        System.out.println(JSON.toJSONString(objThisTaskAll));
-//        System.out.println();
-//        System.out.println(JSON.toJSONString(allImageTasks));
-////        System.out.println();
-////        System.out.println(JSON.toJSONString(allImageTotalTime));
-////        System.out.println("isSetObjTask:"+isSetObjTask);
-////        System.out.println();
-////        System.out.println(JSON.toJSONString(result));
-//        return result;
-//    }
     protected JSONObject clearOldTask(String id_O,int dateIndex,String id_C,JSONObject objThisTaskAll
             ,JSONObject clearStatus,Map<String, Map<String, Map<Long, List<Task>>>> allImageTasks
             ,JSONObject allImageTotalTime,JSONObject allImageTeDate
@@ -2729,9 +1607,6 @@ public class TimeZj {
     ){
         // 下标加一，从下一个开始
         dateIndex++;
-        System.out.println("进入清理方法:"+TimeZj.isZ+" - "+id_O+" - "+dateIndex);
-//        System.out.println(JSON.toJSONString(allImageTeDate));
-        System.out.println(JSON.toJSONString(allImageTasks));
         // 调用写入清理状态方法
         setClearStatus(id_O,dateIndex,clearStatus,0);
         // 获取当前订单编号的任务所在日期
@@ -2865,6 +1740,9 @@ public class TimeZj {
         JSONObject result = new JSONObject();
         JSONObject resultNew = new JSONObject();
         String id_OP = sonGetOrderFatherId(id_O, id_C, thisInfo, actionIdO, new JSONObject());
+        System.out.println("进入清理方法:"+TimeZj.isZ+" - "+id_O+" - "+dateIndex+",id_OP:"+id_OP+",layer:"+layer+",id_PF:"+id_PF);
+        System.out.println(JSON.toJSONString(allImageTasks));
+        System.out.println(JSON.toJSONString(actionIdO));
         // 获取进度的oDates字段信息
         JSONArray oDates = actionIdO.getJSONObject(id_OP).getJSONObject(layer+"")
                 .getJSONObject(id_PF).getJSONArray("oDates");
@@ -2948,12 +1826,12 @@ public class TimeZj {
             JSONObject grpBTask = objTask.getJSONObject(grpBNew);
             // 判断为空
             if (null == grpBTask) {
-                if (null == objThisTaskAll.getJSONObject(depNew) || null == objThisTaskAll.getJSONObject(depNew).getJSONObject(grpBNew)) {
-                    continue;
-                }
                 System.out.println("输出全局信息:");
                 System.out.println(JSON.toJSONString(allImageTasks));
                 System.out.println(JSON.toJSONString(objThisTaskAll));
+                if (null == objThisTaskAll.getJSONObject(depNew) || null == objThisTaskAll.getJSONObject(depNew).getJSONObject(grpBNew)) {
+                    continue;
+                }
                 // 获取全局任务信息
                 grpBTask = objThisTaskAll.getJSONObject(depNew).getJSONObject(grpBNew);
             }
@@ -3017,6 +1895,10 @@ public class TimeZj {
                         }
                         isOne = true;
                         result.put(sonGetOrderFatherId(id_OThis,id_C,thisInfo,actionIdO,new JSONObject()),id_OInfo);
+                    } else {
+                        System.out.println("进入清理方法的result-else:");
+                        System.out.println(taskInside.getString("id_O")+"___"+id_OThis+"___"+
+                                taskInside.getInteger("index")+"___"+indexThis);
                     }
                 }
                 // 遍历删除集合
@@ -3029,6 +1911,11 @@ public class TimeZj {
                     tasksNew.remove(indexNewThis);
                     // 累加任务总时间
                     zon+=indexJson.getLong("wntDurTotal");
+                }
+                zon = 86400L;
+                for (int t = 0; t < tasksNew.size(); t++) {
+                    JSONObject taskInside = tasksNew.getJSONObject(t);
+                    zon-=taskInside.getLong("wntDurTotal");
                 }
                 // 添加信息
                 timeTask.put("tasks",tasksNew);
@@ -3195,6 +2082,54 @@ public class TimeZj {
 //            System.out.println("是否拿当前的: - "+(isGetThisTaskAll?"是":"不是"));
 //            System.out.println("清理状态:"+clearStatusThis);
         }
+        if (layer > 1) {
+            JSONObject thisInfoClearOPLayer = getThisInfoClearOPLayer(thisInfo);
+            boolean isGetUpLayer = false;
+            if (null != thisInfoClearOPLayer) {
+                JSONObject opInfo = thisInfoClearOPLayer.getJSONObject(id_OP);
+                if (null != opInfo) {
+                    if (!opInfo.containsKey((layer-1)+"")) {
+                        opInfo.put((layer-1)+"",new JSONObject());
+                        thisInfoClearOPLayer.put(id_OP,opInfo);
+                        isGetUpLayer = true;
+                    }
+                } else {
+                    thisInfoClearOPLayer.put(id_OP,qt.setJson((layer-1)+"",new JSONObject()));
+                    isGetUpLayer = true;
+                }
+            } else {
+                thisInfoClearOPLayer = new JSONObject();
+                thisInfoClearOPLayer.put(id_OP,qt.setJson((layer-1)+"",new JSONObject()));
+                isGetUpLayer = true;
+            }
+            if (isGetUpLayer) {
+                setThisInfoClearOPLayer(thisInfo,thisInfoClearOPLayer);
+                JSONObject layerInfo = actionIdO.getJSONObject(id_OP).getJSONObject((layer - 1) + "");
+                setThisInfoSonLayerInfo(thisInfo,qt.setJson(id_OP,qt.setJson(layer+"",qt.setJson("layerCount",1,"layerMaxData",new JSONObject()))));
+                JSONObject clearPfDate = new JSONObject();
+                for (String pf : layerInfo.keySet()) {
+                    oDates = layerInfo.getJSONObject(pf).getJSONArray("oDates");
+                    JSONObject oDateSta = oDates.getJSONObject(0);
+                    clearPfDate.put(pf,clearOldTask(oDateSta.getString("id_O"),-1,id_C,objThisTaskAll,clearStatus
+                            ,allImageTasks,allImageTotalTime,allImageTeDate,thisTasks,isSetImage,depAllTime
+                            ,random,onlyFirstTimeStamp,actionIdO,thisInfo,(layer-1),pf));
+                }
+
+                thisInfoClearOPLayer = getThisInfoClearOPLayer(thisInfo);
+                JSONObject opInfo = thisInfoClearOPLayer.getJSONObject(id_OP);
+                opInfo.put((layer-1)+"",clearPfDate);
+                thisInfoClearOPLayer.put(id_OP,opInfo);
+                setThisInfoClearOPLayer(thisInfo,thisInfoClearOPLayer);
+            } else {
+                JSONObject thisInfoSonLayerInfo = getThisInfoSonLayerInfo(thisInfo);
+                JSONObject opInfo = thisInfoSonLayerInfo.getJSONObject(id_OP);
+                JSONObject layerInfo = opInfo.getJSONObject(layer + "");
+                layerInfo.put("layerCount",layerInfo.getInteger("layerCount")+1);
+                opInfo.put(layer + "",layerInfo);
+                thisInfoSonLayerInfo.put(id_OP,opInfo);
+                setThisInfoSonLayerInfo(thisInfo,thisInfoSonLayerInfo);
+            }
+        }
         System.out.println("写入的objTask:");
 //        System.out.println(JSON.toJSONString(objTask));
 //        System.out.println();
@@ -3210,18 +2145,140 @@ public class TimeZj {
 //        System.out.println(JSON.toJSONString(result));
         return result;
     }
-    protected void clearOldTaskNew(String id_O,int dateIndex,String id_C){
+//    protected void clearOldTaskNew(String id_O,int dateIndex,String id_C,String layer,String id_PF){
+//        System.out.println("进入Api清理方法:"+" - "+id_O+" - "+dateIndex);
+//        Order order = qt.getMDContent(id_O, "casItemx", Order.class);
+//        if (null == order || null == order.getCasItemx() || null == order.getCasItemx().getJSONObject("java")) {
+//            // 返回为空错误信息
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+//        }
+//        // 获取进度的oDates字段信息
+//        JSONArray oDates = order.getCasItemx().getJSONObject("java").getJSONArray("oDates");
+////        JSONObject oDateThis = oDates.getJSONObject(dateIndex);
+//        Map<String,Asset> assetMap = new HashMap<>();
+////        JSONObject taskAll = new JSONObject();
+//        // 遍历时间处理信息集合
+//        for (int i = dateIndex; i < oDates.size(); i++) {
+//            // 获取i对应的时间处理信息
+//            JSONObject oDate = oDates.getJSONObject(i);
+//            // 获取订单编号
+//            String id_OThis = oDate.getString("id_O");
+//            Integer indexThis = oDate.getInteger("index");
+//            System.out.println("oDate:");
+//            System.out.println(JSON.toJSONString(oDate));
+//            // 获取时间处理的组别
+//            String grpBNew = oDate.getString("grpB");
+//            String depNew = oDate.getString("dep");
+//            // 根据组别获取部门
+//            Asset asset;
+//            if (assetMap.containsKey(depNew)) {
+//                asset = assetMap.get(depNew);
+//            } else {
+//                asset = qt.getConfig(id_C,"d-"+depNew,timeCard);
+//                assetMap.put(depNew,asset);
+//            }
+//            if (null == asset) {
+//                // 返回为空错误信息
+//                System.out.println();
+//                System.out.println("-查询为空!-"+depNew);
+//                System.out.println();
+//                // 返回为空错误信息
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+//            }
+//            JSONObject aArrange = getAArrangeNew(asset);
+//            JSONObject objTask;
+//            if (null == aArrange || null == aArrange.getJSONObject("objTask")) {
+//                // 返回为空错误信息
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+//            } else {
+//                // 获取数据库任务信息
+//                objTask = aArrange.getJSONObject("objTask");
+//            }
+//            // 获取任务所在时间
+//            JSONObject teDateNext = oDate.getJSONObject("teDate");
+//            System.out.println(id_OThis+" - "+indexThis+" - "+i+" - "+grpBNew+" - "+depNew
+//                    +" - teDateNext:"+JSON.toJSONString(teDateNext));
+//            if (null == teDateNext) {
+//                // 返回为空错误信息
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+//            }
+//            // 根据部门信息获取指定组别的信息
+//            JSONObject grpBTask = objTask.getJSONObject(grpBNew);
+//            // 判断为空
+//            if (null == grpBTask) {
+//                // 返回为空错误信息
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+//            }
+//            // 遍历任务所在时间
+//            for (String time : teDateNext.keySet()) {
+//                // 获取所在时间任务信息
+//                JSONObject timeTask = grpBTask.getJSONObject(time);
+//                // 获取任务列表
+//                JSONArray tasksNew = timeTask.getJSONArray("tasks");
+//                // 获取任务余剩时间
+//                Long zon = timeTask.getLong("zon");
+//                // 创建存储删除信息
+//                JSONArray removeIndex = new JSONArray();
+//                // 遍历任务列表
+//                for (int t = 1; t < tasksNew.size(); t++) {
+//                    // 获取任务信息
+//                    JSONObject taskInside = tasksNew.getJSONObject(t);
+//                    // 判断循环任务订单编号等于当前处理任务编号，并且循环任务下标等于当前处理任务下标
+//                    if (taskInside.getString("id_O").equals(id_OThis)
+//                            && Objects.equals(taskInside.getInteger("index"), indexThis)) {
+//                        // 创建删除信息
+//                        JSONObject removeInfo = new JSONObject();
+//                        // 添加删除信息
+//                        removeInfo.put("index",t);
+//                        removeInfo.put("wntDurTotal",taskInside.getLong("wntDurTotal"));
+//                        removeIndex.add(removeInfo);
+//                        if ((tasksNew.size() - 1) <= (t + 1)) {
+//                            JSONObject taskInsideNew = tasksNew.getJSONObject((t + 1));
+//                            if (taskInsideNew.getInteger("priority") != -1 && taskInsideNew.getLong("teDelayDate") > 0) {
+//                                taskInsideNew.put("updateTime",true);
+//                            }
+//                        }
+//                    }
+//                }
+//                // 遍历删除集合
+//                for (int r = removeIndex.size()-1; r >= 0; r--) {
+//                    // 获取删除信息
+//                    JSONObject indexJson = removeIndex.getJSONObject(r);
+//                    // 获取删除下标
+//                    int indexNewThis = Integer.parseInt(indexJson.getString("index"));
+//                    // 删除任务列表对应下标的任务
+//                    tasksNew.remove(indexNewThis);
+//                    // 累加任务总时间
+//                    zon+=indexJson.getLong("wntDurTotal");
+//                }
+//                // 添加信息
+//                timeTask.put("tasks",tasksNew);
+//                timeTask.put("zon",zon);
+//                System.out.println("tasksNew-刚删除:");
+//                System.out.println(JSON.toJSONString(tasksNew));
+//                grpBTask.put(time,timeTask);
+//            }
+//            objTask.put(grpBNew,grpBTask);
+//            aArrange.put("objTask",objTask);
+//            asset.setAArrange(aArrange);
+//            assetMap.put(depNew,asset);
+//        }
+//        System.out.println("清理后输出:");
+//        System.out.println(JSON.toJSONString(assetMap));
+//    }
+    protected void clearOldTaskNew(String id_O,int dateIndex,String id_C,String layer,String id_PF){
         System.out.println("进入Api清理方法:"+" - "+id_O+" - "+dateIndex);
         Order order = qt.getMDContent(id_O, "casItemx", Order.class);
         if (null == order || null == order.getCasItemx() || null == order.getCasItemx().getJSONObject("java")) {
             // 返回为空错误信息
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
-        // 获取进度的oDates字段信息
-        JSONArray oDates = order.getCasItemx().getJSONObject("java").getJSONArray("oDates");
-//        JSONObject oDateThis = oDates.getJSONObject(dateIndex);
         Map<String,Asset> assetMap = new HashMap<>();
-//        JSONObject taskAll = new JSONObject();
+        // 获取进度的oDates字段信息
+        JSONObject oDateObj = order.getCasItemx().getJSONObject("java").getJSONObject("oDateObj");
+        JSONObject layerData = oDateObj.getJSONObject(layer);
+        JSONObject pfData = layerData.getJSONObject(id_PF);
+        JSONArray oDates = pfData.getJSONArray("oDates");
         // 遍历时间处理信息集合
         for (int i = dateIndex; i < oDates.size(); i++) {
             // 获取i对应的时间处理信息
@@ -3328,8 +2385,125 @@ public class TimeZj {
             asset.setAArrange(aArrange);
             assetMap.put(depNew,asset);
         }
+        dgClearOldTask(oDateObj,pfData.getString("layer"),pfData.getString("id_PF")
+                ,assetMap,id_C);
         System.out.println("清理后输出:");
         System.out.println(JSON.toJSONString(assetMap));
+    }
+    private void dgClearOldTask(JSONObject oDateObj,String layer,String id_PF
+            ,Map<String,Asset> assetMap,String id_C){
+        if ("0".equals(layer)) {
+            return;
+        }
+        JSONObject layerData = oDateObj.getJSONObject(layer);
+        JSONObject pfData = layerData.getJSONObject(id_PF);
+        JSONArray oDates = pfData.getJSONArray("oDates");
+        // 遍历时间处理信息集合
+        for (int i = 0; i < oDates.size(); i++) {
+            // 获取i对应的时间处理信息
+            JSONObject oDate = oDates.getJSONObject(i);
+            // 获取订单编号
+            String id_OThis = oDate.getString("id_O");
+            Integer indexThis = oDate.getInteger("index");
+            System.out.println("oDate:");
+            System.out.println(JSON.toJSONString(oDate));
+            // 获取时间处理的组别
+            String grpBNew = oDate.getString("grpB");
+            String depNew = oDate.getString("dep");
+            // 根据组别获取部门
+            Asset asset;
+            if (assetMap.containsKey(depNew)) {
+                asset = assetMap.get(depNew);
+            } else {
+                asset = qt.getConfig(id_C,"d-"+depNew,timeCard);
+                assetMap.put(depNew,asset);
+            }
+            if (null == asset) {
+                // 返回为空错误信息
+                System.out.println();
+                System.out.println("-查询为空!-"+depNew);
+                System.out.println();
+                // 返回为空错误信息
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+            }
+            JSONObject aArrange = getAArrangeNew(asset);
+            JSONObject objTask;
+            if (null == aArrange || null == aArrange.getJSONObject("objTask")) {
+                // 返回为空错误信息
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+            } else {
+                // 获取数据库任务信息
+                objTask = aArrange.getJSONObject("objTask");
+            }
+            // 获取任务所在时间
+            JSONObject teDateNext = oDate.getJSONObject("teDate");
+            System.out.println(id_OThis+" - "+indexThis+" - "+i+" - "+grpBNew+" - "+depNew
+                    +" - teDateNext:"+JSON.toJSONString(teDateNext));
+            if (null == teDateNext) {
+                // 返回为空错误信息
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+            }
+            // 根据部门信息获取指定组别的信息
+            JSONObject grpBTask = objTask.getJSONObject(grpBNew);
+            // 判断为空
+            if (null == grpBTask) {
+                // 返回为空错误信息
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+            }
+            // 遍历任务所在时间
+            for (String time : teDateNext.keySet()) {
+                // 获取所在时间任务信息
+                JSONObject timeTask = grpBTask.getJSONObject(time);
+                // 获取任务列表
+                JSONArray tasksNew = timeTask.getJSONArray("tasks");
+                // 获取任务余剩时间
+                Long zon = timeTask.getLong("zon");
+                // 创建存储删除信息
+                JSONArray removeIndex = new JSONArray();
+                // 遍历任务列表
+                for (int t = 1; t < tasksNew.size(); t++) {
+                    // 获取任务信息
+                    JSONObject taskInside = tasksNew.getJSONObject(t);
+                    // 判断循环任务订单编号等于当前处理任务编号，并且循环任务下标等于当前处理任务下标
+                    if (taskInside.getString("id_O").equals(id_OThis)
+                            && Objects.equals(taskInside.getInteger("index"), indexThis)) {
+                        // 创建删除信息
+                        JSONObject removeInfo = new JSONObject();
+                        // 添加删除信息
+                        removeInfo.put("index",t);
+                        removeInfo.put("wntDurTotal",taskInside.getLong("wntDurTotal"));
+                        removeIndex.add(removeInfo);
+                        if ((tasksNew.size() - 1) <= (t + 1)) {
+                            JSONObject taskInsideNew = tasksNew.getJSONObject((t + 1));
+                            if (taskInsideNew.getInteger("priority") != -1 && taskInsideNew.getLong("teDelayDate") > 0) {
+                                taskInsideNew.put("updateTime",true);
+                            }
+                        }
+                    }
+                }
+                // 遍历删除集合
+                for (int r = removeIndex.size()-1; r >= 0; r--) {
+                    // 获取删除信息
+                    JSONObject indexJson = removeIndex.getJSONObject(r);
+                    // 获取删除下标
+                    int indexNewThis = Integer.parseInt(indexJson.getString("index"));
+                    // 删除任务列表对应下标的任务
+                    tasksNew.remove(indexNewThis);
+                    // 累加任务总时间
+                    zon+=indexJson.getLong("wntDurTotal");
+                }
+                // 添加信息
+                timeTask.put("tasks",tasksNew);
+                timeTask.put("zon",zon);
+                System.out.println("tasksNew-刚删除:");
+                System.out.println(JSON.toJSONString(tasksNew));
+                grpBTask.put(time,timeTask);
+            }
+            objTask.put(grpBNew,grpBTask);
+            aArrange.put("objTask",objTask);
+            asset.setAArrange(aArrange);
+            assetMap.put(depNew,asset);
+        }
     }
 
     /**
@@ -3635,9 +2809,14 @@ public class TimeZj {
      * @author tang
      * @ver 版本号: 1.0.0
      */
-    protected void setThisInfoFinalPartDate(JSONObject thisInfo,String id_O,String layer,String id_PF){
-        thisInfo.put("finalPartDate",qt.setJson("id_O",id_O,"layer",layer,"id_PF",id_PF));
+    protected void setThisInfoFinalPartDate(JSONObject thisInfo,String id_O,String layer,String id_PF,String id_OP){
+        thisInfo.put("finalPartDate",qt.setJson("id_O",id_O,"layer",layer,"id_PF",id_PF,"id_OP",id_OP));
     }
+//    protected void setThisInfoFinalPartDate(JSONObject thisInfo,JSONObject lastTime){
+//        JSONObject thisInfoFinalPartDate = getThisInfoFinalPartDate(thisInfo);
+//        thisInfoFinalPartDate.put("lastTime",lastTime);
+//        thisInfo.put("finalPartDate",thisInfoFinalPartDate);
+//    }
     /**
      * 获取最后一个零件时间订单编号
      * @param thisInfo	当前处理通用信息存储
@@ -3796,11 +2975,51 @@ public class TimeZj {
     protected String getThisInfoLayerProdId(JSONObject thisInfo){
         return thisInfo.getString("prodId");
     }
+    /**
+     * 写入当前清理的父与层级信息
+     * @param thisInfo	当前处理通用信息存储
+     * @param clearOPLayer 父零件编号
+     * @author tang
+     * @ver 版本号: 1.0.0
+     */
+    protected void setThisInfoClearOPLayer(JSONObject thisInfo,JSONObject clearOPLayer){
+        thisInfo.put("clearOPLayer",clearOPLayer);
+    }
+    /**
+     * 获取当前清理的父与层级信息
+     * @param thisInfo	当前处理通用信息存储
+     * @return 返回结果: {@link String}
+     * @author tang
+     * @ver 版本号: 1.0.0
+     */
+    protected JSONObject getThisInfoClearOPLayer(JSONObject thisInfo){
+        return thisInfo.getJSONObject("clearOPLayer");
+    }
+
+    /**
+     * 写入当前层级的信息
+     * @param thisInfo	当前处理通用信息存储
+     * @param sonLayerInfo 当前层级信息
+     * @author tang
+     * @ver 版本号: 1.0.0
+     */
+    protected void setThisInfoSonLayerInfo(JSONObject thisInfo,JSONObject sonLayerInfo){
+        thisInfo.put("sonLayerInfo",sonLayerInfo);
+    }
+    /**
+     * 获取当前层级的信息
+     * @param thisInfo	当前处理通用信息存储
+     * @return 返回结果: {@link String}
+     * @author tang
+     * @ver 版本号: 1.0.0
+     */
+    protected JSONObject getThisInfoSonLayerInfo(JSONObject thisInfo){
+        return thisInfo.getJSONObject("sonLayerInfo");
+    }
 
     /**
      * 合并任务，以同部门同组别同序号进行合并
      * @param oDateObj	时间处理任务数据
-     * @param grpUNumAll	存储部门对应组别的职位总人数
      * @return 返回结果: {@link JSONObject}
      * @author tang
      * @date 创建时间: 2023/2/20
@@ -4046,14 +3265,13 @@ public class TimeZj {
 ////        return result;
 //        return oDates;
 //    }
-    protected JSONObject mergeTaskByPriorODateObj(JSONObject oDateObj,JSONObject grpUNumAll){
+    protected JSONObject mergeTaskByPriorODateObj(JSONObject oDateObj){
         // 创建存储部门序号信息字典
         JSONObject depPrior = new JSONObject();
         // 创建存储删除下标
         JSONArray delDateIndex = new JSONArray();
         System.out.println("开始输出:");
         System.out.println(JSON.toJSONString(oDateObj));
-//        System.out.println(JSON.toJSONString(oTasks));
         // 创建存储更新任务信息
         JSONObject updateTask = new JSONObject();
         Map<String,Order> orderMap = new HashMap<>();
@@ -4070,7 +3288,7 @@ public class TimeZj {
                     String dep = oDate.getString("dep");
                     // 根据组别获取部门
                     int priorItem = oDate.getInteger("priorItem");
-                    oDate.put("grpUNum",getObjGrpUNum(grpB,dep,oDate.getString("id_C"),grpUNumAll));
+                    oDate.put("grpUNum",oDate.getInteger("grpUNum")==null?1:oDate.getInteger("grpUNum"));
                     // 获取类别
                     Integer bmdpt = oDate.getInteger("bmdpt");
                     if (bmdpt == 3 || (oDate.getBoolean("isSto") != null && oDate.getBoolean("isSto"))) {
@@ -4079,32 +3297,35 @@ public class TimeZj {
                         System.out.println("开始输出:物料返回：");
                         continue;
                     }
+
                     int bcdStatus;
-//                    Order orderData;
-//                    String id_O = oDate.getString("id_O");
-//                    // 判断不为空
-//                    if (null == orderMap.get(id_O)) {
-//                        // 调用方法获取订单信息
-//                        orderData = qt.getMDContent(id_O,"action", Order.class);
-//                        orderMap.put(id_O,orderData);
-//                    } else {
-//                        orderData = orderMap.get(id_O);
-//                    }
-//                    if (null == orderData || null == orderData.getAction()) {
-//                        System.out.println("开始输出:为空返回："+id_O);
-//                        continue;
-//                    }
-//                    // 获取进度卡片数据
-//                    JSONObject actionNew = orderData.getAction();
-//                    // 获取进度信息
-//                    JSONArray objAction = actionNew.getJSONArray("objAction");
-//                    bcdStatus = objAction.getJSONObject(oDate.getInteger("index")).getInteger("bcdStatus");
-//                    if (bcdStatus == 2 || bcdStatus == 8) {
-//                        // 添加当前下标
-//                        delDateIndex.add(i);
-//                        System.out.println("开始输出:完成后返回：");
-//                        continue;
-//                    }
+                    Order orderData;
+                    String id_O = oDate.getString("id_O");
+                    // 判断不为空
+                    if (!orderMap.containsKey(id_O)) {
+                        // 调用方法获取订单信息
+                        orderData = qt.getMDContent(id_O,"action", Order.class);
+                        orderMap.put(id_O,orderData);
+                    } else {
+                        orderData = orderMap.get(id_O);
+                    }
+                    if (null == orderData || null == orderData.getAction()
+                            || null == orderData.getAction().getJSONArray("objAction")
+                            || null == orderData.getAction().getJSONArray("objAction")
+                            .getJSONObject(oDate.getInteger("index"))) {
+                        System.out.println("开始输出:为空返回："+id_O);
+                    } else {
+                        // 获取进度信息
+                        bcdStatus = orderData.getAction().getJSONArray("objAction")
+                                .getJSONObject(oDate.getInteger("index")).getInteger("bcdStatus");
+                        if (bcdStatus == 2 || bcdStatus == 8) {
+                            // 添加当前下标
+                            delDateIndex.add(i);
+                            System.out.println("开始输出:完成后返回：");
+                            continue;
+                        }
+                    }
+
                     Long wntDur = oDate.getLong("wntDur");
                     Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
                     // 存储任务总时间
@@ -4200,14 +3421,230 @@ public class TimeZj {
                     int index = delDateIndex.getInteger(i);
                     oDates.remove(index);
                 }
-//                System.out.println("删除后输出-2:");
-//                System.out.println(JSON.toJSONString(oDates));
                 pratInfo.put("oDates",oDates);
                 prodObj.put(prodId,pratInfo);
                 oDateObj.put(layer,prodObj);
             }
         }
         return oDateObj;
+    }
+    protected void mergeDelSumMaxTimeByODateObj(String id_OP,JSONObject oDateObj){
+        // 创建存储部门序号信息字典
+        JSONObject depPrior = new JSONObject();
+        System.out.println("开始oDateObj:");
+        System.out.println(JSON.toJSONString(oDateObj));
+        Map<String,Order> orderMap = new HashMap<>();
+        for (String layer : oDateObj.keySet()) {
+            JSONObject prodObj = oDateObj.getJSONObject(layer);
+            System.out.println("layer:"+layer);
+            for (String prodId : prodObj.keySet()) {
+                // 创建存储更新任务信息
+                JSONObject updateTask = new JSONObject();
+                JSONObject pratInfo = prodObj.getJSONObject(prodId);
+                System.out.println("id_PF:"+prodId);
+                JSONArray oDates = pratInfo.getJSONArray("oDates");
+                // 创建存储删除下标
+                JSONArray delDateIndex = new JSONArray();
+                System.out.println("oDates-开始:");
+                System.out.println(JSON.toJSONString(oDates));
+                // 遍历获取递归存储的时间处理信息
+                for (int i = 0; i < oDates.size(); i++) {
+                    // 获取i对应的时间处理信息
+                    JSONObject oDate = oDates.getJSONObject(i);
+                    String grpB = oDate.getString("grpB");
+                    String dep = oDate.getString("dep");
+                    // 根据组别获取部门
+                    int priorItem = oDate.getInteger("priorItem");
+                    oDate.put("grpUNum",oDate.getInteger("grpUNum")==null?1:oDate.getInteger("grpUNum"));
+                    // 获取类别
+                    Integer bmdpt = oDate.getInteger("bmdpt");
+                    if (bmdpt == 3) {
+                        // 添加当前下标
+//                        delDateIndex.add(i);
+                        delDateIndex.add(qt.setJson("index",i,"type",0));
+                        System.out.println("输出:物料返回");
+                        continue;
+                    }
+                    if ((oDate.getBoolean("isSto") != null && oDate.getBoolean("isSto"))) {
+                        delDateIndex.add(qt.setJson("index",i,"type",1));
+                        System.out.println("输出:使用库存返回");
+                        continue;
+                    }
+
+                    int bcdStatus;
+                    Order orderData;
+                    String id_O = oDate.getString("id_O");
+                    // 判断不为空
+                    if (!orderMap.containsKey(id_O)) {
+                        // 调用方法获取订单信息
+                        orderData = qt.getMDContent(id_O,"action", Order.class);
+                        orderMap.put(id_O,orderData);
+                    } else {
+                        orderData = orderMap.get(id_O);
+                    }
+                    if (null == orderData || null == orderData.getAction()
+                            || null == orderData.getAction().getJSONArray("objAction")
+                            || null == orderData.getAction().getJSONArray("objAction")
+                            .getJSONObject(oDate.getInteger("index"))) {
+//                        System.out.println("开始输出:为空返回："+id_O);
+                    } else {
+                        // 获取进度信息
+                        bcdStatus = orderData.getAction().getJSONArray("objAction")
+                                .getJSONObject(oDate.getInteger("index")).getInteger("bcdStatus");
+                        if (bcdStatus == 2 || bcdStatus == 8) {
+                            // 添加当前下标
+                            delDateIndex.add(qt.setJson("index",i,"type",2));
+                            System.out.println("输出:进度已完成返回");
+                            continue;
+                        }
+                    }
+
+                    if (bmdpt == 2) {
+                        oDates.set(i,oDate);
+                        continue;
+                    }
+                    Long wntDur = oDate.getLong("wntDur");
+                    Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
+                    // 存储任务总时间
+                    long taskTotalTime = (long)(wntDur * wn2qtyneed);
+                    long wntDurTotal;
+                    // 计算总时间
+                    if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {
+                        wntDurTotal = taskTotalTime / oDate.getInteger("grpUNum");
+                    } else {
+                        wntDurTotal = (long) Math.ceil((double) (taskTotalTime / oDate.getInteger("grpUNum")));
+                    }
+                    oDate.put("wntDurTotal",wntDurTotal);
+
+                    // 获取部门的信息
+                    JSONObject grpBPrior = depPrior.getJSONObject(dep);
+                    // 定义存储任务数据和任务信息
+                    JSONObject priorMap;
+                    // 判断为空
+                    if (null == grpBPrior) {
+                        // 添加新数据
+                        grpBPrior = new JSONObject();
+                        priorMap = new JSONObject();
+                        JSONObject priorInfo = new JSONObject();
+                        priorInfo.put("oDate",oDate);
+                        priorInfo.put("index",i);
+                        priorMap.put(priorItem + "",priorInfo);
+                    }
+                    else {
+                        // 获取组别的信息
+                        priorMap = grpBPrior.getJSONObject(grpB);
+                        // 判断为空
+                        if (null == priorMap) {
+                            // 创建新的
+                            priorMap = new JSONObject();
+                            JSONObject priorInfo = new JSONObject();
+                            priorInfo.put("oDate",oDate);
+                            priorInfo.put("index",i);
+                            priorMap.put(priorItem + "",priorInfo);
+                        } else {
+                            // 获取序号信息
+                            JSONObject priorInfo = priorMap.getJSONObject(priorItem + "");
+                            // 判断为空
+                            if (null == priorInfo) {
+                                priorInfo = new JSONObject();
+                                priorInfo.put("oDate",oDate);
+                                priorInfo.put("index",i);
+                            } else {
+                                System.out.println("进入合并信息:"+i);
+                                System.out.println(JSON.toJSONString(oDate));
+                                System.out.println(JSON.toJSONString(priorInfo));
+                                JSONObject datePrior = priorInfo.getJSONObject("oDate");
+                                // 获取合并任务数据列表
+                                JSONArray mergeDates = datePrior.getJSONArray("mergeDates");
+                                if (null == mergeDates || mergeDates.size() == 0) {
+                                    // 创建列表
+                                    mergeDates = new JSONArray();
+                                    // 添加之前的任务数据信息
+                                    mergeDates.add(qt.setJson("id_O",datePrior.getString("id_O")
+                                            ,"index",datePrior.getInteger("index")
+                                            ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+                                            ,"wntPrep",datePrior.getLong("wntPrep")));
+                                }
+                                // 添加当前下标
+//                                delDateIndex.add(i);
+                                delDateIndex.add(qt.setJson("index",i,"type",3));
+                                // 添加当前任务数据信息
+                                mergeDates.add(qt.setJson("id_O",oDate.getString("id_O")
+                                        ,"index",oDate.getInteger("index")
+                                        ,"wntDurTotal",oDate.getLong("wntDurTotal")
+                                        ,"wntPrep",oDate.getLong("wntPrep")));
+                                datePrior.put("mergeDates",mergeDates);
+                                // 更新准备时间
+                                datePrior.put("wntPrep",datePrior.getLong("wntPrep")+oDate.getLong("wntPrep"));
+                                // 更新任务总时间
+                                datePrior.put("wntDurTotal",datePrior.getLong("wntDurTotal")+oDate.getLong("wntDurTotal"));
+                                priorInfo.put("oDate",datePrior);
+                                // 获取之前存储下标
+                                int index = priorInfo.getInteger("index");
+                                // 添加下标到更新
+                                updateTask.put(index+"",datePrior);
+                            }
+                            priorMap.put(priorItem + "",priorInfo);
+                        }
+                    }
+                    // 更新信息
+                    grpBPrior.put(grpB,priorMap);
+                    depPrior.put(dep,grpBPrior);
+                    oDates.set(i,oDate);
+                }
+                System.out.println("oDates-结束:");
+                System.out.println(JSON.toJSONString(oDates));
+                System.out.println("updateTask:");
+                System.out.println(JSON.toJSONString(updateTask));
+                // 遍历更新任务
+                for (String s : updateTask.keySet()) {
+                    oDates.set(Integer.parseInt(s),updateTask.getJSONObject(s));
+                }
+                // 创建存储最大时间
+                long maxTeDurTotal = 0;
+                // 遍历删除任务
+                for (int i = delDateIndex.size()-1; i >= 0; i--) {
+                    JSONObject delInfo = delDateIndex.getJSONObject(i);
+                    int type = delInfo.getInteger("type");
+                    int index = delInfo.getInteger("index");
+                    if (type == 0) {
+                        // 获取时间处理数据
+                        JSONObject oDate = oDates.getJSONObject(index);
+                        // 获取时间处理的实际准备时间
+                        Long wntPrep = oDate.getLong("wntPrep");
+                        Long wntDur = oDate.getLong("wntDur");
+                        Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
+                        // 存储任务总时间
+                        long taskTotalTime = (long)(wntDur * wn2qtyneed);
+                        oDate.put("grpUNum",oDate.getInteger("grpUNum")==null?1:oDate.getInteger("grpUNum"));
+                        long grpUNum;
+                        // 计算总时间
+                        if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {
+                            grpUNum = taskTotalTime / oDate.getInteger("grpUNum");
+                        } else {
+                            grpUNum = (long) Math.ceil((double) (taskTotalTime / oDate.getInteger("grpUNum")));
+                        }
+                        // 获取时间处理的总任务时间
+                        long wntDurTotal = grpUNum+wntPrep;
+                        if (wntDurTotal > maxTeDurTotal) {
+                            maxTeDurTotal = wntDurTotal;
+                        }
+                    }
+                    oDates.remove(index);
+                }
+                System.out.println("oDates-zui:");
+                System.out.println(JSON.toJSONString(oDates));
+                pratInfo.put("oDates",oDates);
+                pratInfo.put("maxTeDurTotal",maxTeDurTotal);
+                prodObj.put(prodId,pratInfo);
+            }
+            oDateObj.put(layer,prodObj);
+        }
+        System.out.println("depPrior:");
+        System.out.println(JSON.toJSONString(depPrior));
+        System.out.println("结束oDateObj:");
+        System.out.println(JSON.toJSONString(oDateObj));
+        qt.setMDContent(id_OP,qt.setJson("casItemx.java.oDateObj",oDateObj), Order.class);
     }
 
     /**
@@ -4425,8 +3862,8 @@ public class TimeZj {
 //    }
     protected String sonGetOrderFatherId(String id_O,String id_C,JSONObject thisInfo,JSONObject actionIdO,JSONObject grpUNumAll){
         JSONObject thisInfoOrderFatherId = getThisInfoOrderFatherId(thisInfo);
-        System.out.println("sonGetOrderFatherId:"+id_O);
-        System.out.println(JSON.toJSONString(thisInfoOrderFatherId));
+//        System.out.println("sonGetOrderFatherId:"+id_O);
+//        System.out.println(JSON.toJSONString(thisInfoOrderFatherId));
         if (null == thisInfoOrderFatherId) {
             thisInfoOrderFatherId = new JSONObject();
         } else {
@@ -4455,9 +3892,13 @@ public class TimeZj {
                 // 返回为空错误信息
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "父订单不存在");
             }
-            JSONObject oDateObj = mergeTaskByPriorODateObj(java.getJSONObject("oDateObj"),grpUNumAll);
+            JSONObject oDateObj = mergeTaskByPriorODateObj(java.getJSONObject("oDateObj"));
             qt.setMDContent(id_O,qt.setJson("casItemx.java.oDateObj",oDateObj), Order.class);
+            System.out.println("sonGetOrderFatherId:添加前:");
+            System.out.println(JSON.toJSONString(actionIdO));
             actionIdO.put(id_O,oDateObj);
+            System.out.println("sonGetOrderFatherId:添加后:");
+            System.out.println(JSON.toJSONString(actionIdO));
             JSONArray objOrder = compOrderInfo.getJSONArray("objOrder");
             for (int i = 0; i < objOrder.size(); i++) {
                 JSONObject obj = objOrder.getJSONObject(i);
@@ -4500,7 +3941,11 @@ public class TimeZj {
     protected void setOrderFatherId(String id_O,JSONObject thisInfo,JSONObject actionIdO
             ,JSONArray objOrder,JSONObject oDateObj
     ){
+        System.out.println("setOrderFatherId:添加前:");
+        System.out.println(JSON.toJSONString(actionIdO));
         actionIdO.put(id_O,oDateObj);
+        System.out.println("setOrderFatherId:添加后:");
+        System.out.println(JSON.toJSONString(actionIdO));
         JSONObject thisInfoOrderFatherId = getThisInfoOrderFatherId(thisInfo);
         if (null == thisInfoOrderFatherId) {
             thisInfoOrderFatherId = new JSONObject();
@@ -4540,5 +3985,14 @@ public class TimeZj {
         thisInfoQuiltConflictInfo.put("operateIndex",result);
         setThisInfoQuiltConflictInfo(thisInfo,thisInfoQuiltConflictInfo);
         return result;
+    }
+    protected void setActionIdOByPf(JSONObject actionIdO,String id_OP,String layer,String id_PF,JSONObject keyVal){
+        JSONObject actByOPInfo = actionIdO.getJSONObject(id_OP);
+        JSONObject layerInfo = actByOPInfo.getJSONObject(layer);
+        JSONObject oPDateInfo = layerInfo.getJSONObject(id_PF);
+        oPDateInfo.putAll(keyVal);
+        layerInfo.put(id_PF,oPDateInfo);
+        actByOPInfo.put(layer,layerInfo);
+        actionIdO.put(id_OP,actByOPInfo);
     }
 }

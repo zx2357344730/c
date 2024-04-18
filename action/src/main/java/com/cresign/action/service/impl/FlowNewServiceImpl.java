@@ -67,7 +67,8 @@ public class FlowNewServiceImpl implements FlowNewService {
 
     @Override
     @Transactional(noRollbackFor = ResponseException.class)
-    public ApiResponse getDgResult(String id_OParent, String id_U, String myCompId, Long teStart, String divideOrder) {
+    public ApiResponse getDgResult(String id_OParent, String id_U, String myCompId, Long teStart, String divideOrder
+            ,boolean setOrder) {
         // **System.out.println("开始时间:");
         // **System.out.println(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         // 调用方法获取订单信息
@@ -196,7 +197,6 @@ public class FlowNewServiceImpl implements FlowNewService {
         // before getting so many id_A, get myComp id_A first for future use
         Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
         List<Order> addOrder = new ArrayList<>();
-        boolean isSet = true;
         // 遍历键，并创建采购单
         for (String thisOrderId : actionCollection) {
 
@@ -339,17 +339,17 @@ public class FlowNewServiceImpl implements FlowNewService {
             }
 
             if (id_OParent.equals(thisOrderId)) {
-                System.out.println("-创建主订单-写入?:"+isSet);
+                System.out.println("-创建主订单-写入?:"+ setOrder);
                 System.out.println(JSON.toJSONString(casItemData));
                 // make sales order Action
-                if (isSet) {
+                if (setOrder) {
                     this.updateSalesOrder(casItemData, unitAction, unitOItem, salesOrderData, grpBGroup, grpGroup, prodCompId
-                            , oDates,isSet);
+                            , oDates, setOrder);
                 }
             } else {
-                System.out.println("创建子订单-写入?:"+isSet);
+                System.out.println("创建子订单-写入?:"+ setOrder);
                 // else make Purchase Order
-                if (isSet) {
+                if (setOrder) {
                     // 创建订单
                     Order newPO = new Order();
 
@@ -425,7 +425,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             }
         }
         System.out.println(JSON.toJSONString(oDateObj));
-        if (isSet) {
+        if (setOrder) {
             qt.setMDContent(id_OParent,qt.setJson("casItemx.java.oDateObj",oDateObj), Order.class);
             qt.addAllMD(addOrder);
         }
