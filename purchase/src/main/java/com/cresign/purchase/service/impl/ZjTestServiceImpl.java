@@ -20,6 +20,7 @@ import com.cresign.tools.pojo.es.*;
 import com.cresign.tools.pojo.po.*;
 import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
+import com.cresign.tools.request.HttpClientUtil;
 import com.cresign.tools.uuid.UUID19;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -2348,11 +2349,14 @@ public class ZjTestServiceImpl implements ZjTestService {
 
     @Override
     public ApiResponse aiAskingQuestions(String user, String desc) {
-        String s = HttpClientUtils.httpPostAndHead("https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/AI"
-                , qt.setJson("user", user,"desc",desc,"appId","__UNI__F0B4F02","key","cresign_6601bcc7e591e106e87fce73_ai")
-                , qt.setJson("token", "token"));
-        System.out.println("结果:");
-        System.out.println(s);
+//        String s = HttpClientUtils.httpPostAndHead("https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/AI"
+//                , qt.setJson("user", user,"desc",desc,"appId","__UNI__F0B4F02","key","cresign_6601bcc7e591e106e87fce73_ai")
+//                , qt.setJson("token", "token"));
+        String s = HttpClientUtil.sendPost(qt.setJson("user", user,"desc",desc,"appId","__UNI__F0B4F02"
+                ,"key","cresign_6601bcc7e591e106e87fce73_ai")
+                ,"https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/AI");
+//        System.out.println("结果:");
+//        System.out.println(s);
         return retResult.ok(CodeEnum.OK.getCode(),s);
     }
 
