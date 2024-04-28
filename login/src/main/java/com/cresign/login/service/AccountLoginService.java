@@ -27,7 +27,7 @@ public interface AccountLoginService {
     //2.前端扫码带着Token来验证（或者是进来我验证它的WebSocket_id？）
     //3. 成功就拿到id_U，去查询他最近登录的公司，返回登录数据
 
-    ApiResponse generateLoginCode(String id);
+    ApiResponse generateLoginCode(String id_U,String client);
 
     ApiResponse scanLoginCode(String id, String id_U);
 

@@ -841,7 +841,7 @@ public class HrServiceImpl implements HrService {
         // 添加总上班时间
         result.put("taAll",totalTime);
         // 添加普通上班时间
-        result.put("taDur",ordinaryWorkTime);
+        result.put("teDur",ordinaryWorkTime);
         // 添加迟到时间
         result.put("taLate",lateTime);
         // 添加迟到次数

@@ -50,7 +50,7 @@ public class LogController {
     @PostMapping("/v1/sendLoginDesc")
     public void sendLoginDesc(@RequestBody JSONObject reqJson) {
         WebSocketLoginServer.sendInfo(
-                reqJson.getString("id"),
+                reqJson.getString("id_U"),reqJson.getString("client"),
                 reqJson.getJSONObject("infoData"));
     }
 

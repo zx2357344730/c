@@ -84,7 +84,7 @@ public class AccountLoginController {
     public ApiResponse generateLoginCode(@RequestBody JSONObject reqJson) {
         try {
             return accountLoginService.generateLoginCode(
-                    reqJson.getString("id")
+                    reqJson.getString("id_U"),reqJson.getString("client")
             );
         } catch (Exception e) {
             return getUserIdByToken.err(reqJson, "AccountLoginController.generateLoginCode", e);

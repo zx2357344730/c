@@ -265,11 +265,12 @@ public class AccountLoginServiceImpl implements AccountLoginService {
     }
 
     @Override
-    public ApiResponse generateLoginCode(String id) {
+    public ApiResponse generateLoginCode(String id_U,String client) {
 
         String token = UUID19.uuid();
 
-        qt.putRDHashMany(SCANCODE_LOGINCOMP, token, qt.setJson("id", id, "tmk",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()),
+        qt.putRDHashMany(SCANCODE_LOGINCOMP, token
+                , qt.setJson("id_U", id_U,"client",client, "tmk",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()),
         "wntDur", "300"), 300L);
         String url = QR_URL + token;
         return retResult.ok(CodeEnum.OK.getCode(), url);
@@ -304,15 +305,15 @@ public class AccountLoginServiceImpl implements AccountLoginService {
         JSONObject result = loginResult.allResult(user, "web", "web");
         System.out.println("result = " + result);
         //判断redis里面有  webSocket_id键
-        if (entries.containsKey("id")){
+        if (entries.containsKey("id_U")){
             //1.是否链接成功
-            System.out.println(entries.get("id"));
+            System.out.println(entries.get("id_U"));
                 JSONObject reqJson = new JSONObject();
-                reqJson.put("id",entries.get("id"));
+                reqJson.put("id_U",entries.get("id_U"));
+                reqJson.put("client",entries.get("client"));
                 reqJson.put("infoData",JSON.toJSONString(result));
                 //发送消息体
                 wsLoginClient.sendLoginDesc(reqJson);
-
         }
 
         return retResult.ok(CodeEnum.OK.getCode(), null);

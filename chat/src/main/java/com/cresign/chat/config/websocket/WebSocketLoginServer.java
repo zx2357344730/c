@@ -2,6 +2,10 @@ package com.cresign.chat.config.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.chat.utils.AesUtil;
+import com.cresign.chat.utils.RsaUtil;
+import com.cresign.tools.pojo.po.LogFlow;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.OnClose;
@@ -14,15 +18,16 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
+import io.netty.channel.ChannelHandler.Sharable;
 
 /**
  * @author tangzejin
- * @updated 2019/8/23
  * @ver 1.0.0
  * ##description: 微信登录websocket
  */
-@ServerEndpoint("/wsU/login/{id}")
+@ServerEndpoint("/wsU/login/{id_U}/{publicKey}/{client}")
 @Component
+@Sharable
 public class WebSocketLoginServer {
 
     @Override
@@ -34,104 +39,96 @@ public class WebSocketLoginServer {
     public native int hashCode();
 
     /**
-     * 用来存储每个产品的WebSocket单独连接
-     */
-    private static CopyOnWriteArraySet<WebSocketLoginServer> webSocketSet;
-
-    /**
      * 用来存储所有产品的连接
      */
-    private static final Map<String,CopyOnWriteArraySet<WebSocketLoginServer>> map = new HashMap<>(16);
+    private static final Map<String,WebSocketLoginServer> map = new HashMap<>(16);
+    private static final Map<String,JSONObject> keyJava = new HashMap<>(16);
+    private static final Map<String,String> keyWeb = new HashMap<>(16);
 
     /**
      * 用来存储所有产品连接的在线人数
      */
     private static final Map<String,Integer> onlineCount = new HashMap<>(16);
 
-//    /**
-//     * 用来存储支付状态
-//     */
-//    private static final Map<String,Integer> mapStatus = new HashMap<>(ChatConstants.HASH_MAP_DEFAULT_LENGTH);
-
     /**
      * 与某个客户端的连接会话，需要通过它来给客户端发送数据
      */
     private Session session;
 
+    private String thisId;
+
     /**
      * 连接建立成功调用的方法
      * @param session	连接用户的session
-
-     * @return void    返回结果
      * @author tang
      * @ver 1.0.0
      * ##Updated: 2020/8/5 10:49
      */
     @OnOpen
     public void onOpen(Session session
-            ,@PathParam("id") String id) {
-
-        // 根据prodID获取产品连接
-        CopyOnWriteArraySet<WebSocketLoginServer> writeArraySet = map.get(id);
+            ,@PathParam("id_U") String id_U,@PathParam("publicKey") String publicKey
+            ,@PathParam("client")String client) {
+        this.thisId = id_U+"_"+client;
         // 获取当前用户session
         this.session = session;
-
-        // 判断是否有prodID的连接
-        if (writeArraySet==null){
-            // 没有，则新建一个prodID的连接
-            writeArraySet = new CopyOnWriteArraySet<>();
-        }
+        // 字符串转换
+        String s = publicKey.replaceAll(",", "/");
+        s = s.replaceAll("%20"," ");
+        String replace = s.replace("-----BEGIN PUBLIC KEY-----", "");
+        String frontEndPublicKey = replace.replace("-----END PUBLIC KEY-----", "");
+        keyWeb.put(this.thisId,frontEndPublicKey);
+        // 获取后端私钥
+        String privateKeyJava = RsaUtil.getPrivateKey();
+        // 获取后端公钥
+        String publicKeyJava = RsaUtil.getPublicKey();
+        // 创建存储后端公钥私钥
+        JSONObject javaKey = new JSONObject();
+        javaKey.put("private",privateKeyJava);
+        javaKey.put("public",publicKeyJava);
+        keyJava.put(this.thisId,javaKey);
         // 加入set中
-        writeArraySet.add(this);
+        map.put(this.thisId,this);
         // 在线数加1
-        addOnlineCount(id);
-
-        // 添加一个prodID连接
-        map.put(id,writeArraySet);
-
-//        try {
-//            Thread.sleep(5000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-
-
-        // 加密logContent数据
-        JSONObject stringMap = new JSONObject();
-        stringMap.put("key",id);
-        stringMap.put("en",false);
-        this.sendMessage(stringMap);
+        addOnlineCount(this.thisId);
+        System.out.println("----- login-ws打开 -----:" + ",id_U:" + id_U+",端:"+client);
+        // 创建回应前端日志
+        LogFlow logContent = LogFlow.getInstance();
+        logContent.setId(null);
+        logContent.setZcndesc(null);
+        logContent.setTmd(null);
+        logContent.setId_C(null);
+        logContent.setId_U(id_U);
+        logContent.setLogType("key");
+        logContent.setTzone(null);
+        ///////////////////////...
+        JSONObject data = new JSONObject();
+        data.put("client",client);
+        // 携带后端公钥
+        data.put("publicKeyJava", javaKey.getString("public"));
+        logContent.setData(data);
+        // 发送到前端
+        this.encryptSendMsg(logContent,true,frontEndPublicKey);
+//        // 加密logContent数据
+//        JSONObject stringMap = new JSONObject();
+//        stringMap.put("key",id);
+//        stringMap.put("en",false);
+//        this.sendMessage(stringMap);
     }
 
     /**
      * 连接关闭调用的方法
-
-     * @return void    返回结果
      * @author tang
      * @ver 1.0.0
      * ##Updated: 2020/8/5 10:50
      */
     @OnClose
-    public void onClose(@PathParam("id") String id) {
-
-        // 获取当前产品连接
-        webSocketSet = map.get(id);
-
-        // 删除用户自己的连接
-        webSocketSet.remove(this);
-
+    public void onClose(@PathParam("id_U") String id_U) {
         // 在线数减1
-        subOnlineCount(id);
-
-        // 获取当前在线人数
-        int pplCount = getOnlineCount(id);
-
-        // 如果在线人数为0，则删除产品连接
-        if (pplCount==0){
-
-            // 删除连接
-            map.remove(id);
-        }
+        subOnlineCount(this.thisId);
+        // 删除连接
+        map.remove(this.thisId);
+        keyWeb.remove(this.thisId);
+        keyJava.remove(this.thisId);
     }
 
     /**
@@ -144,21 +141,17 @@ public class WebSocketLoginServer {
      */
     @OnError
     public void onError(Throwable error) {
-
         // 输出错误信息
-        System.out.println("websocket出现错误:"+error.getMessage());
+        System.out.println("websocket-login出现错误:"+error.getMessage());
     }
 
     /**
      * 实现服务器主动推送
-     * @return void    返回结果
      * @author tang
      * @ver 1.0.0
      * ##Updated: 2020/8/5 10:51
      */
-
     private synchronized void sendMessage(JSONObject stringMap) {
-
         // 向前端推送log消息
         try {
             this.session.getBasicRemote().sendText(JSON.toJSONString(stringMap));
@@ -168,34 +161,35 @@ public class WebSocketLoginServer {
     }
 
     /**
-     * 群发自定义消息
-     * @return void    返回结果
+     * 发送自定义消息
      * @author tang
      * @ver 1.0.0
      * ##Updated: 2020/8/5 10:52
      */
-    public static void sendInfo(String id,JSONObject infoData) {
-        // 根据角色获取要发送的连接
-        webSocketSet = map.get(id);
+    public static void sendInfo(String id_U,String client,JSONObject infoData) {
+        String thisId = id_U+"_"+client;
         // 判断连接不为空
-        if (webSocketSet != null) {
+        if (map.containsKey(thisId)) {
+            // 创建回应前端日志
+            LogFlow logContent = LogFlow.getInstance();
+            logContent.setId(null);
+            logContent.setZcndesc(null);
+            logContent.setTmd(null);
+            logContent.setId_C(null);
+            logContent.setId_U(id_U);
+            logContent.setLogType("successLogin");
+            logContent.setTzone(null);
+            ///////////////////////...
+            JSONObject data = new JSONObject();
+            data.put("client",client);
+            // 携带后端公钥
+            data.put("infoData", infoData);
+            logContent.setData(data);
             // 循环遍历产品连接，并向所有连接人发送信息
-            webSocketSet.forEach(item -> item.sendMessage(infoData));
+//            map.get(thisId).sendMessage(infoData);
+            map.get(thisId).encryptSendMsg(logContent,true,keyWeb.get(thisId));
         }
     }
-
-//    /**
-//     * 获取id是否连接成功
-//     * @param id    连接编号
-//     * @return boolean  返回结果: 结果
-//     * @author tang
-//     * @ver 1.0.0
-//     * @date 2021/7/27 18:27
-//     */
-//    public static boolean isConnect(String id){
-//        System.out.println("map.get(id)");
-//        return false;
-//    }
 
     /**
      * 根据prodID获取该连接的总在线人数
@@ -248,4 +242,40 @@ public class WebSocketLoginServer {
         // 把减一后的在线人数设置回去
         onlineCount.put(key,nol);
     }
+
+    private synchronized void encryptSendMsg(LogFlow logData,boolean isEncrypt,String frontEndPublicKey) {
+        try {
+            JSONObject stringMap = new JSONObject();
+            if (isEncrypt) {
+                //每次响应之前随机获取AES的key，加密data数据
+                String key = AesUtil.getKey();
+                // 根据key加密logContent数据
+                String data2 = AesUtil.encrypt(JSON.toJSONString(logData), key);
+                // 添加到返回map
+                stringMap.put("data", data2);
+                stringMap.put("en", true);
+                //用前端的公钥来解密AES的key，并转成Base64
+                // 使用前端公钥加密key
+                String aesKey = Base64.encodeBase64String(RsaUtil.encryptByPublicKey(key.getBytes()
+                        , frontEndPublicKey));
+                // 添加加密数据到返回集合
+                stringMap.put("aesKey", aesKey);
+            } else {
+                stringMap.put("key", "2");
+                stringMap.put("en", false);
+            }
+            // 向前端推送log消息
+            if (!this.session.isOpen()) {
+                System.out.println("消息发送失败，session 处于关闭状态:" + session.getId());
+                return;
+            }
+            // 发送返回数据 ******* send HERE
+            this.session.getBasicRemote().sendText(JSON.toJSONString(stringMap));
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException("encrypt failed");
+        }
+    }
+
 }

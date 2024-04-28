@@ -24,8 +24,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @ClassName WebSocketServer
- * @Description 作者很懒什么也没写
- * @authortang
+ * @Description 这个是连接python的websocket，和java连接不一样
+ * @author tang
  * @Date 2022/3/1 11:28
  * @ver 1.0.0
  */
@@ -81,7 +81,8 @@ public class WebSocketServerPi {
      * @updated 2020/8/5 9:14:20
      */
     @OnOpen
-    public void onOpen(Session session,@PathParam("name") String name,@PathParam("publicKey") String publicKey){
+    public void onOpen(Session session,@PathParam("name") String name
+            ,@PathParam("publicKey") String publicKey){
         System.out.println("进入ws打开:");
         // 判断是否有prodID的连接
         if (webSocketSet==null) {
