@@ -246,4 +246,15 @@ public class TaskController {
         }
     }
 
+    @SecurityParameter
+    @PostMapping("/v1/getAtFirstEasy")
+    public ApiResponse getAtFirstEasy(@RequestBody JSONObject reqJson){
+        try {
+            return timeZjService.getAtFirstEasy(reqJson.getString("id_O"), reqJson.getLong("teStart"),
+                    reqJson.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.getAtFirstEasy", e);
+        }
+    }
+
 }

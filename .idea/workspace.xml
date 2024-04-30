@@ -13,17 +13,6 @@
       <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceImplX.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceImplX.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceNewImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceNewImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceTimeConflictImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceTimeConflictImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/utils/TaskObj.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/utils/TaskObj.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/resources/bootstrap.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketLoginServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketLoginServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketServerPi.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketServerPi.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/config/websocket/WebSocketUserServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/controller/LogController.java" beforeDir="false" afterPath="$PROJECT_DIR$/chat/src/main/java/com/cresign/chat/controller/LogController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/AccountLoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/AccountLoginController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/AccountLoginService.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/AccountLoginService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/AccountLoginServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/AccountLoginServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/HrServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/HrServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/purchase/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/resources/bootstrap.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,7 +77,7 @@
       <recent name="com.cresign.action.utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.GatewayApp">
+  <component name="RunManager" selected="Application.ActionApp">
     <configuration name="ActionApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.cresign.action.ActionApp" />
       <module name="action" />
@@ -183,8 +172,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.GatewayApp" />
         <item itemvalue="Application.ActionApp" />
+        <item itemvalue="Application.GatewayApp" />
         <item itemvalue="Application.PurchaseApp" />
         <item itemvalue="Application.LoginApp" />
         <item itemvalue="Application.Chat2App" />

@@ -993,7 +993,6 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
         // 判断处理状态为空或者为0
         if (null == operationState || 0 == operationState) {
             // 调用方法更新aArrange卡片操作状态接口
-//            updateArrangeState(1,assetId);
             updateArrangeState(1,asset.getId());
         } else {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_TASK_PROCESSING.getCode(), "资产时间正在处理中");
