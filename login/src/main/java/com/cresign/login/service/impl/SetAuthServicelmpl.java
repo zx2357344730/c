@@ -7,8 +7,6 @@ import com.cresign.login.service.SetAuthService;
 import com.cresign.login.utils.Oauth;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
-import com.cresign.tools.authFilt.AuthCheck;
-import com.cresign.tools.dbTools.DbUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.ErrEnum;
@@ -108,7 +106,7 @@ public class SetAuthServicelmpl implements SetAuthService {
         // 返回的card列表数据
         JSONObject cardArray = asset.getRole().getJSONObject("objData").getJSONObject(grpU).getJSONObject(listType).getJSONObject(grp).getJSONObject("card");
 
-        if (ObjectUtils.isEmpty(cardArray)) {
+        if (null == cardArray) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null);
         }
 

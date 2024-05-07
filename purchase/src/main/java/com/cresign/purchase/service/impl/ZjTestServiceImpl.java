@@ -11,7 +11,6 @@ import com.cresign.tools.dbTools.CosUpload;
 import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.dbTools.Qt;
 import com.cresign.tools.dbTools.Ws;
-import com.cresign.tools.encrypt.HttpClientUtils;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.ErrEnum;
@@ -2348,15 +2347,14 @@ public class ZjTestServiceImpl implements ZjTestService {
     }
 
     @Override
-    public ApiResponse aiAskingQuestions(String user, String desc) {
+    public ApiResponse aiQuesting(String user, String desc) {
 //        String s = HttpClientUtils.httpPostAndHead("https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/AI"
 //                , qt.setJson("user", user,"desc",desc,"appId","__UNI__F0B4F02","key","cresign_6601bcc7e591e106e87fce73_ai")
 //                , qt.setJson("token", "token"));
         String s = HttpClientUtil.sendPost(qt.setJson("user", user,"desc",desc,"appId","__UNI__F0B4F02"
                 ,"key","cresign_6601bcc7e591e106e87fce73_ai")
                 ,"https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/AI");
-//        System.out.println("结果:");
-//        System.out.println(s);
+
         return retResult.ok(CodeEnum.OK.getCode(),s);
     }
 

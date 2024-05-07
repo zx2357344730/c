@@ -235,8 +235,6 @@ public class RedirectController {
         try {
             return redirectService.scanJoinCompCode(
                     reqJson.getString("token"),
-                    //"t3RCVlkDOMTuyNeNhIx",
-                    //"60dd20a5d8555e3fdbba4ccc"
                     getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"))
             );
         } catch (Exception e) {

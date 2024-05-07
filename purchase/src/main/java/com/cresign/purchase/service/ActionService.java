@@ -4,8 +4,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 
-import java.io.IOException;
-
 public interface ActionService {
 
     /**
@@ -35,7 +33,7 @@ public interface ActionService {
 
     ApiResponse taskToProd(JSONObject tokData, String id_O, Integer index, String id_P);
 
-    ApiResponse getRefOPList(String id_Flow, Boolean isSL, String id_C);
+//    ApiResponse getRefOPList(String id_Flow, Boolean isSL, String id_C);
 
     ApiResponse up_FC_action_grpB(String id_C, String id_O, String dep, String depMain, String logType,
                                   String id_Flow, JSONObject wrdFC, JSONArray grpB, JSONArray wrdGrpB);
@@ -62,7 +60,7 @@ public interface ActionService {
     ApiResponse createTaskNew(String logType, String id, String id_FS, String id_O, String myCompId, String id_U, String grpU,
                            String dep, JSONObject oItemData, JSONObject wrdNU);
 
-    String createQuest(JSONObject tokData, String id_O, Integer index, String id_Prob, String id_FC, String id_FQ, JSONObject probData);
+    String createQuest(JSONObject assetCollection, JSONObject tokData, String id_O, Integer index, String id_Prob, String id_FC, String id_FQ, JSONObject probData);
 
     ApiResponse getFlowList(String id_C, String grpB);
 

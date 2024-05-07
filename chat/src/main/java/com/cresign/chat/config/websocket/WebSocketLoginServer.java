@@ -183,7 +183,7 @@ public class WebSocketLoginServer {
             JSONObject data = new JSONObject();
             data.put("client",client);
             // 携带后端公钥
-            data.put("infoData", infoData);
+            data.put("infoData", infoData.getJSONObject("infoData"));
             logContent.setData(data);
             // 循环遍历产品连接，并向所有连接人发送信息
 //            map.get(thisId).sendMessage(infoData);

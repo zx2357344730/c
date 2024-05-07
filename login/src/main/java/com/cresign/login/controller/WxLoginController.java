@@ -1,6 +1,5 @@
 package com.cresign.login.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.service.WxLoginService;
 import com.cresign.tools.annotation.SecurityParameter;

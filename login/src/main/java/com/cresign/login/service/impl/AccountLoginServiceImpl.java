@@ -282,23 +282,23 @@ public class AccountLoginServiceImpl implements AccountLoginService {
 
         Boolean hasKey = qt.hasRDKey(SCANCODE_LOGINCOMP, token);
 
+        if (id_U == null || id_U.equals("5f28bf314f65cc7dc2e60262"))
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_IS_NO_FOUND.getCode(), null);
+        }
+
         if (!hasKey) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGIN_CODE_OVERDUE.getCode(),null);
         }
 
         // 获取到整个hash
-//        Map<Object, Object> entries = redisTemplate0.opsForHash().entries(keyName);
-//        Map<Object, Object> entries = ;
+
         Map<Object, Object> entries = qt.getRDHashAll(SCANCODE_LOGINCOMP,token);
 
-//        Query query = new Query(Criteria.where("_id").is(id_U));
-//
-//        // 创建Auth对象存放查询后的结果
-//        User user = mongoTemplate.findOne(query, User.class);
         User user = qt.getMDContent(id_U,qt.strList("rolex","info"), User.class);
         if (user == null)
         {
-            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_IS_NO_FOUND.getCode(), null);
         }
 
         // 返回json数据给前端

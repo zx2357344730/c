@@ -32,8 +32,9 @@ import java.util.Map;
 
 /**
  * @author tangzejin
+ * @updated 2019/8/23
  * @ver 1.0.0
- * ##description: 群聊天websocket类，这个是连接java的websocket，和python连接不一样
+ * ##description: 群聊天websocket类
  */
 @ServerEndpoint("/wsU/msg/{uId}/{publicKey}/{token}/{appId}/{client}")
 @Component
@@ -108,8 +109,7 @@ public class WebSocketUserServer implements RocketMQListener<String> {
             // 判断端信息为空
             if (null == cliInfo) {
                 cliInfo = new JSONObject();
-            }
-            else {
+            } else {
                 JSONObject wsData = cliInfo.getJSONObject("wsData");
                 if (null != wsData) {
                     // 获取mq编号
@@ -128,7 +128,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                         logData.setSubType("Offline");
                         JSONObject data = new JSONObject();
                         data.put("client",client);
-                        data.put("appId",appIdOld);
                         logData.setData(data);
                         // 判断mq编号等于当前mq编号
                         if (mqKey.equals(mqKeyOld)) {

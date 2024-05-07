@@ -14,7 +14,6 @@ import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Info;
-import com.cresign.tools.pojo.po.InitJava;
 import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.assetCard.MainMenuBO;
 import com.cresign.tools.pojo.po.assetCard.SubMenuBO;

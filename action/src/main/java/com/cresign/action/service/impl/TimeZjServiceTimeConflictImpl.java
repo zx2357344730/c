@@ -2133,6 +2133,10 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                                 System.out.println("进入这里--=8");
                                                 setThisInfoTimeCount(thisInfo);
                                             } else {
+//                                                // 获取余剩总时间（当前任务总时间-时间差）
+//                                                remainingTime = task.getWntDurTotal() - timeDifference;
+//                                                // 更新当前任务总时间
+//                                                task.setWntDurTotal(remainingTime);
                                                 // 任务余剩时间累减
                                                 zon -= task.getWntDurTotal();
                                                 System.out.println(JSON.toJSONString(tasks));

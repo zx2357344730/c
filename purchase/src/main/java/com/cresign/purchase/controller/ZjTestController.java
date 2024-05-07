@@ -647,13 +647,13 @@ public class ZjTestController {
     }
 
     @SecurityParameter
-    @PostMapping("/v1/aiAskingQuestions")
-    public ApiResponse aiAskingQuestions(@RequestBody JSONObject resJson) {
+    @PostMapping("/v1/aiQuesting")
+    public ApiResponse aiQuesting(@RequestBody JSONObject resJson) {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
-            return zjService.aiAskingQuestions(resJson.getString("user"),resJson.getString("desc"));
+            return zjService.aiQuesting(resJson.getString("user"),resJson.getString("desc"));
         } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "ZjTestController.aiAskingQuestions", e);
+            return getUserToken.err(new JSONObject(), "ZjTestController.aiQuesting", e);
         }
     }
 }

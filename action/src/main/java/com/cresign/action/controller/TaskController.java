@@ -1,6 +1,5 @@
 package com.cresign.action.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.service.TimeZjService;
 import com.cresign.tools.annotation.SecurityParameter;
@@ -243,17 +242,6 @@ public class TaskController {
                     , reqJson.getString("id_C"), reqJson.getString("layer"), reqJson.getString("id_PF"));
         } catch (Exception e) {
             return getUserToken.err(null, "TaskController.getClearOldTask", e);
-        }
-    }
-
-    @SecurityParameter
-    @PostMapping("/v1/getAtFirstEasy")
-    public ApiResponse getAtFirstEasy(@RequestBody JSONObject reqJson){
-        try {
-            return timeZjService.getAtFirstEasy(reqJson.getString("id_O"), reqJson.getLong("teStart"),
-                    reqJson.getString("id_C"));
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "TaskController.getAtFirstEasy", e);
         }
     }
 

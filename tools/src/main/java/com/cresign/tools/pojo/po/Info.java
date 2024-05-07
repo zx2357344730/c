@@ -40,6 +40,7 @@ public class Info {
 
     private JSONObject summx;
 
+    private JSONObject form00s;
 
     private JSONObject picroll00s;
 

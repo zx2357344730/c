@@ -208,6 +208,4 @@ public interface TimeZjService {
     ApiResponse setChKinUserCountByOrder(String id_O,String id_C);
 
 //    ApiResponse delMaterial();
-
-    ApiResponse getAtFirstEasy(String id_O, Long teStart, String id_C);
 }

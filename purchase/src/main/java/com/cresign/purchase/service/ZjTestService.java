@@ -212,5 +212,5 @@ public interface ZjTestService {
      * @param desc  提问内容
      * @return  返回结果
      */
-    ApiResponse aiAskingQuestions(String user,String desc);
+    ApiResponse aiQuesting(String user,String desc);
 }

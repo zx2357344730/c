@@ -384,7 +384,8 @@ public class Ws {
      * MQ - 30 - 30 WS + ES
      */
     public void sendMqOrPush(JSONObject mqGroupId,JSONArray id_Us,LogFlow logContent){
-        if (logContent.getImp() >= 3 && id_Us.size() > 0) {
+        if (logContent.getImp() > 3 && id_Us.size() > 0)
+        {
 
             // 创建存储appId列表
             JSONArray pushApps = new JSONArray();

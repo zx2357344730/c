@@ -16,27 +16,18 @@ import com.cresign.tools.pojo.po.*;
 import com.cresign.tools.pojo.po.assetCard.AssetAStock;
 import com.cresign.tools.pojo.po.assetCard.AssetInfo;
 import com.cresign.tools.reflectTools.ApplicationContextTools;
-import com.mongodb.bulk.BulkWriteResult;
-import com.mongodb.client.result.UpdateResult;
-import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -150,7 +141,9 @@ public class DbUtils {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
+
+
+    public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
                          String id_OP, String refOP, JSONObject wrdN, String id_O, Integer index, Boolean isStart)
 {
     if (id_CB == null)
@@ -161,9 +154,15 @@ public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
         id_FC = "";
     if (id_FS == null)
         id_FS = "";
+    if (id_CB == id_CS)
+        id_CS = "";
 
     Asset assetB = qt.getConfig(id_CB, "a-auth", "flowControl");
     Asset assetS = qt.getConfig(id_CS, "a-auth", "flowControl");
+
+    if (id_CB == id_CS)
+        assetS = qt.cloneThis(assetB, Asset.class);
+
     String refInside = id_O + "_" + index;
 
     JSONObject refOPInfo = qt.setJson("refOP", refOP, "wrdN", wrdN, "index", new JSONArray(), "id_OP", id_OP);
@@ -174,38 +173,37 @@ public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
 
         for (int i = 0; i < assetB.getFlowControl().getJSONArray("objData").size(); i++)
         {
-
             JSONObject flowInfo = assetB.getFlowControl().getJSONArray("objData").getJSONObject(i);
-
             //adding 1 index
             if (flowInfo.getString("id").equals(id_FC) && isStart && refOP != null) {
                 // case 1: id_OP not exists in refOP, init
                 if (flowInfo.getJSONObject("refOP") == null)
                 {
-                    flowInfo.put("refOP", new JSONObject());
-                    qt.errPrint("in refOPNull;");
+                    throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
+//
+//                    flowInfo.put("refOP", new JSONObject());
+//                    qt.errPrint("in refOPNull;");
                 }
-
-//                    if (id_OP.equals(""))
-//                    {
-//                        flowInfo.getJSONObject("refOP").put("id_OP", flowInfo.getString("id_O"));
-//                        refOPInfo.put("id_OP", flowInfo.getString("id_O"));
-//                    }
-
                 // case 2: refOP not exists
-                if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
+                else if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
                 {
+                    //id_OP getES, then put here wrddesc, pic, grp, id_CB, priority, etc
+                    JSONObject extraInfo = qt.getES("lSBOrder", qt.setESFilt("id_O", id_OP)).getJSONObject(0);
+                    qt.upJson(refOPInfo, "wrddesc", extraInfo.getJSONObject("wrddesc"), "pic", extraInfo.getString("pic"),"tmd", extraInfo.getString("tmd"),
+                            "grp", extraInfo.getString("grp"), "priority", extraInfo.getInteger("priority"), "id_CB", extraInfo.getString("id_CB"));
+//                    qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP, refOPInfo, Asset.class);
+
                     flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
-                    qt.errPrint("in refOP not exist, new start");
-                }
+                } else {
 
-                // any case, add this index to index[]
-                if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
+                    // any case, add this index to index[]
+                    if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
                     flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
-
+//                        qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP + ".index", refInside, Asset.class);
+                    }
                 }
-                qt.errPrint("idFC addIndex", flowInfo, id_FC, refOP, id_OP, refOPInfo, wrdN);
-                qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+//                qt.errPrint("idFC addIndex", flowInfo, id_FC, refOP, id_OP, refOPInfo, wrdN);
+                qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i+ ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
                 break;
 
             } // removing now here:
@@ -216,16 +214,13 @@ public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
                 try {
                     if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
                     {
-                        flowInfo.getJSONObject("refOP").remove(refOP);
-                    } else
-                    {
+//                        flowInfo.getJSONObject("refOP").remove(refOP);
+                        qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", refOP), Asset.class);
+                    } else {
                         flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
+//                        qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP + ".index", refInside), Asset.class);
+                        qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
                     }
-
-                    qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
-
-                    break;
-
                 } catch (Exception e) {
                     // here it must have an error flowcontrol
                 }
@@ -243,23 +238,26 @@ public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
                 // case 1: id_OP not exists in refOP, init
                 if (flowInfo.getJSONObject("refOP") == null)
                 {
-                    flowInfo.put("refOP", new JSONObject());
+                    throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
+//                    flowInfo.put("refOP", new JSONObject());
                 }
-//                    if (id_OP.equals(""))
-//                    {
-//                        flowInfo.getJSONObject("refOP").put("id_OP", flowInfo.getString("id_O"));
-//                    }
                 // case 2: refOP not exists
-                if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
+                else if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
                 {
-                    flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
+                    //id_OP getES, then put here wrddesc, pic, grp, id_CB, priority, etc
+                    JSONObject extraInfo = qt.getES("lSBOrder", qt.setESFilt("id_O", id_OP)).getJSONObject(0);
+                    qt.upJson(refOPInfo, "wrddesc", extraInfo.getJSONObject("wrddesc"), "pic", extraInfo.getString("pic"),
+                            "grp", extraInfo.getString("grp"), "priority", extraInfo.getInteger("priority"), "id_CB", extraInfo.getString("id_CB"));
+//                    flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
+                    qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP, refOPInfo, Asset.class);
+                } else {
+                    // any case, add this index to index[]
+                    if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
+//                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
+                        qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP + ".index", refInside, Asset.class);
+                    }
+//                    qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
                 }
-                // any case, add this index to index[]
-                if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
-                    flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
-                }
-                qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
-
                 break;
 
             } // removing now here:
@@ -268,13 +266,14 @@ public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
                 try {
                     if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
                     {
-                        flowInfo.getJSONObject("refOP").remove(refOP);
-                    } else
-                    {
-                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
-                    }
-                    qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP", flowInfo.getJSONObject("refOP")), Asset.class);
+//                        flowInfo.getJSONObject("refOP").remove(refOP);
+                        qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", refOP), Asset.class);
 
+                    } else {
+                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
+                        qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP + ".index", refInside), Asset.class);
+//                        qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
+                    }
                 } catch (Exception e) {
                     // here it must have an error flowcontrol
                 }
@@ -284,6 +283,155 @@ public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
     }
 }
 
+//use this on activateThis, StatusChg, chgDepAndFlow, make sure assetB/assetS is from Controller
+//  qt.setMDContent(assetB.getId(), qt.setJson("flowControl", assetB.getJSONObject(id_CB)), Asset.class);
+    //before that I need to getFlowcontrol and save to assetB.id_C / assetS.id_C
+    public void updateRefOP2(JSONObject assetCollection, String id_CB, String id_CS, String id_FC, String id_FS,
+                            String id_OP, String refOP, JSONObject wrdN, String id_O, Integer index, Boolean isStart)
+    {
+
+        //use the following to get flowControl into assetB.id_CB
+        if (id_CB == null)
+            id_CB = "";
+        if (id_CS == null)
+            id_CS = "";
+        if (id_FC == null)
+            id_FC = "";
+        if (id_FS == null)
+            id_FS = "";
+        if (id_CB == id_CS)
+            id_CS = "";
+//
+//        if (assetB == null) {
+//            assetB = qt.getConfig(id_CB, "a-auth", "flowControl");
+//        }
+//
+//        if (id_CB == id_CS) {
+//            assetS = qt.cloneThis(assetB, Asset.class);
+//        } else if (assetS == null) {
+//            assetS = qt.getConfig(id_CS, "a-auth", "flowControl");
+//        }
+
+        if (id_CB != "" && assetCollection.getJSONObject(id_CB) == null)
+        {
+            assetCollection.put(id_CB, qt.getConfig(id_CB, "a-auth", "flowControl"));
+        }
+        if (id_CB != id_CS && id_CS != "" && assetCollection.getJSONObject(id_CS) == null)
+        {
+            assetCollection.put(id_CS, qt.getConfig(id_CS, "a-auth", "flowControl"));
+        }
+
+        String refInside = id_O + "_" + index;
+
+        JSONObject refOPInfo = qt.setJson("refOP", refOP, "wrdN", wrdN, "index", new JSONArray(), "id_OP", id_OP);
+
+        // check and update id_FC
+        if (!id_FC.equals("") && !assetCollection.getJSONObject(id_CB).getString("id").equals("none"))
+        {
+
+            for (int i = 0; i < assetCollection.getJSONObject(id_CB).getJSONObject("flowControl").getJSONArray("objData").size(); i++)
+            {
+                JSONObject flowInfo = assetCollection.getJSONObject(id_CB).getJSONObject("flowControl").getJSONArray("objData").getJSONObject(i);
+                //adding 1 index
+                if (flowInfo.getString("id").equals(id_FC) && isStart && refOP != null) {
+                    // case 1: id_OP not exists in refOP, init
+                    if (flowInfo.getJSONObject("refOP") == null)
+                    {
+                        flowInfo.put("refOP", new JSONObject());
+                    }
+                    // case 2: refOP not exists
+                    if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
+                    {
+                        //id_OP getES, then put here wrddesc, pic, grp, id_CB, priority, etc
+                        JSONObject extraInfo = qt.getES("lSBOrder", qt.setESFilt("id_O", id_OP)).getJSONObject(0);
+                        qt.upJson(refOPInfo, "wrddesc", extraInfo.getJSONObject("wrddesc"), "pic", extraInfo.getString("pic"),"tmd", extraInfo.getString("tmd"),
+                                "grp", extraInfo.getString("grp"), "priority", extraInfo.getInteger("priority"), "id_CB", extraInfo.getString("id_CB"));
+
+                        flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
+                    } else {
+
+                        // any case, add this index to index[]
+                        if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
+                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
+                        }
+                    }
+//                qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i+ ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
+                    break;
+
+                } // removing now here:
+                else if (flowInfo.getString("id").equals(id_FC) && !isStart)
+                {
+
+                    // case 1: if index size == 1, remove the whole id_OP
+                        if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
+                        {
+                            flowInfo.getJSONObject("refOP").remove(refOP);
+//                            qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", refOP), Asset.class);
+                        } else {
+                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
+//                        qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
+                        }
+                    break;
+                }
+            }
+        }
+        if (!id_FS.equals("") && !assetCollection.getJSONObject(id_CS).getString("id").equals("none"))
+        {
+            for (int i = 0; i < assetCollection.getJSONObject(id_CS).getJSONObject("flowControl").getJSONArray("objData").size(); i++)
+            {
+                JSONObject flowInfo = assetCollection.getJSONObject(id_CS).getJSONObject("flowControl").getJSONArray("objData").getJSONObject(i);
+                //adding 1 index
+                if (flowInfo.getString("id").equals(id_FS) && isStart && refOP != null) {
+                    // case 1: id_OP not exists in refOP, init
+                    if (flowInfo.getJSONObject("refOP") == null)
+                    {
+                        throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
+//                    flowInfo.put("refOP", new JSONObject());
+                    }
+                    // case 2: refOP not exists
+                    else if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
+                    {
+                        //id_OP getES, then put here wrddesc, pic, grp, id_CB, priority, etc
+                        JSONObject extraInfo = qt.getES("lSBOrder", qt.setESFilt("id_O", id_OP)).getJSONObject(0);
+                        qt.upJson(refOPInfo, "wrddesc", extraInfo.getJSONObject("wrddesc"), "pic", extraInfo.getString("pic"),
+                                "grp", extraInfo.getString("grp"), "priority", extraInfo.getInteger("priority"), "id_CB", extraInfo.getString("id_CB"));
+                        flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
+                    } else {
+                        // any case, add this index to index[]
+                        if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
+                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
+                        }
+                    }
+                    break;
+
+                } // removing now here:
+                else if (flowInfo.getString("id").equals(id_FS) && !isStart) {
+                    // case 1: if index size == 1, remove the whole id_OP
+                        if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
+                        {
+                            flowInfo.getJSONObject("refOP").remove(refOP);
+                        } else {
+                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
+                        }
+
+                    break;
+                }
+            }
+        }
+    }
+
+    public void setMDRefOP(JSONObject assetCollection)
+    {
+        for (String compId : assetCollection.keySet() )
+        {
+            qt.errPrint("what is SetMDREFOP", compId, assetCollection.getJSONObject(compId) );
+            if (!assetCollection.getJSONObject(compId).getString("id").equals("none")) {
+                qt.setMDContent(assetCollection.getJSONObject(compId).getString("id"), qt.setJson("flowControl",
+                        assetCollection.getJSONObject(compId).getJSONObject("flowControl")), Asset.class);
+            }
+        }
+
+    }
 
 //Order init oItem, action, oStock if needed
 
@@ -1582,14 +1730,21 @@ public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
 //        return null;
 //    }
 
+    //case1: info.wrdN if card has no index, and it is wrdXXX
+    //case4: info.ref
+    //case2: part.objItem.$.wrdN
+    //case3: part.objItem.$.grp
+    //case5: text00s.objData.3.wn2qty
+    //case5: text00s.objData.3.wrdFN
+    //case6: text00s.objData.3.objText.$.wrddesc / index [2]
+    //case7: text00s.objData.3.objText.$.ref / index[2,4]
 
-    public JSONObject tempaCOUPA(JSONArray arrayData, JSONObject jsonVar, JSONArray arrayGrpTarget, JSONObject jsonEs, String listType) {
+    public JSONObject tempaCOUPA(JSONArray arrayData, JSONObject jsonVar, JSONObject jsonEs, String listType) {
         jsonEs.remove("grpT");
         Init init = qt.getInitData("cn");
 
         JSONObject jsonCol = init.getCol().getJSONObject(listType);
-//        Update update = new Update();
-        JSONObject upKevVal = new JSONObject();
+        JSONObject upKeyVal = new JSONObject();
         for (int i = 0; i < arrayData.size(); i++) {
             JSONObject jsonData = arrayData.getJSONObject(i);
             String key = jsonData.getString("key");
@@ -1598,52 +1753,54 @@ public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
             /////////////*************////////////
             Object value = this.scriptEngineVar(jsonData.getString("value"), jsonVar);
             jsonData.put("value", value);
-            qt.errPrint("key+", jsonData, key, value);
 
-            if (key.equals("info.grp")) {
-                if (!arrayGrpTarget.contains(key)) {
-                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_FOUND.getCode(), null); //GRP_NOT_MATCH
-                }
-            }
+            //for lSBOrder etc, checking grp here is useless, need to check before this
+//            if (key.equals("info.grp")) {
+//                if (!arrayGrpTarget.contains(key)) {
+//                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_FOUND.getCode(), null); //GRP_NOT_MATCH
+//                }
+//            }
+            String[] keySplit = key.split("\\.");
 
-            if (arrayIndex == null) {
-//                update.set(key, value);
-
-                String[] keySplit = key.split("\\.");
+            if (arrayIndex == null)
+            {
                 String colKey = keySplit[keySplit.length - 1];
 
+                //if card has no index, and it is wrdXXX
                 if (colKey.startsWith("wrd"))
                 {
                     key = key + ".cn";
-                    qt.upJson(upKevVal, key, value);
+                    qt.upJson(upKeyVal, key, value);
                     if (jsonCol.getJSONObject(colKey) != null) {
                         jsonEs.put(colKey, qt.setJson("cn", value));
                     }
 
-                } else {
-                    qt.upJson(upKevVal, key, value);
+                } else
+                {
+                    qt.upJson(upKeyVal, key, value);
                     if (jsonCol.getJSONObject(colKey) != null) {
                         jsonEs.put(colKey, value);
                     }
                 }
-
-            } else {
-                int keyIndexOf = key.indexOf("$");
+            }
+            else {
+                // objXXX.$.wrdN.cn stuff like this. for file00s etc
+                int keyIndexOf = key.indexOf("$"); // text00s objData $ wrddesc cn
                 String keyPrefix = key.substring(0, keyIndexOf);
                 String keySuffix = key.substring(keyIndexOf + 1, key.length());
+
                 if (keySuffix.startsWith("wrd"))
                 {
                     keySuffix = keySuffix + ".cn";
                 }
                 for (int j = 0; j < arrayIndex.size(); j++) {
                     Integer index = arrayIndex.getInteger(j);
-                    qt.upJson(upKevVal, keyPrefix +"."+ index+ "." + keySuffix, value);
+                    qt.upJson(upKeyVal, keyPrefix +"."+ index+ "." + keySuffix, value);
                 }
             }
         }
-//        Map<String, Object> mapResult = new HashMap<>();
         JSONObject mapResult = new JSONObject();
-        mapResult.put("mongo", upKevVal);
+        mapResult.put("mongo", upKeyVal);
         mapResult.put("es", jsonEs);
         return mapResult;
     }
@@ -2612,6 +2769,43 @@ public void updateRefOP(String id_CB, String id_CS, String id_FC, String id_FS,
                                     "spaceQty", arrayResultSpaceQty,
                                     "arrPP", arrayArrPPA,
                                     "procQty", arrayProcQtyA,
+                                    "lUT", lUT,
+                                    "lCR", lCR);
+                            jsonBulkLsasset = qt.setJson("type", "update",
+                                    "id", jsonLsa.getString("id_ES"),
+                                    "update", jsonLsa);
+                        }
+                    }
+                    else if ("part".equals(type)) {
+                        if (DoubleUtils.doubleEquals(aStock.getDouble("wn4price"), -wn4price)) {
+                            jsonBulkAsset = qt.setJson("type", "delete",
+                                    "id", id_A);
+                            jsonBulkLsasset = qt.setJson("type", "delete",
+                                    "id", jsonLsa.getString("id_ES"));
+                        } else {
+                            JSONArray arrayWn2qty = assetChgObj.getJSONArray("procQty");
+                            JSONArray arrayArrPPA = aStock.getJSONArray("arrPP");
+                            JSONArray arrayWn2qtyA = aStock.getJSONArray("arrayWn2qty");
+                            System.out.println("arrayProcQty=" + arrayWn2qty);
+                            System.out.println("arrayWn2qtyA1=" + arrayWn2qtyA);
+                            for (int j = 0; j < arrayWn2qty.size(); j++) {
+                                arrayWn2qtyA.set(j, DoubleUtils.add(arrayWn2qtyA.getDouble(j), arrayWn2qty.getDouble(j)));
+                            }
+                            System.out.println("arrayWn2qtyA2=" + arrayWn2qtyA);
+                            AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayResultLocSpace, arrayResultSpaceQty, arrayArrPPA, arrayWn2qtyA);
+                            assetAStock.setLUT(lUT);
+                            assetAStock.setLCR(lCR);
+                            JSONObject jsonUpdate = qt.setJson("aStock", assetAStock);
+                            jsonBulkAsset = qt.setJson("type", "update",
+                                    "id", id_A,
+                                    "update", jsonUpdate);
+
+                            qt.upJson(jsonLsa, "wn2qty", DoubleUtils.add(aStock.getDouble("wn2qty"), wn2qty),
+                                    "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn4value),
+                                    "locSpace", arrayResultLocSpace,
+                                    "spaceQty", arrayResultSpaceQty,
+                                    "arrPP", arrayArrPPA,
+                                    "procQty", arrayWn2qtyA,
                                     "lUT", lUT,
                                     "lCR", lCR);
                             jsonBulkLsasset = qt.setJson("type", "update",

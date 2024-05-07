@@ -519,7 +519,7 @@ public class RedirectServiceImpl implements RedirectService {
 
 //        String keyName = SCANCODE_JOINCOMP + token;
 //        Boolean hasKey = redisTemplate0.hasKey(keyName);
-        if (join_user.equals("5f28bf314f65cc7dc2e60262"))
+        if (join_user == null || join_user.equals("5f28bf314f65cc7dc2e60262"))
         {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_IS_NO_FOUND.getCode(), null);
         }
