@@ -78,10 +78,12 @@ public class ActionServiceImpl implements ActionService {
 
 //        //1. Save the new
         qt.setMDContent(id_O, qt.setJson("action.grpBGroup."+grpB, grpBNew), Order.class);
+
         //2. get Order's oItem+action
         Order order = qt.getMDContent(id_O,qt.strList("action", "oItem","info"), Order.class);
         JSONArray objItem = order.getOItem().getJSONArray("objItem");
         JSONArray objAction = order.getAction().getJSONArray("objAction");
+        JSONObject aCollect = new JSONObject();
         //3. Loop check grpB==oItem(i).grpB and objAction(i).isPUshed == 1
         for (int i = 0; i < objItem.size(); i++) {
             if (grpB.equals(objItem.getJSONObject(i).getString("grpB")) &&
@@ -116,17 +118,19 @@ public class ActionServiceImpl implements ActionService {
                 ws.sendWS(logStop);
                 ws.sendWS(logStart);
 
-                dbu.updateRefOP(order.getInfo().getId_CB(), order.getInfo().getId_C(),
+                dbu.updateRefOP2(aCollect, order.getInfo().getId_CB(), order.getInfo().getId_C(),
                         grpBOld.getString("id_Flow"), "", objAction.getJSONObject(i).getString("id_OP"),
                         objAction.getJSONObject(i).getString("refOP"), objAction.getJSONObject(i).getJSONObject("wrdNP"),
                         id_O, i, false );
 
-                dbu.updateRefOP(order.getInfo().getId_CB(), order.getInfo().getId_C(),
+                dbu.updateRefOP2(aCollect, order.getInfo().getId_CB(), order.getInfo().getId_C(),
                         grpBNew.getString("id_Flow"), "", objAction.getJSONObject(i).getString("id_OP"),
                         objAction.getJSONObject(i).getString("refOP"), objAction.getJSONObject(i).getJSONObject("wrdNP"),
                         id_O, i, true );
             }
         }
+        dbu.setMDRefOP(aCollect);
+
         return retResult.ok(CodeEnum.OK.getCode(), "换群成功");
 
     }
@@ -142,6 +146,7 @@ public class ActionServiceImpl implements ActionService {
         Order order = qt.getMDContent(id_O, Arrays.asList("info","oItem", "action"), Order.class);
         JSONArray objItem = order.getOItem().getJSONArray("objItem");
         JSONArray objAction = order.getAction().getJSONArray("objAction");
+        JSONObject aCollect = new JSONObject();
         //3. Loop check grpB==oItem(i).grpB and objAction(i).isPUshed == 1
         for (int i = 0; i < objItem.size(); i++) {
             if (grpB.equals(objItem.getJSONObject(i).getString("grpB")) &&
@@ -174,17 +179,19 @@ public class ActionServiceImpl implements ActionService {
                 ws.sendWS(logStop);
                 ws.sendWS(logStart);
 
-                dbu.updateRefOP(order.getInfo().getId_CB(), order.getInfo().getId_C(),
+                dbu.updateRefOP2(aCollect,order.getInfo().getId_CB(), order.getInfo().getId_C(),
                         "", grpBOld.getString("id_Flow"), objAction.getJSONObject(i).getString("id_OP"),
                         objAction.getJSONObject(i).getString("refOP"), objAction.getJSONObject(i).getJSONObject("wrdNP"),
                         id_O, i, false );
 
-                dbu.updateRefOP(order.getInfo().getId_CB(), order.getInfo().getId_C(),
+                dbu.updateRefOP2(aCollect,order.getInfo().getId_CB(), order.getInfo().getId_C(),
                         "", grpBNew.getString("id_Flow"), objAction.getJSONObject(i).getString("id_OP"),
                         objAction.getJSONObject(i).getString("refOP"), objAction.getJSONObject(i).getJSONObject("wrdNP"),
                         id_O, i, true );
             }
         }
+        dbu.setMDRefOP(aCollect);
+
         return retResult.ok(CodeEnum.OK.getCode(), "换群成功");
 
     }
@@ -657,11 +664,18 @@ public class ActionServiceImpl implements ActionService {
 
         @Override
         @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
-        public JSONObject changeActionStatus(String logType, Integer status, String msg,
+        public JSONObject changeActionStatus(JSONObject assetCollection, String logType, Integer status, String msg,
                                              Integer index, String id_O, Boolean isLink,
                                              String id_FC, String id_FS, JSONObject tokData) {
 
                 JSONObject actData = this.getActionData(id_O, index);
+                Boolean isPublic = false;
+
+                if (assetCollection == null)
+                {
+                    assetCollection = new JSONObject();
+                    isPublic = true;
+                }
 
                 OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
                 OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
@@ -928,7 +942,7 @@ public class ActionServiceImpl implements ActionService {
                     if (status.equals(-2) || status.equals(2) || status.equals(9))
                     {
                         //removing it from flowControl RefOP
-                        dbu.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
+                        dbu.updateRefOP2(assetCollection, actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
                                 id_FC, id_FS, orderAction.getId_OP(), orderAction.getRefOP(), orderAction.getWrdNP(), orderOItem.getId_O(), orderAction.getIndex(), false );
                     }
 
@@ -1064,26 +1078,30 @@ public class ActionServiceImpl implements ActionService {
                     // activate = 4 means Skip = already pushed Next, status == -2 then skip upNext
                     if (orderAction.getUpPrnts().size() == 0 && orderOItem.getId_P().equals("")) {
                         //Here for noP, DO NOT check parent, it will blow up
-                        this.updateNext(orderAction, tokData);
+                        this.updateNext(assetCollection, orderAction, tokData);
                     }
                     else {
                         //for regular DG, we will go check our parent first
                         //then push it together with myself because I am always the first Item
-                        this.updateParent(orderAction, tokData);
+                        this.updateParent(assetCollection, orderAction, tokData);
                     }
                 } else if (status == 1 && orderAction.getBmdpt() == 4)
                 {
                     // here I must check all my subParts, and see if they are prtPrev.size == 0
                     // if so, push
-                    this.updateSon(orderAction, tokData);
+                    this.updateSon(assetCollection, orderAction, tokData);
                 }
 
+                if (isPublic)
+                {
+                    dbu.setMDRefOP(assetCollection);
+                }
             // 抛出操作成功异常
             return res;
 //            return retResult.ok(CodeEnum.OK.getCode(), res);
         }
 
-    private void updateSon(OrderAction orderAction, JSONObject tokData)
+    private void updateSon(JSONObject assetCollection, OrderAction orderAction, JSONObject tokData)
     {
 
         for (Integer i = 0; i < orderAction.getSubParts().size(); i++ )
@@ -1104,7 +1122,7 @@ public class ActionServiceImpl implements ActionService {
                     orderAction1.setBcdStatus(0); //状态改为准备开始
                     orderAction1.setBisPush(1);
 
-                    dbu.updateRefOP(orderOItem1.getId_CB(), orderOItem1.getId_C(),
+                    dbu.updateRefOP2(assetCollection, orderOItem1.getId_CB(), orderOItem1.getId_C(),
                             actData.getString("id_FC"),
                             actData.getString("id_FS"), orderAction1.getId_OP(), orderAction1.getRefOP(),
                             orderAction1.getWrdNP(), sonId, sonIndex, true);
@@ -1132,7 +1150,7 @@ public class ActionServiceImpl implements ActionService {
         }
     }
 
-    private void updateNext(OrderAction orderAction, JSONObject tokData)
+    private void updateNext(JSONObject assetCollection, OrderAction orderAction, JSONObject tokData)
     {
 
         for (Integer i = 0; i < orderAction.getPrtNext().size(); i++ )
@@ -1158,7 +1176,7 @@ public class ActionServiceImpl implements ActionService {
                                 orderAction1.setBcdStatus(0); //状态改为准备开始
                                 orderAction1.setBisPush(1);
 
-                                dbu.updateRefOP(orderOItem1.getId_CB(), orderOItem1.getId_C(),
+                                dbu.updateRefOP2(assetCollection, orderOItem1.getId_CB(), orderOItem1.getId_C(),
                                         actData.getString("id_FC"),
                                         actData.getString("id_FS"), orderAction1.getId_OP(), orderAction1.getRefOP(),
                                         orderAction1.getWrdNP(), nextId, nextIndex, true );
@@ -1192,7 +1210,7 @@ public class ActionServiceImpl implements ActionService {
          * @ver 1.0.0
          * @date 2020/8/6 9:21
          */
-        private void updateParent(OrderAction orderAction,JSONObject tokData) {
+        private void updateParent(JSONObject assetCollection, OrderAction orderAction,JSONObject tokData) {
 
 
             for (Integer i = 0; i < orderAction.getUpPrnts().size(); i++) {
@@ -1217,7 +1235,7 @@ public class ActionServiceImpl implements ActionService {
                         unitActionPrnt.setBisPush(1);
 
 
-                        dbu.updateRefOP(unitOItemPrnt.getId_CB(), unitOItemPrnt.getId_C(),
+                        dbu.updateRefOP2(assetCollection, unitOItemPrnt.getId_CB(), unitOItemPrnt.getId_C(),
                                 actData.getString("id_FC"),
                                 actData.getString("id_FS"), unitActionPrnt.getId_OP(), unitActionPrnt.getRefOP(),
                                 unitActionPrnt.getWrdNP(), idPrnt, indexPrnt, true );
@@ -1245,7 +1263,7 @@ public class ActionServiceImpl implements ActionService {
                     // sumChild = 0 时， 所有子零部件都已经推送了， 不用查Next
                     if (unitActionPrnt.getSumChild() != 0)
                     {
-                        this.updateNext(orderAction, tokData);
+                        this.updateNext(assetCollection, orderAction, tokData);
                     }
                 }
             }
@@ -1525,15 +1543,18 @@ public class ActionServiceImpl implements ActionService {
 
 
             JSONObject actData = this.getActionData(id_O, index);
+            JSONObject aCollect = new JSONObject();
 
             if (null != actData) {
-                this.activateThis(actData, id_O, index, myCompId, id_U, grpU, dep, wrdNU);
+                this.activateThis(aCollect, actData, id_O, index, myCompId, id_U, grpU, dep, wrdNU);
             }
+
+            dbu.setMDRefOP(aCollect);
 
         return retResult.ok(CodeEnum.OK.getCode(), "done");
     }
 
-    private Integer activateThis(JSONObject actData, String id_O, Integer index, String myCompId, String id_U, String grpU, String dep, JSONObject wrdNU)
+    private Integer activateThis(JSONObject aCollect, JSONObject actData, String id_O, Integer index, String myCompId, String id_U, String grpU, String dep, JSONObject wrdNU)
     {
         OrderOItem unitOItem = JSONObject.parseObject(JSON.toJSONString(actData.getJSONArray("oItemArray").getJSONObject(index)), OrderOItem.class);
         OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(actData.getJSONArray("actionArray").getJSONObject(index)), OrderAction.class);
@@ -1544,7 +1565,7 @@ public class ActionServiceImpl implements ActionService {
 
         qt.setMDContent(id_O, qt.setJson("action.objAction." + index, unitAction), Order.class);
 
-        dbu.updateRefOP(actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
+        dbu.updateRefOP2(aCollect, actData.getJSONObject("info").getString("id_CB"), actData.getJSONObject("info").getString("id_C"),
                 actData.getString("id_FC"), actData.getString("id_FS"), unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), id_O, index, true );
 
 //      String logType = actData.getJSONObject("grpBGroup").getJSONObject(unitOItem.getGrpB()).getString("logType");
@@ -1564,7 +1585,7 @@ public class ActionServiceImpl implements ActionService {
         // check if objSub > 0, if so, activate also next, if so(activate next)
         if (unitOItem.getObjSub() > 0)
         {
-            Integer subCountWithin = this.activateThis(actData, id_O, index + 1, myCompId, id_U, grpU, dep, wrdNU);
+            Integer subCountWithin = this.activateThis(aCollect, actData, id_O, index + 1, myCompId, id_U, grpU, dep, wrdNU);
             totalSubCount = unitOItem.getObjSub() + subCountWithin;
         }
 
@@ -1575,7 +1596,7 @@ public class ActionServiceImpl implements ActionService {
             String seqNext = actData.getJSONArray("oItemArray").getJSONObject(seqCheckIndex).getString("seq");
             if (seqNext.equals("1"))
             {
-                this.activateThis(actData, id_O, seqCheckIndex, myCompId, id_U, grpU, dep, wrdNU);
+                this.activateThis(aCollect, actData, id_O, seqCheckIndex, myCompId, id_U, grpU, dep, wrdNU);
             }
         }
         return totalSubCount;
@@ -1913,6 +1934,7 @@ public class ActionServiceImpl implements ActionService {
         List <Order> orderDataList = new ArrayList<>();
         JSONArray orderList = orderMainData.getCasItemx().getJSONObject(myCompId).getJSONArray("objOrder");
 
+        JSONObject assetCollection = new JSONObject();
 
         for (Integer n = 0; n < orderList.size(); n++) {
 
@@ -1961,7 +1983,7 @@ public class ActionServiceImpl implements ActionService {
                                 qt.setMDContent(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey, Order.class);
                                 //System.out.println("unit " + subOItem.getGrpB() + subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
                                 String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
-                                dbu.updateRefOP(myCompId, subOItem.getId_C(),
+                                dbu.updateRefOP2(assetCollection, myCompId, subOItem.getId_C(),
                                         subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), id_O, unitAction.getRefOP(), unitAction.getWrdNP(),
                                         unitAction.getSubParts().getJSONObject(k).getString("id_O"), unitAction.getSubParts().getJSONObject(k).getInteger("index"), true );
 
@@ -2007,7 +2029,7 @@ public class ActionServiceImpl implements ActionService {
                                     fsCheck.getString("id_Flow") : "";
                         }
 
-                        dbu.updateRefOP(myCompId, unitOItem.getId_C(),
+                        dbu.updateRefOP2(assetCollection, myCompId, unitOItem.getId_C(),
                                 id_FC, id_FS, id_O, unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getId_O(), unitAction.getIndex(), true );
 
                         LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
@@ -2025,6 +2047,7 @@ public class ActionServiceImpl implements ActionService {
                     }
                 }
             }
+            dbu.setMDRefOP(assetCollection);
 
         return retResult.ok(CodeEnum.OK.getCode(), "doneAll");
     }
@@ -2106,9 +2129,10 @@ public class ActionServiceImpl implements ActionService {
                         "wn2qtyneed", unitOItem.getWn2qtyneed())));
 
 
-        dbu.updateRefOP(myCompId, myCompId,
+        JSONObject aCollect = new JSONObject();
+        dbu.updateRefOP2(aCollect, myCompId, myCompId,
                 id_FC, id_FS, id_O, "grpTask", oItemData.getJSONObject("wrdNP"), id_O, index, true );
-
+        dbu.setMDRefOP(aCollect);
 
         // Send a log
         LogFlow logLP = new LogFlow(logType,id_FC,
@@ -2471,6 +2495,7 @@ public class ActionServiceImpl implements ActionService {
         //2. get Order's oItem+action
             Order order = qt.getMDContent(id_O, "action", Order.class);
             JSONObject objAction = order.getAction().getJSONArray("objAction").getJSONObject(index);
+            JSONObject assetCollection = new JSONObject();
 
             //-8. Loop check grpB==oItem(i).grpB and objAction(i).isPUshed == 1
             for (int i = 0; i < objAction.getJSONArray("subParts").size(); i++) {
@@ -2492,7 +2517,7 @@ public class ActionServiceImpl implements ActionService {
                     if (subStatus.equals(1) || subStatus.equals(-8)) {
 //                        newStatus = 8;
                         newMsg = "全单暂停";
-                        this.changeActionStatus("action", 8, "全单暂停", subPartIndex, subPartId_O, isLink,
+                        this.changeActionStatus(assetCollection,"action", 8, "全单暂停", subPartIndex, subPartId_O, isLink,
                                 subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), tokData);
                     }
                 }
@@ -2500,7 +2525,7 @@ public class ActionServiceImpl implements ActionService {
                     if (subStatus.equals(2) || subStatus.equals(9)) {
                         newStatus = 0;
                         newMsg = "全单准备";
-                        this.changeActionStatus("action", 0, "全单准备", subPartIndex, subPartId_O, isLink,
+                        this.changeActionStatus(assetCollection,"action", 0, "全单准备", subPartIndex, subPartId_O, isLink,
                                 subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), tokData);
                     }
                 }
@@ -2509,7 +2534,7 @@ public class ActionServiceImpl implements ActionService {
                         newMsg = "全单完成";
                         newStatus = 2;
 
-                        this.changeActionStatus("action", 2, "全单完成", subPartIndex, subPartId_O, isLink,
+                        this.changeActionStatus(assetCollection, "action", 2, "全单完成", subPartIndex, subPartId_O, isLink,
                                 subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), tokData);
                     }
                 }
@@ -2533,6 +2558,7 @@ public class ActionServiceImpl implements ActionService {
 
 //                }
             }
+            dbu.setMDRefOP(assetCollection);
 
             return retResult.ok(CodeEnum.OK.getCode(), "Status batch changed");
 

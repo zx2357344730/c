@@ -2347,10 +2347,11 @@ public class ZjTestServiceImpl implements ZjTestService {
     }
 
     @Override
-    public ApiResponse aiQuesting(String user, String desc) {
-//        String s = HttpClientUtils.httpPostAndHead("https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/AI"
-//                , qt.setJson("user", user,"desc",desc,"appId","__UNI__F0B4F02","key","cresign_6601bcc7e591e106e87fce73_ai")
-//                , qt.setJson("token", "token"));
+    public ApiResponse aiQuesting(JSONObject tokData, String user, String desc) {
+        LogFlow usageLog = new LogFlow();
+        usageLog.setUsageLog(tokData, "aiQuest", desc, 3, "", "lBInfo", qt.setJson("cn", "AI quest"),"1000", "");
+        ws.sendWS(usageLog);
+
         String s = HttpClientUtil.sendPost(qt.setJson("user", user,"desc",desc,"appId","__UNI__F0B4F02"
                 ,"key","cresign_6601bcc7e591e106e87fce73_ai")
                 ,"https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/AI");

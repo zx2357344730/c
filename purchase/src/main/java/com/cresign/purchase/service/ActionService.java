@@ -14,7 +14,7 @@ public interface ActionService {
      * @ver 1.0.0
      * @date 2021/6/16 14:35
      */
-    JSONObject changeActionStatus(String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,
+    JSONObject changeActionStatus(JSONObject assetCollection, String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,
                                   String id_FC, String id_FS, JSONObject tokData);
 
 //    ApiResponse changeActionStatusNew(String logType, Integer status, String msg, Integer index, String id_O, Boolean isLink,

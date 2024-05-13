@@ -301,24 +301,21 @@ public class DbUtils {
             id_FS = "";
         if (id_CB == id_CS)
             id_CS = "";
-//
-//        if (assetB == null) {
-//            assetB = qt.getConfig(id_CB, "a-auth", "flowControl");
-//        }
-//
-//        if (id_CB == id_CS) {
-//            assetS = qt.cloneThis(assetB, Asset.class);
-//        } else if (assetS == null) {
-//            assetS = qt.getConfig(id_CS, "a-auth", "flowControl");
-//        }
 
         if (id_CB != "" && assetCollection.getJSONObject(id_CB) == null)
         {
-            assetCollection.put(id_CB, qt.getConfig(id_CB, "a-auth", "flowControl"));
+            assetCollection.put(id_CB, qt.toJson(qt.getConfig(id_CB, "a-auth", "flowControl")));
         }
-        if (id_CB != id_CS && id_CS != "" && assetCollection.getJSONObject(id_CS) == null)
+        if (!assetCollection.getJSONObject(id_CB).getString("id").equals("none") && id_CB != "" && assetCollection.getJSONObject(id_CB).getJSONArray("indexList") == null) {
+            assetCollection.getJSONObject(id_CB).put("indexList", new JSONArray());
+        }
+
+        if (id_CS != "" && assetCollection.getJSONObject(id_CS) == null)
         {
-            assetCollection.put(id_CS, qt.getConfig(id_CS, "a-auth", "flowControl"));
+            assetCollection.put(id_CS, qt.toJson(qt.getConfig(id_CS, "a-auth", "flowControl")));
+        }
+        if (!assetCollection.getJSONObject(id_CB).getString("id").equals("none") && id_CS != "" && assetCollection.getJSONObject(id_CS).getJSONArray("indexList") == null) {
+            assetCollection.getJSONObject(id_CS).put("indexList", new JSONArray());
         }
 
         String refInside = id_O + "_" + index;
@@ -355,7 +352,9 @@ public class DbUtils {
                             flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
                         }
                     }
-//                qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i+ ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
+                    if (!assetCollection.getJSONObject(id_CB).getJSONArray("indexList").contains(i)) {
+                        assetCollection.getJSONObject(id_CB).getJSONArray("indexList").add(i);
+                    }
                     break;
 
                 } // removing now here:
@@ -363,14 +362,19 @@ public class DbUtils {
                 {
 
                     // case 1: if index size == 1, remove the whole id_OP
-                        if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
+                        if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
+                        {
+                            break;
+                        }
+                        else if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
                         {
                             flowInfo.getJSONObject("refOP").remove(refOP);
-//                            qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", refOP), Asset.class);
                         } else {
                             flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
-//                        qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
                         }
+                    if (!assetCollection.getJSONObject(id_CB).getJSONArray("indexList").contains(i)) {
+                        assetCollection.getJSONObject(id_CB).getJSONArray("indexList").add(i);
+                    }
                     break;
                 }
             }
@@ -402,18 +406,27 @@ public class DbUtils {
                         flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
                         }
                     }
+                    if (!assetCollection.getJSONObject(id_CS).getJSONArray("indexList").contains(i)) {
+                        assetCollection.getJSONObject(id_CS).getJSONArray("indexList").add(i);
+                    }
                     break;
 
                 } // removing now here:
                 else if (flowInfo.getString("id").equals(id_FS) && !isStart) {
                     // case 1: if index size == 1, remove the whole id_OP
-                        if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
+                        if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
+                        {
+                            break;
+                        }
+                        else if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
                         {
                             flowInfo.getJSONObject("refOP").remove(refOP);
                         } else {
                             flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
                         }
-
+                        if (!assetCollection.getJSONObject(id_CS).getJSONArray("indexList").contains(i)) {
+                            assetCollection.getJSONObject(id_CS).getJSONArray("indexList").add(i);
+                        }
                     break;
                 }
             }
@@ -422,14 +435,32 @@ public class DbUtils {
 
     public void setMDRefOP(JSONObject assetCollection)
     {
+        List<JSONObject> listBulk = new ArrayList<>();
+
         for (String compId : assetCollection.keySet() )
         {
-            qt.errPrint("what is SetMDREFOP", compId, assetCollection.getJSONObject(compId) );
             if (!assetCollection.getJSONObject(compId).getString("id").equals("none")) {
-                qt.setMDContent(assetCollection.getJSONObject(compId).getString("id"), qt.setJson("flowControl",
-                        assetCollection.getJSONObject(compId).getJSONObject("flowControl")), Asset.class);
+                for (int i = 0; i < assetCollection.getJSONObject(compId).getJSONArray("indexList").size(); i++)
+                {
+//                    String refOP = assetCollection.getJSONObject(compId).getJSONArray("refList").getString(i);
+                    Integer index = assetCollection.getJSONObject(compId).getJSONArray("indexList").getInteger(i);
+
+                    JSONObject update = new JSONObject();
+                    update.put("flowControl.objData." + index + ".refOP",
+                    assetCollection.getJSONObject(compId).getJSONObject("flowControl").getJSONArray("objData")
+                    .getJSONObject(index).getJSONObject("refOP"));
+
+                    listBulk.add(qt.setJson("type", "update", "id", assetCollection.getJSONObject(compId).getString("id"), "update", update));
+                }
+//                qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i+ ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
+//                qt.setMDContent(assetCollection.getJSONObject(compId).getString("id"), qt.setJson("flowControl",
+//                        assetCollection.getJSONObject(compId).getJSONObject("flowControl")), Asset.class);
             }
         }
+        if (listBulk.size() > 0) {
+            qt.setMDContentMany(listBulk, Asset.class);
+        }
+
 
     }
 
@@ -1789,13 +1820,13 @@ public class DbUtils {
                 String keyPrefix = key.substring(0, keyIndexOf);
                 String keySuffix = key.substring(keyIndexOf + 1, key.length());
 
-                if (keySuffix.startsWith("wrd"))
+                if (keySuffix.startsWith(".wrd"))
                 {
                     keySuffix = keySuffix + ".cn";
                 }
                 for (int j = 0; j < arrayIndex.size(); j++) {
                     Integer index = arrayIndex.getInteger(j);
-                    qt.upJson(upKeyVal, keyPrefix +"."+ index+ "." + keySuffix, value);
+                    qt.upJson(upKeyVal, keyPrefix + index + keySuffix, value);
                 }
             }
         }
@@ -2342,6 +2373,7 @@ public class DbUtils {
                                JSONObject oMoney, Integer index, String zcndesc, Integer imp, String listType) {
         String id_C = tokData.getString("id_C");
         Asset auth = qt.getConfig(id_C, "a-auth", "def");
+        System.out.println("auth=" + auth);
         if (auth.getDef().getJSONObject("objlType").getJSONObject("bisList").getBoolean("lBAsset")) {
             if (id_A == null) {
                 JSONArray filterArray = qt.setESFilt("id_C", id_C, "id_CB", id_CB, "id_P", id_P);
@@ -2402,7 +2434,7 @@ public class DbUtils {
             String id_A = jsonLbasset.getString("id_A");
             if (id_A != null && !id_A.equals("")) {
                 arrayId_AB.add(id_A);
-                if (jsonLbasset.getJSONObject("tokData").getString("id_C").equals(jsonLbasset.getString("id_C"))) {
+                if (!jsonLbasset.getJSONObject("tokData").getString("id_C").equals(jsonLbasset.getString("id_C"))) {
                     arrayId_A.add(id_A);
                 }
                 setId_A.add(id_A);
@@ -2499,7 +2531,7 @@ public class DbUtils {
             if (jsonLbas.getJSONObject(id_A) != null) {
                 jsonLbasset.put("jsonLsa", jsonLbas.getJSONObject(id_A));
                 jsonLbasset.put("jsonAsset", allAssetObj.getJSONObject(id_A));
-                if (jsonLbasset.getJSONObject("tokData").getString("id_C").equals(jsonLbasset.getString("id_C"))) {
+                if (!jsonLbasset.getJSONObject("tokData").getString("id_C").equals(jsonLbasset.getString("id_C"))) {
                     jsonLbasset.put("jsonLba", jsonLsas.getJSONObject(id_A));
                 }
             }
@@ -2967,6 +2999,12 @@ public class DbUtils {
 
                     if (!isLsa && !id_C.equals(id_CB)) {
                         JSONObject jsonLba = assetChgObj.getJSONObject("jsonLba");
+                        System.out.println("jsonLba=" + jsonLba);
+                        System.out.println("wn4price=" + aStock.getDouble("wn4price"));
+                        System.out.println("wn2qty=" + wn2qty);
+                        System.out.println("wn4value=" + aStock.getDouble("wn4value"));
+                        System.out.println("lUT=" + lUT);
+                        System.out.println("lCR=" + lCR);
                         qt.upJson(jsonLba, "wn4price", DoubleUtils.add(aStock.getDouble("wn4price"), wn2qty),
                                 "wn4value", DoubleUtils.add(aStock.getDouble("wn4value"), wn2qty),
                                 "lUT", lUT,

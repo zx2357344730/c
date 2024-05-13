@@ -188,6 +188,22 @@ public class Qt {
         return result;
     }
 
+    public <T> T  getMDContentIndex(String id, String field, Integer index, Class<T> classType) {
+
+        Query query = new Query(new Criteria("_id").is(id));
+        if (field != null && !field.equals("")) {
+            query.fields().include(field);
+        }
+        T result;
+        try {
+            result = mongoTemplate.findOne(query, classType);
+        } catch (Exception e){
+            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
+        }
+        return result;
+    }
+
     public InitJava getInitData()
     {
         if (initData.get("cn_java") == null)
@@ -1418,7 +1434,7 @@ public class Qt {
     public <T> T getESItem(String index, String id, String id_C, Class<T> classType)
     {
        String idName = "id_P";
-        JSONArray listProdES = this.getES(index, this.setESFilt("id_P", "eq", id));
+        JSONArray listProdES = this.getES(index, this.setESFilt("id_P", "exact", id));
         if (listProdES.size() != 1)
         {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_DATA_NULL.getCode(), "");

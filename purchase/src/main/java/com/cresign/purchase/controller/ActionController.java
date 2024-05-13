@@ -237,6 +237,7 @@ public class ActionController {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
         try {
             JSONObject res = actionService.changeActionStatus(
+                    null,
                     reqJson.getString("logType"),
                     reqJson.getInteger("status"),
                     reqJson.getString("msg"),

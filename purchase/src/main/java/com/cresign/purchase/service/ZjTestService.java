@@ -212,5 +212,5 @@ public interface ZjTestService {
      * @param desc  提问内容
      * @return  返回结果
      */
-    ApiResponse aiQuesting(String user,String desc);
+    ApiResponse aiQuesting(JSONObject tokData, String user,String desc);
 }
