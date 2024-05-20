@@ -22,6 +22,7 @@ import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.cresign.tools.request.HttpClientUtil;
 import com.cresign.tools.uuid.UUID19;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -2355,9 +2356,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         String s = HttpClientUtil.sendPost(qt.setJson("user", user,"desc",desc,"appId","__UNI__F0B4F02"
                 ,"key","cresign_6601bcc7e591e106e87fce73_ai")
                 ,"https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/AI");
-//        System.out.println("结果:");
-//        System.out.println(s);
-        return retResult.ok(CodeEnum.OK.getCode(),s);
+        return retResult.ok(CodeEnum.OK.getCode(),JSONObject.parseObject(s));
     }
 
     private long[] getSonPart(String id_P){

@@ -197,210 +197,156 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
             setImageZon(zon,grpB,dep,tasks.get(0).getTePStart(),allImageTotalTime);
         }
 
-        // 相同任务存储字典
-        Map<String,Map<String,Task>> confTask = new HashMap<>();
-        // 相同任务存储下标字典
-        Map<String,Map<String,Integer>> confIndex = new HashMap<>();
-        // 需要更新存储字典
-        Map<String,String> updateConf = new HashMap<>();
-        // 需要删除集合
-        List<Integer> removeConf = new ArrayList<>();
-        // 遍历冲突的任务集合
-        for (int n = 0; n < conflict.size(); n++) {
-            // 获取循环当前任务
-            Task taskThis = conflict.get(n);
-            // 根据订单编号获取相同任务信息
-            Map<String,Task> taskGetId_O = confTask.get(taskThis.getId_O());
-            // 判断为空
-            if (null == taskGetId_O) {
-                // 创建相同任务信息
-                taskGetId_O = new HashMap<>();
-                taskGetId_O.put(taskThis.getIndex()+"",taskThis);
-                confTask.put(taskThis.getId_O(),taskGetId_O);
-                // 创建记录信息
-                Map<String, Integer> indexGetId_O = new HashMap<>();
-                indexGetId_O.put(taskThis.getIndex()+"",n);
-                confIndex.put(taskThis.getId_O(),indexGetId_O);
-            } else {
-                // 不为空，获取下标任务信息
-                Task taskNew = taskGetId_O.get(taskThis.getIndex() + "");
-                // 获取记录下标
-                Map<String, Integer> indexGetId_O = confIndex.get(taskThis.getId_O());
-                // 判断下标任务信息为空
-                if (null == taskNew) {
-                    // 创建记录信息
-                    taskGetId_O.put(taskThis.getIndex() + "",taskThis);
+        if (conflict.size() > 0) {
+            // 相同任务存储字典
+            Map<String,Map<String,Task>> confTask = new HashMap<>();
+            // 相同任务存储下标字典
+            Map<String,Map<String,Integer>> confIndex = new HashMap<>();
+            // 需要更新存储字典
+            Map<String,String> updateConf = new HashMap<>();
+            // 需要删除集合
+            List<Integer> removeConf = new ArrayList<>();
+            // 遍历冲突的任务集合
+            for (int n = 0; n < conflict.size(); n++) {
+                // 获取循环当前任务
+                Task taskThis = conflict.get(n);
+                // 根据订单编号获取相同任务信息
+                Map<String,Task> taskGetId_O = confTask.get(taskThis.getId_O());
+                // 判断为空
+                if (null == taskGetId_O) {
+                    // 创建相同任务信息
+                    taskGetId_O = new HashMap<>();
+                    taskGetId_O.put(taskThis.getIndex()+"",taskThis);
                     confTask.put(taskThis.getId_O(),taskGetId_O);
-
-                    indexGetId_O.put(taskThis.getIndex() + "",n);
+                    // 创建记录信息
+                    Map<String, Integer> indexGetId_O = new HashMap<>();
+                    indexGetId_O.put(taskThis.getIndex()+"",n);
                     confIndex.put(taskThis.getId_O(),indexGetId_O);
                 } else {
-                    // 不为空，添加信息
-                    taskNew.setWntDurTotal(taskNew.getWntDurTotal()+taskThis.getWntDurTotal());
-                    String updateId_O = updateConf.get(taskThis.getId_O());
-                    taskGetId_O.put(taskNew.getIndex() + "",taskNew);
-                    confTask.put(taskNew.getId_O(),taskGetId_O);
-                    removeConf.add(n);
-                    // 判断更新状态为空
-                    if (null == updateId_O) {
-                        // 添加信息
-                        updateConf.put(taskThis.getId_O(),taskThis.getIndex()+"");
+                    // 不为空，获取下标任务信息
+                    Task taskNew = taskGetId_O.get(taskThis.getIndex() + "");
+                    // 获取记录下标
+                    Map<String, Integer> indexGetId_O = confIndex.get(taskThis.getId_O());
+                    // 判断下标任务信息为空
+                    if (null == taskNew) {
+                        // 创建记录信息
+                        taskGetId_O.put(taskThis.getIndex() + "",taskThis);
+                        confTask.put(taskThis.getId_O(),taskGetId_O);
+
+                        indexGetId_O.put(taskThis.getIndex() + "",n);
+                        confIndex.put(taskThis.getId_O(),indexGetId_O);
+                    } else {
+                        // 不为空，添加信息
+                        taskNew.setWntDurTotal(taskNew.getWntDurTotal()+taskThis.getWntDurTotal());
+                        String updateId_O = updateConf.get(taskThis.getId_O());
+                        taskGetId_O.put(taskNew.getIndex() + "",taskNew);
+                        confTask.put(taskNew.getId_O(),taskGetId_O);
+                        removeConf.add(n);
+                        // 判断更新状态为空
+                        if (null == updateId_O) {
+                            // 添加信息
+                            updateConf.put(taskThis.getId_O(),taskThis.getIndex()+"");
+                        }
                     }
                 }
             }
-        }
-        // 遍历更新的下标
-        for (String o : updateConf.keySet()) {
-            // 根据订单编号获取下标
-            String ind = updateConf.get(o);
-            // 获取冲突下标信息
-            Map<String, Integer> indexGetId_O = confIndex.get(o);
-            // 获取冲突下标
-            int index = indexGetId_O.get(ind);
-            // 获取冲突任务信息
-            Map<String, Task> taskGetId_O = confTask.get(o);
-            // 获取任务信息
-            Task taskNew = taskGetId_O.get(ind);
-            // 更新任务
-            conflict.set(index,taskNew);
-        }
-        // 遍历需要删除集合
-        for (int r = removeConf.size()-1; r >= 0; r--) {
-            // 获取删除下标
-            int indexNewThis = removeConf.get(r);
-            // 删除
-            conflict.remove(indexNewThis);
-        }
-//        // 创建删除集合
-//        removeConf = new ArrayList<>();
-//        // 创建重复记录字典
-//        Map<String,Map<String,Integer>> record = new HashMap<>();
-//        // 遍历冲突任务集合
-//        for (int n = 0; n < conflict.size(); n++) {
-//            // 获取任务信息
-//            Task taskNew = conflict.get(n);
-//            // 获取订单编号记录信息
-//            Map<String,Integer> id_OInfo = record.get(taskNew.getId_O());
-//            // 判断为空
-//            if (null == id_OInfo) {
-//                // 创建并添加记录信息
-//                Map<String,Integer> id_OInfoNew = new HashMap<>();
-//                id_OInfoNew.put(taskNew.getIndex()+"",n);
-//                record.put(taskNew.getId_O(),id_OInfoNew);
-//            } else {
-//                // 不为空，遍历记录信息所有键
-//                for (String indexStr : id_OInfo.keySet()) {
-//                    // 根据键获取下标
-//                    int id_OInfoInt = Integer.parseInt(indexStr);
-//                    // 判断下标小于当前
-//                    if (id_OInfoInt < taskNew.getIndex()) {
-//                        // 添加外层任务到删除集合
-//                        removeConf.add(n);
-//                    } else {
-//                        // 添加当前任务到删除集合
-//                        removeConf.add(id_OInfo.get(indexStr));
-//                        Map<String,Integer> id_OInfoNew = new HashMap<>();
-//                        id_OInfoNew.put(taskNew.getIndex()+"",n);
-//                        record.put(taskNew.getId_O(),id_OInfoNew);
-//                    }
-//                    break;
-//                }
-//            }
-//        }
-//        for (int r = removeConf.size()-1; r >= 0; r--) {
-//            int indexNewThis = removeConf.get(r);
-//            conflict.remove(indexNewThis);
-//        }
-        // 创建删除集合
-        removeConf = new ArrayList<>();
-        // 创建重复记录字典
+            // 遍历更新的下标
+            for (String o : updateConf.keySet()) {
+                // 根据订单编号获取下标
+                String ind = updateConf.get(o);
+                // 获取冲突下标信息
+                Map<String, Integer> indexGetId_O = confIndex.get(o);
+                // 获取冲突下标
+                int index = indexGetId_O.get(ind);
+                // 获取冲突任务信息
+                Map<String, Task> taskGetId_O = confTask.get(o);
+                // 获取任务信息
+                Task taskNew = taskGetId_O.get(ind);
+                // 更新任务
+                conflict.set(index,taskNew);
+            }
+            // 遍历需要删除集合
+            for (int r = removeConf.size()-1; r >= 0; r--) {
+                // 获取删除下标
+                int indexNewThis = removeConf.get(r);
+                // 删除
+                conflict.remove(indexNewThis);
+            }
+            // 创建删除集合
+            removeConf = new ArrayList<>();
+            // 创建重复记录字典
 //        Map<String,Map<String,Integer>> record = new HashMap<>();
         /*
         record结构
         id_OP -> layer -> id_PF -> dateIndex
         */
-        JSONObject record = new JSONObject();
-        // 遍历冲突任务集合
-        for (int n = 0; n < conflict.size(); n++) {
-            // 获取任务信息
-            Task taskNew = conflict.get(n);
-            // 获取订单编号记录信息
-            JSONObject refOPInfo = record.getJSONObject(taskNew.getRefOP());
-            // 判断为空
-            if (null == refOPInfo) {
-                // 创建并添加记录信息
-                refOPInfo = new JSONObject();
-                refOPInfo.put("layer",taskNew.getLayer());
-                refOPInfo.put("id_PFObj",qt.setJson(taskNew.getId_PF(),qt.setJson("dateIndex",taskNew.getDateIndex(),"confIndex",n)));
-                record.put(taskNew.getRefOP(),refOPInfo);
-            } else {
-                // 不为空，遍历记录信息所有键
-                Integer layer = refOPInfo.getInteger("layer");
-                if (taskNew.getLayer() > layer) {
+            JSONObject record = new JSONObject();
+            // 遍历冲突任务集合
+            for (int n = 0; n < conflict.size(); n++) {
+                // 获取任务信息
+                Task taskNew = conflict.get(n);
+                // 获取订单编号记录信息
+                JSONObject refOPInfo = record.getJSONObject(taskNew.getRefOP());
+                // 判断为空
+                if (null == refOPInfo) {
+                    // 创建并添加记录信息
+                    refOPInfo = new JSONObject();
                     refOPInfo.put("layer",taskNew.getLayer());
-                    JSONObject pfObjOld = refOPInfo.getJSONObject("id_PFObj");
-                    for (String id_PF : pfObjOld.keySet()) {
-                        removeConf.add(pfObjOld.getJSONObject(id_PF).getInteger("confIndex"));
-                    }
                     refOPInfo.put("id_PFObj",qt.setJson(taskNew.getId_PF(),qt.setJson("dateIndex",taskNew.getDateIndex(),"confIndex",n)));
                     record.put(taskNew.getRefOP(),refOPInfo);
-                } else if (taskNew.getLayer() == layer) {
-                    JSONObject id_PFObj = refOPInfo.getJSONObject("id_PFObj");
-                    JSONObject pfInfo = id_PFObj.getJSONObject(taskNew.getId_PF());
-                    if (null == pfInfo) {
-                        id_PFObj.put(taskNew.getId_PF(),qt.setJson("dateIndex",taskNew.getDateIndex(),"confIndex",n));
-                    } else {
-                        Integer dateIndex = pfInfo.getInteger("dateIndex");
-                        if (taskNew.getDateIndex() > dateIndex) {
+                } else {
+                    // 不为空，遍历记录信息所有键
+                    Integer layer = refOPInfo.getInteger("layer");
+                    if (taskNew.getLayer() > layer) {
+                        refOPInfo.put("layer",taskNew.getLayer());
+                        JSONObject pfObjOld = refOPInfo.getJSONObject("id_PFObj");
+                        for (String id_PF : pfObjOld.keySet()) {
+                            removeConf.add(pfObjOld.getJSONObject(id_PF).getInteger("confIndex"));
+                        }
+                        refOPInfo.put("id_PFObj",qt.setJson(taskNew.getId_PF(),qt.setJson("dateIndex",taskNew.getDateIndex(),"confIndex",n)));
+                        record.put(taskNew.getRefOP(),refOPInfo);
+                    } else if (taskNew.getLayer() == layer) {
+                        JSONObject id_PFObj = refOPInfo.getJSONObject("id_PFObj");
+                        JSONObject pfInfo = id_PFObj.getJSONObject(taskNew.getId_PF());
+                        if (null == pfInfo) {
                             id_PFObj.put(taskNew.getId_PF(),qt.setJson("dateIndex",taskNew.getDateIndex(),"confIndex",n));
-                            removeConf.add(pfInfo.getInteger("confIndex"));
+                        } else {
+                            Integer dateIndex = pfInfo.getInteger("dateIndex");
+                            if (taskNew.getDateIndex() > dateIndex) {
+                                id_PFObj.put(taskNew.getId_PF(),qt.setJson("dateIndex",taskNew.getDateIndex(),"confIndex",n));
+                                removeConf.add(pfInfo.getInteger("confIndex"));
+                            }
                         }
                     }
                 }
             }
-        }
-        for (int r = removeConf.size()-1; r >= 0; r--) {
-            int indexNewThis = removeConf.get(r);
-            conflict.remove(indexNewThis);
-        }
-        System.out.println("被冲突的任务-最后清理后:");
-        System.out.println(JSON.toJSONString(conflict));
-        int quiltConflictInfoAddIndex = getQuiltConflictInfoAddIndex(thisInfo);
-        int i_copy = i;
-        if (quiltConflictInfoAddIndex < conflict.size() - 1) {
-            int surplus = (conflict.size()) - quiltConflictInfoAddIndex;
-            for (int sur = 0; sur < surplus; sur++) {
+            for (int r = removeConf.size()-1; r >= 0; r--) {
+                int indexNewThis = removeConf.get(r);
+                conflict.remove(indexNewThis);
+            }
+            System.out.println("被冲突的任务-最后清理后:");
+            System.out.println(JSON.toJSONString(conflict));
+            int quiltConflictInfoAddIndex = getQuiltConflictInfoAddIndex(thisInfo);
+            int i_copy = i;
+            if (quiltConflictInfoAddIndex < conflict.size() - 1) {
+                int surplus = (conflict.size()) - quiltConflictInfoAddIndex;
+                for (int sur = 0; sur < surplus; sur++) {
+                    zon = setConf(conflict,tasks,quiltConflictInfoAddIndex,i_copy,endTime,thisInfo,objTaskAll,clearStatus
+                            ,allImageTasks,allImageTotalTime,allImageTeDate,isSetImage,depAllTime,random
+                            ,onlyFirstTimeStamp,actionIdO);
+                    quiltConflictInfoAddIndex = getQuiltConflictInfoAddIndex(thisInfo);
+                    i_copy++;
+                }
+            } else {
                 zon = setConf(conflict,tasks,quiltConflictInfoAddIndex,i_copy,endTime,thisInfo,objTaskAll,clearStatus
                         ,allImageTasks,allImageTotalTime,allImageTeDate,isSetImage,depAllTime,random
                         ,onlyFirstTimeStamp,actionIdO);
-                quiltConflictInfoAddIndex = getQuiltConflictInfoAddIndex(thisInfo);
-                i_copy++;
             }
-        } else {
-            zon = setConf(conflict,tasks,quiltConflictInfoAddIndex,i_copy,endTime,thisInfo,objTaskAll,clearStatus
-                    ,allImageTasks,allImageTotalTime,allImageTeDate,isSetImage,depAllTime,random
-                    ,onlyFirstTimeStamp,actionIdO);
+            setThisInfoIsConflict(thisInfo,true);
         }
-        setThisInfoIsConflict(thisInfo,true);
 
         System.out.println("当前任务清理-后:"+zon);
         System.out.println(JSON.toJSONString(tasks));
-
-//        // 调用处理冲突核心方法
-//        JSONObject handleTimeConflictEndInfo = timeZjServiceComprehensive.handleTimeConflictEnd(i
-//                ,tasks,conflict,zon,random,dep,grpB,timeConflictCopy,isGetTaskPattern
-//                ,getCurrentTimeStampPattern,sho,csSta,randomAll,xbAndSbAll,actionIdO,objTaskAll
-//                ,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime
-//                ,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState
-//                ,recordNoOperation,tePFinish,clearStatus,thisInfo,allImageTeDate,isSetImage,endTime,depAllTime);
-//        System.out.println("处理时间冲突方法-2h-H:"+tePFinish);
-//        System.out.println(JSON.toJSONString(allImageTeDate));
-//        result.put("zon",handleTimeConflictEndInfo.getLong("zon"));
-//        // 存储问题状态参数: isProblemState = 0 正常、isPd = 1 订单编号为空、isPd = 2 主生产部件
-//        result.put("isProblemState",handleTimeConflictEndInfo.getInteger("isProblemState"));
-//        result.put("tePFinish",tePFinish);
-//        result.put("endTime",endTime);
-//        result.put("isSetEnd", handleTimeConflictEndInfo.getBoolean("isSetEnd") == null || handleTimeConflictEndInfo.getBoolean("isSetEnd"));
 
         System.out.println("处理时间冲突方法-2h-H:"+tePFinish);
         System.out.println(JSON.toJSONString(allImageTeDate));
@@ -1472,7 +1418,8 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         else {
                             System.out.println("进入这里 -- ++ = 1-跳过-");
                         }
-                    } else {
+                    }
+                    else {
                         // 判断时间差大于等于0
                         if (timeDifference >= 0) {
                             System.out.println(JSON.toJSONString(tasks));

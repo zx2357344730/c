@@ -1081,7 +1081,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                 if (isSetProdObj) {
                     prodObj.put("tePStart",0);
                     prodObj.put("tePFinish",0);
-                    prodObj.put("arrPStart",new JSONArray());
+                    prodObj.put("arrPStart",new JSONObject());
                     prodObj.put("layer",layer-1);
                 }
                 JSONArray oDatesP = prodObj.getJSONArray("oDates");
@@ -1301,7 +1301,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             prodObj.put("id_PF",id_PF);
             prodObj.put("tePStart",0);
             prodObj.put("tePFinish",0);
-            prodObj.put("arrPStart",new JSONArray());
+            prodObj.put("arrPStart",new JSONObject());
             prodObj.put("layer",layer-1);
         }
         JSONArray oDatesP = prodObj.getJSONArray("oDates");

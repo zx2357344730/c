@@ -668,7 +668,8 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             int indexNew = oDate.getInteger("index");
             JSONObject tasksAndZon = getTasksAndZon(teDateLast, grpBNew, depNew, id_C, objTaskAll, depAllTime);
             // 获取任务信息
-            Object[] tasksIs = isTasksNull(tasksAndZon,depAllTime.getLong(depNew));
+            Object[] tasksIs = isTasksNull(tasksAndZon,depAllTime.getJSONObject(depNew)
+                    .getJSONObject(grpBNew).getLong(teDateLast+""));
             List<Task> tasksNew = (List<Task>) tasksIs[0];
             Task lastTask = null;
             for (Task task : tasksNew) {
@@ -703,8 +704,8 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                         objLayer = oDateObj.getJSONObject((layerInt-1)+"");
                         for (String id_PFNew : objLayer.keySet()) {
                             objId_PF = objLayer.getJSONObject(id_PFNew);
-                            JSONArray arrPStart = objId_PF.getJSONArray("arrPStart");
-                            arrPStart.add(qt.setJson("lastTePFin", lastTask.getTePFinish(), "time", teDateLast));
+                            JSONObject arrPStart = objId_PF.getJSONObject("arrPStart");
+                            arrPStart.put(id_PF,qt.setJson("lastTePFin", lastTask.getTePFinish(), "time", teDateLast));
                             objId_PF.put("arrPStart",arrPStart);
                             objLayer.put(id_PFNew,objId_PF);
                         }
@@ -724,8 +725,8 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                     System.out.println(JSON.toJSONString(layerInfoF));
                     for (String id_PFNew : layerInfoF.keySet()) {
                         JSONObject id_PFNewInfo = layerInfoF.getJSONObject(id_PFNew);
-                        JSONArray arrPStart = id_PFNewInfo.getJSONArray("arrPStart");
-                        arrPStart.add(qt.setJson("lastTePFin", lastTask.getTePFinish(), "time", teDateLast));
+                        JSONObject arrPStart = id_PFNewInfo.getJSONObject("arrPStart");
+                        arrPStart.put(id_PF,qt.setJson("lastTePFin", lastTask.getTePFinish(), "time", teDateLast));
                         qt.setMDContent(id_OP
                                 ,qt.setJson("casItemx.java.oDateObj."+(layerInt-1)+"."+id_PFNew+".arrPStart",arrPStart)
                                 , Order.class);
@@ -874,7 +875,8 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
 //                    System.out.println(isChangeNew?"有改动":"无");
 //                    System.out.println(JSON.toJSONString(tasks));
                     // 调用写入任务到全局任务信息方法
-                    setTasksAndZon(tasks,grpB,dep,Long.parseLong(teS),zon,objTaskAll);
+                    setTasksAndZonWntTotal(tasks,grpB,dep,Long.parseLong(teS),zon,objTaskAll
+                            ,depAllTime.getJSONObject(dep).getJSONObject(grpB).getLong(teS));
                     // 判断不是全部都是系统任务，并且属于当前主订单
                     if (isTaskYesSystem && isBelongCurrentMainOrder) {
                         // 获取主订单的时间处理所在日期存储信息的部门信息

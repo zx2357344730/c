@@ -257,4 +257,39 @@ public class TaskController {
         }
     }
 
+    @SecurityParameter
+    @PostMapping("/v1/setOrderUserCount")
+    public ApiResponse setOrderUserCount(@RequestBody JSONObject reqJson){
+        try {
+            return timeZjService.setOrderUserCount(reqJson.getString("id_O"),
+                    reqJson.getString("id_C"), reqJson.getLong("teStart"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.setOrderUserCount", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/clearThisDayTaskAndSave")
+    public ApiResponse clearThisDayTaskAndSave(@RequestBody JSONObject reqJson){
+        try {
+            System.out.println(JSON.toJSONString(reqJson));
+            return timeZjService.clearThisDayTaskAndSave(reqJson.getString("id_C"),reqJson.getString("dep"),
+                    reqJson.getString("grpB"),reqJson.getLong("thisDay"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.clearThisDayTaskAndSave", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/clearThisDayEasyTaskAndSave")
+    public ApiResponse clearThisDayEasyTaskAndSave(@RequestBody JSONObject reqJson){
+        try {
+            System.out.println(JSON.toJSONString(reqJson));
+            return timeZjService.clearThisDayEasyTaskAndSave(reqJson.getString("id_C"),reqJson.getString("dep"),
+                    reqJson.getLong("thisDay"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.clearThisDayEasyTaskAndSave", e);
+        }
+    }
+
 }

@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -112,7 +114,9 @@ public class TimeZj {
                 JSONObject tasksAndZon = getTasksAndZon(getTeS(random, grpB, dep,onlyFirstTimeStamp
                         ,newestLastCurrentTimestamp), grpB, dep, id_C,objTaskAll,depAllTime);
                 // 获取任务信息
-                Object[] tasksIs = isTasksNull(tasksAndZon,depAllTime.getLong(dep));
+                Object[] tasksIs = isTasksNull(tasksAndZon,depAllTime.getJSONObject(dep).getJSONObject(grpB)
+                        .getLong(getTeS(random, grpB, dep,onlyFirstTimeStamp
+                                ,newestLastCurrentTimestamp)+""));
 //                System.out.println("isTasksNull:");
 //                System.out.println(JSON.toJSONString(tasksIs));
                 tasks = (List<Task>) tasksIs[0];
@@ -127,11 +131,14 @@ public class TimeZj {
                     result.put("tasks",tasks);
                 } else {
                     // 调用方法获取返回对象信息
-                    result = getChkInJumpDayByRandom(random,grpB,dep,id_C,xbAndSbAll,onlyFirstTimeStamp,newestLastCurrentTimestamp);
+                    result = getChkInJumpDayByRandom(random,grpB,dep,id_C,xbAndSbAll,onlyFirstTimeStamp
+                            ,newestLastCurrentTimestamp,getTeS(random, grpB, dep,onlyFirstTimeStamp
+                                    ,newestLastCurrentTimestamp));
                     System.out.println("getChkInJumpDayByRandom:");
                     System.out.println(JSON.toJSONString(result));
                 }
-            } else {
+            }
+            else {
                 System.out.println("进入jump-2:");
                 // 创建返回对象
                 result = new HashMap<>(Constants.HASH_MAP_DEFAULT_LENGTH);
@@ -157,7 +164,9 @@ public class TimeZj {
                     System.out.println("tasksAndZon:"+dep);
                     System.out.println(JSON.toJSONString(tasksAndZon));
                     System.out.println(JSON.toJSONString(depAllTime));
-                    Object[] tasksIs = isTasksNull(tasksAndZon,depAllTime.getLong(dep));
+                    Object[] tasksIs = isTasksNull(tasksAndZon,depAllTime.getJSONObject(dep).getJSONObject(grpB)
+                            .getLong(getTeS(random, grpB, dep,onlyFirstTimeStamp
+                                    ,newestLastCurrentTimestamp)+""));
                     tasksNew = (List<Task>) tasksIs[0];
                     zon = (long) tasksIs[1];
                     // 判断任务集合不为空
@@ -170,7 +179,7 @@ public class TimeZj {
                         Collections.copy(tasks,tasksNew);
                     } else {
                         System.out.println("进入jump-2-3:");
-                        JSONObject xbAndSb = getXbAndSb(grpB, dep, id_C,xbAndSbAll);
+                        JSONObject xbAndSb = getXbAndSb(grpB, dep, id_C,xbAndSbAll,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp));
                         // 调用获取上班时间
                         JSONArray chkIn = xbAndSb.getJSONArray("sb");
                         // 调用获取不上班时间
@@ -191,12 +200,14 @@ public class TimeZj {
                 result.put("zon",zon);
                 result.put("tasks",tasks);
             }
-        } else {
+        }
+        else {
             // 判断是获取数据库任务信息
             if (isGetTaskPattern == 0) {
                 System.out.println("进入jump-3:");
                 JSONObject tasksAndZon = getTasksAndZon(teS, grpB, dep, id_C,objTaskAll,depAllTime);
-                Object[] tasksIs = isTasksNull(tasksAndZon,depAllTime.getLong(dep));
+                Object[] tasksIs = isTasksNull(tasksAndZon,depAllTime.getJSONObject(dep).getJSONObject(grpB)
+                        .getLong(teS+""));
                 tasks = (List<Task>) tasksIs[0];
                 zon = (long) tasksIs[1];
                 // 判断任务集合不为空
@@ -210,7 +221,8 @@ public class TimeZj {
                     // 调用方法获取返回对象信息
                     result = getChkInJumpDayByTeS(teS, grpB, dep,id_C,xbAndSbAll);
                 }
-            } else {
+            }
+            else {
                 System.out.println("进入jump-4:");
                 // 创建返回对象
                 result = new HashMap<>(Constants.HASH_MAP_DEFAULT_LENGTH);
@@ -230,7 +242,7 @@ public class TimeZj {
                     JSONObject tasksAndZon = getTasksAndZon(teS, grpB, dep, id_C,objTaskAll,depAllTime);
                     List<Task> tasksNew = new ArrayList<>();
                     if (null == tasksAndZon) {
-                        zon = depAllTime.getLong(dep);
+                        zon = depAllTime.getJSONObject(dep).getJSONObject(grpB).getLong(teS+"");
                     } else {
                         Object[] objects = copyTasks(tasksAndZon);
                         tasksNew = (List<Task>) objects[0];
@@ -246,7 +258,7 @@ public class TimeZj {
                         Collections.copy(tasks,tasksNew);
                     } else {
                         System.out.println("进入jump-4-3:");
-                        JSONObject xbAndSb = getXbAndSb(grpB, dep, id_C,xbAndSbAll);
+                        JSONObject xbAndSb = getXbAndSb(grpB, dep, id_C,xbAndSbAll,getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp));
                         // 调用获取上班时间
                         JSONArray chkIn = xbAndSb.getJSONArray("sb");
                         // 调用获取不上班时间
@@ -283,10 +295,10 @@ public class TimeZj {
      */
     @SuppressWarnings("unchecked")
     protected Map<String,Object> getChkInJumpDayByRandom(String random,String grpB,String dep,String id_C
-            ,JSONObject xbAndSbAll,JSONObject onlyFirstTimeStamp,JSONObject newestLastCurrentTimestamp){
+            ,JSONObject xbAndSbAll,JSONObject onlyFirstTimeStamp,JSONObject newestLastCurrentTimestamp,long teS){
         // 创建返回对象
         Map<String,Object> result = new HashMap<>(Constants.HASH_MAP_DEFAULT_LENGTH);
-        JSONObject xbAndSb = getXbAndSb(grpB, dep, id_C,xbAndSbAll);
+        JSONObject xbAndSb = getXbAndSb(grpB, dep, id_C,xbAndSbAll,teS);
         // 调用获取上班时间
         JSONArray chkIn = xbAndSb.getJSONArray("sb");
         // 调用获取不上班时间
@@ -318,7 +330,7 @@ public class TimeZj {
             ,JSONObject xbAndSbAll){
         // 创建返回对象
         Map<String,Object> result = new HashMap<>(Constants.HASH_MAP_DEFAULT_LENGTH);
-        JSONObject xbAndSb = getXbAndSb(grpB, dep, id_C,xbAndSbAll);
+        JSONObject xbAndSb = getXbAndSb(grpB, dep, id_C,xbAndSbAll,teS);
         // 调用获取上班时间
         JSONArray chkIn = xbAndSb.getJSONArray("sb");
         // 调用获取不上班时间
@@ -418,7 +430,7 @@ public class TimeZj {
         if (null == depKeyZon) {
             depKeyZon = new JSONObject();
             JSONObject grpBKeyZon = new JSONObject();
-            zon = depAllTime.getLong(depNext);
+            zon = depAllTime.getJSONObject(depNext).getJSONObject(grpBNext).getLong(teS+"");
             grpBKeyZon.put(teS+"",zon);
             depKeyZon.put(grpBNext,grpBKeyZon);
             allImageTotalTime.put(depNext,depKeyZon);
@@ -426,13 +438,13 @@ public class TimeZj {
             JSONObject grpBKeyZon = depKeyZon.getJSONObject(grpBNext);
             if (null == grpBKeyZon) {
                 grpBKeyZon = new JSONObject();
-                zon = depAllTime.getLong(depNext);
+                zon = depAllTime.getJSONObject(depNext).getJSONObject(grpBNext).getLong(teS+"");
                 grpBKeyZon.put(teS+"",zon);
                 depKeyZon.put(grpBNext,grpBKeyZon);
                 allImageTotalTime.put(depNext,depKeyZon);
             } else {
                 if (null == grpBKeyZon.get(teS+"")) {
-                    zon = depAllTime.getLong(depNext);
+                    zon = depAllTime.getJSONObject(depNext).getJSONObject(grpBNext).getLong(teS+"");
                     grpBKeyZon.put(teS+"",zon);
                     depKeyZon.put(grpBNext,grpBKeyZon);
                     allImageTotalTime.put(depNext,depKeyZon);
@@ -711,21 +723,28 @@ public class TimeZj {
 //        xbAndSbAll.put(dep, depXbSb);
 //        return result;
 //    }
-    protected JSONObject getXbAndSb(String grpB,String dep,String id_C,JSONObject xbAndSbAll){
-//        System.out.println("获取不上班打卡时间:"+teStart+"-"+grpB+"-"+dep+"- id_C:"+id_C);
+    protected JSONObject getXbAndSb(String grpB,String dep,String id_C,JSONObject xbAndSbAll,long teS){
+        System.out.println("获取不上班打卡时间:"+teS+"-"+grpB+"-"+dep+"- id_C:"+id_C);
         // 获取全局上班下班信息的部门信息
         JSONObject depXbSb = xbAndSbAll.getJSONObject(dep);
+        JSONObject grpBXbSb = null;
         // 存储为空状态
         int isStorageEmpty;
         // 判断部门信息不为空
         if (null != depXbSb) {
             // 获取全局上班下班信息的组别信息
-            JSONObject grpBXbSb = depXbSb.getJSONObject(grpB);
+            grpBXbSb = depXbSb.getJSONObject(grpB);
             // 判断组别信息不为空
             if (null != grpBXbSb) {
                 System.out.println("直接返回:");
+                JSONObject teSXb = grpBXbSb.getJSONObject(teS + "");
+                if (null != teSXb) {
+                    return teSXb;
+                } else {
+                    isStorageEmpty = 3;
+                }
 //                System.out.println(JSON.toJSONString(grpBXbSb));
-                return grpBXbSb;
+
             } else {
                 isStorageEmpty = 2;
             }
@@ -746,66 +765,47 @@ public class TimeZj {
             chkGrpB = objChkin.getJSONObject(grpB);
             System.out.println("获取数据库:");
         }
-        JSONArray arrTime = chkGrpB.getJSONArray("arrTime");
+        JSONArray arrTime = null;
+        if (chkGrpB.containsKey("whWeek")) {
+            System.out.println("teS-1:"+teS);
+            boolean isWeek = true;
+            if (chkGrpB.containsKey("whDate")) {
+                JSONObject whDate = chkGrpB.getJSONObject("whDate");
+                if (whDate.containsKey(teS + "")) {
+                    isWeek = false;
+                    JSONObject wData = whDate.getJSONObject(teS + "");
+                    boolean isWork = false;
+                    if (wData.getInteger("workType") >= 1) {
+                        isWork = true;
+                    } else {
+                        arrTime = chkGrpB.getJSONArray("arrTime");
+                    }
+                    if (wData.containsKey("arrTime")&&isWork) {
+                        arrTime = wData.getJSONArray("arrTime");
+                    }
+                }
+            }
+            if (isWeek) {
+                JSONObject whWeek = chkGrpB.getJSONObject("whWeek");
+                JSONObject weekData = whWeek.getJSONObject(dateToWeek(teS) + "");
+                boolean isWork = false;
+                if (weekData.getInteger("workType") >= 1) {
+                    isWork = true;
+                } else {
+                    arrTime = chkGrpB.getJSONArray("arrTime");
+                }
+                if (weekData.containsKey("arrTime")&&isWork) {
+                    arrTime = weekData.getJSONArray("arrTime");
+                }
+            }
+        } else {
+            arrTime = chkGrpB.getJSONArray("arrTime");
+        }
         JSONArray objSb = new JSONArray();
         JSONArray objXb = new JSONArray();
-        // 用于保存上一个时间段的结束时间
-//        long belowTimeData = 0;
-//        int priority = 0;
+
         timeZjService.getArrTime(arrTime,objSb,objXb);
-//        for (int j = 0; j < arrTime.size(); j+=2) {
-//            String timeUpper = arrTime.getString(j);
-//            String timeBelow = arrTime.getString(j+1);
-//            String[] splitUpper = timeUpper.split(":");
-//            String[] splitBelow = timeBelow.split(":");
-//            int upper = Integer.parseInt(splitUpper[0]);
-//            int upperDivide = Integer.parseInt(splitUpper[1]);
-//            int below = Integer.parseInt(splitBelow[0]);
-//            int belowDivide = Integer.parseInt(splitBelow[1]);
-//            long upperTime = (((long) upper * 60) * 60)+((long) upperDivide * 60);
-//            long belowTime = (((long) below * 60) * 60)+((long) belowDivide * 60);
-//
-//            JSONObject objSbZ = new JSONObject();
-//            objSbZ.put("priority",priority);
-//            priority++;
-//            objSbZ.put("tePStart",upperTime);
-//            objSbZ.put("tePFinish",belowTime);
-//            objSbZ.put("zon",belowTime-upperTime);
-//            objSb.add(objSbZ);
-//            if (j == 0) {
-//                if (upperTime != 0) {
-//                    JSONObject objXbZ = new JSONObject();
-//                    objXbZ.put("priority",-1);
-//                    objXbZ.put("tePStart",0);
-//                    objXbZ.put("tePFinish",upperTime);
-//                    objXbZ.put("zon",upperTime);
-//                    objXb.add(objXbZ);
-//                }
-//            } else if ((j + 1) + 1 >= arrTime.size()) {
-//                JSONObject objXbZ = new JSONObject();
-//                objXbZ.put("priority",-1);
-//                objXbZ.put("tePStart",belowTimeData);
-//                objXbZ.put("tePFinish",upperTime);
-//                objXbZ.put("zon",upperTime-belowTimeData);
-//                objXb.add(objXbZ);
-//                if (belowTime != 86400) {
-//                    objXbZ = new JSONObject();
-//                    objXbZ.put("priority",-1);
-//                    objXbZ.put("tePStart",belowTime);
-//                    objXbZ.put("tePFinish",86400);
-//                    objXbZ.put("zon",86400-belowTime);
-//                    objXb.add(objXbZ);
-//                }
-//            } else {
-//                JSONObject objXbZ = new JSONObject();
-//                objXbZ.put("priority",-1);
-//                objXbZ.put("tePStart",belowTimeData);
-//                objXbZ.put("tePFinish",upperTime);
-//                objXbZ.put("zon",upperTime-belowTimeData);
-//                objXb.add(objXbZ);
-//            }
-//            belowTimeData = belowTime;
-//        }
+
         result.put("xb",objXb);
         result.put("sb",objSb);
 
@@ -814,9 +814,35 @@ public class TimeZj {
         if (isStorageEmpty == 1) {
             depXbSb = new JSONObject();
         }
-        depXbSb.put(grpB, result);
+        if (null == grpBXbSb) {
+            grpBXbSb = new JSONObject();
+        }
+        grpBXbSb.put(teS+"",result);
+        depXbSb.put(grpB, grpBXbSb);
         xbAndSbAll.put(dep, depXbSb);
         return result;
+    }
+
+    /**
+     * 日期转星期
+     */
+    public static int dateToWeek(long timestamp) {
+        Date dateTime = new Date(timestamp);
+        SimpleDateFormat f = new SimpleDateFormat("yyyy/MM/dd");
+//        String[] weekDays = { "星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" };
+        Calendar cal = Calendar.getInstance(); // 获得一个日历
+        Date date;
+        try {
+            String format = f.format(dateTime);
+            date = f.parse(format);
+            cal.setTime(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        int w = cal.get(Calendar.DAY_OF_WEEK) - 1; // 指示一个星期中的某天。
+        if (w < 0)
+            w = 0;
+        return w;
     }
 
     /**
@@ -981,6 +1007,89 @@ public class TimeZj {
                 JSONObject teSTask = grpBTask.getJSONObject(teStart + "");
                 // 判断时间差任务信息不为空
                 if (null != teSTask) {
+                    if (!depAllTime.containsKey(dep)||!depAllTime.getJSONObject(dep).containsKey(grpB)
+                            ||!depAllTime.getJSONObject(dep).getJSONObject(grpB).containsKey(teStart+"")) {
+                        Asset asset = qt.getConfig(id_C,"d-"+dep, "chkin");
+                        JSONObject depData = depAllTime.getJSONObject(dep);
+                        if (null == depData) {
+                            depData = new JSONObject();
+                        }
+                        int teDur = 0;
+                        if (null != asset.getChkin() && null!=asset.getChkin().getJSONObject("objChkin")
+                                && null!=asset.getChkin().getJSONObject("objChkin").getJSONObject(grpB)) {
+                            JSONObject grpBData = asset.getChkin().getJSONObject("objChkin").getJSONObject(grpB);
+                            if (grpBData.containsKey("whWeek")) {
+                                if (grpBData.containsKey("whDate") && grpBData.getJSONObject("whDate").containsKey(teStart+"")) {
+                                    JSONObject teSData = grpBData.getJSONObject("whDate").getJSONObject(teStart + "");
+                                    boolean isWntWork = teSData.containsKey("wntWork");
+                                    boolean isWntOver = teSData.containsKey("wntOver");
+                                    if (teSData.getInteger("workType") == 1) {
+                                        if (isWntWork) {
+                                            teDur = teSData.getInteger("wntWork");
+                                        } else {
+                                            teDur = grpBData.getInteger("teDur");
+                                        }
+                                    } else if (teSData.getInteger("workType") == 2) {
+                                        if (isWntWork) {
+                                            teDur = teSData.getInteger("wntWork");
+                                        } else {
+                                            teDur = grpBData.getInteger("teDur");
+                                        }
+                                        if (isWntOver) {
+                                            teDur+=teSData.getInteger("wntOver");
+                                        } else {
+                                            teDur+=grpBData.getInteger("wntOver")==null?0:grpBData.getInteger("wntOver");
+                                        }
+                                    }
+                                } else {
+                                    JSONObject whWeek = grpBData.getJSONObject("whWeek");
+                                    JSONObject weekData = whWeek.getJSONObject(dateToWeek(teStart) + "");
+                                    boolean isWntWork = weekData.containsKey("wntWork");
+                                    boolean isWntOver = weekData.containsKey("wntOver");
+                                    if (weekData.getInteger("workType") == 1) {
+                                        if (isWntWork) {
+                                            teDur = weekData.getInteger("wntWork");
+                                        } else {
+                                            teDur = grpBData.getInteger("teDur");
+                                        }
+                                    } else if (weekData.getInteger("workType") == 2) {
+                                        if (isWntWork) {
+                                            teDur = weekData.getInteger("wntWork");
+                                        } else {
+                                            teDur = grpBData.getInteger("teDur");
+                                        }
+                                        if (isWntOver) {
+                                            teDur+=weekData.getInteger("wntOver");
+                                        } else {
+                                            teDur+=grpBData.getInteger("wntOver")==null?0:grpBData.getInteger("wntOver");
+                                        }
+                                    }
+                                }
+                            } else {
+                                teDur = grpBData.getInteger("teDur");
+                            }
+
+                            JSONObject grpBInfo = depData.getJSONObject(grpB);
+                            if (null == grpBInfo) {
+                                grpBInfo = new JSONObject();
+                            }
+                            grpBInfo.put(teStart+"",teDur==0?0L:(teDur* 60L)*60);
+                            depData.put(grpB,grpBInfo);
+                            depAllTime.put(dep,depData);
+                            System.out.println("进入拿数据库:");
+                        } else {
+                            JSONObject grpBInfo = depData.getJSONObject(grpB);
+                            if (null == grpBInfo) {
+                                grpBInfo = new JSONObject();
+                            }
+                            if (!grpBInfo.containsKey(teStart + "")) {
+                                grpBInfo.put(teStart+"",0);
+                                depData.put(grpB,grpBInfo);
+                                depAllTime.put(dep,depData);
+                            }
+                            System.out.println("进入拿本地:");
+                        }
+                    }
                     // 直接返回结果
                     return teSTask;
                 } else {
@@ -997,7 +1106,87 @@ public class TimeZj {
         }
 //        System.out.println("为空状态:"+isStorageEmpty);
 //        Asset asset = qt.getConfig(id_C,"a-chkin", timeCard);
-        Asset asset = qt.getConfig(id_C,"d-"+dep, timeCard);
+        Asset asset = qt.getConfig(id_C,"d-"+dep, qt.strList(timeCard,"chkin"));
+        int teDur = 0;
+        JSONObject depData = depAllTime.getJSONObject(dep);
+        if (null == depData) {
+            depData = new JSONObject();
+        }
+        if (null != asset.getChkin() && null!=asset.getChkin().getJSONObject("objChkin")
+                && null!=asset.getChkin().getJSONObject("objChkin").getJSONObject(grpB)) {
+            JSONObject grpBData = asset.getChkin().getJSONObject("objChkin").getJSONObject(grpB);
+            if (grpBData.containsKey("whWeek")) {
+                if (grpBData.containsKey("whDate") && grpBData.getJSONObject("whDate").containsKey(teStart+"")) {
+                    JSONObject teSData = grpBData.getJSONObject("whDate").getJSONObject(teStart + "");
+                    boolean isWntWork = teSData.containsKey("wntWork");
+                    boolean isWntOver = teSData.containsKey("wntOver");
+                    if (teSData.getInteger("workType") == 1) {
+                        if (isWntWork) {
+                            teDur = teSData.getInteger("wntWork");
+                        } else {
+                            teDur = grpBData.getInteger("teDur");
+                        }
+                    } else if (teSData.getInteger("workType") == 2) {
+                        if (isWntWork) {
+                            teDur = teSData.getInteger("wntWork");
+                        } else {
+                            teDur = grpBData.getInteger("teDur");
+                        }
+                        if (isWntOver) {
+                            teDur+=teSData.getInteger("wntOver");
+                        } else {
+                            teDur+=grpBData.getInteger("wntOver")==null?0:grpBData.getInteger("wntOver");
+                        }
+                    }
+                } else {
+                    JSONObject whWeek = grpBData.getJSONObject("whWeek");
+                    JSONObject weekData = whWeek.getJSONObject(dateToWeek(teStart) + "");
+                    boolean isWntWork = weekData.containsKey("wntWork");
+                    boolean isWntOver = weekData.containsKey("wntOver");
+                    if (weekData.getInteger("workType") == 1) {
+                        if (isWntWork) {
+                            teDur = weekData.getInteger("wntWork");
+                        } else {
+                            teDur = grpBData.getInteger("teDur");
+                        }
+                    } else if (weekData.getInteger("workType") == 2) {
+                        if (isWntWork) {
+                            teDur = weekData.getInteger("wntWork");
+                        } else {
+                            teDur = grpBData.getInteger("teDur");
+                        }
+                        if (isWntOver) {
+                            teDur+=weekData.getInteger("wntOver");
+                        } else {
+                            teDur+=grpBData.getInteger("wntOver")==null?0:grpBData.getInteger("wntOver");
+                        }
+                    }
+                }
+            } else {
+                teDur = grpBData.getInteger("teDur");
+            }
+
+            JSONObject grpBInfo = depData.getJSONObject(grpB);
+            if (null == grpBInfo) {
+                grpBInfo = new JSONObject();
+            }
+            grpBInfo.put(teStart+"",teDur==0?0L:(teDur* 60L)*60);
+            depData.put(grpB,grpBInfo);
+            depAllTime.put(dep,depData);
+            System.out.println("进入拿数据库:");
+        } else {
+            JSONObject grpBInfo = depData.getJSONObject(grpB);
+            if (null == grpBInfo) {
+                grpBInfo = new JSONObject();
+            }
+            if (!grpBInfo.containsKey(teStart + "")) {
+                grpBInfo.put(teStart+"",0);
+                depData.put(grpB,grpBInfo);
+                depAllTime.put(dep,depData);
+            }
+            System.out.println("进入拿本地:");
+        }
+
 //        System.out.println(JSON.toJSONString(asset));
 //        System.out.println("获取任务集合:"+teStart+" - "+grpB+" - "+dep);
 //        System.out.println("查询数据库:");
@@ -1008,12 +1197,14 @@ public class TimeZj {
         // 判断为空
         if (null == aArrange) {
             // 添加一个空任务信息
-            setTasksAndZon(new ArrayList<>(),grpB,dep,teStart, depAllTime.getLong(dep), objTaskAll);
+            setTasksAndZon(new ArrayList<>(),grpB,dep,teStart
+                    , depAllTime.getJSONObject(dep).getJSONObject(grpB).getLong(teStart+""), objTaskAll);
             return null;
         }
         JSONObject objTasks = aArrange.getJSONObject("objTask");
         if (null == objTasks) {
-            setTasksAndZon(new ArrayList<>(),grpB,dep,teStart,depAllTime.getLong(dep),objTaskAll);
+            setTasksAndZon(new ArrayList<>(),grpB,dep,teStart,depAllTime.getJSONObject(dep)
+                    .getJSONObject(grpB).getLong(teStart+""),objTaskAll);
             return null;
         }
 //        JSONObject objDep = objTasks.getJSONObject(dep);
@@ -1023,7 +1214,8 @@ public class TimeZj {
 //        }
         JSONObject objGrpB = objTasks.getJSONObject(grpB);
         if (null == objGrpB) {
-            setTasksAndZon(new ArrayList<>(),grpB,dep,teStart,depAllTime.getLong(dep),objTaskAll);
+            setTasksAndZon(new ArrayList<>(),grpB,dep,teStart,depAllTime.getJSONObject(dep)
+                    .getJSONObject(grpB).getLong(teStart+""),objTaskAll);
             return null;
         }
         // 创建存储返回任务信息字典
@@ -1068,6 +1260,39 @@ public class TimeZj {
         // 添加当前任务信息
         result.put("tasks",tasks);
         result.put("zon",zon);
+        // 判断部门任务信息不为空
+        if (null != depTask) {
+            // 获取组别任务信息
+            grpBTask = depTask.getJSONObject(grpB);
+            // 判断组别任务信息为空
+            if (null == grpBTask) {
+                // 创建
+                grpBTask = new JSONObject();
+            }
+        } else {
+            // 创建
+            depTask = new JSONObject();
+            grpBTask = new JSONObject();
+        }
+        // 写入任务信息
+        grpBTask.put(teStart+"",result);
+        depTask.put(grpB,grpBTask);
+        objTaskAll.put(dep,depTask);
+    }
+    public static void setTasksAndZonWntTotal(List<Task> tasks, String grpB, String dep, Long teStart
+            , Long zon,JSONObject objTaskAll,long wntTotal){
+//        System.out.println("写入数据库任务列表:"+teStart);
+//        System.out.println(JSON.toJSONString(tasks));
+        // 获取部门任务信息
+        JSONObject depTask = objTaskAll.getJSONObject(dep);
+        // 定义存储组别任务信息
+        JSONObject grpBTask;
+        // 存储当前要写入的任务信息
+        JSONObject result = new JSONObject();
+        // 添加当前任务信息
+        result.put("tasks",tasks);
+        result.put("zon",zon);
+        result.put("wntTotal",wntTotal);
         // 判断部门任务信息不为空
         if (null != depTask) {
             // 获取组别任务信息
@@ -2145,127 +2370,7 @@ public class TimeZj {
 //        System.out.println(JSON.toJSONString(result));
         return result;
     }
-//    protected void clearOldTaskNew(String id_O,int dateIndex,String id_C,String layer,String id_PF){
-//        System.out.println("进入Api清理方法:"+" - "+id_O+" - "+dateIndex);
-//        Order order = qt.getMDContent(id_O, "casItemx", Order.class);
-//        if (null == order || null == order.getCasItemx() || null == order.getCasItemx().getJSONObject("java")) {
-//            // 返回为空错误信息
-//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
-//        }
-//        // 获取进度的oDates字段信息
-//        JSONArray oDates = order.getCasItemx().getJSONObject("java").getJSONArray("oDates");
-////        JSONObject oDateThis = oDates.getJSONObject(dateIndex);
-//        Map<String,Asset> assetMap = new HashMap<>();
-////        JSONObject taskAll = new JSONObject();
-//        // 遍历时间处理信息集合
-//        for (int i = dateIndex; i < oDates.size(); i++) {
-//            // 获取i对应的时间处理信息
-//            JSONObject oDate = oDates.getJSONObject(i);
-//            // 获取订单编号
-//            String id_OThis = oDate.getString("id_O");
-//            Integer indexThis = oDate.getInteger("index");
-//            System.out.println("oDate:");
-//            System.out.println(JSON.toJSONString(oDate));
-//            // 获取时间处理的组别
-//            String grpBNew = oDate.getString("grpB");
-//            String depNew = oDate.getString("dep");
-//            // 根据组别获取部门
-//            Asset asset;
-//            if (assetMap.containsKey(depNew)) {
-//                asset = assetMap.get(depNew);
-//            } else {
-//                asset = qt.getConfig(id_C,"d-"+depNew,timeCard);
-//                assetMap.put(depNew,asset);
-//            }
-//            if (null == asset) {
-//                // 返回为空错误信息
-//                System.out.println();
-//                System.out.println("-查询为空!-"+depNew);
-//                System.out.println();
-//                // 返回为空错误信息
-//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
-//            }
-//            JSONObject aArrange = getAArrangeNew(asset);
-//            JSONObject objTask;
-//            if (null == aArrange || null == aArrange.getJSONObject("objTask")) {
-//                // 返回为空错误信息
-//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
-//            } else {
-//                // 获取数据库任务信息
-//                objTask = aArrange.getJSONObject("objTask");
-//            }
-//            // 获取任务所在时间
-//            JSONObject teDateNext = oDate.getJSONObject("teDate");
-//            System.out.println(id_OThis+" - "+indexThis+" - "+i+" - "+grpBNew+" - "+depNew
-//                    +" - teDateNext:"+JSON.toJSONString(teDateNext));
-//            if (null == teDateNext) {
-//                // 返回为空错误信息
-//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
-//            }
-//            // 根据部门信息获取指定组别的信息
-//            JSONObject grpBTask = objTask.getJSONObject(grpBNew);
-//            // 判断为空
-//            if (null == grpBTask) {
-//                // 返回为空错误信息
-//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
-//            }
-//            // 遍历任务所在时间
-//            for (String time : teDateNext.keySet()) {
-//                // 获取所在时间任务信息
-//                JSONObject timeTask = grpBTask.getJSONObject(time);
-//                // 获取任务列表
-//                JSONArray tasksNew = timeTask.getJSONArray("tasks");
-//                // 获取任务余剩时间
-//                Long zon = timeTask.getLong("zon");
-//                // 创建存储删除信息
-//                JSONArray removeIndex = new JSONArray();
-//                // 遍历任务列表
-//                for (int t = 1; t < tasksNew.size(); t++) {
-//                    // 获取任务信息
-//                    JSONObject taskInside = tasksNew.getJSONObject(t);
-//                    // 判断循环任务订单编号等于当前处理任务编号，并且循环任务下标等于当前处理任务下标
-//                    if (taskInside.getString("id_O").equals(id_OThis)
-//                            && Objects.equals(taskInside.getInteger("index"), indexThis)) {
-//                        // 创建删除信息
-//                        JSONObject removeInfo = new JSONObject();
-//                        // 添加删除信息
-//                        removeInfo.put("index",t);
-//                        removeInfo.put("wntDurTotal",taskInside.getLong("wntDurTotal"));
-//                        removeIndex.add(removeInfo);
-//                        if ((tasksNew.size() - 1) <= (t + 1)) {
-//                            JSONObject taskInsideNew = tasksNew.getJSONObject((t + 1));
-//                            if (taskInsideNew.getInteger("priority") != -1 && taskInsideNew.getLong("teDelayDate") > 0) {
-//                                taskInsideNew.put("updateTime",true);
-//                            }
-//                        }
-//                    }
-//                }
-//                // 遍历删除集合
-//                for (int r = removeIndex.size()-1; r >= 0; r--) {
-//                    // 获取删除信息
-//                    JSONObject indexJson = removeIndex.getJSONObject(r);
-//                    // 获取删除下标
-//                    int indexNewThis = Integer.parseInt(indexJson.getString("index"));
-//                    // 删除任务列表对应下标的任务
-//                    tasksNew.remove(indexNewThis);
-//                    // 累加任务总时间
-//                    zon+=indexJson.getLong("wntDurTotal");
-//                }
-//                // 添加信息
-//                timeTask.put("tasks",tasksNew);
-//                timeTask.put("zon",zon);
-//                System.out.println("tasksNew-刚删除:");
-//                System.out.println(JSON.toJSONString(tasksNew));
-//                grpBTask.put(time,timeTask);
-//            }
-//            objTask.put(grpBNew,grpBTask);
-//            aArrange.put("objTask",objTask);
-//            asset.setAArrange(aArrange);
-//            assetMap.put(depNew,asset);
-//        }
-//        System.out.println("清理后输出:");
-//        System.out.println(JSON.toJSONString(assetMap));
-//    }
+
     protected void clearOldTaskNew(String id_O,int dateIndex,String id_C,String layer,String id_PF){
         System.out.println("进入Api清理方法:"+" - "+id_O+" - "+dateIndex);
         Order order = qt.getMDContent(id_O, "casItemx", Order.class);
@@ -2504,6 +2609,162 @@ public class TimeZj {
             asset.setAArrange(aArrange);
             assetMap.put(depNew,asset);
         }
+    }
+
+    protected void clearThisDayTaskAndSaveFc(String id_C,String dep,String grpB,long thisDay){
+        System.out.println("进入Api清理方法:"+" - "+dep+" - "+thisDay);
+        Asset as = qt.getConfig(id_C, "d-" + dep, "aArrange");
+        if (null == as || null == as.getAArrange() || null == as.getAArrange().getJSONObject("objTask")) {
+            // 返回为空错误信息
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+        }
+        // 获取进度的oDates字段信息
+        JSONObject grpBData = as.getAArrange().getJSONObject("objTask").getJSONObject(grpB);
+        if (null == grpBData) {
+            // 返回为空错误信息
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+        }
+        JSONObject dayData = grpBData.getJSONObject(thisDay+"");
+        if (null == dayData) {
+            // 返回为空错误信息
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+        }
+//        long zon = dayData.getLong("zon");
+        JSONArray tasks = dayData.getJSONArray("tasks");
+        JSONArray clearTasks = new JSONArray();
+        JSONObject id_OPs = new JSONObject();
+//        JSONArray delIndex = new JSONArray();
+        // 遍历时间处理信息集合
+        for (int i = 0; i < tasks.size(); i++) {
+            JSONObject task = tasks.getJSONObject(i);
+            if (task.getInteger("priority") != -1) {
+//                zon+=task.getLong("wntDurTotal");
+//                delIndex.add(i);
+                if (!id_OPs.containsKey(task.getString("refOP"))) {
+                    clearTasks.add(task);
+                    id_OPs.put(task.getString("refOP"),1);
+                }
+            }
+        }
+//        for (int i = delIndex.size()-1; i >= 0; i--) {
+//            int index = delIndex.getInteger(i);
+//            tasks.remove(index);
+//        }
+//        dayData.put("zon",zon);
+//        dayData.put("tasks",tasks);
+//        grpBData.put(thisDay+"",dayData);
+        dgJumpDayClear(clearTasks,id_OPs,grpBData,thisDay);
+
+//        qt.setMDContent(as.getId(),qt.setJson("aArrange.objTask."+grpB,grpBData,"aArrange.objTaskClear",clearTasks
+//                ,"aArrange.objTaskClearId_OP",id_OPs), Asset.class);
+        for (int i = 0; i < clearTasks.size(); i++) {
+            JSONObject clearData = clearTasks.getJSONObject(i);
+            clearOldTaskNew(clearData.getString("id_O"),clearData.getInteger("dateIndex")
+                    ,clearData.getString("id_C"),clearData.getString("layer"),clearData.getString("id_PF"));
+        }
+        qt.setMDContent(as.getId(),qt.setJson("aArrange.objTaskClear",clearTasks
+                ,"aArrange.objTaskClearId_OP",id_OPs), Asset.class);
+        System.out.println("清理后输出:");
+        System.out.println(JSON.toJSONString(grpBData));
+        System.out.println(JSON.toJSONString(clearTasks));
+        System.out.println(JSON.toJSONString(id_OPs));
+    }
+    private void dgJumpDayClear(JSONArray clearTasks,JSONObject id_OPs,JSONObject grpBData,long thisDay){
+        thisDay+=86400;
+        JSONObject dayData = grpBData.getJSONObject(thisDay+"");
+        if (null == dayData) {
+            return;
+        }
+//        long zon = dayData.getLong("zon");
+        JSONArray tasks = dayData.getJSONArray("tasks");
+//        JSONArray delIndex = new JSONArray();
+        // 遍历时间处理信息集合
+        for (int i = 0; i < tasks.size(); i++) {
+            JSONObject task = tasks.getJSONObject(i);
+            if (task.getInteger("priority") != -1) {
+//                zon+=task.getLong("wntDurTotal");
+//                delIndex.add(i);
+                if (!id_OPs.containsKey(task.getString("refOP"))) {
+                    clearTasks.add(task);
+                    id_OPs.put(task.getString("refOP"),1);
+                }
+            }
+        }
+//        for (int i = delIndex.size()-1; i >= 0; i--) {
+//            int index = delIndex.getInteger(i);
+//            tasks.remove(index);
+//        }
+//        dayData.put("zon",zon);
+//        dayData.put("tasks",tasks);
+//        grpBData.put(thisDay+"",dayData);
+        dgJumpDayClear(clearTasks,id_OPs,grpBData,thisDay);
+    }
+
+    protected void clearThisDayEasyTaskAndSaveFc(String id_C,String dep,long thisDay){
+        System.out.println("进入Api清理方法:"+" - "+dep+" - "+thisDay);
+        Asset as = qt.getConfig(id_C, "d-" + dep, "aArrange");
+        System.out.println(JSON.toJSONString(as));
+        if (null == as || null == as.getAArrange() || null == as.getAArrange().getJSONObject("objEasy")) {
+            // 返回为空错误信息
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+        }
+        Map<String,Asset> assetMap = new HashMap<>();
+        // 获取进度的oDates字段信息
+        JSONObject objEasy = as.getAArrange().getJSONObject("objEasy");
+        if (null == objEasy) {
+            // 返回为空错误信息
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+        }
+        JSONObject dayData = objEasy.getJSONObject(thisDay+"");
+        if (null == dayData) {
+            // 返回为空错误信息
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), "asset不存在");
+        }
+        long wntLeft = dayData.getLong("wntLeft");
+        JSONArray easyTasks = dayData.getJSONArray("easyTasks");
+        JSONArray clearTasks = new JSONArray();
+        JSONObject id_OPs = new JSONObject();
+        // 遍历时间处理信息集合
+        for (int i = 0; i < easyTasks.size(); i++) {
+            JSONObject task = easyTasks.getJSONObject(i);
+            wntLeft+=task.getLong("timeTotal");
+            if (!id_OPs.containsKey(task.getString("id_PF"))) {
+                id_OPs.put(task.getString("id_PF"),1);
+                clearTasks.add(task);
+            }
+        }
+        dayData.put("wntLeft",wntLeft);
+        dayData.put("easyTasks",new JSONArray());
+        objEasy.put(thisDay+"",dayData);
+        dgJumpDayEasyClear(clearTasks,id_OPs,objEasy,thisDay);
+//        qt.setMDContent(as.getId(),qt.setJson("aArrange.objEasy",objEasy,"aArrange.objEasyTaskClear",clearTasks
+//                ,"aArrange.objEasyTaskClearId_OP",id_OPs), Asset.class);
+        System.out.println("清理后输出:");
+        System.out.println(JSON.toJSONString(objEasy));
+        System.out.println(JSON.toJSONString(clearTasks));
+        System.out.println(JSON.toJSONString(id_OPs));
+    }
+    private void dgJumpDayEasyClear(JSONArray clearTasks,JSONObject id_OPs,JSONObject objEasy,long thisDay){
+        thisDay+=86400;
+        JSONObject dayData = objEasy.getJSONObject(thisDay+"");
+        if (null == dayData) {
+            return;
+        }
+        long wntLeft = dayData.getLong("wntLeft");
+        JSONArray easyTasks = dayData.getJSONArray("easyTasks");
+        // 遍历时间处理信息集合
+        for (int i = 0; i < easyTasks.size(); i++) {
+            JSONObject task = easyTasks.getJSONObject(i);
+            wntLeft+=task.getLong("timeTotal");
+            if (!id_OPs.containsKey(task.getString("id_PF"))) {
+                id_OPs.put(task.getString("id_PF"),1);
+                clearTasks.add(task);
+            }
+        }
+        dayData.put("wntLeft",wntLeft);
+        dayData.put("easyTasks",new JSONArray());
+        objEasy.put(thisDay+"",dayData);
+        dgJumpDayEasyClear(clearTasks,id_OPs,objEasy,thisDay);
     }
 
     /**

@@ -210,4 +210,13 @@ public interface TimeZjService {
 //    ApiResponse delMaterial();
 
     ApiResponse getAtFirstEasy(String id_O, Long teStart, String id_C);
+
+    ApiResponse setOrderUserCount(String id_O, String id_C, Long teStart);
+
+    ApiResponse clearThisDayTaskAndSave(String id_C,String dep,String grpB,long thisDay);
+
+    ApiResponse clearThisDayEasyTaskAndSave(String id_C,String dep,long thisDay);
+
+    ApiResponse setAtFirst(String id_O, Long teStart, String id_C, Integer wn0TPrior
+            ,int dateIndex,String layer,String id_PF);
 }
