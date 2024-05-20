@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 /**
  * ##description:
@@ -238,6 +237,7 @@ public class ActionController {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
         try {
             JSONObject res = actionService.changeActionStatus(
+                    null,
                     reqJson.getString("logType"),
                     reqJson.getInteger("status"),
                     reqJson.getString("msg"),
@@ -296,19 +296,19 @@ public class ActionController {
         }
     }
 
-    @SecurityParameter
-    @PostMapping("/v1/getRefOPList")
-    public ApiResponse getRefOPList(@RequestBody JSONObject reqJson) {
-        try {
-            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
-            return actionService.getRefOPList(
-                    reqJson.getString("id_Flow"),
-                    reqJson.getBoolean("isSL"),
-                    tokData.getString("id_C"));
-        } catch (Exception e) {
-            return getUserToken.err(reqJson, "ActionController.getRefOPList", e);
-        }
-    }
+//    @SecurityParameter
+//    @PostMapping("/v1/getRefOPList")
+//    public ApiResponse getRefOPList(@RequestBody JSONObject reqJson) {
+//        try {
+//            JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+//            return actionService.getRefOPList(
+//                    reqJson.getString("id_Flow"),
+//                    reqJson.getBoolean("isSL"),
+//                    tokData.getString("id_C"));
+//        } catch (Exception e) {
+//            return getUserToken.err(reqJson, "ActionController.getRefOPList", e);
+//        }
+//    }
 
 
     @SecurityParameter
@@ -379,6 +379,7 @@ public class ActionController {
 
         try {
             String re = actionService.createQuest(
+                    null,
                     tokData,
                     reqJson.getString("id_O"),
                     reqJson.getInteger("index"),

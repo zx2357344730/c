@@ -157,6 +157,9 @@ public class CosUpload {
         jsonResult.put("url", fileName);
         if (bool) {
             jsonResult.put("size", 0);
+            this.delCFiles(fileName);
+            PutObjectRequest request = new PutObjectRequest(bucketName2, fileName, file);
+            cosClient.putObject(request);
         } else {
             PutObjectRequest request = new PutObjectRequest(bucketName2, fileName, file);
             cosClient.putObject(request);
@@ -255,6 +258,55 @@ public class CosUpload {
         }
         this.delCFiles(id_C + "/" + id + "/file00s/");
         this.delCFiles(id_C + "/" + id + "/");
+//        qt.checkCapacity(id_C, -fileSize);
+        return fileSize;
+    }
+
+    public long copyPicroll00s(String id_C, JSONObject picroll00s) {
+        JSONArray arrayData = picroll00s.getJSONArray("objData");
+        long fileSize = 0L;
+        if (arrayData != null) {
+            for (int i = 0; i < arrayData.size(); i++) {
+                JSONObject jsonData = arrayData.getJSONObject(i);
+                JSONArray arrayPic = jsonData.getJSONArray("objPic");
+                for (int j = 0; j < arrayPic.size(); j++) {
+                    JSONObject jsonPic = arrayPic.getJSONObject(j);
+                    String pic = jsonPic.getString("pic");
+                    String[] splitPic = pic.split("/");
+                    String path = id_C + "/" + splitPic[splitPic.length - 1];
+                    jsonPic.put("pic", path);
+                    fileSize = fileSize + this.getCFilesSize(pic);
+                    this.copyCFiles(pic, path);
+                }
+            }
+        }
+//        qt.checkCapacity(id_C, -fileSize);
+        return fileSize;
+    }
+    public long copyFile00s(String id_C, String id, JSONObject file00s) {
+        JSONArray arrayData = file00s.getJSONArray("objData");
+        long fileSize = 0L;
+        if (arrayData != null) {
+            for (int i = 0; i < arrayData.size(); i++) {
+                JSONObject jsonData = arrayData.getJSONObject(i);
+                JSONArray arrayFile = jsonData.getJSONArray("objFile");
+                if (arrayFile != null) {
+                    for (int j = 0; j < arrayFile.size(); j++) {
+                        JSONObject jsonFile = arrayFile.getJSONObject(j);
+                        String fileSource = jsonFile.getString("fileSource");
+                        String[] splitFile = fileSource.split("/");
+                        StringBuffer sbPath = new StringBuffer(id_C).append("/").append(id);
+                        for (int k = 2; k < splitFile.length; k++) {
+                            sbPath.append("/").append(splitFile[k]);
+                        }
+                        String path = sbPath.toString();
+                        jsonFile.put("fileSource", path);
+                        fileSize = fileSize + this.getCFilesSize(fileSource);
+                        this.copyCFiles(fileSource, path);
+                    }
+                }
+            }
+        }
 //        qt.checkCapacity(id_C, -fileSize);
         return fileSize;
     }

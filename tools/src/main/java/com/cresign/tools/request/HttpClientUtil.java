@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -14,6 +15,7 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
+import org.bouncycastle.cert.ocsp.Req;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -29,83 +31,87 @@ import java.util.Map.Entry;
  * 利用HttpClient进行post请求的工具类(https发送)
  */
 public class HttpClientUtil {
-    public static String doPost(String url,Map<String,String> map,String charset){
-        HttpClient httpClient = null;  
-        HttpPost httpPost = null;  
-        String result = null;  
-        try{  
-            httpClient = new SSLClient();
-            httpPost = new HttpPost(url);  
-            //设置参数  
-            List<NameValuePair> list = new ArrayList<NameValuePair>();  
-            Iterator iterator = map.entrySet().iterator();  
-            while(iterator.hasNext()){  
-                Entry<String,String> elem = (Entry<String, String>) iterator.next();  
-                list.add(new BasicNameValuePair(elem.getKey(),elem.getValue()));  
-            }  
-            if(list.size() > 0){  
-                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(list,charset);  
-                httpPost.setEntity(entity);  
-            }  
-            HttpResponse response = httpClient.execute(httpPost);  
-            if(response != null){  
-                HttpEntity resEntity = response.getEntity();  
-                if(resEntity != null){  
-                    result = EntityUtils.toString(resEntity,charset);  
-                }  
-            }  
-        }catch(Exception ex){  
-            ex.printStackTrace();  
-        }  
-        return result;  
-    }
-    public static String doPostJson(String url, JSONObject map, String charset){
-        HttpClient httpClient = null;
-        HttpPost httpPost = null;
-        String result = null;
-        try{
-            httpClient = new SSLClient();
-            httpPost = new HttpPost(url);
-            //设置参数
-            List<NameValuePair> list = new ArrayList<NameValuePair>();
-            Iterator iterator = map.entrySet().iterator();
-            System.out.println("iterator:");
-            System.out.println(JSON.toJSONString(iterator));
-            while(iterator.hasNext()){
-                Entry<String,String> elem = (Entry<String, String>) iterator.next();
-                System.out.println("elem:");
-                System.out.println(JSON.toJSONString(elem));
-                list.add(new BasicNameValuePair(elem.getKey(),elem.getValue()));
-                System.out.println("list:");
-                System.out.println(JSON.toJSONString(list));
-            }
-            if(list.size() > 0){
-                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(list,charset);
-                httpPost.setEntity(entity);
-            }
-            HttpResponse response = httpClient.execute(httpPost);
-            if(response != null){
-                HttpEntity resEntity = response.getEntity();
-                if(resEntity != null){
-                    result = EntityUtils.toString(resEntity,charset);
-                }
-            }
-        }catch(Exception ex){
-            ex.printStackTrace();
-        }
-        return result;
-    }
+//    public static String doPost(String url,Map<String,String> map,String charset){
+//        HttpClient httpClient = null;
+//        HttpPost httpPost = null;
+//        String result = null;
+//        try{
+//            httpClient = new SSLClient();
+//            httpPost = new HttpPost(url);
+//            //设置参数
+//            List<NameValuePair> list = new ArrayList<NameValuePair>();
+//            Iterator iterator = map.entrySet().iterator();
+//            while(iterator.hasNext()){
+//                Entry<String,String> elem = (Entry<String, String>) iterator.next();
+//                list.add(new BasicNameValuePair(elem.getKey(),elem.getValue()));
+//            }
+//            if(list.size() > 0){
+//                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(list,charset);
+//                httpPost.setEntity(entity);
+//            }
+//            HttpResponse response = httpClient.execute(httpPost);
+//            if(response != null){
+//                HttpEntity resEntity = response.getEntity();
+//                if(resEntity != null){
+//                    result = EntityUtils.toString(resEntity,charset);
+//                }
+//            }
+//        }catch(Exception ex){
+//            ex.printStackTrace();
+//        }
+//        return result;
+//    }
+//    public static String doPostJson(String url, JSONObject map, String charset){
+//        HttpClient httpClient = null;
+//        HttpPost httpPost = null;
+//        String result = null;
+//        try{
+//            httpClient = new SSLClient();
+//            httpPost = new HttpPost(url);
+//            //设置参数
+//            List<NameValuePair> list = new ArrayList<NameValuePair>();
+//            Iterator iterator = map.entrySet().iterator();
+//            System.out.println("iterator:");
+//            System.out.println(JSON.toJSONString(iterator));
+//            while(iterator.hasNext()){
+//                Entry<String,String> elem = (Entry<String, String>) iterator.next();
+//                System.out.println("elem:");
+//                System.out.println(JSON.toJSONString(elem));
+//                list.add(new BasicNameValuePair(elem.getKey(),elem.getValue()));
+//                System.out.println("list:");
+//                System.out.println(JSON.toJSONString(list));
+//            }
+//            if(list.size() > 0){
+//                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(list,charset);
+//                httpPost.setEntity(entity);
+//            }
+//            HttpResponse response = httpClient.execute(httpPost);
+//            if(response != null){
+//                HttpEntity resEntity = response.getEntity();
+//                if(resEntity != null){
+//                    result = EntityUtils.toString(resEntity,charset);
+//                }
+//            }
+//        }catch(Exception ex){
+//            ex.printStackTrace();
+//        }
+//        return result;
+//    }
 
     public static String sendPost(JSONObject json, String URL
 //            ,String token
     ) {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost(URL);
+        System.out.println("started");
         post.setHeader("Content-Type", "application/json");
         post.setHeader("Authorization", "Basic YWRtaW46");
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(50000).setSocketTimeout(80000).build();
+        post.setConfig(requestConfig);
 //        post.setHeader("x-access-token",token);
         String result;
         try {
+
             StringEntity s = new StringEntity(json.toString(), "utf-8");
             s.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
                     "application/json"));
@@ -125,7 +131,7 @@ public class HttpClientUtil {
             if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 System.out.println("请求服务器成功，做相应处理");
             } else {
-                System.out.println("请求服务端失败");
+                System.out.println("请求服务端失败" + result);
             }
         } catch (Exception e) {
             System.out.println("请求异常："+e.getMessage());

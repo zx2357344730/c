@@ -47,6 +47,8 @@ public class Order {
 
     private JSONObject link00s;
 
+    private JSONObject form00s;
+
     @JsonProperty("oPdf")
     private JSONObject oPdf;
 

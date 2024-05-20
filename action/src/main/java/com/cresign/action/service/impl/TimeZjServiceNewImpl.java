@@ -1,10 +1,8 @@
 package com.cresign.action.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.service.TimeZjServiceNew;
-import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.enumeration.CodeEnum;
@@ -12,15 +10,11 @@ import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Order;
-import com.cresign.tools.pojo.po.chkin.Task;
-import com.cresign.tools.pojo.po.orderCard.OrderAction;
-import com.cresign.tools.pojo.po.orderCard.OrderInfo;
-import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Arrays;
 
 /**
  * @author tang
@@ -993,6 +987,7 @@ public class TimeZjServiceNewImpl extends TimeZj implements TimeZjServiceNew {
         // 判断处理状态为空或者为0
         if (null == operationState || 0 == operationState) {
             // 调用方法更新aArrange卡片操作状态接口
+//            updateArrangeState(1,assetId);
             updateArrangeState(1,asset.getId());
         } else {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_TASK_PROCESSING.getCode(), "资产时间正在处理中");

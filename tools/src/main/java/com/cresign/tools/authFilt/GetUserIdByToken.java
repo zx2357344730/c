@@ -40,8 +40,8 @@ public class GetUserIdByToken {
         if(qt.hasRDKey(clientType+"Token", jwtStr)) {
             return  qt.getRDSet(clientType+"Token",jwtStr).getString("id_U");
        }
-
-        throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), "");
+        else return null;
+//        throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), "");
     }
 
     /**

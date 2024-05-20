@@ -2916,6 +2916,69 @@ public class TimeZj {
     protected String getThisInfoRef(JSONObject thisInfo){
         return thisInfo.getString("thisRef");
     }
+//    /**
+//     * 更新当前信息冲突订单的父订单编号方法
+//     * @param thisInfo	当前处理通用信息存储
+//     * @param id_OPConflictObj	信息名称
+//     * @author tang
+//     * @ver 版本号: 1.0.0
+//     */
+//    protected void setThisInfoId_OPConflictObj(JSONObject thisInfo,JSONObject id_OPConflictObj){
+//        // 更新ref
+//        thisInfo.put("id_OPConflictObj",id_OPConflictObj);
+//    }
+//    /**
+//     * 获取当前信息冲突订单的父订单编号方法
+//     * @param thisInfo	当前处理通用信息存储
+//     * @return 返回结果: {@link String}
+//     * @author tang
+//     * @ver 版本号: 1.0.0
+//     */
+//    protected JSONObject getThisInfoId_OPConflictObj(JSONObject thisInfo){
+//        return thisInfo.getJSONObject("id_OPConflictObj");
+//    }
+//    /**
+//     * 更新当前信息的部门和组别方法
+//     * @param thisInfo	当前处理通用信息存储
+//     * @param depAndGrpB	当前的部门和组别信息
+//     * @author tang
+//     * @ver 版本号: 1.0.0
+//     */
+//    protected void setThisInfoDepAndGrpB(JSONObject thisInfo,JSONObject depAndGrpB){
+//        // 更新ref
+//        thisInfo.put("depAndGrpB",depAndGrpB);
+//    }
+//    /**
+//     * 获取当前信息的部门和组别方法
+//     * @param thisInfo	当前处理通用信息存储
+//     * @return 返回结果: {@link String}
+//     * @author tang
+//     * @ver 版本号: 1.0.0
+//     */
+//    protected JSONObject getThisInfoDepAndGrpB(JSONObject thisInfo){
+//        return thisInfo.getJSONObject("depAndGrpB");
+//    }
+//    /**
+//     * 更新当前信息的冲突状态方法
+//     * @param thisInfo	当前处理通用信息存储
+//     * @param conflictStatus	冲突状态
+//     * @author tang
+//     * @ver 版本号: 1.0.0
+//     */
+//    protected void setThisInfoConflictStatus(JSONObject thisInfo,int conflictStatus){
+//        // 更新ref
+//        thisInfo.put("conflictStatus",conflictStatus);
+//    }
+//    /**
+//     * 获取当前信息的冲突状态
+//     * @param thisInfo	当前处理通用信息存储
+//     * @return 返回结果: {@link String}
+//     * @author tang
+//     * @ver 版本号: 1.0.0
+//     */
+//    protected int getThisInfoConflictStatus(JSONObject thisInfo){
+//        return thisInfo.getInteger("conflictStatus");
+//    }
     /**
      * 更新当前信息的冲突信息方法
      * @param thisInfo	当前处理通用信息存储
@@ -3658,6 +3721,7 @@ public class TimeZj {
                     Integer bmdpt = oDate.getInteger("bmdpt");
                     if (bmdpt == 3) {
                         // 添加当前下标
+//                        delDateIndex.add(i);
                         delDateIndex.add(qt.setJson("index",i,"type",0));
                         System.out.println("输出:物料返回");
                         continue;
@@ -3856,6 +3920,54 @@ public class TimeZj {
 //        return asset.getAArrange2();
         return asset.getAArrange();
     }
+
+//    protected boolean conflictAddId_OP(JSONObject thisInfo,String id_O,String id_C){
+//        JSONObject thisInfoId_opConflictObj = getThisInfoId_OPConflictObj(thisInfo);
+//        if (thisInfoId_opConflictObj.containsKey(id_O)) {
+//            return true;
+//        }
+//        System.out.println("更新订单信息:");
+//        Order order = qt.getMDContent(id_O, "info", Order.class);
+//        if (null != order && null != order.getInfo() && null != order.getInfo().getId_OP()) {
+//            Order orderP = qt.getMDContent(order.getInfo().getId_OP(), "casItemx", Order.class);
+//            if (null != orderP && null != orderP.getCasItemx() && null != orderP.getCasItemx().getJSONObject(id_C)) {
+//                JSONObject obj = orderP.getCasItemx().getJSONObject(id_C);
+//                JSONArray objOrder = obj.getJSONArray("objOrder");
+//                thisInfoId_opConflictObj = new JSONObject();
+//                for (int i = 0; i < objOrder.size(); i++) {
+//                    JSONObject jsonObject = objOrder.getJSONObject(i);
+//                    thisInfoId_opConflictObj.put(jsonObject.getString("id_O"),0);
+//                }
+//                setThisInfoId_OPConflictObj(thisInfo,thisInfoId_opConflictObj);
+//            }
+//        }
+//        return false;
+//    }
+
+//    /**
+//     * 添加当前的部门和组别信息
+//     * @param dep   部门信息
+//     * @param grpB  组别信息
+//     * @param thisInfo  当前处理通用信息
+//     */
+//    protected void addThisDepAndGrpB(String dep,String grpB,JSONObject thisInfo){
+//        JSONObject depAndGrpB = new JSONObject();
+//        depAndGrpB.put("dep",dep);
+//        depAndGrpB.put("grpB",grpB);
+//        setThisInfoDepAndGrpB(thisInfo,depAndGrpB);
+//    }
+//
+//    /**
+//     * 根据条件添加当前的冲突状态
+//     * @param conflictStatus    冲突状态
+//     * @param thisInfo  当前处理通用信息
+//     */
+//    protected void addThisConflictStatus(int conflictStatus,JSONObject thisInfo){
+//        Integer conflictStatusOld = thisInfo.getInteger("conflictStatus");
+//        if (conflictStatusOld == 0) {
+//            setThisInfoConflictStatus(thisInfo,conflictStatus);
+//        }
+//    }
 
     /**
      * 根据条件添加当前的冲突信息的状态

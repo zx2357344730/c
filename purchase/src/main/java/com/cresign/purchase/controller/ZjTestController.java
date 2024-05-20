@@ -651,9 +651,9 @@ public class ZjTestController {
     public ApiResponse aiAskingQuestions(@RequestBody JSONObject resJson) {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
-            return zjService.aiAskingQuestions(resJson.getString("user"),resJson.getString("desc"));
+            return zjService.aiQuesting(tokData, resJson.getString("user"),resJson.getString("desc"));
         } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "ZjTestController.aiAskingQuestions", e);
+            return getUserToken.err(new JSONObject(), "ZjTestController.aiQuesting", e);
         }
     }
 }

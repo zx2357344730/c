@@ -1312,6 +1312,8 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
      */
     public ApiResponse removeTime(String id_O, String id_C){
         // 调用方法获取订单信息
+//        Order order = coupaUtil.getOrderByListKey(
+//                id_O, Arrays.asList("casItemx","action"));
         Order order = qt.getMDContent(id_O,qt.strList("casItemx","action"), Order.class);
         // 判断订单是否为空
         if (null == order || null == order.getCasItemx() || null == order.getAction()) {
@@ -1443,6 +1445,8 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
             JSONObject objTaskImage = JSONObject.parseObject(objTask.toJSONString());
             // 获取删除后的部门信息
             JSONObject grpBs = delAfterObjTask.getJSONObject(dep);
+//            // 获取镜像的部门信息
+//            JSONObject grpBsImage = objTaskImage.getJSONObject(dep);
             // 遍历删除后的组别信息
             grpBs.keySet().forEach(grpB -> {
                 // 获取删除后的组别信息
@@ -1454,6 +1458,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                     // 直接添加删除后的任务信息到镜像任务信息
                     teSsImage.put(teS,teSs.getJSONObject(teS));
                     objTaskImage.put(grpB,teSsImage);
+//                    objTaskImage.put(dep,grpBsImage);
                     aArrange.put("objTask",objTaskImage);
                     asset.setAArrange(aArrange);
                     assetMap.put(dep,asset);
@@ -1465,6 +1470,22 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
             Asset asset = assetMap.get(dep);
             qt.setMDContent(asset.getId(),qt.setJson(timeCard,asset.getAArrange()), Asset.class);
         }
+//        // 添加镜像任务信息
+//        aArrange.put("objTask",objTaskImage);
+////        // 创建请求参数存储字典
+////        JSONObject mapKey = new JSONObject();
+////        // 添加请求参数
+////        mapKey.put(timeCard,aArrange);
+////        // 请求修改卡片信息
+////        coupaUtil.updateAssetByKeyAndListKeyVal("id",assetId,mapKey);
+//        qt.setMDContent(asset.getId(),qt.setJson(timeCard,aArrange), Asset.class);
+
+//        // 创建请求更改参数
+//        mapKey = new JSONObject();
+//        // 添加请求更改参数信息
+//        mapKey.put("action.timeRecord",new JSONObject());
+//        // 调用接口发起数据库更改信息请求
+//        coupaUtil.updateOrderByListKeyVal(id_O,mapKey);
         qt.setMDContent(id_O,qt.setJson("action.timeRecord",new JSONObject()), Order.class);
 
         // 抛出操作成功异常

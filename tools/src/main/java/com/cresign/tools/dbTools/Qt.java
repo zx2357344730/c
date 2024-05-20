@@ -188,6 +188,22 @@ public class Qt {
         return result;
     }
 
+    public <T> T  getMDContentIndex(String id, String field, Integer index, Class<T> classType) {
+
+        Query query = new Query(new Criteria("_id").is(id));
+        if (field != null && !field.equals("")) {
+            query.fields().include(field);
+        }
+        T result;
+        try {
+            result = mongoTemplate.findOne(query, classType);
+        } catch (Exception e){
+            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK,ToolEnum.DB_ERROR.getCode(), e.toString());
+        }
+        return result;
+    }
+
     public InitJava getInitData()
     {
         if (initData.get("cn_java") == null)
@@ -623,39 +639,38 @@ public class Qt {
 
     public void errPrint(String title, Exception e, Object... vars)
     {
-
-        try {
-            System.out.println("****[" + title + "]****");
-            for (Object item : vars) {
-                if (item == null) {
-                    System.out.println("....null");
-                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
-                    System.out.println(this.toJArray(item));
-                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
-                        item.getClass().toString().startsWith("class java.util")) {
-
-                    System.out.println(this.toJson(item));
-
-                    JSONObject looper = this.toJson(item);
-                    looper.forEach((k, v) ->{
-                        System.out.println(k + ":" + v);
-                    });
-                    System.out.println("----------------------------------------");
-
-
-                } else {
-                    System.out.println(item);
-                }
-            }
-            System.out.println("*****[End]*****");
-
-            if (e != null)
-                e.printStackTrace();
-        }
-        catch (Exception ex)
-        {
-            System.out.println("****" + title + " is NULL ****");
-        }
+//        try {
+//            System.out.println("****[" + title + "]****");
+//            for (Object item : vars) {
+//                if (item == null) {
+//                    System.out.println("....null");
+//                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
+//                    System.out.println(this.toJArray(item));
+//                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
+//                        item.getClass().toString().startsWith("class java.util")) {
+//
+//                    System.out.println(this.toJson(item));
+//
+//                    JSONObject looper = this.toJson(item);
+//                    looper.forEach((k, v) ->{
+//                        System.out.println(k + ":" + v);
+//                    });
+//                    System.out.println("----------------------------------------");
+//
+//
+//                } else {
+//                    System.out.println(item);
+//                }
+//            }
+//            System.out.println("*****[End]*****");
+//
+//            if (e != null)
+//                e.printStackTrace();
+//        }
+//        catch (Exception ex)
+//        {
+//            System.out.println("****" + title + " is NULL ****");
+//        }
     }
 
     public void errPrint(String title, Object... vars)
@@ -1154,6 +1169,26 @@ public class Qt {
         }
     }
 
+    public JSONObject batchJudgeComp(String id_C, ArrayList<String> arrayId_C) {
+        JSONArray filterArray = this.setESFilt("ref", "a-auth");
+        this.setESFilt(filterArray, "id_C", "contain", arrayId_C);
+        JSONArray arrayEs = this.getES("lSAsset", filterArray);
+        JSONObject jsonResult = new JSONObject();
+        for (int i = 0; i < arrayId_C.size(); i++) {
+            jsonResult.put(arrayId_C.get(i), 0);
+        }
+
+        for (int i = 0; i < arrayEs.size(); i++) {
+            String id = arrayEs.getJSONObject(i).getString("id_C");
+            if (id_C.equals(id)) {
+                jsonResult.put(id, 2);
+            } else {
+                jsonResult.put(id, 1);
+            }
+        }
+        return jsonResult;
+    }
+
 
     public Asset getConfig(String id_C, String ref, String listField) {
 
@@ -1399,7 +1434,7 @@ public class Qt {
     public <T> T getESItem(String index, String id, String id_C, Class<T> classType)
     {
        String idName = "id_P";
-        JSONArray listProdES = this.getES(index, this.setESFilt("id_P", "eq", id));
+        JSONArray listProdES = this.getES(index, this.setESFilt("id_P", "exact", id));
         if (listProdES.size() != 1)
         {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_DATA_NULL.getCode(), "");
@@ -1498,6 +1533,7 @@ public class Qt {
     public void delES(String index, JSONArray filterArray)
     {
         try {
+            this.errPrint("delES ", index, filterArray);
             DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(index);
             BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
             this.filterBuilder(filterArray, queryBuilder);
