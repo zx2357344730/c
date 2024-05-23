@@ -99,7 +99,8 @@ public class Task {
     /**
      * 主订单编号
      */
-    private String refOP;
+//    private String refOP;
+    private String id_OP;
     /**
      * 数量
      */

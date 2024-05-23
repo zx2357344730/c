@@ -275,8 +275,8 @@ public class FlowController {
             return flowNewService.getDgResult(
                     reqJson.getString("id_O"),
                     tokData.getString("id_U"),
-                    tokData.getString("id_C"),
-//                    reqJson.getString("id_C"),
+//                    tokData.getString("id_C"),
+                    reqJson.getString("id_C"),
                     reqJson.getLong("teStart"),
                     reqJson.getString("isSplit")
 //                    reqJson.getBoolean("setOrder")
@@ -328,6 +328,22 @@ public class FlowController {
             return flowService.dgCheckInfo(id_I, id_C);
         } catch (Exception e) {
             return getUserToken.err(map, "flow/dgCheckInfo", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/testDgData")
+    public ApiResponse testDgData(@RequestBody JSONObject reqJson){
+
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+
+        try {
+            return flowNewService.testDgData(
+                    reqJson.getString("id_C"),
+                    reqJson.getString("id_O")
+            );
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "flowService.testDgData", e);
         }
     }
 }

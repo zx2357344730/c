@@ -1825,7 +1825,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                     task.setTeCsStart(teStartBackups);
                     task.setTeCsSonOneStart(0L);
                     task.setWrdNO(info.getWrdN());
-                    task.setRefOP(salesOrderData.getId());
+//                    task.setRefOP(salesOrderData.getId());
+                    task.setId_OP(salesOrderData.getId());
                     task.setWn2qtyneed(oDate.getDouble("wn2qtyneed"));
                     task.setId_PF(getThisInfoLayerProdId(thisInfo));
                     task.setLayer(getThisInfoLayer(thisInfo));
@@ -2330,7 +2331,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                     task.setTeCsStart(teStartBackups);
                     task.setTeCsSonOneStart(0L);
                     task.setWrdNO(info.getWrdN());
-                    task.setRefOP(salesOrderData.getId());
+//                    task.setRefOP(salesOrderData.getId());
+                    task.setId_OP(salesOrderData.getId());
                     task.setWn2qtyneed(oDate.getDouble("wn2qtyneed"));
                     task.setId_PF(getThisInfoLayerProdId(thisInfo));
                     task.setLayer(getThisInfoLayer(thisInfo));
@@ -3332,7 +3334,8 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                     task.setTeCsStart(teStartBackups);
                     task.setTeCsSonOneStart(0L);
                     task.setWrdNO(info.getWrdN());
-                    task.setRefOP(salesOrderData.getId());
+//                    task.setRefOP(salesOrderData.getId());
+                    task.setId_OP(salesOrderData.getId());
                     task.setWn2qtyneed(oDate.getDouble("wn2qtyneed"));
                     task.setId_PF(getThisInfoLayerProdId(thisInfo));
                     task.setLayer(getThisInfoLayer(thisInfo));
@@ -3610,7 +3613,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             JSONObject id_oAndIndexTaskInfo = indexInfoSon.getJSONObject("id_OAndIndexTaskInfo");
             Task task = conflict.get(operateIndex);
 //            String id_OP = sonGetOrderFatherId(task.getId_O(), task.getId_C(), thisInfo, actionIdO, new JSONObject());
-            JSONArray oDates = actionIdO.getJSONObject(task.getRefOP()).getJSONObject(task.getLayer()+"")
+            JSONArray oDates = actionIdO.getJSONObject(task.getId_OP()).getJSONObject(task.getLayer()+"")
                     .getJSONObject(task.getId_PF()).getJSONArray("oDates");
             JSONObject dgInfo = oDates.getJSONObject(task.getDateIndex());
             String dep = dgInfo.getString("dep");
@@ -3638,7 +3641,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 JSONObject thisInfoSonLayerInfo = getThisInfoSonLayerInfo(thisInfo);
                 System.out.println("thisInfoSonLayerInfo:");
                 System.out.println(JSON.toJSONString(thisInfoSonLayerInfo));
-                JSONObject opInfo = thisInfoSonLayerInfo.getJSONObject(task.getRefOP());
+                JSONObject opInfo = thisInfoSonLayerInfo.getJSONObject(task.getId_OP());
                 JSONObject layerInfo = opInfo.getJSONObject(task.getLayer() + "");
                 long lastTePFin = thisTime;
                 long endTime = thisTime;
@@ -3677,10 +3680,10 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 layerCount-=1;
                 layerInfo.put("layerCount",layerCount);
                 opInfo.put(task.getLayer() + "",layerInfo);
-                thisInfoSonLayerInfo.put(task.getRefOP(),opInfo);
+                thisInfoSonLayerInfo.put(task.getId_OP(),opInfo);
                 setThisInfoSonLayerInfo(thisInfo,thisInfoSonLayerInfo);
                 if (layerCount == 0) {
-                    getUpConf(thisInfo,task.getRefOP(),task.getLayer()-1,id_C,actionIdO,endTime,objTaskAll,depAllTime
+                    getUpConf(thisInfo,task.getId_OP(),task.getLayer()-1,id_C,actionIdO,endTime,objTaskAll,depAllTime
                             ,random,timeConflictCopy,sho,csSta,randomAll,xbAndSbAll,recordId_OIndexState,storageTaskWhereTime
                             ,allImageTotalTime,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState
                             ,recordNoOperation,clearStatus,allImageTeDate,grpUNumAll,lastTePFin);

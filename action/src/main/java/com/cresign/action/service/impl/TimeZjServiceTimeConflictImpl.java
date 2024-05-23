@@ -286,14 +286,14 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                 // 获取任务信息
                 Task taskNew = conflict.get(n);
                 // 获取订单编号记录信息
-                JSONObject refOPInfo = record.getJSONObject(taskNew.getRefOP());
+                JSONObject refOPInfo = record.getJSONObject(taskNew.getId_OP());
                 // 判断为空
                 if (null == refOPInfo) {
                     // 创建并添加记录信息
                     refOPInfo = new JSONObject();
                     refOPInfo.put("layer",taskNew.getLayer());
                     refOPInfo.put("id_PFObj",qt.setJson(taskNew.getId_PF(),qt.setJson("dateIndex",taskNew.getDateIndex(),"confIndex",n)));
-                    record.put(taskNew.getRefOP(),refOPInfo);
+                    record.put(taskNew.getId_OP(),refOPInfo);
                 } else {
                     // 不为空，遍历记录信息所有键
                     Integer layer = refOPInfo.getInteger("layer");
@@ -304,7 +304,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             removeConf.add(pfObjOld.getJSONObject(id_PF).getInteger("confIndex"));
                         }
                         refOPInfo.put("id_PFObj",qt.setJson(taskNew.getId_PF(),qt.setJson("dateIndex",taskNew.getDateIndex(),"confIndex",n)));
-                        record.put(taskNew.getRefOP(),refOPInfo);
+                        record.put(taskNew.getId_OP(),refOPInfo);
                     } else if (taskNew.getLayer() == layer) {
                         JSONObject id_PFObj = refOPInfo.getJSONObject("id_PFObj");
                         JSONObject pfInfo = id_PFObj.getJSONObject(taskNew.getId_PF());

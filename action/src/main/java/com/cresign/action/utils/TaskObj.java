@@ -243,7 +243,8 @@ public class TaskObj {
             taskNew.setTeDelayDate((taskNew.getTePStart()-task.getTeCsStart()));
             taskNew.setTaOver(task.getTaOver());
             taskNew.setWn2qtyneed(task.getWn2qtyneed());
-            taskNew.setRefOP(task.getRefOP());
+//            taskNew.setRefOP(task.getRefOP());
+            taskNew.setId_OP(task.getId_OP());
             JSONObject wrdNONew = new JSONObject();
             JSONObject wrdNO = task.getWrdNO();
             String cnNew = wrdNO.getString("cn");
@@ -349,7 +350,8 @@ public class TaskObj {
             taskNew.setTeDelayDate(taskNew.getTePStart()-taskNew.getTeCsStart());
             taskNew.setTaOver(task.getTaOver());
             taskNew.setWn2qtyneed(task.getWn2qtyneed());
-            taskNew.setRefOP(task.getRefOP());
+//            taskNew.setRefOP(task.getRefOP());
+            taskNew.setId_OP(task.getId_OP());
             JSONObject wrdNONew = new JSONObject();
             JSONObject wrdNO = task.getWrdNO();
             String cn = wrdNO.getString("cn");

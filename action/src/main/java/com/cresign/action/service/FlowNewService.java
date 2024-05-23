@@ -31,4 +31,14 @@ public interface FlowNewService {
      * @date 2020/8/6 9:03
      */
     ApiResponse dgCheckOrder(String myCompId,String id_O);
+
+    /**
+     * 递归验证 - 注释完成
+     * @param myCompId 公司编号
+     * @return java.lang.String  返回结果: 递归结果
+     * @author tang
+     * @ver 1.0.0
+     * @date 2020/8/6 9:03
+     */
+    ApiResponse testDgData(String myCompId,String id_O);
 }

@@ -1,5 +1,6 @@
 package com.cresign.action.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.service.TimeZjService;
 import com.cresign.tools.annotation.SecurityParameter;
@@ -288,6 +289,18 @@ public class TaskController {
                     reqJson.getLong("thisDay"));
         } catch (Exception e) {
             return getUserToken.err(reqJson, "TaskController.clearThisDayEasyTaskAndSave", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/setAtFirst")
+    public ApiResponse setAtFirst(@RequestBody JSONObject reqJson){
+        try {
+            return timeZjService.setAtFirst(reqJson.getString("id_O"),reqJson.getLong("teStart"),
+                    reqJson.getString("id_C"),reqJson.getInteger("wn0TPrior")
+                    ,reqJson.getInteger("dateIndex"),reqJson.getString("layer"),reqJson.getString("id_PF"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.setAtFirst", e);
         }
     }
 
