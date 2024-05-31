@@ -21,7 +21,6 @@ import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.cresign.tools.request.HttpClientUtil;
 import com.cresign.tools.uuid.UUID19;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -989,15 +988,15 @@ public class ZjTestServiceImpl implements ZjTestService {
     @Override
     public ApiResponse removeUser(String id_U) {
         qt.delMD(id_U, User.class);
-        qt.delES("lBUser",qt.setESFilt("id_U","exact",id_U));
-        JSONArray lNUser = qt.getES("lNUser", qt.setESFilt("id_U", "exact",id_U));
-        if (null != lNUser && lNUser.size() > 0) {
-            String id_C = lNUser.getJSONObject(0).getString("id_C");
-            if (null != id_C && !"".equals(id_C)) {
-                qt.delES("lsbComp",qt.setESFilt("id_C","exact",id_C));
-            }
-        }
-        qt.delES("lNUser",qt.setESFilt("id_U","exact",id_U));
+        qt.delES("lBUser",qt.setESFilt("id_U",id_U));
+//        JSONArray lNUser = qt.getES("lNUser", qt.setESFilt("id_U", "exact",id_U));
+//        if (null != lNUser && lNUser.size() > 0) {
+//            String id_C = lNUser.getJSONObject(0).getString("id_C");
+//            if (null != id_C && !"".equals(id_C)) {
+//                qt.delES("lBUser",qt.setESFilt("id_C",id_C, "id_U", id_U));
+//            }
+//        }
+        qt.delES("lNUser",qt.setESFilt("id_U",id_U));
         return retResult.ok(CodeEnum.OK.getCode(), "删除成功");
     }
 
@@ -2356,7 +2355,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         String s = HttpClientUtil.sendPost(qt.setJson("user", user,"desc",desc,"appId","__UNI__F0B4F02"
                 ,"key","cresign_6601bcc7e591e106e87fce73_ai")
                 ,"https://fc-mp-21012483-e888-468f-852d-4c00bdde7107.next.bspapp.com/AI");
-        return retResult.ok(CodeEnum.OK.getCode(),JSONObject.parseObject(s));
+        return retResult.ok(CodeEnum.OK.getCode(),s);
     }
 
     private long[] getSonPart(String id_P){

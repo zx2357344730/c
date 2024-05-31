@@ -53,21 +53,21 @@ public class OrderAction {
 //        this.priority = priority;
 
         this.subParts = subParts == null? new JSONArray( ): subParts;
-        this.upPrnts = upPrnts == null? new JSONArray( ): upPrnts;
-        this.prtNext = prtNext == null? new JSONArray( ): prtNext;
+        this.upPrnts = upPrnts == null? new JSONArray() : upPrnts;
+        this.prtNext = prtNext == null? new JSONArray(): prtNext;
         this.prtPrev = prtPrev == null? new JSONArray( ): prtPrev;
     }
 
-    public JSONObject upPrnt(String id_O, Integer index, JSONObject wrdN, Double wn2qtyneed)
-    {
-        JSONObject upItem = new JSONObject();
-        upItem.put("id_O", id_O);
-        upItem.put("index",index);
-        upItem.put("wn2qtyneed", wn2qtyneed);
-        upItem.put("wrdN", wrdN);
-
-        return upItem;
-    }
+//    public JSONObject upPrnt(String id_O, Integer index, JSONObject wrdN, Double wn2qtyneed)
+//    {
+//        JSONObject upItem = new JSONObject();
+//        upItem.put("id_O", id_O);
+//        upItem.put("index",index);
+//        upItem.put("wn2qtyneed", wn2qtyneed);
+//        upItem.put("wrdN", wrdN);
+//
+//        return upItem;
+//    }
 
 
     private static class Hod{

@@ -51,6 +51,7 @@ public class lSInfo implements Serializable {
     private String id_P;
 
     private String id_C;
+    private String id_CB;
 
     private String id_CP;
 

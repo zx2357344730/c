@@ -11,7 +11,6 @@ import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.User;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +21,6 @@ import org.springframework.stereotype.Component;
  **/
 @Component
 public class AuthCheck {
-
-    @Autowired
-    private StringRedisTemplate redisTemplate0;
 
     @Autowired
     private Qt qt;

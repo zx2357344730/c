@@ -26,6 +26,7 @@ import com.tencentcloudapi.vpc.v20170312.models.ReplaceSecurityGroupPolicyReques
 import com.tencentcloudapi.vpc.v20170312.models.ReplaceSecurityGroupPolicyResponse;
 import com.tencentcloudapi.vpc.v20170312.models.SecurityGroupPolicy;
 import com.tencentcloudapi.vpc.v20170312.models.SecurityGroupPolicySet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -59,6 +60,9 @@ public class CosUpload {
 
     @Value("${secret.key}")
     private String secretKey;
+
+    @Autowired
+    private Qt qt;
 
     // 1 初始化用户身份信息(secretId, secretKey，可在腾讯云后台中的API密钥管理中查看！
 //    public COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
@@ -275,8 +279,11 @@ public class CosUpload {
                     String[] splitPic = pic.split("/");
                     String path = id_C + "/" + splitPic[splitPic.length - 1];
                     jsonPic.put("pic", path);
-                    fileSize = fileSize + this.getCFilesSize(pic);
-                    this.copyCFiles(pic, path);
+                    fileSize = fileSize + this.getCresignSize(pic);
+                    this.copyCresign("pic_reg/" + pic,"pic_reg/" + path);
+                    this.copyCresign("pic_small/" + pic,"pic_small/" + path);
+                    this.copyCresign("pic_thumb/" + pic,"pic_thumb/" + path);
+
                 }
             }
         }
@@ -348,34 +355,89 @@ public class CosUpload {
         return 0;
     }
 
+//    public void copyCresign(String sourceObjectName,String destinationObjectName){
+//        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
+//        COSClient cosClient = new COSClient(cred, clientConfig);
+//        // 线程池大小，建议在客户端与 COS 网络充足（例如使用腾讯云的 CVM，同地域上传 COS）的情况下，设置成16或32即可，可较充分的利用网络资源
+//        // 对于使用公网传输且网络带宽质量不高的情况，建议减小该值，避免因网速过慢，造成请求超时。
+//        ExecutorService threadPool = Executors.newFixedThreadPool(32);
+//        // 传入一个 threadpool, 若不传入线程池，默认 TransferManager 中会生成一个单线程的线程池。
+//        TransferManager transferManager = new TransferManager(cosClient, threadPool);
+//        // 设置高级接口的分块上传阈值和分块大小为10MB
+//        TransferManagerConfiguration transferManagerConfiguration = new TransferManagerConfiguration();
+//        transferManagerConfiguration.setMultipartUploadThreshold(10 * 1024 * 1024);
+//        transferManagerConfiguration.setMinimumUploadPartSize(10 * 1024 * 1024);
+//        transferManager.setConfiguration(transferManagerConfiguration);
+//        CopyObjectRequest copyObjectRequest = new CopyObjectRequest(region, bucketName, sourceObjectName,
+//                bucketName, destinationObjectName);
+//        qt.errPrint("buck", copyObjectRequest, sourceObjectName, destinationObjectName);
+//
+//        try {
+//
+//            //Copy copy = transferManager.copy(copyObjectRequest, srcCOSClient, null);
+//
+//            // 返回一个异步结果 copy, 可同步的调用 waitForCopyResult 等待 copy 结束, 成功返回 CopyResult, 失败抛出异常.
+//            //CopyResult copyResult = copy.waitForCopyResult();
+//            // 获取拷贝生成对象的CRC64
+//            //String crc64Ecma = copyResult.getCrc64Ecma();
+//            // 关闭 TransferManger
+//            cosClient.shutdown();
+//
+//        } catch (CosClientException  e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
+//
+//    public void copyCFiles(String sourceObjectName,String destinationObjectName){
+//        COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
+//        COSClient cosClient = new COSClient(cred, clientConfig);
+//        // 线程池大小，建议在客户端与 COS 网络充足（例如使用腾讯云的 CVM，同地域上传 COS）的情况下，设置成16或32即可，可较充分的利用网络资源
+//        // 对于使用公网传输且网络带宽质量不高的情况，建议减小该值，避免因网速过慢，造成请求超时。
+//        ExecutorService threadPool = Executors.newFixedThreadPool(32);
+//        // 传入一个 threadpool, 若不传入线程池，默认 TransferManager 中会生成一个单线程的线程池。
+//        TransferManager transferManager = new TransferManager(cosClient, threadPool);
+//        // 设置高级接口的分块上传阈值和分块大小为10MB
+//        TransferManagerConfiguration transferManagerConfiguration = new TransferManagerConfiguration();
+//        transferManagerConfiguration.setMultipartUploadThreshold(10 * 1024 * 1024);
+//        transferManagerConfiguration.setMinimumUploadPartSize(10 * 1024 * 1024);
+//        transferManager.setConfiguration(transferManagerConfiguration);
+//
+//
+//
+//        CopyObjectRequest copyObjectRequest =
+//                new CopyObjectRequest(region, bucketName2, sourceObjectName,
+//                        bucketName2, destinationObjectName);
+//        qt.errPrint("buck", copyObjectRequest, sourceObjectName, destinationObjectName);
+//
+//        try {
+//
+//            //Copy copy = transferManager.copy(copyObjectRequest, srcCOSClient, null);
+//
+//            // 返回一个异步结果 copy, 可同步的调用 waitForCopyResult 等待 copy 结束, 成功返回 CopyResult, 失败抛出异常.
+//            //CopyResult copyResult = copy.waitForCopyResult();
+//            // 获取拷贝生成对象的CRC64
+//            //String crc64Ecma = copyResult.getCrc64Ecma();
+//            // 关闭 TransferManger
+//            cosClient.shutdown();
+//
+//        } catch (CosClientException  e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
+
     public void copyCresign(String sourceObjectName,String destinationObjectName){
         COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         COSClient cosClient = new COSClient(cred, clientConfig);
-        // 线程池大小，建议在客户端与 COS 网络充足（例如使用腾讯云的 CVM，同地域上传 COS）的情况下，设置成16或32即可，可较充分的利用网络资源
-        // 对于使用公网传输且网络带宽质量不高的情况，建议减小该值，避免因网速过慢，造成请求超时。
-        ExecutorService threadPool = Executors.newFixedThreadPool(32);
-        // 传入一个 threadpool, 若不传入线程池，默认 TransferManager 中会生成一个单线程的线程池。
-        TransferManager transferManager = new TransferManager(cosClient, threadPool);
-        // 设置高级接口的分块上传阈值和分块大小为10MB
-        TransferManagerConfiguration transferManagerConfiguration = new TransferManagerConfiguration();
-        transferManagerConfiguration.setMultipartUploadThreshold(10 * 1024 * 1024);
-        transferManagerConfiguration.setMinimumUploadPartSize(10 * 1024 * 1024);
-        transferManager.setConfiguration(transferManagerConfiguration);
-        CopyObjectRequest copyObjectRequest = new CopyObjectRequest(region, "cfiles-1253919880", sourceObjectName,
-                "cfiles-1253919880", destinationObjectName);
+        CopyObjectRequest copyObjectRequest = new CopyObjectRequest(region, bucketName, sourceObjectName,
+                bucketName, destinationObjectName);
         try {
-
-            //Copy copy = transferManager.copy(copyObjectRequest, srcCOSClient, null);
-
-            // 返回一个异步结果 copy, 可同步的调用 waitForCopyResult 等待 copy 结束, 成功返回 CopyResult, 失败抛出异常.
-            //CopyResult copyResult = copy.waitForCopyResult();
-            // 获取拷贝生成对象的CRC64
-            //String crc64Ecma = copyResult.getCrc64Ecma();
-            // 关闭 TransferManger
+            cosClient.copyObject(copyObjectRequest);
             cosClient.shutdown();
 
         } catch (CosClientException  e) {
-            e.printStackTrace();
+            qt.errPrint("buck", copyObjectRequest, sourceObjectName, destinationObjectName);
         }
 
     }
@@ -383,35 +445,14 @@ public class CosUpload {
     public void copyCFiles(String sourceObjectName,String destinationObjectName){
         COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         COSClient cosClient = new COSClient(cred, clientConfig);
-        // 线程池大小，建议在客户端与 COS 网络充足（例如使用腾讯云的 CVM，同地域上传 COS）的情况下，设置成16或32即可，可较充分的利用网络资源
-        // 对于使用公网传输且网络带宽质量不高的情况，建议减小该值，避免因网速过慢，造成请求超时。
-        ExecutorService threadPool = Executors.newFixedThreadPool(32);
-        // 传入一个 threadpool, 若不传入线程池，默认 TransferManager 中会生成一个单线程的线程池。
-        TransferManager transferManager = new TransferManager(cosClient, threadPool);
-        // 设置高级接口的分块上传阈值和分块大小为10MB
-        TransferManagerConfiguration transferManagerConfiguration = new TransferManagerConfiguration();
-        transferManagerConfiguration.setMultipartUploadThreshold(10 * 1024 * 1024);
-        transferManagerConfiguration.setMinimumUploadPartSize(10 * 1024 * 1024);
-        transferManager.setConfiguration(transferManagerConfiguration);
-
-
-
-        CopyObjectRequest copyObjectRequest =
-                new CopyObjectRequest(region, "cfiles-1253919880", sourceObjectName,
-                        "cfiles-1253919880", destinationObjectName);
+        CopyObjectRequest copyObjectRequest = new CopyObjectRequest(region, bucketName2, sourceObjectName,
+                        bucketName2, destinationObjectName);
         try {
-
-            //Copy copy = transferManager.copy(copyObjectRequest, srcCOSClient, null);
-
-            // 返回一个异步结果 copy, 可同步的调用 waitForCopyResult 等待 copy 结束, 成功返回 CopyResult, 失败抛出异常.
-            //CopyResult copyResult = copy.waitForCopyResult();
-            // 获取拷贝生成对象的CRC64
-            //String crc64Ecma = copyResult.getCrc64Ecma();
-            // 关闭 TransferManger
+            cosClient.copyObject(copyObjectRequest);
             cosClient.shutdown();
 
         } catch (CosClientException  e) {
-            e.printStackTrace();
+            qt.errPrint("buck", copyObjectRequest, sourceObjectName, destinationObjectName);
         }
 
     }
@@ -771,6 +812,9 @@ public class CosUpload {
         CopyObjectRequest copyObjectRequest =
                 new CopyObjectRequest(srcBucketRegion, "cfiles-1253919880", sourceObjectName,
                         "cfiles-1253919880", destinationObjectName);
+
+        qt.errPrint("buckcs", copyObjectRequest, sourceObjectName, destinationObjectName);
+
         try {
 
             //Copy copy = transferManager.copy(copyObjectRequest, srcCOSClient, null);
