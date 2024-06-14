@@ -244,13 +244,11 @@ public class RedirectController {
 
     @SecurityParameter
     @PostMapping("/v1/reset_joincomp_code")
-    public ApiResponse resetJoinCompCode(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse resetJoinCompCode(@RequestBody JSONObject reqJson) {
         try {
             return redirectService.resetJoinCompCode(
                     getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType")),
-//                "5f28bf314f65cc7dc2e60386",
                     reqJson.getString("id_C")
-//                getUserIdByToken.getTokenOfUserId(request.getHeader("authorization"), request.getHeader("clientType"),"core",1)
             );
         } catch (Exception e) {
             return getUserIdByToken.err(reqJson, "RedirectController.resetJoinCompCode", e);

@@ -647,8 +647,8 @@ public class ZjTestController {
     }
 
     @SecurityParameter
-    @PostMapping("/v1/aiAskingQuestions")
-    public ApiResponse aiAskingQuestions(@RequestBody JSONObject resJson) {
+    @PostMapping("/v1/aiQuesting")
+    public ApiResponse aiQuesting(@RequestBody JSONObject resJson) {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
             return zjService.aiQuesting(tokData, resJson.getString("user"),resJson.getString("desc"));

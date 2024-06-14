@@ -1619,28 +1619,26 @@ public class ActionServiceImpl implements ActionService {
 
         for (Integer n = 0; n < orderList.size(); n++) {
 
-            orderDataList.add(
-                    qt.getMDContent(orderList.getJSONObject(n).getString("id_O"), Arrays.asList( "info","oItem", "action"), Order.class)
+            Order thisOrder = qt.getMDContent(orderList.getJSONObject(n).getString("id_O"), Arrays.asList( "info","oItem", "action"), Order.class);
 
-            );
-            OrderInfo unitInfo = JSONObject.parseObject(JSON.toJSONString(orderDataList.get(n).getInfo()), OrderInfo.class);
-
-            if (unitInfo.getLST() != 7) {
-                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_NEED_FINAL.getCode(), "");
+            if (thisOrder != null) {
+                orderDataList.add(thisOrder);
+                if (thisOrder.getInfo().getLST() != 7) {
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_NEED_FINAL.getCode(), "");
+                }
+            } else {
+                orderList.remove(n);
             }
         }
         // After checked all lST, they are all 7 and ready to push
 
-        for (Integer i = 0; i < orderList.size(); i++) {
-//            Order orderData = coupaUtil.getOrderByListKey(
-//                    orderList.getJSONObject(i).getString("id_O"), Arrays.asList("oItem", "info", "action"));
+        for (Integer i = 0; i < orderDataList.size(); i++) {
 
             Order orderData = orderDataList.get(i);
             JSONArray objAction = orderData.getAction().getJSONArray("objAction");
             JSONArray objOItem = orderData.getOItem().getJSONArray("objItem");
             JSONObject grpBGroup = orderData.getAction().getJSONObject("grpBGroup");
             JSONObject grpGroup = orderData.getAction().getJSONObject("grpGroup");
-            //System.out.println("orderData"+orderData);
 
                 for (Integer j = 0; j < objAction.size(); j++) {
                     OrderAction unitAction = JSONObject.parseObject(JSON.toJSONString(objAction.getJSONObject(j)), OrderAction.class);

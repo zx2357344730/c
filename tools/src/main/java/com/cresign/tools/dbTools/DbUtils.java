@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.ErrEnum;
-import com.cresign.tools.enumeration.ToolEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.lBAsset;
 import com.cresign.tools.pojo.es.lBProd;
@@ -55,9 +54,9 @@ public class DbUtils {
     private Ws ws;
 
 
-
     /**
      * 获取原有日志修改后发日志
+     *
      * @author Rachel
      * @Date 2022/05/18
      * @Param queryBuilder es查询语句
@@ -70,9 +69,8 @@ public class DbUtils {
      **/
 
     public LogFlow getRecentLog(String id_O, Integer index, JSONObject tokData, String logType) {
-        JSONArray hits = qt.getES(logType, qt.setESFilt("id_C", tokData.getString("id_C"),"id_O", id_O, "index", index),1,1,"tmd","desc");
-        if (hits.size() == 0)
-        {
+        JSONArray hits = qt.getES(logType, qt.setESFilt("id_C", tokData.getString("id_C"), "id_O", id_O, "index", index), 1, 1, "tmd", "desc");
+        if (hits.size() == 0) {
             Order thisOrder = qt.getMDContent(id_O, Arrays.asList("oItem", "info", "action"), Order.class);
             LogFlow newLog = new LogFlow(tokData, thisOrder.getOItem().getJSONArray("objItem").getJSONObject(index), thisOrder.getAction(),
                     thisOrder.getInfo().getId_CB(), id_O, index, logType,
@@ -193,37 +191,35 @@ public class DbUtils {
                             "grp", extraInfo.getString("grp"), "priority", extraInfo.getInteger("priority"), "id_CB", extraInfo.getString("id_CB"));
 //                    qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP, refOPInfo, Asset.class);
 
-                    flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
-                } else {
-
-                    // any case, add this index to index[]
-                    if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
-                    flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
-//                        qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP + ".index", refInside, Asset.class);
-                    }
-                }
-//                qt.errPrint("idFC addIndex", flowInfo, id_FC, refOP, id_OP, refOPInfo, wrdN);
-                qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i+ ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
-                break;
-
-            } // removing now here:
-            else if (flowInfo.getString("id").equals(id_FC) && !isStart)
-            {
-
-                // case 1: if index size == 1, remove the whole id_OP
-                try {
-                    if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
-                    {
-//                        flowInfo.getJSONObject("refOP").remove(refOP);
-                        qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", refOP), Asset.class);
+                        flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
                     } else {
-                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
-//                        qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP + ".index", refInside), Asset.class);
-                        qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
+
+                        // any case, add this index to index[]
+                        if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
+                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
+//                        qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP + ".index", refInside, Asset.class);
+                        }
                     }
-                } catch (Exception e) {
-                    // here it must have an error flowcontrol
-                }
+//                qt.errPrint("idFC addIndex", flowInfo, id_FC, refOP, id_OP, refOPInfo, wrdN);
+                    qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
+                    break;
+
+                } // removing now here:
+                else if (flowInfo.getString("id").equals(id_FC) && !isStart) {
+
+                    // case 1: if index size == 1, remove the whole id_OP
+                    try {
+                        if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1) {
+//                        flowInfo.getJSONObject("refOP").remove(refOP);
+                            qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", refOP), Asset.class);
+                        } else {
+                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
+//                        qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP + ".index", refInside), Asset.class);
+                            qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
+                        }
+                    } catch (Exception e) {
+                        // here it must have an error flowcontrol
+                    }
                 break;
             }
         }
@@ -249,29 +245,28 @@ public class DbUtils {
                     qt.upJson(refOPInfo, "wrddesc", extraInfo.getJSONObject("wrddesc"), "pic", extraInfo.getString("pic"),
                             "grp", extraInfo.getString("grp"), "priority", extraInfo.getInteger("priority"), "id_CB", extraInfo.getString("id_CB"));
 //                    flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
-                    qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP, refOPInfo, Asset.class);
-                } else {
-                    // any case, add this index to index[]
-                    if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
-//                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
-                        qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP + ".index", refInside, Asset.class);
-                    }
-//                    qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
-                }
-                break;
-
-            } // removing now here:
-            else if (flowInfo.getString("id").equals(id_FS) && !isStart) {
-                // case 1: if index size == 1, remove the whole id_OP
-                try {
-                    if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
-                    {
-//                        flowInfo.getJSONObject("refOP").remove(refOP);
-                        qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", refOP), Asset.class);
-
+                        qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP, refOPInfo, Asset.class);
                     } else {
-                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
-                        qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP + ".index", refInside), Asset.class);
+                        // any case, add this index to index[]
+                        if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
+//                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
+                            qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP + ".index", refInside, Asset.class);
+                        }
+//                    qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
+                    }
+                    break;
+
+                } // removing now here:
+                else if (flowInfo.getString("id").equals(id_FS) && !isStart) {
+                    // case 1: if index size == 1, remove the whole id_OP
+                    try {
+                        if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1) {
+//                        flowInfo.getJSONObject("refOP").remove(refOP);
+                            qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", refOP), Asset.class);
+
+                        } else {
+                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
+                            qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP + ".index", refInside), Asset.class);
 //                        qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
                     }
                 } catch (Exception e) {
@@ -283,12 +278,16 @@ public class DbUtils {
     }
 }
 
-//use this on activateThis, StatusChg, chgDepAndFlow, make sure assetB/assetS is from Controller
+    //use this on activateThis, StatusChg, chgDepAndFlow, make sure assetB/assetS is from Controller
 //  qt.setMDContent(assetB.getId(), qt.setJson("flowControl", assetB.getJSONObject(id_CB)), Asset.class);
     //before that I need to getFlowcontrol and save to assetB.id_C / assetS.id_C
     public void updateRefOP2(JSONObject assetCollection, String id_CB, String id_CS, String id_FC, String id_FS,
                             String id_OP, String refOP, JSONObject wrdN, String id_O, Integer index, Boolean isStart)
     {
+        if(id_OP.equals("") || id_OP.equals(null))
+        {
+            return;
+        }
 
         //use the following to get flowControl into assetB.id_CB
         if (id_CB == null)
@@ -302,19 +301,18 @@ public class DbUtils {
         if (id_CB == id_CS)
             id_CS = "";
 
-        if (id_CB != "" && assetCollection.getJSONObject(id_CB) == null)
-        {
+        if (id_CB != "" && assetCollection.getJSONObject(id_CB) == null) {
             assetCollection.put(id_CB, qt.toJson(qt.getConfig(id_CB, "a-auth", "flowControl")));
         }
-        if (!assetCollection.getJSONObject(id_CB).getString("id").equals("none") && id_CB != "" && assetCollection.getJSONObject(id_CB).getJSONArray("indexList") == null) {
+        if (id_CB != "" && !assetCollection.getJSONObject(id_CB).getString("id").equals("none") && assetCollection.getJSONObject(id_CB).getJSONArray("indexList") == null) {
             assetCollection.getJSONObject(id_CB).put("indexList", new JSONArray());
         }
 
-        if (id_CS != "" && assetCollection.getJSONObject(id_CS) == null)
-        {
+        if (id_CS != "" && assetCollection.getJSONObject(id_CS) == null) {
             assetCollection.put(id_CS, qt.toJson(qt.getConfig(id_CS, "a-auth", "flowControl")));
         }
-        if (!assetCollection.getJSONObject(id_CB).getString("id").equals("none") && id_CS != "" && assetCollection.getJSONObject(id_CS).getJSONArray("indexList") == null) {
+        qt.errPrint(".....", assetCollection, id_CS, id_CB, assetCollection.getJSONObject(id_CS));
+        if (id_CS != "" && !assetCollection.getJSONObject(id_CS).getString("id").equals("none") && assetCollection.getJSONObject(id_CS).getJSONArray("indexList") == null) {
             assetCollection.getJSONObject(id_CS).put("indexList", new JSONArray());
         }
 
@@ -323,25 +321,21 @@ public class DbUtils {
         JSONObject refOPInfo = qt.setJson("refOP", refOP, "wrdN", wrdN, "index", new JSONArray(), "id_OP", id_OP);
 
         // check and update id_FC
-        if (!id_FC.equals("") && !assetCollection.getJSONObject(id_CB).getString("id").equals("none"))
-        {
+        if (!id_FC.equals("") && !assetCollection.getJSONObject(id_CB).getString("id").equals("none")) {
 
-            for (int i = 0; i < assetCollection.getJSONObject(id_CB).getJSONObject("flowControl").getJSONArray("objData").size(); i++)
-            {
+            for (int i = 0; i < assetCollection.getJSONObject(id_CB).getJSONObject("flowControl").getJSONArray("objData").size(); i++) {
                 JSONObject flowInfo = assetCollection.getJSONObject(id_CB).getJSONObject("flowControl").getJSONArray("objData").getJSONObject(i);
                 //adding 1 index
                 if (flowInfo.getString("id").equals(id_FC) && isStart && refOP != null) {
                     // case 1: id_OP not exists in refOP, init
-                    if (flowInfo.getJSONObject("refOP") == null)
-                    {
+                    if (flowInfo.getJSONObject("refOP") == null) {
                         flowInfo.put("refOP", new JSONObject());
                     }
                     // case 2: refOP not exists
-                    if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
-                    {
+                    if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null) {
                         //id_OP getES, then put here wrddesc, pic, grp, id_CB, priority, etc
                         JSONObject extraInfo = qt.getES("lSBOrder", qt.setESFilt("id_O", id_OP)).getJSONObject(0);
-                        qt.upJson(refOPInfo, "wrddesc", extraInfo.getJSONObject("wrddesc"), "pic", extraInfo.getString("pic"),"tmd", extraInfo.getString("tmd"),
+                        qt.upJson(refOPInfo, "wrddesc", extraInfo.getJSONObject("wrddesc"), "pic", extraInfo.getString("pic"), "tmd", extraInfo.getString("tmd"),
                                 "grp", extraInfo.getString("grp"), "priority", extraInfo.getInteger("priority"), "id_CB", extraInfo.getString("id_CB"));
 
                         flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
@@ -358,8 +352,7 @@ public class DbUtils {
                     break;
 
                 } // removing now here:
-                else if (flowInfo.getString("id").equals(id_FC) && !isStart)
-                {
+                else if (flowInfo.getString("id").equals(id_FC) && !isStart) {
 
                     // case 1: if index size == 1, remove the whole id_OP
                         if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
@@ -379,22 +372,18 @@ public class DbUtils {
                 }
             }
         }
-        if (!id_FS.equals("") && !assetCollection.getJSONObject(id_CS).getString("id").equals("none"))
-        {
-            for (int i = 0; i < assetCollection.getJSONObject(id_CS).getJSONObject("flowControl").getJSONArray("objData").size(); i++)
-            {
+        if (!id_FS.equals("") && !assetCollection.getJSONObject(id_CS).getString("id").equals("none")) {
+            for (int i = 0; i < assetCollection.getJSONObject(id_CS).getJSONObject("flowControl").getJSONArray("objData").size(); i++) {
                 JSONObject flowInfo = assetCollection.getJSONObject(id_CS).getJSONObject("flowControl").getJSONArray("objData").getJSONObject(i);
                 //adding 1 index
                 if (flowInfo.getString("id").equals(id_FS) && isStart && refOP != null) {
                     // case 1: id_OP not exists in refOP, init
-                    if (flowInfo.getJSONObject("refOP") == null)
-                    {
+                    if (flowInfo.getJSONObject("refOP") == null) {
                         throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
 //                    flowInfo.put("refOP", new JSONObject());
                     }
                     // case 2: refOP not exists
-                    else if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
-                    {
+                    else if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null) {
                         //id_OP getES, then put here wrddesc, pic, grp, id_CB, priority, etc
                         JSONObject extraInfo = qt.getES("lSBOrder", qt.setESFilt("id_O", id_OP)).getJSONObject(0);
                         qt.upJson(refOPInfo, "wrddesc", extraInfo.getJSONObject("wrddesc"), "pic", extraInfo.getString("pic"),
@@ -403,7 +392,7 @@ public class DbUtils {
                     } else {
                         // any case, add this index to index[]
                         if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
-                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
+                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
                         }
                     }
                     if (!assetCollection.getJSONObject(id_CS).getJSONArray("indexList").contains(i)) {
@@ -414,41 +403,35 @@ public class DbUtils {
                 } // removing now here:
                 else if (flowInfo.getString("id").equals(id_FS) && !isStart) {
                     // case 1: if index size == 1, remove the whole id_OP
-                        if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
-                        {
-                            break;
-                        }
-                        else if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1)
-                        {
-                            flowInfo.getJSONObject("refOP").remove(refOP);
-                        } else {
-                            flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
-                        }
-                        if (!assetCollection.getJSONObject(id_CS).getJSONArray("indexList").contains(i)) {
-                            assetCollection.getJSONObject(id_CS).getJSONArray("indexList").add(i);
-                        }
+                    if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null) {
+                        break;
+                    } else if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1) {
+                        flowInfo.getJSONObject("refOP").remove(refOP);
+                    } else {
+                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
+                    }
+                    if (!assetCollection.getJSONObject(id_CS).getJSONArray("indexList").contains(i)) {
+                        assetCollection.getJSONObject(id_CS).getJSONArray("indexList").add(i);
+                    }
                     break;
                 }
             }
         }
     }
 
-    public void setMDRefOP(JSONObject assetCollection)
-    {
+    public void setMDRefOP(JSONObject assetCollection) {
         List<JSONObject> listBulk = new ArrayList<>();
 
-        for (String compId : assetCollection.keySet() )
-        {
+        for (String compId : assetCollection.keySet()) {
             if (!assetCollection.getJSONObject(compId).getString("id").equals("none")) {
-                for (int i = 0; i < assetCollection.getJSONObject(compId).getJSONArray("indexList").size(); i++)
-                {
+                for (int i = 0; i < assetCollection.getJSONObject(compId).getJSONArray("indexList").size(); i++) {
 //                    String refOP = assetCollection.getJSONObject(compId).getJSONArray("refList").getString(i);
                     Integer index = assetCollection.getJSONObject(compId).getJSONArray("indexList").getInteger(i);
 
                     JSONObject update = new JSONObject();
                     update.put("flowControl.objData." + index + ".refOP",
-                    assetCollection.getJSONObject(compId).getJSONObject("flowControl").getJSONArray("objData")
-                    .getJSONObject(index).getJSONObject("refOP"));
+                            assetCollection.getJSONObject(compId).getJSONObject("flowControl").getJSONArray("objData")
+                                    .getJSONObject(index).getJSONObject("refOP"));
 
                     listBulk.add(qt.setJson("type", "update", "id", assetCollection.getJSONObject(compId).getString("id"), "update", update));
                 }
@@ -466,114 +449,102 @@ public class DbUtils {
 
 //Order init oItem, action, oStock if needed
 
-    public JSONObject checkCard(Order order)
-    {
+    public JSONObject checkCard(Order order) {
         JSONObject jsonCard = new JSONObject();
-        JSONArray arrayCard = null;
-        JSONArray arrayOItem = null;
-        JSONArray arrayArrP = null;
+        JSONArray arrayOItem = order.getOItem().getJSONArray("objItem");
+        JSONArray arrayCard = order.getOItem().getJSONArray("objCard");
+        JSONArray arrayArrP = order.getOItem().getJSONArray("arrP");
         JSONArray arrayData = null;
         System.out.println("checking Card");
 
-            arrayOItem = order.getOItem().getJSONArray("objItem");
-            if (order.getOItem().getString("bmdHeight") == null)
-            {    order.getOItem().put("bmdHeight", "unset"); }
-            if ( order.getOItem().getJSONArray("objCard") == null)
-            {
-                order.getOItem().put("objCard", new JSONArray());
-                order.getOItem().getJSONArray("objCard").add("oItem");
-
-                if (order.getOStock() != null)
-                {
-                    order.getOItem().getJSONArray("objCard").add("oStock");
-                }
-                if (order.getAction() != null) {
-                    order.getOItem().getJSONArray("objCard").add("action");
-                }
-                if (order.getOQc() != null) {
-                    order.getOItem().getJSONArray("objCard").add("oQc");
-                }
+        if (order.getOItem().getString("bmdHeight") == null) {
+            order.getOItem().put("bmdHeight", "unset");
+        }
+        if (arrayCard == null) {
+            arrayCard = qt.setArray("oItem");
+            if (order.getOStock() != null) {
+                arrayCard.add("oStock");
             }
-            if (order.getOItem().getJSONArray("arrP") == null)
-            {
-                order.getOItem().put("arrP", new JSONArray());
-                for (int i = 0; i < arrayOItem.size(); i++)
-                {
-                    order.getOItem().getJSONArray("arrP").add(arrayOItem.getJSONObject(i).getString("id_P"));
-                }
+            if (order.getAction() != null) {
+                arrayCard.add("action");
             }
+            if (order.getOQc() != null) {
+                arrayCard.add("oQc");
+            }
+            order.getOItem().put("objCard", arrayCard);
+        }
+        if (arrayArrP == null || arrayOItem.size() != arrayArrP.size()) {
+            arrayArrP = new JSONArray();
+            for (int i = 0; i < arrayOItem.size(); i++) {
+                arrayArrP.add(arrayOItem.getJSONObject(i).getString("id_P"));
+            }
+            order.getOItem().put("arrP", arrayArrP);
+        }
 
-            if (order.getOItem().getJSONArray("objItemCol") == null)
-             {
-                 order.getOItem().put("objItemCol", qt.getInitData("cn").getList().getJSONArray("objItemCol"));
-    //             System.out.println(qt.getInitData("cn").getList());
-             }
+        if (order.getOItem().getJSONArray("objItemCol") == null) {
+            order.getOItem().put("objItemCol", qt.getInitData("cn").getList().getJSONArray("objItemCol"));
+            //             System.out.println(qt.getInitData("cn").getList());
+        }
 
-            arrayCard = order.getOItem().getJSONArray("objCard");
-            arrayArrP = order.getOItem().getJSONArray("arrP");
+        arrayCard = order.getOItem().getJSONArray("objCard");
+        arrayArrP = order.getOItem().getJSONArray("arrP");
 
-        if (arrayCard == null || arrayOItem == null || arrayArrP == null || arrayOItem.size() != arrayArrP.size()) {
+        if (arrayCard == null || arrayOItem == null || arrayArrP == null) {
             System.out.println("checkCard, null @ 553");
 
             throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
         }
 
         // for each "card" in objCard: check if "json data" actually has data
-        for (int n = 0; n < arrayCard.size(); n++)
-        {
-                switch (arrayCard.getString(n)) {
-                    case "oStock":
-                        if (order.getOStock() == null)
-                        {
-                            //whole card Init
-                            order.setOStock(this.initOStock(order.getOItem().getJSONArray("objItem")));
-                            order.getView().add("oStock");
+        for (int n = 0; n < arrayCard.size(); n++) {
+            switch (arrayCard.getString(n)) {
+                case "oStock":
+                    if (order.getOStock() == null) {
+                        //whole card Init
+                        order.setOStock(this.initOStock(order.getOItem().getJSONArray("objItem")));
+                        order.getView().add("oStock");
+                    }
+                    // Check if all oItem has a oStock, if not, init it
+                    for (int i = 0; i < arrayOItem.size(); i++) {
+                        if (order.getOStock().getJSONArray("objData").size() - 1 < i ||
+                                order.getOStock().getJSONArray("objData").getJSONObject(i) == null) {
+                            // just init 1 oitem
+                            order.getOStock().put("objData", this.initOStock(arrayOItem.getJSONObject(i), order.getOStock().getJSONArray("objData"), i));
                         }
-                        // Check if all oItem has a oStock, if not, init it
-                        for (int i = 0; i < arrayOItem.size(); i++)
-                        {
-                            if (order.getOStock().getJSONArray("objData").getJSONObject(i) == null)
-                            {
-                                // just init 1 oitem
-                                order.getOStock().put("objData", this.initOStock(arrayOItem.getJSONObject(i), order.getOStock().getJSONArray("objData"),i));
-                            }
-                            if (order.getOStock().getJSONArray("objData").getJSONObject(i).getDouble("wn2qtynowS") == null)
-                            {
-                                order.getOStock().getJSONArray("objData").getJSONObject(i).put("wn2qtynowS", 0.0);
-                                order.getOStock().getJSONArray("objData").getJSONObject(i).put("wn2qtyship", 0.0);
-                                order.getOStock().getJSONArray("objData").getJSONObject(i).put("wn2qtyshipnow", 0.0);
+                        if (order.getOStock().getJSONArray("objData").getJSONObject(i).getDouble("wn2qtynowS") == null) {
+                            order.getOStock().getJSONArray("objData").getJSONObject(i).put("wn2qtynowS", 0.0);
+                            order.getOStock().getJSONArray("objData").getJSONObject(i).put("wn2qtyship", 0.0);
+                            order.getOStock().getJSONArray("objData").getJSONObject(i).put("wn2qtyshipnow", 0.0);
 
-                            }
                         }
-                        arrayData = order.getOStock().getJSONArray("objData");
+                    }
+                    arrayData = order.getOStock().getJSONArray("objData");
 
-                        break;
-                    case "action":
-                        if (order.getAction() == null)
-                        {
-                            order.setAction(this.initAction(order.getOItem().getJSONArray("objItem")));
-                            order.getView().add("action");
+                    break;
+                case "action":
+                    if (order.getAction() == null) {
+                        order.setAction(this.initAction(order.getOItem().getJSONArray("objItem")));
+                        order.getView().add("action");
+                    }
+                    // Check if all oItem has a action, if not, init it
+                    for (int i = 0; i < arrayOItem.size(); i++) {
+                        this.initAction(arrayOItem.getJSONObject(i), order.getAction().getJSONArray("objAction"), i);
+                    }
+                    arrayData = order.getAction().getJSONArray("objAction");
+                    break;
+                case "oQc":
+                    if (null == order.getOQc()) {
+                        order.setOQc(this.initOQc(order.getOItem().getJSONArray("objItem")));
+                        order.getView().add("oQc");
+                    }
+                    for (int i = 0; i < arrayOItem.size(); i++) {
+                        if (null == order.getOQc().getJSONArray("objQc").getJSONObject(i)) {
+                            this.initOQc(arrayOItem.getJSONObject(i), order.getOQc().getJSONArray("objQc"), i);
                         }
-                        // Check if all oItem has a action, if not, init it
-                        for (int i = 0; i < arrayOItem.size(); i++)
-                        {
-                            this.initAction(arrayOItem.getJSONObject(i), order.getAction().getJSONArray("objAction"),i);
-                        }
-                        arrayData = order.getAction().getJSONArray("objAction");
-                        break;
-                    case "oQc":
-                        if (null == order.getOQc()) {
-                            order.setOQc(this.initOQc(order.getOItem().getJSONArray("objItem")));
-                            order.getView().add("oQc");
-                        }
-                        for (int i = 0; i < arrayOItem.size(); i++) {
-                            if (null == order.getOQc().getJSONArray("objQc").getJSONObject(i)) {
-                                this.initOQc(arrayOItem.getJSONObject(i),order.getOQc().getJSONArray("objQc"),i);
-                            }
-                        }
-                        break;
-                }
-                jsonCard.put(arrayCard.getString(n), arrayData);
+                    }
+                    break;
+            }
+            jsonCard.put(arrayCard.getString(n), arrayData);
         }
         // this will return an JSONObject with "oStock":{...}, "action":{...}
         return jsonCard;
@@ -584,21 +555,20 @@ public class DbUtils {
     }
 
 
-    public void updateOrder(Order order)
-    {
+    public void updateOrder(Order order) {
         try {
-        JSONObject listCol = new JSONObject();
-        this.summOrder(order, listCol);
-        qt.setMDContent(order.getId(), qt.setJson("view", order.getView(), "info", order.getInfo(), "oItem", order.getOItem(),
-                "oStock", order.getOStock(), "action", order.getAction()), Order.class);
-        qt.setES("lSBOrder", qt.setESFilt("id_O", order.getId()), listCol);
+            JSONObject listCol = new JSONObject();
+            this.summOrder(order, listCol);
+            qt.setMDContent(order.getId(), qt.setJson("view", order.getView(), "info", order.getInfo(), "oItem", order.getOItem(),
+                    "oStock", order.getOStock(), "action", order.getAction()), Order.class);
+            qt.setES("lSBOrder", qt.setESFilt("id_O", order.getId()), listCol);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
-    public void addOrder(Order order, JSONObject listCol)
-    {
+
+    public void addOrder(Order order, JSONObject listCol) {
         try {
             this.summOrder(order, listCol);
             qt.addMD(order);
@@ -610,8 +580,7 @@ public class DbUtils {
     }
 
 
-    public JSONObject summOrder(Order order, JSONObject listCol, JSONArray cardList)
-    {
+    public JSONObject summOrder(Order order, JSONObject listCol, JSONArray cardList) {
         return this.summOrder(order, listCol, cardList, null);
     }
 
@@ -636,33 +605,28 @@ public class DbUtils {
         Double wn4price = 0.0;
         JSONArray arrP = new JSONArray();
 
-        if (order.getOItem().getJSONArray("objCard").contains("oStock") && order.getOStock() != null)
-        {
+        if (order.getOItem().getJSONArray("objCard").contains("oStock") && order.getOStock() != null) {
             oStock = order.getOStock().getJSONArray("objData");
         }
-        if (order.getOItem().getJSONArray("objCard").contains("action") && order.getAction() != null)
-        {
+        if (order.getOItem().getJSONArray("objCard").contains("action") && order.getAction() != null) {
             action = order.getAction().getJSONArray("objAction");
         }
-        if (order.getOItem().getJSONArray("objCard").contains("oQc") && null != order.getOQc())
-        {
+        if (order.getOItem().getJSONArray("objCard").contains("oQc") && null != order.getOQc()) {
             oQc = order.getOQc().getJSONArray("objQc");
         }
 
-        for (int i = 0; i < oItem.size(); i++)
-        {
+        for (int i = 0; i < oItem.size(); i++) {
             wn2qty = DoubleUtils.add(oItem.getJSONObject(i).getDouble("wn2qtyneed"), wn2qty);
 
             if (oItem.getJSONObject(i).getDouble("wn4price") == null)
                 oItem.getJSONObject(i).put("wn4price", 0.0);
 
-            wn4price = DoubleUtils.add(wn4price, DoubleUtils.multiply(oItem.getJSONObject(i).getDouble("wn2qtyneed"),oItem.getJSONObject(i).getDouble("wn4price")));
+            wn4price = DoubleUtils.add(wn4price, DoubleUtils.multiply(oItem.getJSONObject(i).getDouble("wn2qtyneed"), oItem.getJSONObject(i).getDouble("wn4price")));
             arrP.add(oItem.getJSONObject(i).getString("id_P"));
 
             // setup wn0prior by using seq***
             // if seq == 0, wn0prior = 0, seq == 1, wn0prior = prevPrior, seq == 2, wn0prior = prevPrior + 1, seq == 3, no set
-            if (i == 0 || oItem.getJSONObject(i).getString("seq").equals("0"))
-            {
+            if (i == 0 || oItem.getJSONObject(i).getString("seq").equals("0")) {
                 oItem.getJSONObject(i).put("wn0prior", 0);
             } else if (oItem.getJSONObject(i).getString("seq").equals("1")) {
                 oItem.getJSONObject(i).put("wn0prior", oItem.getJSONObject(i - 1).getInteger("wn0prior"));
@@ -670,29 +634,56 @@ public class DbUtils {
                 oItem.getJSONObject(i).put("wn0prior", oItem.getJSONObject(i - 1).getInteger("wn0prior") + 1);
             }
             oItem.getJSONObject(i).put("index", i);
+            if (action != null && cardList.contains("action")) {
+                if (action.size() <= i || action.getJSONObject(i) == null) {
+                    this.initAction(oItem.getJSONObject(i), action, i);
+                }
+                count = count + action.getJSONObject(i).getInteger("bcdStatus") == 2 ? 1 : 0;
+                action.getJSONObject(i).put("index", i);
 
-            if (oStock != null && cardList.contains("oStock"))
-            {
-                if (oStock.size() <= i || oStock.getJSONObject(i) == null)
-                {
-                    oStock = this.initOStock(oItem.getJSONObject(i),oStock, i);
+                String grp = oItem.getJSONObject(i).getString("grp");
+                String grpB = oItem.getJSONObject(i).getString("grpB");
+
+                // if grp not exists, need to init grpGroup
+                if (grp != null && !grp.equals("") && order.getAction().getJSONObject("grpGroup").getJSONObject(grp) == null) {
+                    Asset asset = qt.getConfig(oItem.getJSONObject(i).getString("id_C"), "a-auth", "def.objlSP." + grp);
+                    //sales side getlSProd, and set default values
+                    System.out.println("getGrp" + asset.getId());
+
+                    if (!asset.getId().equals("none")) {
+                        JSONObject grpData = asset.getDef().getJSONObject("objlSP").getJSONObject(grp) == null ? new JSONObject() : asset.getDef().getJSONObject("objlSP").getJSONObject(grp);
+                        order.getAction().getJSONObject("grpGroup").put(grp, grpData);
+                    }
+                }
+                if (grpB != null && !grpB.equals("") && order.getAction().getJSONObject("grpBGroup").getJSONObject(grpB) == null) {
+
+                    Asset asset = qt.getConfig(order.getInfo().getId_CB(), "a-auth", "def.objlBP." + grpB);
+                    System.out.println("getGrpB" + asset.getId());
+
+                    //sales side getlSProd, and set default values
+                    if (!asset.getId().equals("none")) {
+                        JSONObject grpData = asset.getDef().getJSONObject("objlBP").getJSONObject(grpB) == null ? new JSONObject() : asset.getDef().getJSONObject("objlBP").getJSONObject(grpB);
+                        order.getAction().getJSONObject("grpBGroup").put(grpB, grpData);
+                    }
+                }
+            }
+
+            if (oStock != null && cardList.contains("oStock")) {
+                if (oStock.size() <= i || oStock.getJSONObject(i) == null) {
+                    oStock = this.initOStock(oItem.getJSONObject(i), oStock, i);
                 }
 
-                Double madePercent = DoubleUtils.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"),oItem.getJSONObject(i).getDouble("wn2qtyneed"));
+                Double madePercent = DoubleUtils.divide(oStock.getJSONObject(i).getDouble("wn2qtymade"), oItem.getJSONObject(i).getDouble("wn2qtyneed"));
                 wn2made = DoubleUtils.add(wn2made, madePercent);
-                if (oStock.getJSONObject(i).getDouble("wn2qtyship") != null)
-                {
+                if (oStock.getJSONObject(i).getDouble("wn2qtyship") != null) {
                     wn2qtyship = DoubleUtils.add(wn2made, oStock.getJSONObject(i).getDouble("wn2qtyship"));
                 }
                 oStock.getJSONObject(i).put("index", i);
 //                "rKey" 《=Oitem
 
-                if (action != null)
-                {
-                    for (int j = 0; j < action.getJSONObject(i).getJSONArray("upPrnts").size(); j++)
-                    {
-                        if (oStock.getJSONObject(i).getJSONArray("objShip").size() - 1 < j)
-                        {
+                if (action != null) {
+                    for (int j = 0; j < action.getJSONObject(i).getJSONArray("upPrnts").size(); j++) {
+                        if (oStock.getJSONObject(i).getJSONArray("objShip").size() - 1 < j) {
                             // init it if it is not init yet, if bmdpt == 1 it is process, process only need 1 objShip[0]
                             if (j == 0 || !action.getJSONObject(i).getInteger("bmdpt").equals(1)) {
                                 JSONObject newObjShip = qt.setJson(
@@ -704,44 +695,7 @@ public class DbUtils {
                     }
                 }
             }
-            if (action != null && cardList.contains("action"))
-            {
-                if (action.size() <= i || action.getJSONObject(i) == null)
-                {
-                    this.initAction(oItem.getJSONObject(i),action, i);
-                }
-                count = count + action.getJSONObject(i).getInteger("bcdStatus") == 2 ? 1: 0;
-                action.getJSONObject(i).put("index", i);
-
-                String grp = oItem.getJSONObject(i).getString("grp");
-                String grpB = oItem.getJSONObject(i).getString("grpB");
-
-                // if grp not exists, need to init grpGroup
-                if (grp != null && !grp.equals("") && order.getAction().getJSONObject("grpGroup").getJSONObject(grp) == null)
-                {
-                    Asset asset = qt.getConfig(oItem.getJSONObject(i).getString("id_C"),"a-auth","def.objlSP."+grp);
-                    //sales side getlSProd, and set default values
-                    System.out.println("getGrp"+asset.getId());
-
-                    if (!asset.getId().equals("none")) {
-                        JSONObject grpData = asset.getDef().getJSONObject("objlSP").getJSONObject(grp) == null? new JSONObject() : asset.getDef().getJSONObject("objlSP").getJSONObject(grp);
-                        order.getAction().getJSONObject("grpGroup").put(grp, grpData);
-                    }
-                }
-                if (grpB != null && !grpB.equals("") && order.getAction().getJSONObject("grpBGroup").getJSONObject(grpB) == null)
-                {
-
-                    Asset asset = qt.getConfig(order.getInfo().getId_CB(),"a-auth","def.objlBP."+grpB);
-                    System.out.println("getGrpB"+asset.getId());
-
-                    //sales side getlSProd, and set default values
-                    if (!asset.getId().equals("none")) {
-                        JSONObject grpData = asset.getDef().getJSONObject("objlBP").getJSONObject(grpB) == null ? new JSONObject() : asset.getDef().getJSONObject("objlBP").getJSONObject(grpB);
-                        order.getAction().getJSONObject("grpBGroup").put(grpB, grpData);
-                    }
-                }
-            }
-            if (null != oQc && cardList.contains("oQc")){
+            if (null != oQc && cardList.contains("oQc")) {
                 System.out.println("oQc");
             }
         }
@@ -836,7 +790,7 @@ public class DbUtils {
             if (cardList.contains("oStock")) {
                 jsonOrder.put("oStock", order.getOStock().getJSONArray("objData"));
             }
-            jsonVars.forEach((k, v) ->{
+            jsonVars.forEach((k, v) -> {
                 String var = jsonVars.getString(k);
                 if (var.startsWith("##OI")) {
                     String substring = var.substring(5);
@@ -850,7 +804,7 @@ public class DbUtils {
             if (arrayIndex != null) {
                 for (int j = 0; j < arrayIndex.size(); j++) {
                     Integer index = arrayIndex.getInteger(j);
-                    jsonVars.forEach((k, v) ->{
+                    jsonVars.forEach((k, v) -> {
                         String var = jsonVars.getString(k);
                         if (var.startsWith("##OI")) {
                             String substring = var.substring(5);
@@ -875,12 +829,11 @@ public class DbUtils {
                         }
                     }
                 }
-            }
-            else {
+            } else {
                 JSONArray arrayOItem = order.getOItem().getJSONArray("objItem");
                 for (int j = 0; j < arrayOItem.size(); j++) {
                     Integer index = j;
-                    jsonVars.forEach((k, v) ->{
+                    jsonVars.forEach((k, v) -> {
                         String var = jsonVars.getString(k);
                         if (var.startsWith("##OI")) {
                             String substring = var.substring(5);
@@ -912,7 +865,7 @@ public class DbUtils {
     /////////////////////////////////////////////////////////////////////////////////////
 
 
-//     SE if / info / exec (oTrig, cTrig, Summ00s, tempa
+    //     SE if / info / exec (oTrig, cTrig, Summ00s, tempa
     public void oTriggerIf(JSONObject jsonObjIf, JSONObject jsonObjVar, JSONObject jsonObjExec) {
         try {
             String script = jsonObjIf.getString("script");
@@ -1018,8 +971,7 @@ public class DbUtils {
                     }
                 }
             }
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
         }
@@ -1096,8 +1048,7 @@ public class DbUtils {
 //                                    jsonParams.put("val", var.getJSONObject(valSplit[2]));
 //                                }
 //                            }
-                        }
-                        else if (val.startsWith("##")) {
+                        } else if (val.startsWith("##")) {
                             this.scriptEngineVar(val, jsonVars);
                         }
                     }
@@ -1153,15 +1104,14 @@ public class DbUtils {
 //                wsClient.sendLogWS(log);
                 }
             }
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public Object scriptEngineVar(String var, JSONObject jsonVars) {
         try {
-            System.out.println("");
+//            System.out.println("");
             System.out.println("var=" + var);
             System.out.println("jsonVars=" + jsonVars);
             if (var.startsWith("##")) {
@@ -1178,8 +1128,7 @@ public class DbUtils {
                                 qt.errPrint("sev", jsonVars.getString(key), jsonVars, varSplit);
                                 Object result = this.scriptEngineVar(jsonVars.getString(key), jsonVars);
                                 System.out.println("##CC=" + key + ":" + result);
-                                if (qt.toJson(result) != null && qt.toJson(result).getString("cn") != null)
-                                {
+                                if (qt.toJson(result) != null && qt.toJson(result).getString("cn") != null) {
                                     result = qt.toJson(result).getString("cn");
                                 }
                                 sb.append(result);
@@ -1210,16 +1159,21 @@ public class DbUtils {
                         case "Asset":
                             list = mongoTemplate.find(query, Asset.class);
                             break;
+                        case "Info":
+                            list = mongoTemplate.find(query, Info.class);
+                            break;
                     }
                     if (list.get(0) == null) {
                         return null;
                     }
                     JSONObject jsonList = (JSONObject) JSON.toJSON(list.get(0));
+
                     if (jsonList.getJSONObject(scriptSplit[3]) == null) {
                         return null;
                     }
                     JSONObject jsonVar = jsonList.getJSONObject(scriptSplit[3]);
-                    for (int k = 4; k < scriptSplit.length - 1; k++) {
+
+                    for (int k = 4; k <= scriptSplit.length - 1; k++) {
                         //根据[拆分
                         //break up array
                         String[] ifArray = scriptSplit[k].split("\\[");
@@ -1234,37 +1188,45 @@ public class DbUtils {
                         //拆分成两份类型为jsonArray
                         if (ifArray.length == 2) {
                             String[] index = ifArray[1].split("]");
+                            qt.errPrint("list", index, index[1], scriptSplit[scriptSplit.length - 1]);
+
                             if (jsonVar.getJSONArray(ifArray[0]).getJSONObject(Integer.parseInt(index[0])) == null) {
                                 return null;
                             }
                             jsonVar = jsonVar.getJSONArray(ifArray[0]).getJSONObject(Integer.parseInt(index[0]));
+                            scriptSplit[scriptSplit.length - 1] = index[1];
                         }
                     }
-                    System.out.println("jsonVar=" + jsonVar);
+                    qt.errPrint("list", jsonVar, scriptSplit[scriptSplit.length - 1]);
+
                     if (jsonVar.get(scriptSplit[scriptSplit.length - 1]) == null) {
                         return null;
                     }
+                    System.out.println("var=" + var);
+
                     if (var.startsWith("##CB")) {
                         Boolean scriptResult = jsonVar.getBoolean(scriptSplit[scriptSplit.length - 1]);
                         return scriptResult;
                     }
-                    if (var.startsWith("##CS")) {
+                    else if (var.startsWith("##CS")) {
                         String scriptResult = jsonVar.getString(scriptSplit[scriptSplit.length - 1]);
+                        qt.errPrint("CS", jsonVars, scriptResult);
+
                         return scriptResult;
                     }
-                    if (var.startsWith("##CI")) {
+                    else if (var.startsWith("##CI")) {
                         Integer scriptResult = jsonVar.getInteger(scriptSplit[scriptSplit.length - 1]);
                         return scriptResult;
                     }
-                    if (var.startsWith("##CN")) {
+                    else if (var.startsWith("##CN")) {
                         Double scriptResult = jsonVar.getDouble(scriptSplit[scriptSplit.length - 1]);
                         return scriptResult;
                     }
-                    if (var.startsWith("##CA")) {
+                    else if (var.startsWith("##CA")) {
                         JSONArray scriptResult = jsonVar.getJSONArray(scriptSplit[scriptSplit.length - 1]);
                         return scriptResult;
                     }
-                    if (var.startsWith("##CO")) {
+                    else if (var.startsWith("##CO")) {
                         System.out.println("test=" + jsonVar.getJSONObject(scriptSplit[scriptSplit.length - 1]));
 
                         return jsonVar.getJSONObject(scriptSplit[scriptSplit.length - 1]);
@@ -1300,14 +1262,13 @@ public class DbUtils {
                     JSONObject jsonUpdate = qt.setJson("refAuto.objCounter." + scriptSplit[2] + ".count", count);
                     qt.setMDContent(asset.getId(), jsonUpdate, Asset.class);
                     return strCount;
-                }
-                else if (var.startsWith("##G")) {
+                } else if (var.startsWith("##G")) {
                     String[] scriptSplit = var.split("\\.");
                     Asset asset = qt.getConfig(scriptSplit[1], "a-core", "refAuto");
-                    if (asset == null || asset.getRefAuto() == null || asset.getRefAuto().getJSONObject("global") == null) {
+                    if (asset == null || asset.getRefAuto() == null || asset.getRefAuto().getJSONObject("objVar") == null) {
                         return null;
                     }
-                    return asset.getRefAuto().getJSONObject("global").get(scriptSplit[2]);
+                    return asset.getRefAuto().getJSONObject("objVar").get(scriptSplit[2]);
                 }
                 //##F.com.cresign.timer.controller.StatController##getStatisticByEs1##op0
                 //F = it is a function, then break the string and recall myself to calculate
@@ -1343,8 +1304,7 @@ public class DbUtils {
                         String date = sdf.format(new Date());
                         System.out.println("##DT=" + date);
                         return date;
-                    }
-                    else {
+                    } else {
                         String varSubstring = var.substring(4);
                         System.out.println("varSubstring=" + varSubstring);
                         String[] varSplit = varSubstring.split("##");
@@ -1423,8 +1383,7 @@ public class DbUtils {
                         System.out.println("##D=" + stringBuffer);
                         return stringBuffer;
                     }
-                }
-                else if (var.startsWith("##PU")) {
+                } else if (var.startsWith("##PU")) {
                     String[] varSplit = var.split("\\.");
                     String[] numSplit = varSplit[2].split(",");
                     if (varSplit[0].equals("Integer")) {
@@ -1449,8 +1408,7 @@ public class DbUtils {
                         } else if (varSplit[2].equals("/")) {
                             return num1 / num2;
                         }
-                    }
-                    else if (varSplit[0].equals("Double")) {
+                    } else if (varSplit[0].equals("Double")) {
                         Double num1;
                         Double num2;
                         if (numSplit[0].startsWith("##")) {
@@ -1472,8 +1430,7 @@ public class DbUtils {
                         } else if (varSplit[2].equals("/")) {
                             return DoubleUtils.divide(num1, num2);
                         }
-                    }
-                    else if (varSplit[0].equals("String")) {
+                    } else if (varSplit[0].equals("String")) {
                         String str1;
                         String str2;
                         if (numSplit[0].startsWith("##")) {
@@ -1488,8 +1445,7 @@ public class DbUtils {
                         }
                         return str1.equals(str2);
                     }
-                }
-                else if (var.startsWith("##PA")) {
+                } else if (var.startsWith("##PA")) {
                     String[] varSplit = var.split("\\.");
                     String[] numSplit = varSplit[2].split(",");
                     if (varSplit[0].equals("Integer")) {
@@ -1512,8 +1468,7 @@ public class DbUtils {
                         } else if (varSplit[2].equals(">=")) {
                             return num1 >= num2;
                         }
-                    }
-                    else if (varSplit[0].equals("Double")) {
+                    } else if (varSplit[0].equals("Double")) {
                         Double num1;
                         Double num2;
                         if (numSplit[0].startsWith("##")) {
@@ -1533,8 +1488,7 @@ public class DbUtils {
                         } else if (varSplit[2].equals(">=")) {
                             return DoubleUtils.doubleGte(num1, num2);
                         }
-                    }
-                    else if (varSplit[0].equals("String")) {
+                    } else if (varSplit[0].equals("String")) {
                         String str1;
                         String str2;
                         if (numSplit[0].startsWith("##")) {
@@ -1637,20 +1591,19 @@ public class DbUtils {
                 return Double.parseDouble(var);
             }
             return var;
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
-            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.DB_ERROR.getCode(), e.toString());
         }
     }
 
-    public JSONObject copyCOUPA(String id_C, JSONObject jsonMongo, JSONObject jsonEs) {
-        String newId = qt.GetObjectId();
-        jsonMongo.put("id", newId);
-        JSONObject jsonInfo = jsonMongo.getJSONObject("info");
-        jsonInfo.put("id_C", id_C);
-        return null;
-    }
+//    public JSONObject copyCOUPA(String id_C, JSONObject jsonMongo, JSONObject jsonEs) {
+//        String newId = qt.GetObjectId();
+//        jsonMongo.put("id", newId);
+//        JSONObject jsonInfo = jsonMongo.getJSONObject("info");
+//        jsonInfo.put("id_C", id_C);
+//        return null;
+//    }
 //    public JSONObject copyUtil(String id_U, String id, String id_C, String grp, String listType) {
 //
 //        authCheck.getUserUpdateAuth(id_U,id_C,listType,grp,"batch",new JSONArray().fluentAdd("copy"));
@@ -1782,8 +1735,10 @@ public class DbUtils {
             JSONArray arrayIndex = jsonData.getJSONArray("index");
 
             /////////////*************////////////
+            qt.errPrint("jsonVar in tempaCoup", jsonVar);
             Object value = this.scriptEngineVar(jsonData.getString("value"), jsonVar);
             jsonData.put("value", value);
+
 
             //for lSBOrder etc, checking grp here is useless, need to check before this
 //            if (key.equals("info.grp")) {
@@ -1793,35 +1748,29 @@ public class DbUtils {
 //            }
             String[] keySplit = key.split("\\.");
 
-            if (arrayIndex == null)
-            {
+            if (arrayIndex == null) {
                 String colKey = keySplit[keySplit.length - 1];
 
                 //if card has no index, and it is wrdXXX
-                if (colKey.startsWith("wrd"))
-                {
+                if (colKey.startsWith("wrd") && value.getClass().getSimpleName().equals("String")) {
                     key = key + ".cn";
                     qt.upJson(upKeyVal, key, value);
                     if (jsonCol.getJSONObject(colKey) != null) {
                         jsonEs.put(colKey, qt.setJson("cn", value));
                     }
-
-                } else
-                {
+                } else {
                     qt.upJson(upKeyVal, key, value);
                     if (jsonCol.getJSONObject(colKey) != null) {
                         jsonEs.put(colKey, value);
                     }
                 }
-            }
-            else {
+            } else {
                 // objXXX.$.wrdN.cn stuff like this. for file00s etc
                 int keyIndexOf = key.indexOf("$"); // text00s objData $ wrddesc cn
                 String keyPrefix = key.substring(0, keyIndexOf);
                 String keySuffix = key.substring(keyIndexOf + 1, key.length());
 
-                if (keySuffix.startsWith(".wrd"))
-                {
+                if (keySuffix.startsWith(".wrd")) {
                     keySuffix = keySuffix + ".cn";
                 }
                 for (int j = 0; j < arrayIndex.size(); j++) {
@@ -2173,12 +2122,11 @@ public class DbUtils {
 //        } catch (Exception e)
 //        {
 //            e.printStackTrace();
-//            throw new ErrorResponseException(HttpStatus.OK, ToolEnum.DB_ERROR.getCode(), e.toString());
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.DB_ERROR.getCode(), e.toString());
 //        }
 //    }
 
-    public void initAction(JSONObject orderOItem, JSONArray action, Integer index)
-    {
+    public void initAction(JSONObject orderOItem, JSONArray action, Integer index) {
 
         if (action.size() <= index || action.getJSONObject(index) == null) {
             JSONObject actionData = qt.setJson(
@@ -2212,34 +2160,44 @@ public class DbUtils {
         action.getJSONObject(index).put("rKey", orderOItem.getString("rKey"));
 
 
-        if (action.getJSONObject(index).getJSONArray("upPrnts") == null)
-        {
+        if (action.getJSONObject(index).getJSONArray("upPrnts") == null) {
             action.getJSONObject(index).put("upPrnts", new JSONArray());
         }
-        if (action.getJSONObject(index).getJSONArray("subParts") == null)
-        {
+        if (action.getJSONObject(index).getJSONArray("subParts") == null) {
             action.getJSONObject(index).put("subParts", new JSONArray());
         }
-        if (action.getJSONObject(index).getJSONArray("prtPrev") == null)
-        {
+        if (action.getJSONObject(index).getJSONArray("prtPrev") == null) {
             action.getJSONObject(index).put("prtPrev", new JSONArray());
         }
-        if (action.getJSONObject(index).getJSONArray("prtNext") == null)
-        {
+        if (action.getJSONObject(index).getJSONArray("prtNext") == null) {
             action.getJSONObject(index).put("prtNext", new JSONArray());
         }
     }
 
-    public void initOItem(Order order)
-    {
+    public void initOItem(Order order) {
         JSONObject newOItem = qt.setJson("objItem", new JSONArray(), "arrP", new JSONArray(),
                 "bmdHeight", "unset", "objItemCol", new JSONArray(), "wn2qty", 0.0, "wn4price", 0.0,
                 "objCard", qt.setArray("oItem"));
         order.setOItem(newOItem);
     }
 
-    public void initOQc(JSONObject orderOItem, JSONArray oQc, Integer index)
-    {
+    public JSONObject initOItem(JSONArray arrayOItem, JSONArray arrayCard) {
+        JSONArray arrayArrP = new JSONArray();
+        Double wn2qty = 0.0;
+        Double wn4price = 0.0;
+        for (int i = 0; i < arrayOItem.size(); i++) {
+            JSONObject jsonOItem = arrayOItem.getJSONObject(i);
+            arrayArrP.add(jsonOItem.getString("id_P"));
+            wn2qty = DoubleUtils.add(wn2qty, jsonOItem.getDouble("wn2qtyneed"));
+            wn4price = DoubleUtils.add(wn4price, DoubleUtils.multiply(jsonOItem.getDouble("wn2qtyneed"), jsonOItem.getDouble("wn4price")));
+        }
+        JSONObject oItem = qt.setJson("objItem", arrayOItem, "arrP", arrayArrP, "bmdHeight", "unset",
+                "objItemCol", qt.getInitData("cn").getList().getJSONArray("objItemCol"),
+                "wn2qty", wn2qty, "wn4price", wn4price, "objCard", arrayCard);
+        return oItem;
+    }
+
+    public void initOQc(JSONObject orderOItem, JSONArray oQc, Integer index) {
         if (oQc.size() <= index || oQc.getJSONObject(index) == null) {
             JSONObject oQcData = qt.setJson(
                     "score", 0, "foCount", 5);
@@ -2261,11 +2219,9 @@ public class DbUtils {
      * @param oItem need to send the entire oItem.objItem for data to init
      * @return
      */
-    public JSONObject initAction(JSONArray oItem)
-    {
+    public JSONObject initAction(JSONArray oItem) {
         JSONArray actionArray = new JSONArray();
-        for (int i = 0; i < oItem.size(); i++)
-        {
+        for (int i = 0; i < oItem.size(); i++) {
             this.initAction(oItem.getJSONObject(i), actionArray, i);
         }
         JSONObject action = new JSONObject();
@@ -2276,11 +2232,9 @@ public class DbUtils {
         return action;
     }
 
-    public JSONObject initOQc(JSONArray oItem)
-    {
+    public JSONObject initOQc(JSONArray oItem) {
         JSONArray actionArray = new JSONArray();
-        for (int i = 0; i < oItem.size(); i++)
-        {
+        for (int i = 0; i < oItem.size(); i++) {
             this.initOQc(oItem.getJSONObject(i), actionArray, i);
         }
         JSONObject oQc = new JSONObject();
@@ -2288,24 +2242,22 @@ public class DbUtils {
         return oQc;
     }
 
-    public JSONArray initOStock(JSONObject orderOItem, JSONArray oStock, Integer index)
-    {
+    public JSONArray initOStock(JSONObject orderOItem, JSONArray oStock, Integer index) {
 
-            JSONObject oStockData = qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
-                    "id_P", orderOItem.getString("id_P"),
-                    "resvQty", new JSONObject(),
-                    "rKey", orderOItem.getString("rKey"));
+        JSONObject oStockData = qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
+                "id_P", orderOItem.getString("id_P"),
+                "resvQty", new JSONObject(),
+                "rKey", orderOItem.getString("rKey"));
 
-            oStockData.put("objShip", qt.setArray(
-                    qt.setJson("wn2qtyship", 0.0, "wn2qtyshipnow", 0.0,
-                            "wn2qtynowS", 0.0, "wn2qtynow", 0.0, "wn2qtymade", 0.0,
-                            "wn2qtyneed", orderOItem.getDouble("wn2qtyneed"))));
-
+        oStockData.put("objShip", qt.setArray(
+                qt.setJson("wn2qtyship", 0.0, "wn2qtyshipnow", 0.0,
+                        "wn2qtynowS", 0.0, "wn2qtynow", 0.0, "wn2qtymade", 0.0,
+                        "wn2qtyneed", orderOItem.getDouble("wn2qtyneed"))));
 
 
-            oStock.set(index, oStockData);
+        oStock.set(index, oStockData);
 
-            return oStock;
+        return oStock;
     }
 
     /***
@@ -2313,11 +2265,9 @@ public class DbUtils {
      * @param oItem need to send the entire oItem.objItem for data to init
      * @return
      */
-    public JSONObject initOStock(JSONArray oItem)
-    {
+    public JSONObject initOStock(JSONArray oItem) {
         JSONArray stockArray = new JSONArray();
-        for (int i = 0; i < oItem.size(); i++)
-        {
+        for (int i = 0; i < oItem.size(); i++) {
             this.initOStock(oItem.getJSONObject(i), stockArray, i);
         }
         JSONObject oStock = new JSONObject();
@@ -2336,10 +2286,41 @@ public class DbUtils {
     public void setStock(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer index, String locAddr,
                          JSONArray locSpace, JSONArray spaceQty, JSONArray arrPP, JSONArray procQty, Boolean isProc, Integer lAT, String zcndesc, Integer imp) {
         if (id_A == null) {
-            JSONArray filterArray = qt.setESFilt("id_C", tokData.getString("id_C"), "id_CB", id_CB, "id_P", id_P, "locAddr", locAddr);
+            JSONArray filterArray = qt.setESFilt("id_C", tokData.getString("id_C"), "id_CB", id_CB, "locAddr", locAddr);
+            qt.setESFilt(filterArray, "locSpace", "contain", locSpace);
+            if (arrPP != null) {
+                qt.setESFilt(filterArray, "arrPP", "notnull", null);
+            }
+            //货架指定的格子内容
             JSONArray arrayEs = qt.getES("lSAsset", filterArray);
-            if (arrayEs.size() > 0) {
-                id_A = arrayEs.getJSONObject(0).getString("id_A");
+            //货架格子有多种产品或产品不同
+            if (arrayEs.size() > 1) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.SPACE_OCCUPIED.getCode(), null);
+            }
+            //货架指定的格子没有该产品
+            if (arrayEs.size() == 0) {
+                filterArray = qt.setESFilt("id_C", tokData.getString("id_C"), "id_CB", id_CB, "id_P", id_P, "locAddr", locAddr);
+                if (arrPP != null) {
+                    qt.setESFilt(filterArray, "arrPP", "notnull", null);
+                }
+                JSONArray arrayEs1 = qt.getES("lSAsset", filterArray);
+                //货架没有该产品，新建
+                if (arrayEs1.size() == 0) {
+                    id_A = "";
+                } else if (arrPP != null && !arrPP.equals(arrayEs1.getJSONObject(0).getJSONArray("arrPP"))) {
+                    id_A = "";
+                } else {
+                    id_A = arrayEs1.getJSONObject(0).getString("id_A");
+                }
+            } else {
+                if (id_P != null && !id_P.isEmpty() && !id_P.equals(arrayEs.getJSONObject(0).getString("id_P"))) {
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.SPACE_OCCUPIED.getCode(), null);
+                }
+                if (arrPP != null && !arrPP.equals(arrayEs.getJSONObject(0).getJSONArray("arrPP"))) {
+                    id_A = "";
+                } else {
+                    id_A = arrayEs.getJSONObject(0).getString("id_A");
+                }
             }
         }
         JSONObject jsonLog = qt.setJson(
@@ -2365,12 +2346,12 @@ public class DbUtils {
     }
 
     public void setStock(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer index,
-                          String locAddr, JSONArray locSpace, JSONArray spaceQty, Integer lAT, String zcndesc, Integer imp) {
+                         String locAddr, JSONArray locSpace, JSONArray spaceQty, Integer lAT, String zcndesc, Integer imp) {
         this.setStock(arrayLsbasset, tokData, id_CB, id_P, id_A, wn2qty, index, locAddr, locSpace, spaceQty, null, null, null, lAT, zcndesc, imp);
     }
 
     public void setMoney(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer lAT, JSONObject action,
-                               JSONObject oMoney, Integer index, String zcndesc, Integer imp, String listType) {
+                         JSONObject oMoney, Integer index, String zcndesc, Integer imp, String listType) {
         String id_C = tokData.getString("id_C");
         Asset auth = qt.getConfig(id_C, "a-auth", "def");
         System.out.println("auth=" + auth);
@@ -2484,15 +2465,13 @@ public class DbUtils {
             } else {
                 JSONObject info = jsonProd.getJSONObject("info");
 
-                String grpP =  info.getString("grp");
+                String grpP = info.getString("grp");
 
-                if (jsonLsasset.getInteger("lAT").equals(3))
-                {
+                if (jsonLsasset.getInteger("lAT").equals(3)) {
                     qt.errPrint("ia m in updateAsset.... ");
                     grpP = qt.getESItem("lBProd", id_P, id_C, lBProd.class).getGrpB();
                     defKey = "objlBP";
-                } else if (jsonLsasset.getInteger("lAT").equals(2))
-                {
+                } else if (jsonLsasset.getInteger("lAT").equals(2)) {
                     grpP = qt.getESItem("lSProd", id_P, id_C, lSProd.class).getGrp();
                     defKey = "objlSP";
                 }
@@ -2589,7 +2568,7 @@ public class DbUtils {
 
 
     public void assetValueChange(Order order, JSONArray arrayAssetChg, List<JSONObject> listBulkAsset, List<JSONObject> listBulkLsasset,
-                          List<JSONObject> listBulkLbasset, String type, Boolean isLsa) {
+                                 List<JSONObject> listBulkLbasset, String type, Boolean isLsa) {
 
         String id_O = order.getId();
         JSONArray arrayOItem = order.getOItem().getJSONArray("objItem");
@@ -2618,9 +2597,12 @@ public class DbUtils {
             // type 3 = deduct/add money
 
 
-
             //K - should use lAT to check if this is Stock
             JSONObject prod = assetChgObj.getJSONObject("jsonProd");
+            qt.errPrint("prodInfo", prod, assetChgObj);
+            if (prod == null) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_FOUND.getCode(), null);
+            }
             JSONObject prodInfo = prod.getJSONObject("info");
             Integer lCR = prodInfo.getInteger("lCR");
             if (assetChgObj.getString("locAddr") != null) {
@@ -2640,8 +2622,7 @@ public class DbUtils {
                         wrdN.put("cn", "【未加工】" + wrdN.getString("cn"));
                     }
                 }
-                if (assetChgObj.getJSONObject("jsonLsa") != null)
-                {
+                if (assetChgObj.getJSONObject("jsonLsa") != null) {
                     JSONObject jsonLsa = assetChgObj.getJSONObject("jsonLsa");
                     id_A = jsonLsa.getString("id_A");
                     JSONObject jsonAsset = assetChgObj.getJSONObject("jsonAsset");
@@ -2670,7 +2651,7 @@ public class DbUtils {
                                 System.out.println("updateSpaceQty=" + updateSpaceQty);
                                 //货架数量小于移动数量
                                 if (DoubleUtils.doubleGt(0, qty)) {
-                                    throw new ErrorResponseException(HttpStatus.OK, ToolEnum.PROD_NOT_ENOUGH.getCode(), null);
+                                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_ENOUGH.getCode(), null);
                                 }
                                 //大于
                                 if (DoubleUtils.doubleGt(qty, 0)) {
@@ -2681,21 +2662,21 @@ public class DbUtils {
                                 arraySpaceQty.remove(0);
                                 arrayUpdateLocSpace.remove(0);
                                 arrayUpdateSpaceQty.remove(0);
-                                j --;
-                                k --;
+                                j--;
+                                k--;
                                 break;
                             }
                             //移动格子小
                             else if (locSpace > updateLocSpace) {
                                 if (DoubleUtils.doubleGt(0, updateSpaceQty)) {
-                                    throw new ErrorResponseException(HttpStatus.OK, ToolEnum.PROD_NOT_ENOUGH.getCode(), null);
+                                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_ENOUGH.getCode(), null);
                                 }
                                 System.out.println(">,locSpace=" + locSpace + ",updateLocSpace=" + updateLocSpace);
                                 arrayResultLocSpace.add(updateLocSpace);
                                 arrayResultSpaceQty.add(updateSpaceQty);
                                 arrayUpdateLocSpace.remove(0);
                                 arrayUpdateSpaceQty.remove(0);
-                                k --;
+                                k--;
                             }
                             //移动格子大
                             else if (locSpace < updateLocSpace) {
@@ -2704,7 +2685,7 @@ public class DbUtils {
                                 arrayResultSpaceQty.add(spaceQty);
                                 arrayLocSpace.remove(0);
                                 arraySpaceQty.remove(0);
-                                j --;
+                                j--;
                                 break;
                             }
                         }
@@ -2718,7 +2699,7 @@ public class DbUtils {
                     if (arrayUpdateLocSpace.size() != 0) {
                         for (int j = 0; j < arrayUpdateSpaceQty.size(); j++) {
                             if (DoubleUtils.doubleGt(0, arrayUpdateSpaceQty.getDouble(j))) {
-                                throw new ErrorResponseException(HttpStatus.OK, ToolEnum.PROD_NOT_ENOUGH.getCode(), null);
+                                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_ENOUGH.getCode(), null);
                             }
                         }
                         arrayResultLocSpace.addAll(arrayUpdateLocSpace);
@@ -2727,7 +2708,7 @@ public class DbUtils {
                     System.out.println("arrayResultLocSpace=" + arrayResultLocSpace);
                     System.out.println("arrayResultSpaceQty=" + arrayResultSpaceQty);
 
-                    
+
                     // what is else
                     if ("resv".equals(type) && aStock.getJSONObject("resvQty") != null &&
                             aStock.getJSONObject("resvQty").getDouble(id_O + "-" + index) != null) {
@@ -2739,8 +2720,7 @@ public class DbUtils {
                                     "id", id_A);
                             jsonBulkLsasset = qt.setJson("type", "delete",
                                     "id", jsonLsa.getString("id_ES"));
-                        } 
-                        else {
+                        } else {
                             //check if fromSum == resvQty.wn2qty, if so remove that object, else deduct
                             JSONObject jsonResvQty = aStock.getJSONObject("resvQty");
                             if (DoubleUtils.doubleEquals(jsonResvQty.getDouble(id_O + "-" + index), wn2qty)) {
@@ -2770,8 +2750,7 @@ public class DbUtils {
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
                         }
-                    }
-                    else if ("proc".equals(type)) {
+                    } else if ("proc".equals(type)) {
                         if (DoubleUtils.doubleEquals(aStock.getDouble("wn2qty"), -wn2qty)) {
                             jsonBulkAsset = qt.setJson("type", "delete",
                                     "id", id_A);
@@ -2807,8 +2786,7 @@ public class DbUtils {
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
                         }
-                    }
-                    else if ("part".equals(type)) {
+                    } else if ("part".equals(type)) {
                         if (DoubleUtils.doubleEquals(aStock.getDouble("wn4price"), -wn4price)) {
                             jsonBulkAsset = qt.setJson("type", "delete",
                                     "id", id_A);
@@ -2844,8 +2822,7 @@ public class DbUtils {
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
                         }
-                    }
-                    else if ("safex".equals(type)) {
+                    } else if ("safex".equals(type)) {
                         JSONObject jsonId_C = prod.getJSONObject("qtySafex").getJSONObject(id_C);
                         JSONArray arraySafex = jsonId_C.getJSONArray("objSafex");
                         JSONObject jsonResv = new JSONObject();
@@ -2857,7 +2834,7 @@ public class DbUtils {
                                 wn2sum = DoubleUtils.subtract(wn2sum, wn2safex);
                                 jsonResv.put(jsonSafex.getString("id_O") + "-" + jsonSafex.getInteger("index"), wn2safex);
                                 arraySafex.remove(j);
-                                j --;
+                                j--;
                             } else if (DoubleUtils.doubleGte(wn2sum, 0.0)) {
                                 jsonResv.put(jsonSafex.getString("id_O") + "-" + jsonSafex.getInteger("index"), wn2sum);
                                 jsonSafex.put("wn2qty", wn2safex - wn2sum);
@@ -2891,8 +2868,7 @@ public class DbUtils {
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
                         }
-                    }
-                    else {
+                    } else {
                         if (DoubleUtils.doubleEquals(aStock.getDouble("wn2qty"), -wn2qty)) {
                             jsonBulkAsset = qt.setJson("type", "delete",
                                     "id", id_A);
@@ -2957,6 +2933,20 @@ public class DbUtils {
 
                         lsasset.setArrPP(arrayArrPP);
                         lsasset.setProcQty(arrayProcQty);
+                    } else if ("part".equals(type)) {
+                        JSONArray arrayArrPP = assetChgObj.getJSONArray("arrPP");
+                        JSONArray arrayProcQty = assetChgObj.getJSONArray("procQty");
+                        System.out.println("arrayProcQty=" + arrayProcQty);
+                        AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayUpdateLocSpace, arrayUpdateSpaceQty, arrayArrPP, arrayProcQty);
+                        assetAStock.setLUT(lUT);
+                        assetAStock.setLCR(lCR);
+                        asset.setAStock(qt.toJson(assetAStock));
+                        asset.setView(qt.setArray("info", "aStock"));
+                        jsonBulkAsset = qt.setJson("type", "insert",
+                                "insert", asset);
+
+                        lsasset.setArrPP(arrayArrPP);
+                        lsasset.setProcQty(arrayProcQty);
                     } else {
                         AssetAStock assetAStock = new AssetAStock(wn4price, locAddr, arrayUpdateLocSpace, arrayUpdateSpaceQty);
                         assetAStock.setLUT(lUT);
@@ -2980,9 +2970,8 @@ public class DbUtils {
                         jsonLog.getInteger("imp"));
                 log.setLogData_assetflow(wn2qty, wn4price, id_A, grp);
                 System.out.println("assetflow=" + JSON.toJSON(log));
-               ws.sendWS(log);
-            }
-            else {
+                ws.sendWS(log);
+            } else {
                 //存在金钱
                 if (assetChgObj.getJSONObject("jsonLsa") != null) {
                     JSONObject jsonLsa = assetChgObj.getJSONObject("jsonLsa");
@@ -3093,11 +3082,13 @@ public class DbUtils {
                 "insert", obj);
         listBulk.add(jsonBulk);
     }
+
     public void setBulkDelete(List<JSONObject> listBulk, String id) {
         JSONObject jsonBulk = qt.setJson("type", "delete",
                 "id", id);
         listBulk.add(jsonBulk);
     }
+
     public void setBulkUpdate(List<JSONObject> listBulk, String id, JSONObject json) {
         JSONObject jsonBulk = qt.setJson("type", "update",
                 "id", id,

@@ -22,7 +22,6 @@ public enum CodeEnum {
     NOT_FOUND("404"),
 
     INTERNAL_SERVER_ERROR("500"),
-    NEED_RENEW_CODE("38888"),
 
     ;
 
