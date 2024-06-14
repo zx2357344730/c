@@ -215,6 +215,8 @@ public class WxLoginServiceImpl implements WxLoginService {
 
         // 登录凭证不能为空
         if (code == null || code.length() == 0) {
+            System.out.println("code:");
+            System.out.println(JSON.toJSONString(code));
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
         // 1、向微信服务器 使用登录凭证 code 获取 session_key 和 openid
@@ -237,6 +239,8 @@ public class WxLoginServiceImpl implements WxLoginService {
 
         // 登录凭证不能为空
         if (json.get("session_key") == null) {
+            System.out.println("json:");
+            System.out.println(JSON.toJSONString(json));
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
 
@@ -277,7 +281,8 @@ public class WxLoginServiceImpl implements WxLoginService {
         } catch (Exception e) {
             throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), null);
         }
-
+        System.out.println("返回结果:");
+        System.out.println(JSON.toJSONString(userInfo));
         return retResult.ok(CodeEnum.OK.getCode(), userInfo);
     }
 

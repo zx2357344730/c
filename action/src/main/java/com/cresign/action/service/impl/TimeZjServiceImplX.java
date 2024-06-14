@@ -1489,6 +1489,25 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         atFirstODateObjSet(wn0TPrior,teStart,id_O,id_C,dateIndex,layer,id_PF);
         return retResult.ok(CodeEnum.OK.getCode(), "set时间处理成功!");
     }
+
+    @Override
+    public ApiResponse setAtFirstList(String id_C, JSONArray setList) {
+//        if (isTest)
+//            // 调用根据公司编号清空所有任务信息方法
+//            setTaskAndZonKai(id_C);
+        System.out.println();
+        for (int i = 0; i < setList.size(); i++) {
+            JSONObject setListData = setList.getJSONObject(i);
+            System.out.println();
+            System.out.println("---------------------------------------------------------");
+            System.out.println();
+            atFirstODateObjSet(setListData.getInteger("wn0TPrior"),setListData.getLong("teStart")
+                    ,setListData.getString("id_O"),id_C,setListData.getInteger("dateIndex")
+                    , setListData.getString("layer"), setListData.getString("id_PF"));
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), "set时间集合处理成功!");
+    }
+
     /**
      * 时间处理核心方法，指定dateIndex
      * @param id_O  主订单编号
@@ -1518,11 +1537,12 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 
 //        // 抛出操作成功异常
 //        return retResult.ok(CodeEnum.OK.getCode(), "时间处理成功!");
-        System.out.println("开始oDateObj:");
+        System.out.println("开始oDateObj-1:");
         System.out.println(JSON.toJSONString(oDateObj));
         qt.setMDContent(id_O,qt.setJson("casItemx.java.oDateObj",oDateObj), Order.class);
         List<Integer> layerList = new ArrayList<>();
         List<Integer> layerListThis = new ArrayList<>();
+        JSONObject depMap = new JSONObject();
         for (String layer : oDateObj.keySet()) {
             int layerInt = Integer.parseInt(layer);
             int layerMainInt = Integer.parseInt(layerMain);
@@ -1533,6 +1553,14 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 for (String id_PF : layerInfo.keySet()) {
                     JSONObject pfInfo = layerInfo.getJSONObject(id_PF);
                     pfInfo.put("arrPStart",new JSONObject());
+                    JSONArray oDates = pfInfo.getJSONArray("oDates");
+                    for (int i = 0; i < oDates.size(); i++) {
+                        JSONObject oDate = oDates.getJSONObject(i);
+                        String dep = oDate.getString("dep");
+                        if (!depMap.containsKey(dep)) {
+                            depMap.put(dep,0);
+                        }
+                    }
                     layerInfo.put(id_PF,pfInfo);
                     oDateObj.put(layer,layerInfo);
                 }
@@ -1543,13 +1571,13 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             layerListThis.sort(Comparator.reverseOrder());
             boolean isFirst = layerList.get(0).equals(layerListThis.get(0));
             dgTimeSetFirst(id_O,layerListThis.get(0),oDateObj,salesOrderData,id_C,grpUNumAll,wn0TPrior
-                    ,isFirst,teStart,dateIndexMain,id_PFMain);
+                    ,isFirst,teStart,dateIndexMain,id_PFMain,depMap);
             qt.setMDContent(id_O,qt.setJson("casItemx.java.oDateObj",oDateObj), Order.class);
         }
     }
     private void dgTimeSetFirst(String id_OPHighest,int layer,JSONObject oDateObj,Order salesOrderData
             ,String id_C,JSONObject grpUNumAll,int wn0TPrior,boolean isFirst,long teStart
-            , int dateIndexMain, String id_PFMain){
+            , int dateIndexMain, String id_PFMain,JSONObject depMap){
         if (layer > 0) {
             System.out.println("layer:"+layer);
             JSONObject prodInfo = oDateObj.getJSONObject(layer + "");
@@ -1604,6 +1632,15 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 JSONObject allImageTotalTime = new JSONObject();
                 // 全部任务存储
                 JSONObject objTaskAll = new JSONObject();
+//                for (String depIn : depMap.keySet()) {
+//                    Asset asset = qt.getConfig(id_C, "d-" + depIn, "aArrange.objTask");
+//                    System.out.println("查询数据库输出-asset:");
+//                    System.out.println(JSON.toJSONString(asset));
+//                    if (null != asset && null != asset.getAArrange()
+//                            && null != asset.getAArrange().getJSONObject("objTask")) {
+//                        objTaskAll.put(depIn,asset.getAArrange().getJSONObject("objTask"));
+//                    }
+//                }
                 JSONObject grpBGroupIdOJ = new JSONObject();
                 // 存储casItemx内订单列表的订单oDates数据
                 JSONObject actionIdO = new JSONObject();
@@ -3047,7 +3084,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 
 //        // 抛出操作成功异常
 //        return retResult.ok(CodeEnum.OK.getCode(), "时间处理成功!");
-        System.out.println("开始oDateObj:");
+        System.out.println("开始oDateObj-2:");
         System.out.println(JSON.toJSONString(oDateObj));
         qt.setMDContent(id_O,qt.setJson("casItemx.java.oDateObj",oDateObj), Order.class);
         List<Integer> layerList = new ArrayList<>();
@@ -5794,7 +5831,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
     }
 
     @Override
-    public ApiResponse getAtFirstEasy(String id_O, Long teStart, String id_C) {
+    public ApiResponse getAtFirstEasy(String id_O, Long teStart, String id_C,boolean setNew) {
         // 调用方法获取订单信息
         Order salesOrderData = qt.getMDContent(id_O,qt.strList("oItem", "info", "view", "action", "casItemx"), Order.class);
         // 判断订单是否为空
@@ -5807,13 +5844,22 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         // 获取递归存储的时间处理信息
         JSONObject oDateObj = casItemx.getJSONObject("java").getJSONObject("oDateObj");
         List<Integer> layerList = new ArrayList<>();
+        JSONObject depMap = new JSONObject();
         for (String layer : oDateObj.keySet()) {
             layerList.add(Integer.parseInt(layer));
             JSONObject layerInfo = oDateObj.getJSONObject(layer);
             for (String id_PF : layerInfo.keySet()) {
                 JSONObject pfInfo = layerInfo.getJSONObject(id_PF);
                 pfInfo.put("arrPStart",new JSONObject());
+                JSONArray oDates = pfInfo.getJSONArray("oDates");
                 layerInfo.put(id_PF,pfInfo);
+                for (int i = 0; i < oDates.size(); i++) {
+                    JSONObject oDate = oDates.getJSONObject(i);
+                    String dep = oDate.getString("dep");
+                    if (!depMap.containsKey(dep)) {
+                        depMap.put(dep,0);
+                    }
+                }
                 oDateObj.put(layer,layerInfo);
             }
         }
@@ -5821,15 +5867,85 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         Map<String,JSONObject> assetGrpMap = new HashMap<>();
         JSONObject objEasy = new JSONObject();
         JSONObject thisEasy = new JSONObject();
-        dgTimeEasy(layerList.get(0),oDateObj,id_C
+        if (!setNew) {
+            for (String dep : depMap.keySet()) {
+                Asset asset = qt.getConfig(id_C, "d-" + dep, "aArrange.objEasy");
+                if (null != asset && null != asset.getAArrange() && asset.getAArrange().containsKey("objEasy")) {
+                    objEasy.put(dep,asset.getAArrange().getJSONObject("objEasy"));
+                    JSONObject easyAssetId = getEasyAssetId(thisEasy);
+                    if (null == easyAssetId) {
+                        easyAssetId = new JSONObject();
+                    }
+                    if (!easyAssetId.containsKey(dep)) {
+                        easyAssetId.put(dep,asset.getId());
+                        setEasyAssetId(thisEasy,easyAssetId);
+                    }
+                }
+            }
+        }
+        System.out.println("layerList:"+teStart);
+        System.out.println(JSON.toJSONString(layerList));
+        dgTimeEasy(layerList.get(0),oDateObj,id_C,id_O
                 ,true,teStart,assetGrpMap,objEasy,thisEasy);
+        System.out.println("objEasy:");
+        System.out.println(JSON.toJSONString(objEasy));
+        System.out.println("thisEasy:");
+        System.out.println(JSON.toJSONString(thisEasy));
+        System.out.println("DepTeSta:");
+        JSONObject easyDepTeSta = getEasyDepTeSta(thisEasy);
+        System.out.println(JSON.toJSONString(easyDepTeSta));
+        JSONObject easyAssetId = getEasyAssetId(thisEasy);
+        easyAssetId.forEach((key,val)-> qt.setMDContent(val.toString()
+                ,qt.setJson("aArrange.objEasy",objEasy.getJSONObject(key)
+                        ,"aArrange.objEasyLastTime",easyDepTeSta.getLong(key)), Asset.class));
+        return retResult.ok(CodeEnum.OK.getCode(), "成功");
+    }
+
+    @Override
+    public ApiResponse setAtFirstEasy(String id_O, Long teStart, String id_C
+            , int dateIndex, String layer, String id_PF) {
+        // 调用方法获取订单信息
+        Order salesOrderData = qt.getMDContent(id_O,qt.strList("oItem", "info", "view", "action", "casItemx"), Order.class);
+        // 判断订单是否为空
+        if (null == salesOrderData || null == salesOrderData.getAction() || null == salesOrderData.getOItem()
+                || null == salesOrderData.getCasItemx() || null == salesOrderData.getInfo()) {
+            // 返回为空错误信息
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+        }
+        JSONObject casItemx = salesOrderData.getCasItemx();
+        // 获取递归存储的时间处理信息
+        JSONObject oDateObj = casItemx.getJSONObject("java").getJSONObject("oDateObj");
+        JSONObject layerData = oDateObj.getJSONObject(layer);
+        JSONObject pfData = layerData.getJSONObject(id_PF);
+        JSONArray oDates = pfData.getJSONArray("oDates");
+        JSONObject oDate = oDates.getJSONObject(dateIndex);
+        String dep = oDate.getString("dep");
+        Asset asset = qt.getConfig(id_C, "d-" + dep, qt.strList("aArrange.objEasy", "aArrange.objEasyLastTime"));
+        JSONObject objEasy;
+        if (null == asset || null == asset.getAArrange() || !asset.getAArrange().containsKey("objEasy")) {
+            objEasy = new JSONObject();
+        } else {
+            objEasy = asset.getAArrange().getJSONObject("objEasy");
+            if (asset.getAArrange().containsKey("objEasyLastTime")) {
+                teStart = asset.getAArrange().getLong("objEasyLastTime");
+            }
+        }
+
+        Map<String,JSONObject> assetGrpMap = new HashMap<>();
+        JSONObject thisEasy = new JSONObject();
+        System.out.println("oDateObj:"+layer+","+id_C+","+id_O+","+teStart+","+id_PF+","+dateIndex);
+        System.out.println(JSON.toJSONString(oDateObj));
+        dgTimeEasySet(Integer.parseInt(layer),oDateObj,id_C,id_O
+                ,teStart,assetGrpMap,objEasy,thisEasy,id_PF,dateIndex);
         System.out.println("objEasy:");
         System.out.println(JSON.toJSONString(objEasy));
         System.out.println("DepTeSta:");
         JSONObject easyDepTeSta = getEasyDepTeSta(thisEasy);
         System.out.println(JSON.toJSONString(easyDepTeSta));
         JSONObject easyAssetId = getEasyAssetId(thisEasy);
-        easyAssetId.forEach((key,val)-> qt.setMDContent(val.toString(),qt.setJson("aArrange.objEasy",objEasy.getJSONObject(key),"aArrange.objEasyLastTime",easyDepTeSta.getLong(key)), Asset.class));
+        easyAssetId.forEach((key,val)-> qt.setMDContent(val.toString()
+                ,qt.setJson("aArrange.objEasy",objEasy.getJSONObject(key)
+                        ,"aArrange.objEasyLastTime",easyDepTeSta.getLong(key)), Asset.class));
         return retResult.ok(CodeEnum.OK.getCode(), "成功");
     }
 
@@ -5909,9 +6025,21 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
     }
 
     @Override
+    public ApiResponse clearOrderAllTaskAndSave(String id_C, String id_O) {
+        clearOrderAllTaskAndSaveFc(id_C,id_O);
+        return retResult.ok(CodeEnum.OK.getCode(), "成功");
+    }
+
+    @Override
     public ApiResponse clearThisDayTaskAndSave(String id_C, String dep, String grpB, long thisDay) {
         System.out.println("进入方法");
         clearThisDayTaskAndSaveFc(id_C, dep, grpB, thisDay);
+        return retResult.ok(CodeEnum.OK.getCode(), "成功");
+    }
+
+    @Override
+    public ApiResponse clearThisDayTaskAndSaveNew(String id_C, String dep, String grpB, long thisDay) {
+        clearThisDayTaskAndSaveFcNew(id_C, dep, grpB, thisDay);
         return retResult.ok(CodeEnum.OK.getCode(), "成功");
     }
 
@@ -5921,8 +6049,20 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         return retResult.ok(CodeEnum.OK.getCode(), "成功");
     }
 
-    private void dgTimeEasy(int layer,JSONObject oDateObj
-            ,String id_C,boolean isFirst,long teStart,Map<String,JSONObject> assetGrpMap,JSONObject objEasy
+    @Override
+    public ApiResponse clearThisDayEasyTaskAndSaveNew(String id_C, String dep, long thisDay) {
+        clearThisDayEasyTaskAndSaveFcNew(id_C, dep, thisDay);
+        return retResult.ok(CodeEnum.OK.getCode(), "成功");
+    }
+
+    @Override
+    public ApiResponse clearThisDayEasyTaskAndSaveByEnd(String id_C, String dep, long thisDay) {
+        clearThisDayEasyTaskAndSaveFcEnd(id_C, dep, thisDay);
+        return retResult.ok(CodeEnum.OK.getCode(), "成功");
+    }
+
+    private void dgTimeEasy(int layer,JSONObject oDateObj,String id_C,String id_O
+            ,boolean isFirst,long teStart,Map<String,JSONObject> assetGrpMap,JSONObject objEasy
             ,JSONObject thisEasy){
         if (layer > 0) {
             System.out.println("layer:"+layer);
@@ -5942,7 +6082,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                     System.out.println("输出oDate:"+id_P);
                     // 获取时间处理的实际准备时间
                     Long wntPrep = oDate.getLong("wntPrep");
-                    Long wntDurTotal = oDate.getLong("wntDurTotal");
+                    double wntDurTotal = oDate.getInteger("wntDurTotal") * oDate.getDouble("wn2qtyneed");
                     JSONObject depEasy = getDepEasy(objEasy,dep,id_C,thisEasy);
                     JSONObject easyDepTeSta = getEasyDepTeSta(thisEasy);
                     if (null == easyDepTeSta) {
@@ -5955,7 +6095,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                             setEasyDepTeSta(thisEasy,easyDepTeSta);
                         } else {
                             teStart = easyDepTeSta.getLong(dep);
-                            System.out.println("最后时间:"+teStart);
+                            System.out.println("最后时间-1:"+teStart);
                         }
                     }
                     long wntLeft;
@@ -5969,11 +6109,11 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                         if (null != teStaObj) {
                             wntLeft = teStaObj.getLong("wntLeft");
                             easyTasks = teStaObj.getJSONArray("easyTasks");
-                            System.out.println("获取本地:"+wntLeft);
+                            System.out.println("获取本地-1:"+wntLeft);
                         } else {
                             teStaObj = new JSONObject();
                             easyTasks = new JSONArray();
-                            wntLeft = getTotalTime(assetGrpMap,grpB,id_C,dep);
+                            wntLeft = getTotalTime(assetGrpMap,grpB,id_C,dep,teStart);
                             teStaObj.put("wntTotal",wntLeft);
                         }
                     }
@@ -5981,31 +6121,38 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                         depEasy = new JSONObject();
                         teStaObj = new JSONObject();
                         easyTasks = new JSONArray();
-                        wntLeft = getTotalTime(assetGrpMap,grpB,id_C,dep);
+                        wntLeft = getTotalTime(assetGrpMap,grpB,id_C,dep,teStart);
                         teStaObj.put("wntTotal",wntLeft);
                     }
-                    long totalDur = wntDurTotal + wntPrep;
+                    JSONObject teEasyDate = new JSONObject();
+                    long totalDur = (long) (wntDurTotal + wntPrep);
                     if (wntLeft == 0) {
                         JSONObject easyDepTeStaNew = getEasyDepTeSta(thisEasy);
                         Long depSta = easyDepTeStaNew.getLong(dep);
                         teStaObj = depEasy.getJSONObject(depSta + "");
                         wntLeft = teStaObj.getLong("wntLeft");
                         if (wntLeft == 0) {
-                            dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C,totalDur,oDate,prodId,layer,i);
+                            dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
+                                    ,totalDur,oDate,prodId,layer,i,teEasyDate,id_O);
                         } else {
                             long totalTimeNew = wntLeft - totalDur;
                             if (totalTimeNew < 0) {
                                 long disparityTime = totalDur - wntLeft;
-                                teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft));
+                                teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft, id_O
+                                        ,oDate.getString("id_O"),oDate.getInteger("index")));
                                 wntLeft = 0L;
                                 teStaObj.put("wntLeft",wntLeft);
                                 depEasy.put(depSta+"",teStaObj);
+                                teEasyDate.put(depSta+"",wntLeft);
                                 objEasy.put(dep,depEasy);
-                                dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C,disparityTime,oDate,prodId,layer,i);
+                                dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
+                                        ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O);
                             } else {
                                 teStaObj.put("wntLeft",totalTimeNew);
-                                teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur));
+                                teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur,id_O
+                                        ,oDate.getString("id_O"),oDate.getInteger("index")));
                                 depEasy.put(depSta+"",teStaObj);
+                                teEasyDate.put(depSta+"",totalDur);
                                 objEasy.put(dep,depEasy);
                             }
                         }
@@ -6015,33 +6162,167 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                         if (totalTimeNew < 0) {
                             long disparityTime = totalDur - wntLeft;
                             System.out.println("totalDur:"+totalDur+",wntLeft:"+wntLeft);
-                            teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft));
+                            teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft,id_O
+                                    ,oDate.getString("id_O"),oDate.getInteger("index")));
                             wntLeft = 0L;
                             teStaObj.put("wntLeft",wntLeft);
                             depEasy.put(teStart+"",teStaObj);
+                            teEasyDate.put(teStart+"",wntLeft);
                             objEasy.put(dep,depEasy);
-                            dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C,disparityTime,oDate,prodId,layer,i);
+                            dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
+                                    ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O);
                         } else {
                             teStaObj.put("wntLeft",totalTimeNew);
-                            teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur));
+                            teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur,id_O
+                                    ,oDate.getString("id_O"),oDate.getInteger("index")));
                             depEasy.put(teStart+"",teStaObj);
+                            teEasyDate.put(teStart+"",totalDur);
                             objEasy.put(dep,depEasy);
                         }
                     }
+                    oDate.put("teEasyDate",teEasyDate);
+                    oDates.set(i,oDate);
                 }
+                qt.setMDContent(id_O,qt.setJson("casItemx.java.oDateObj."+layer+"."+prodId+".oDates",oDates),Order.class);
             }
-            dgTimeEasy(layer-1,oDateObj,id_C,false
+            dgTimeEasy(layer-1,oDateObj,id_C,id_O,false
                     ,teStart,assetGrpMap,objEasy,thisEasy);
         }
     }
 
-    private JSONArray setEasyTask(JSONArray easyTasks,JSONObject oDate,String prodId,int layer,int i,long timeTotal){
-        if (oDate.getJSONObject("wrdN").getString("cn").equals("打铁铰")) {
-            System.out.println("打铁铰:");
+    private void dgTimeEasySet(int layer,JSONObject oDateObj,String id_C,String id_O
+            ,long teStart,Map<String,JSONObject> assetGrpMap,JSONObject objEasy
+            ,JSONObject thisEasy,String id_PF,int dateIndex){
+        if (layer > 0) {
+            System.out.println("layer:"+layer);
+            JSONObject prodInfo = oDateObj.getJSONObject(layer + "");
+            JSONObject partInfo = prodInfo.getJSONObject(id_PF);
+            JSONArray oDates = partInfo.getJSONArray("oDates");
+            // 遍历时间处理信息集合
+            for (int i = dateIndex; i < oDates.size(); i++) {
+                // 获取i对应的时间处理信息
+                JSONObject oDate = oDates.getJSONObject(i);
+                // 获取时间处理的组别
+                String grpB = oDate.getString("grpB");
+                String dep = oDate.getString("dep");
+                // 获取时间处理的零件产品编号
+                String id_P = oDate.getString("id_P");
+                System.out.println("输出oDate:"+id_P);
+                // 获取时间处理的实际准备时间
+                Long wntPrep = oDate.getLong("wntPrep");
+                double wntDurTotal = oDate.getInteger("wntDurTotal") * oDate.getDouble("wn2qtyneed");
+                JSONObject depEasy = getDepEasy(objEasy,dep,id_C,thisEasy);
+                JSONObject easyDepTeSta = getEasyDepTeSta(thisEasy);
+                if (null == easyDepTeSta) {
+                    easyDepTeSta = new JSONObject();
+                    easyDepTeSta.put(dep,teStart);
+                    setEasyDepTeSta(thisEasy,easyDepTeSta);
+                } else {
+                    if (!easyDepTeSta.containsKey(dep)) {
+                        easyDepTeSta.put(dep,teStart);
+                        setEasyDepTeSta(thisEasy,easyDepTeSta);
+                    } else {
+                        teStart = easyDepTeSta.getLong(dep);
+                        System.out.println("最后时间-2:"+teStart);
+                    }
+                }
+                long wntLeft;
+                JSONArray easyTasks;
+                JSONObject teStaObj;
+                if (null != depEasy) {
+                    teStaObj = depEasy.getJSONObject(teStart + "");
+                    if (null != teStaObj) {
+                        wntLeft = teStaObj.getLong("wntLeft");
+                        easyTasks = teStaObj.getJSONArray("easyTasks");
+                        System.out.println("获取本地-2:"+wntLeft);
+                    } else {
+                        teStaObj = new JSONObject();
+                        easyTasks = new JSONArray();
+                        wntLeft = getTotalTime(assetGrpMap,grpB,id_C,dep,teStart);
+                        teStaObj.put("wntTotal",wntLeft);
+                    }
+                }
+                else {
+                    depEasy = new JSONObject();
+                    teStaObj = new JSONObject();
+                    easyTasks = new JSONArray();
+                    wntLeft = getTotalTime(assetGrpMap,grpB,id_C,dep,teStart);
+                    teStaObj.put("wntTotal",wntLeft);
+                }
+                JSONObject teEasyDate = new JSONObject();
+                long totalDur = (long) (wntDurTotal + wntPrep);
+                if (wntLeft == 0) {
+                    JSONObject easyDepTeStaNew = getEasyDepTeSta(thisEasy);
+                    Long depSta = easyDepTeStaNew.getLong(dep);
+                    teStaObj = depEasy.getJSONObject(depSta + "");
+                    wntLeft = teStaObj.getLong("wntLeft");
+                    if (wntLeft == 0) {
+                        dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
+                                ,totalDur,oDate,id_PF,layer,i,teEasyDate,id_O);
+                    } else {
+                        long totalTimeNew = wntLeft - totalDur;
+                        if (totalTimeNew < 0) {
+                            long disparityTime = totalDur - wntLeft;
+                            teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,id_PF,layer,i,wntLeft,id_O
+                                    ,oDate.getString("id_O"),oDate.getInteger("index")));
+                            wntLeft = 0L;
+                            teStaObj.put("wntLeft",wntLeft);
+                            depEasy.put(depSta+"",teStaObj);
+                            teEasyDate.put(depSta+"",wntLeft);
+                            objEasy.put(dep,depEasy);
+                            dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
+                                    ,disparityTime,oDate,id_PF,layer,i,teEasyDate,id_O);
+                        } else {
+                            teStaObj.put("wntLeft",totalTimeNew);
+                            teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,id_PF,layer,i,totalDur,id_O
+                                    ,oDate.getString("id_O"),oDate.getInteger("index")));
+                            depEasy.put(depSta+"",teStaObj);
+                            teEasyDate.put(depSta+"",totalDur);
+                            objEasy.put(dep,depEasy);
+                        }
+                    }
+                }
+                else {
+                    long totalTimeNew = wntLeft - totalDur;
+                    if (totalTimeNew < 0) {
+                        long disparityTime = totalDur - wntLeft;
+                        System.out.println("totalDur:"+totalDur+",wntLeft:"+wntLeft);
+                        teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,id_PF,layer,i,wntLeft,id_O
+                                ,oDate.getString("id_O"),oDate.getInteger("index")));
+                        wntLeft = 0L;
+                        teStaObj.put("wntLeft",wntLeft);
+                        depEasy.put(teStart+"",teStaObj);
+                        teEasyDate.put(teStart+"",wntLeft);
+                        objEasy.put(dep,depEasy);
+                        dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
+                                ,disparityTime,oDate,id_PF,layer,i,teEasyDate,id_O);
+                    } else {
+                        teStaObj.put("wntLeft",totalTimeNew);
+                        teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,id_PF,layer,i,totalDur,id_O
+                                ,oDate.getString("id_O"),oDate.getInteger("index")));
+                        depEasy.put(teStart+"",teStaObj);
+                        teEasyDate.put(teStart+"",totalDur);
+                        objEasy.put(dep,depEasy);
+                    }
+                }
+                oDate.put("teEasyDate",teEasyDate);
+                oDates.set(i,oDate);
+            }
+            qt.setMDContent(id_O,qt.setJson("casItemx.java.oDateObj."+layer+"."+id_PF+".oDates",oDates),Order.class);
+            dgTimeEasy(layer-1,oDateObj,id_C,id_O,false
+                    ,teStart,assetGrpMap,objEasy,thisEasy);
         }
+    }
+
+    private JSONArray setEasyTask(JSONArray easyTasks,JSONObject oDate,String prodId,int layer,int i
+            ,long timeTotal,String id_OP,String id_O,int index){
+//        if (oDate.getJSONObject("wrdN").getString("cn").equals("打铁铰")) {
+//            System.out.println("打铁铰:");
+//        }
         easyTasks.add(qt.setJson("wrdN",oDate.getJSONObject("wrdN"),"index",oDate.getInteger("index")
                 ,"id_O",oDate.getString("id_O"),"id_P",oDate.getString("id_P"),"id_PF",prodId
-                ,"layer",layer,"dateIndex",i,"timeTotal",timeTotal));
+                ,"layer",layer,"dateIndex",i,"timeTotal",timeTotal,"id_OP",id_OP,"priority",0
+                ,"id_O",id_O,"index",index));
         return easyTasks;
     }
 
@@ -6062,13 +6343,14 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             }
             JSONObject objEasyAsset = asset.getAArrange().getJSONObject("objEasy");
             objEasy.put(dep,objEasyAsset);
-            Long objEasyLastTime = asset.getAArrange().getLong("objEasyLastTime");
-            if (null != objEasyLastTime) {
-                JSONObject easyDepTeSta = new JSONObject();
-                easyDepTeSta.put(dep,objEasyLastTime);
-                setEasyDepTeSta(thisEasy,easyDepTeSta);
-            }
-            return objEasyAsset;
+//            Long objEasyLastTime = asset.getAArrange().getLong("objEasyLastTime");
+//            if (null != objEasyLastTime) {
+//                JSONObject easyDepTeSta = new JSONObject();
+//                easyDepTeSta.put(dep,objEasyLastTime);
+//                setEasyDepTeSta(thisEasy,easyDepTeSta);
+//            }
+//            return objEasyAsset;
+            return new JSONObject();
         } else {
             return depEasy;
         }
@@ -6076,7 +6358,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
 
     private void dgSkipDay(JSONObject objEasy,JSONObject thisEasy,String dep
             ,Map<String, JSONObject> assetGrpMap,String grpB,String id_C,long totalDur,JSONObject oDate
-            ,String prodId,int layer,int i){
+            ,String prodId,int layer,int i,JSONObject teEasyDate,String id_O){
         System.out.println("进入跳天-totalDur:"+totalDur);
         JSONObject easyDepTeSta = getEasyDepTeSta(thisEasy);
         Long depSta = easyDepTeSta.getLong(dep);
@@ -6089,48 +6371,64 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         if (null == staObj) {
             staObj = new JSONObject();
             easyTasks = new JSONArray();
-            long wntLeft = getTotalTime(assetGrpMap, grpB, id_C, dep);
+            long wntLeft = getTotalTime(assetGrpMap, grpB, id_C, dep,depSta);
             staObj.put("wntTotal",wntLeft);
-            long totalTimeNew = wntLeft - totalDur;
-            if (totalTimeNew < 0) {
-                long disparityTime = totalDur - wntLeft;
-                staObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft));
-                wntLeft = 0L;
-                staObj.put("wntLeft",wntLeft);
-                depObj.put(depSta+"",staObj);
-                objEasy.put(dep,depObj);
-                dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C,disparityTime,oDate,prodId,layer,i);
+            if (wntLeft == 0) {
+                dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
+                        ,totalDur,oDate,prodId,layer,i,teEasyDate,id_O);
             } else {
-                staObj.put("wntLeft",totalTimeNew);
-                staObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur));
-                depObj.put(depSta+"",staObj);
-                objEasy.put(dep,depObj);
+                long totalTimeNew = wntLeft - totalDur;
+                if (totalTimeNew < 0) {
+                    long disparityTime = totalDur - wntLeft;
+                    staObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft,id_O
+                            ,oDate.getString("id_O"),oDate.getInteger("index")));
+                    wntLeft = 0L;
+                    staObj.put("wntLeft",wntLeft);
+                    depObj.put(depSta+"",staObj);
+                    teEasyDate.put(depSta+"",wntLeft);
+                    objEasy.put(dep,depObj);
+                    dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
+                            ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O);
+                } else {
+                    staObj.put("wntLeft",totalTimeNew);
+                    staObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur,id_O
+                            ,oDate.getString("id_O"),oDate.getInteger("index")));
+                    depObj.put(depSta+"",staObj);
+                    teEasyDate.put(depSta+"",totalDur);
+                    objEasy.put(dep,depObj);
+                }
             }
         } else {
             Long wntLeft = staObj.getLong("wntLeft");
             easyTasks = staObj.getJSONArray("easyTasks");
             if (wntLeft == 0) {
-                dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C,totalDur,oDate,prodId,layer,i);
+                dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
+                        ,totalDur,oDate,prodId,layer,i,teEasyDate,id_O);
             } else {
                 long totalTimeNew = wntLeft - totalDur;
                 if (totalTimeNew < 0) {
                     long disparityTime = totalDur - wntLeft;
-                    staObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft));
+                    staObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft,id_O
+                            ,oDate.getString("id_O"),oDate.getInteger("index")));
                     wntLeft = 0L;
                     staObj.put("wntLeft",wntLeft);
                     depObj.put(depSta+"",staObj);
+                    teEasyDate.put(depSta+"",wntLeft);
                     objEasy.put(dep,depObj);
-                    dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C,disparityTime,oDate,prodId,layer,i);
+                    dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
+                            ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O);
                 } else {
                     staObj.put("wntLeft",totalTimeNew);
-                    staObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur));
+                    staObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur,id_O
+                            ,oDate.getString("id_O"),oDate.getInteger("index")));
                     depObj.put(depSta+"",staObj);
+                    teEasyDate.put(depSta+"",totalDur);
                     objEasy.put(dep,depObj);
                 }
             }
         }
     }
-    private long getTotalTime(Map<String, JSONObject> assetGrpMap,String grpB,String id_C,String dep){
+    private long getTotalTime(Map<String, JSONObject> assetGrpMap,String grpB,String id_C,String dep,long teStart){
         JSONObject chkGrpB;
         if (assetGrpMap.containsKey(grpB)) {
             chkGrpB = assetGrpMap.get(grpB);
@@ -6144,8 +6442,38 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 JSONObject chkin = assetDep.getChkin();
                 JSONObject objChkin = chkin.getJSONObject("objChkin");
                 chkGrpB = objChkin.getJSONObject(grpB);
+                if (null == chkGrpB) {
+                    chkGrpB = TaskObj.getChkinJava();
+                    System.out.println("获取系统-2:");
+                }
                 assetGrpMap.put(grpB,chkGrpB);
-                System.out.println("获取数据库:");
+                System.out.println("获取数据库:"+dep+","+grpB);
+                JSONObject whDate = chkGrpB.getJSONObject("whDate");
+                if (null != whDate) {
+                    if (whDate.containsKey(teStart + "")) {
+                        JSONObject whDateData = whDate.getJSONObject(teStart + "");
+                        int workType = whDateData.getInteger("workType");
+                        if (workType == 0) {
+                            return 0;
+                        } else if (workType == 1) {
+                            return (long)(whDateData.getInteger("wntWork")*60)*60;
+                        } else {
+                            return ((long)(whDateData.getInteger("wntWork")+whDateData.getInteger("wntOver"))*60)*60;
+                        }
+                    } else {
+                        JSONObject whWeek = chkGrpB.getJSONObject("whWeek");
+                        int week = dateToWeek(teStart);
+                        JSONObject whWeekData = whWeek.getJSONObject(week + "");
+                        int workType = whWeekData.getInteger("workType");
+                        if (workType == 0) {
+                            return 0;
+                        } else if (workType == 1) {
+                            return (long)(whWeekData.getInteger("wntWork")*60)*60;
+                        } else {
+                            return ((long)(whWeekData.getInteger("wntWork")+whWeekData.getInteger("wntOver"))*60)*60;
+                        }
+                    }
+                }
             }
         }
         Integer teDur = chkGrpB.getInteger("teDur");

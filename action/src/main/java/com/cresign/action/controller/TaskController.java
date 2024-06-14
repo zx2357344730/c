@@ -251,9 +251,21 @@ public class TaskController {
     public ApiResponse getAtFirstEasy(@RequestBody JSONObject reqJson){
         try {
             return timeZjService.getAtFirstEasy(reqJson.getString("id_O"), reqJson.getLong("teStart"),
-                    reqJson.getString("id_C"));
+                    reqJson.getString("id_C"),reqJson.getBoolean("setNew"));
         } catch (Exception e) {
             return getUserToken.err(reqJson, "TaskController.getAtFirstEasy", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/setAtFirstEasy")
+    public ApiResponse setAtFirstEasy(@RequestBody JSONObject reqJson){
+        try {
+            return timeZjService.setAtFirstEasy(reqJson.getString("id_O"), reqJson.getLong("teStart"),
+                    reqJson.getString("id_C"),reqJson.getInteger("dateIndex")
+                    ,reqJson.getString("layer"),reqJson.getString("id_PF"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.setAtFirstEasy", e);
         }
     }
 
@@ -301,6 +313,63 @@ public class TaskController {
                     ,reqJson.getInteger("dateIndex"),reqJson.getString("layer"),reqJson.getString("id_PF"));
         } catch (Exception e) {
             return getUserToken.err(reqJson, "TaskController.setAtFirst", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/setAtFirstList")
+    public ApiResponse setAtFirstList(@RequestBody JSONObject reqJson){
+        try {
+            return timeZjService.setAtFirstList(reqJson.getString("id_C"),reqJson.getJSONArray("setList"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.setAtFirstList", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/clearOrderAllTaskAndSave")
+    public ApiResponse clearOrderAllTaskAndSave(@RequestBody JSONObject reqJson){
+        try {
+            System.out.println(JSON.toJSONString(reqJson));
+            return timeZjService.clearOrderAllTaskAndSave(reqJson.getString("id_C"),reqJson.getString("id_O"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.clearOrderAllTaskAndSave", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/clearThisDayTaskAndSaveNew")
+    public ApiResponse clearThisDayTaskAndSaveNew(@RequestBody JSONObject reqJson){
+        try {
+            System.out.println(JSON.toJSONString(reqJson));
+            return timeZjService.clearThisDayTaskAndSaveNew(reqJson.getString("id_C"),reqJson.getString("dep"),
+                    reqJson.getString("grpB"),reqJson.getLong("thisDay"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.clearThisDayTaskAndSaveNew", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/clearThisDayEasyTaskAndSaveNew")
+    public ApiResponse clearThisDayEasyTaskAndSaveNew(@RequestBody JSONObject reqJson){
+        try {
+            System.out.println(JSON.toJSONString(reqJson));
+            return timeZjService.clearThisDayEasyTaskAndSaveNew(reqJson.getString("id_C"),reqJson.getString("dep"),
+                    reqJson.getLong("thisDay"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.clearThisDayEasyTaskAndSaveNew", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/clearThisDayEasyTaskAndSaveByEnd")
+    public ApiResponse clearThisDayEasyTaskAndSaveByEnd(@RequestBody JSONObject reqJson){
+        try {
+            System.out.println(JSON.toJSONString(reqJson));
+            return timeZjService.clearThisDayEasyTaskAndSaveByEnd(reqJson.getString("id_C"),reqJson.getString("dep"),
+                    reqJson.getLong("thisDay"));
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "TaskController.clearThisDayEasyTaskAndSaveByEnd", e);
         }
     }
 
