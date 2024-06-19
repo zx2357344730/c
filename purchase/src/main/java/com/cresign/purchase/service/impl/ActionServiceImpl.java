@@ -2632,6 +2632,7 @@ public class ActionServiceImpl implements ActionService {
 
         Order order = qt.getMDContent(id_O, "info",Order.class);
         String id_C = tokData.getString("id_C");
+        JSONObject mdJson = new JSONObject();
 
         if (order == null)
         {
@@ -2661,6 +2662,7 @@ public class ActionServiceImpl implements ActionService {
                 // if otherComp is fake, set to both confirm
                 order.getInfo().setLST(7);
             }
+            mdJson = qt.setJson("info.lST", order.getInfo().getLST(), "info.id_UCB", tokData.getString("id_U"));
         }
         else // I am Seller
         { //if Buyer is REAL
@@ -2674,16 +2676,18 @@ public class ActionServiceImpl implements ActionService {
                 // if otherComp is fake, set to both confirm
                 order.getInfo().setLST(7);
             }
+            mdJson = qt.setJson("info.lST", order.getInfo().getLST(), "info.id_UC", tokData.getString("id_U"));
         }
 
-        qt.setMDContent(id_O, qt.setJson("info.lST", order.getInfo().getLST()), Order.class);
+        qt.setMDContent(id_O, mdJson, Order.class);
         //Save MDB above, then update ES here
 
-        qt.setES("lsborder", qt.setESFilt("id_O", id_O), qt.setJson("lST", order.getInfo().getLST()));
+        qt.setES("lsborder", qt.setESFilt("id_O", id_O), qt.setJson("lST", order.getInfo().getLST(),
+                order.getInfo().getId_CB().equals(id_C) ? "id_UCB": "id_UC", tokData.getString("id_U")));
 
         String desc = tokData.getJSONObject("wrdNReal").getString("cn") + "确认订单" ;
 
-        String listType = order.getInfo().getId_CB() == tokData.getString("id_C") ? "lBOrder" : "lSOrder";
+        String listType = order.getInfo().getId_CB().equals(id_C) ? "lBOrder" : "lSOrder";
 
         //Writing update history
         LogFlow logUsage = new LogFlow();

@@ -178,7 +178,7 @@ public class MenuServiceImpl implements MenuService {
             if (judge){
                 Info init = qt.getMDContent(qt.idJson.getString("newComp"), "jsonInfo", Info.class);
                 //JSONObject转成MainMenuBO实体类添加进mainMenusData数组
-                mainMenusData.add(JSONObject.parseObject(String.valueOf(init.getJsonInfo().getJSONObject("a-auth").getJSONObject("menu")
+                mainMenusData.add(JSONObject.parseObject(String.valueOf(init.getJsonInfo().getJSONObject("objData").getJSONObject("a-auth").getJSONObject("menu")
                         .getJSONObject("mainMenus").getJSONArray("1001").getJSONObject(0)),MainMenuBO.class));
             }
         }

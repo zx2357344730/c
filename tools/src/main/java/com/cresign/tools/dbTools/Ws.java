@@ -84,6 +84,7 @@ public class Ws {
     public void sendESOnly(LogFlow log){
         log.setId_Us(null);
         log.setId_APPs(null);
+        if (null != log.getData()) {log.getData().remove("pushUsers");}
         try {
         rocketMQTemplate.convertAndSend("chatTopicEs:chatTapEs", JSON.toJSONString(log));
         } catch (Exception e) {

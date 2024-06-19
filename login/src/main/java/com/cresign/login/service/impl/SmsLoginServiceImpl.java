@@ -187,16 +187,10 @@ public class SmsLoginServiceImpl implements SmsLoginService {
         } else if (isRegOff(phone)) {
             return retResult.ok(CodeEnum.OK.getCode(), "regOff");
         }
-
-
         // All is done can login now
         // LOGIN
 
             User user = qt.getMDContent(id_U, qt.strList("info", "rolex"), User.class);
-
-//            if (ObjectUtils.isEmpty(user)) {
-//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_NOT_FOUND.getCode(), null);
-//            }
 
             // 返回json数据给前端
             JSONObject result = loginResult.allResult(user, clientType, "sms");
@@ -524,14 +518,6 @@ public class SmsLoginServiceImpl implements SmsLoginService {
 //            Query mbnQue = new Query(new Criteria("info.mbn").is(mbn));
 //            User user = mongoTemplate.findOne(mbnQue, User.class);
             JSONArray es = qt.getES("lNUser", qt.setESFilt("mbn", mbn));
-//            if (null != user && !"5f28bf314f65cc7dc2e60386".equals(user.getId())) {
-//                delFanCore(user.getId());
-//                result.put("t_type", 1);
-//                result.put("t_desc", name+" --- 操作成功!");
-//            } else {
-//                result.put("t_type", 2);
-//                result.put("t_desc", name+" --- 操作失败!");
-//            }
             if (null != es && es.size() > 0 && !"5f28bf314f65cc7dc2e60386".equals(es.getJSONObject(0).getString("id_U"))) {
                 delFanCore(es.getJSONObject(0).getString("id_U"));
                 result.put("t_type", 1);

@@ -54,7 +54,7 @@ public interface WxLoginService {
      * @updated 2020/8/10 16:15
      * @return java.lang.String
      */
-    ApiResponse wXLoginByIdWx(String id_WX, String clientType);
+    ApiResponse wXLoginByIdWx(String id_WX, String clientType, Boolean isReq);
 
     /**
      * 通过用户的微信id来进行登录
@@ -105,7 +105,7 @@ public interface WxLoginService {
      * @updated 2021-03-09 18:57
      * @return java.lang.String
      */
-    ApiResponse wxmpRegister(String nickName, String avatarUrl, String unionId, Integer countryCode, String phoneNumber,String realName);
+    ApiResponse wxmpRegister(String nickName, String avatarUrl, String unionId, Integer countryCode, String phoneNumber,String realName, Boolean isReq);
 
 //    ApiResponse uploadWXHeadSculpture(String path);
 

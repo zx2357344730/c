@@ -548,7 +548,7 @@ public class RedirectServiceImpl implements RedirectService {
 
             /**
              * 如果使用的次数 +1 == 限制的次数, 则key，等获取完数据后进行删除key
-             * 如果使用次数 > 限制次数, 则提醒用户二维码已过期并且删除key
+             * 如果使用次数 > 限制次数, 则提醒用户二维码已过期并且删除keyV
              * 如果使用次数 < 次数，则累加 used_count
              */
             if (used_count +1 == count) {

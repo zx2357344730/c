@@ -86,8 +86,7 @@ public class FaceBookLoginServiceImpl implements FaceBookLoginService {
 //
 //
 //        }
-        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-WX_NOT_BIND.getCode(), null);
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.WX_NOT_BIND.getCode(), null);
       }
 
     @Override

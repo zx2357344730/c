@@ -73,4 +73,6 @@ public class ProdInfo {
 
     private JSONObject wrdTag;
 
+    private String refDC;
+
 }

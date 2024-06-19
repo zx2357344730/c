@@ -39,12 +39,6 @@ import java.util.List;
 @Service
 public class ModuleServicelmpl implements ModuleService {
 
-//    @Autowired
-//    private MongoTemplate mongoTemplate;
-
-//    @Autowired
-//    private StringRedisTemplate redisTemplate0;
-
     @Value("${secret.id}")
     private String secretId;
 
@@ -468,7 +462,7 @@ public class ModuleServicelmpl implements ModuleService {
                         String modRef = mod.getJSONObject("val").getString("mod");
                         Info initComp = qt.getMDContent(qt.idJson.getString("newComp"), "jsonInfo", Info.class);
 
-                        JSONObject authObject = initComp.getJsonInfo().getJSONObject(modRef);
+                        JSONObject authObject = initComp.getJsonInfo().getJSONObject("objData").getJSONObject(modRef);
 
                         authObject.getJSONObject("info").put("id_C", id_C);
                         authObject.getJSONObject("info").put("id_CP", id_C);
@@ -911,7 +905,7 @@ public class ModuleServicelmpl implements ModuleService {
 //                result.put("status",4);
                 Info initMod = qt.getMDContent(qt.idJson.getString("newComp"), "jsonInfo", Info.class);
 //                InitJava initMod = qt.getMDContent("cn_java", "newComp.a-core.control.objMod", InitJava.class);
-                control = initMod.getJsonInfo().getJSONObject("a-core").getJSONObject("control");
+                control = initMod.getJsonInfo().getJSONObject("objData").getJSONObject("a-core").getJSONObject("control");
                 qt.setMDContent(asset.getId(), qt.setJson("control", control), Asset.class);
             }
             result.put("control", control);

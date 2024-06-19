@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 /**
  * ##description:
@@ -81,29 +80,18 @@ public class SmsLoginController {
 
     @SecurityParameter
     @PostMapping("/v1/smsRegister")
-    public ApiResponse smsRegister(@RequestBody JSONObject reqJson) throws IOException {
+    public ApiResponse smsRegister(@RequestBody JSONObject reqJson) {
         try {
-            String id_APP = "";
-            if (reqJson.containsKey("id_APP")) {
-                id_APP = reqJson.getString("id_APP");
-            }
-
             String pic = "https://cresign-1253919880.cos.ap-guangzhou.myqcloud.com/pic_small/userRegister.jpg";
             if (reqJson.containsKey("pic")) {
                 pic = reqJson.getString("pic");
             }
-
-//        JSONObject wrdN = new JSONObject();
-//        wrdN.put("cn","新用户");
-//        if (reqJson.containsKey("wrdN")){
-//            wrdN = reqJson.getJSONObject("wrdN");
-//        }
             return smsLoginService.smsRegister(
                     reqJson.getString("phone"),
                     reqJson.getInteger("phoneType"),
                     reqJson.getString("smsNum"),
                     request.getHeader("clientType"),
-                    id_APP,
+                    reqJson.getString("id_APP") == null ? "" : reqJson.getString("id_APP"),
                     pic,
                     new JSONObject().fluentPut("cn","新用户")
             );

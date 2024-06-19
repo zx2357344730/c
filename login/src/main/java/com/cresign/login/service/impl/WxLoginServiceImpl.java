@@ -11,10 +11,12 @@ import com.cresign.login.utils.wxlogin.web.WxAuthUtil;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.dbTools.Qt;
+import com.cresign.tools.dbTools.Ws;
 import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.exception.ResponseException;
+import com.cresign.tools.pojo.po.LogFlow;
 import com.cresign.tools.pojo.po.User;
 import com.cresign.tools.request.HttpClientUtil;
 import org.apache.commons.lang3.ObjectUtils;
@@ -83,6 +85,9 @@ public class WxLoginServiceImpl implements WxLoginService {
 
     @Autowired
     private RegisterUserUtils registerUserUtils;
+
+    @Autowired
+    private Ws ws;
 
 
 //    /**
@@ -215,9 +220,7 @@ public class WxLoginServiceImpl implements WxLoginService {
 
         // 登录凭证不能为空
         if (code == null || code.length() == 0) {
-            System.out.println("code:");
-            System.out.println(JSON.toJSONString(code));
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.WX_NOT_BIND.getCode(),"");
         }
         // 1、向微信服务器 使用登录凭证 code 获取 session_key 和 openid
         //
@@ -235,13 +238,12 @@ public class WxLoginServiceImpl implements WxLoginService {
         String sr = HttpClientUtil.doGet("https://api.weixin.qq.com/sns/jscode2session?" + params, "utf-8");
 
         // 解析相应内容（转换成json对象）
+        System.out.println("what is "+sr);
         JSONObject json = JSONObject.parseObject(sr);
 
         // 登录凭证不能为空
         if (json.get("session_key") == null) {
-            System.out.println("json:");
-            System.out.println(JSON.toJSONString(json));
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.WX_NOT_BIND.getCode(),"");
         }
 
         // 获取会话密钥（session_key）
@@ -281,35 +283,20 @@ public class WxLoginServiceImpl implements WxLoginService {
         } catch (Exception e) {
             throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), null);
         }
-        System.out.println("返回结果:");
-        System.out.println(JSON.toJSONString(userInfo));
+
         return retResult.ok(CodeEnum.OK.getCode(), userInfo);
     }
 
 
 
     @Override
-    public ApiResponse wXLoginByIdWx(String id_WX, String clientType) {
+    public ApiResponse wXLoginByIdWx(String id_WX, String clientType, Boolean isReq) {
         System.out.println("id_WX:"+id_WX);
         try {
-//            //创建查询对象
-//            Query query = new Query();
-//
-//            //添加查询条件
-//            // 判断是什么端的，然后查找那个 id
-//            query.addCriteria(new Criteria("info.id_WX").is(id_WX));
-//
-//
-//            //进行查询并返回结果
-//            User user = mongoTemplate.findOne(query, User.class);
             JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX","exact", id_WX));
-            if (null == es || es.size() == 0
-//                    || !getIsEsKV(es, qt.setJson("id_WX", id_WX))
-            ) {
-                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-                        LOGIN_NOTFOUND_USER.getCode(),id_WX);
+            if (null == es || es.size() == 0) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGIN_NOTFOUND_USER.getCode(),id_WX);
             }
-//            User user = qt.getMDContentAll(es.getJSONObject(0).getString("id_U"),User.class);
             User user = qt.getMDContent(getEsV(es,"id_U"),qt.strList("info","rolex"),User.class);
             // 判断用户是否存在
             if (user!=null){
@@ -323,12 +310,22 @@ public class WxLoginServiceImpl implements WxLoginService {
 //                    return retResult.ok(CodeEnum.OK.getCode(), result);
 //                }
                 if (isUserRegisterOff(user.getInfo().getMbn())) {
-                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-                            USER_REG_OFF.getCode(),id_WX);
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_REG_OFF.getCode(),id_WX);
                 }
 
                 // 获取用户登录的数据
                 JSONObject result = loginResult.allResult(user, clientType, "wx");
+                if (isReq)
+                {
+                    JSONObject tokData = qt.setJson("grpU", "1000", "id_U", user.getId(), "id_C", "61a5940b01902729e2576ead", "wrdNReal", user.getInfo().getWrdNReal(),
+                            "pic", user.getInfo().getPic());
+                    LogFlow logUsage = new LogFlow();
+                    logUsage.setUsageLog(tokData, "enquiry", tokData.getJSONObject("wrdNReal").getString("cn") + "想了解产品[" + user.getInfo().getMbn() + "]",
+                            5, "", "", user.getInfo().getWrdNReal(),
+                            "", "");
+
+                    ws.sendESOnly(logUsage);
+                }
 
                 return retResult.ok(CodeEnum.OK.getCode(), result);
 
@@ -343,17 +340,6 @@ public class WxLoginServiceImpl implements WxLoginService {
 
     @Override
     public ApiResponse appLoginByIdWx(String id_AUN, String clientType) {
-
-//        //创建查询对象
-//        Query query = new Query();
-//
-//        //添加查询条件
-//        // 判断是什么端的，然后查找那个 id
-//        query.addCriteria(new Criteria("info.id_AUN").is(id_AUN));
-//
-//
-//        //进行查询并返回结果
-//        User user = mongoTemplate.findOne(query, User.class);
 
         JSONArray es = qt.getES("lNUser", qt.setESFilt("id_AUN","exact", id_AUN));
         if (null == es || es.size() == 0
@@ -547,28 +533,29 @@ WX_NOT_BIND.getCode(), null);
     @Override
     @Transactional(rollbackFor = RuntimeException.class,noRollbackFor = ResponseException.class)
     public ApiResponse wxmpRegister(String nickName, String avatarUrl, String unionId
-            , Integer countryCode, String phoneNumber,String realName) {
+            , Integer countryCode, String phoneNumber,String realName, Boolean isReq) {
 
         JSONObject wrdNMap = new JSONObject();
         wrdNMap.put("cn", nickName);
         JSONObject wrdNReal = new JSONObject();
         wrdNReal.put("cn", realName);
+        User user = new User();
 
         JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX", "exact", unionId));
         if (null != es && es.size() > 0) {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-                    REGISTER_USER_IS_HAVE.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.REGISTER_USER_IS_HAVE.getCode(), null);
         }
         es = qt.getES("lNUser", qt.setESFilt("mbn", "exact", phoneNumber));
+
         if (null != es && es.size() > 0) {
             // here, if mbn is registered, but wx not yet, just set wx into the already existed mbn
 
 
             qt.setES("lNUser", qt.setESFilt("mbn", phoneNumber), qt.setJson("id_WX", unionId));
             qt.setMDContent(es.getJSONObject(0).getString("id_U"), qt.setJson("info.id_WX", unionId), User.class);
-            User user = qt.getMDContent(es.getJSONObject(0).getString("id_U"), qt.strList("info", "rolex"), User.class);
+            user = qt.getMDContent(es.getJSONObject(0).getString("id_U"), qt.strList("info", "rolex"), User.class);
 
-            return retResult.ok(CodeEnum.OK.getCode(), loginResult.allResult(user, "wx", "wx"));
+//            return retResult.ok(CodeEnum.OK.getCode(), loginResult.allResult(user, "wx", "wx"));
 
 //            throw new ErrorResponseException(HttpStatus.OK, LoginEnum.
 //                    REGISTER_USER_IS_HAVE.getCode(), null);
@@ -577,11 +564,25 @@ WX_NOT_BIND.getCode(), null);
             JSONObject info = qt.setJson("wrdN", qt.setJson("cn", nickName), "pic", avatarUrl, "mbn",
                     phoneNumber, "phoneType", 86, "id_WX", unionId);
             String id = registerUserUtils.registerUser(info);
-            User user = qt.getMDContent(id, qt.strList("info", "rolex"), User.class);
+            user = qt.getMDContent(id, qt.strList("info", "rolex"), User.class);
 
-            return retResult.ok(CodeEnum.OK.getCode(), loginResult.allResult(user, "wx", ""));
+//            return retResult.ok(CodeEnum.OK.getCode(), loginResult.allResult(user, "wx", ""));
 
         }
+        if (isReq)
+        {
+            JSONObject tokData = qt.setJson("grpU", "1000", "id_U", user.getId(), "id_C", "61a5940b01902729e2576ead", "wrdNReal", user.getInfo().getWrdNReal(),
+                    "pic", user.getInfo().getPic());
+            LogFlow logUsage = new LogFlow();
+            logUsage.setUsageLog(tokData, "enquiry", tokData.getJSONObject("wrdNReal").getString("cn") + "想了解产品[" + phoneNumber + "]",
+                    5, "", "", user.getInfo().getWrdNReal(),
+                    "", "");
+
+            ws.sendESOnly(logUsage);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), loginResult.allResult(user, "wx", null != es && es.size() > 0 ? "wx" : ""));
+
+
     }
 
         //Here we start working on registering this guy
