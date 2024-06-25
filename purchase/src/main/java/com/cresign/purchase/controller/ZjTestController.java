@@ -656,4 +656,15 @@ public class ZjTestController {
             return getUserToken.err(new JSONObject(), "ZjTestController.aiQuesting", e);
         }
     }
+
+    @SecurityParameter
+    @PostMapping("/v1/aiQuestingDeepSeek")
+    public ApiResponse aiQuestingDeepSeek(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.aiQuestingDeepSeek(tokData,resJson.getString("desc"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.aiQuestingDeepSeek", e);
+        }
+    }
 }

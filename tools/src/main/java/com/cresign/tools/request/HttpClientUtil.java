@@ -133,6 +133,48 @@ public class HttpClientUtil {
         }
         return result;
     }
+
+    public static String sendPostHeader(JSONObject json, String URL,JSONObject newHeader) {
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpPost post = new HttpPost(URL);
+        System.out.println("started");
+        post.setHeader("Content-Type", "application/json");
+//        post.setHeader("Authorization", "Basic YWRtaW46");
+        for (String key : newHeader.keySet()) {
+            post.setHeader(key, newHeader.getString(key));
+        }
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(50000).setSocketTimeout(80000).build();
+        post.setConfig(requestConfig);
+        String result;
+        try {
+
+            StringEntity s = new StringEntity(json.toString(), "utf-8");
+            s.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
+                    "application/json"));
+            post.setEntity(s);
+            // 发送请求
+            HttpResponse httpResponse = client.execute(post);
+            // 获取响应输入流
+            InputStream inStream = httpResponse.getEntity().getContent();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    inStream, StandardCharsets.UTF_8));
+            StringBuilder strBer = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null)
+                strBer.append(line).append("\n");
+            inStream.close();
+            result = strBer.toString();
+            if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                System.out.println("请求服务器成功，做相应处理");
+            } else {
+                System.out.println("请求服务端失败" + result);
+            }
+        } catch (Exception e) {
+            System.out.println("请求异常："+e.getMessage());
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
  
     /**
      * 发送get请求

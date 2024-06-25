@@ -2358,6 +2358,30 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),s);
     }
 
+    @Override
+    public ApiResponse aiQuestingDeepSeek(JSONObject tokData, String desc) {
+//        LogFlow usageLog = new LogFlow();
+//        usageLog.setUsageLog(tokData, "aiQuest", desc, 3, "", "lBInfo", qt.setJson("cn", "AI quest"),"1000", "");
+//        ws.sendWS(usageLog);
+
+        JSONArray messages = new JSONArray();
+//        messages.add(qt.setJson("content","","role","system"));
+        messages.add(qt.setJson("content",desc,"role","user"));
+        /*
+
+        model:
+            deepseek-chat (1)	擅长通用对话任务	32K (2)	4K
+            deepseek-coder (1)	擅长处理编程和数学任务	32K (2)	4K
+        */
+        String s = HttpClientUtil.sendPostHeader(qt.setJson("messages",messages,"model","deepseek-chat")
+                ,"https://api.deepseek.com/chat/completions"
+                ,qt.setJson("Authorization","Bearer sk-f31affd654a3409e9f6468b5875fe85e"
+                        ,"Accept","application/json"));
+        System.out.println("请求结果:");
+        System.out.println(s);
+        return retResult.ok(CodeEnum.OK.getCode(),s);
+    }
+
     private long[] getSonPart(String id_P){
         long[] result = new long[2];
         Prod prod = qt.getMDContent(id_P, "part", Prod.class);

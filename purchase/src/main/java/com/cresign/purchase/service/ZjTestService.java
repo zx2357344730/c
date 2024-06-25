@@ -213,4 +213,12 @@ public interface ZjTestService {
      * @return  返回结果
      */
     ApiResponse aiQuesting(JSONObject tokData, String user,String desc);
+
+    /**
+     * ai提问 DeepSeek版本
+     * @param tokData   请求参数
+     * @param desc  提问内容
+     * @return  执行结果
+     */
+    ApiResponse aiQuestingDeepSeek(JSONObject tokData,String desc);
 }
