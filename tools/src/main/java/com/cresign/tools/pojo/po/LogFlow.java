@@ -212,7 +212,7 @@ public class LogFlow {
         this.id = "BNyYCj2P4j3zBCzSafJz6aei";
         this.id_FS = "";
         this.logType = "usageflow";
-        this.subType = "update";
+        this.subType = updateType;
         this.dep = "";
         this.grpU = tokData.getString("grpU");
         this.grpB = "1000";

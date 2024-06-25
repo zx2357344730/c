@@ -1,6 +1,5 @@
 package com.cresign.login.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.login.service.WxLoginService;
 import com.cresign.tools.annotation.SecurityParameter;
@@ -77,8 +76,6 @@ public class WxLoginController {
     @PostMapping("/v1/decodeUserInfo")
     public ApiResponse decodeUserInfo(@RequestBody JSONObject reqJson) {
         try {
-            System.out.println("decodeUserInfo:");
-            System.out.println(JSON.toJSONString(reqJson));
             return wxLoginService.decodeUserInfo(reqJson);
         } catch (Exception e) {
             return getUserToken.err(reqJson, "WxLoginController.decodeUserInfo", e);
@@ -97,14 +94,10 @@ public class WxLoginController {
     @PostMapping("/v1/wxAsLogin")
     public ApiResponse wXLoginByIdWx(@RequestBody JSONObject reqJson) {
         try {
-            System.out.println("进入wxAsLogin：");
-            System.out.println(JSON.toJSONString(reqJson));
-//            String uuId = request.getHeader("uuId");
-//            System.out.println("uuId:");
-//            System.out.println(uuId);
             return wxLoginService.wXLoginByIdWx(
                     reqJson.getString("id_WX"),
-                    request.getHeader("clientType"));
+                    request.getHeader("clientType"),
+                    reqJson.getBoolean("isReq"));
         } catch (Exception e){
             System.out.println("出现异常:");
 //            e.printStackTrace();
@@ -202,7 +195,8 @@ public class WxLoginController {
                     reqJson.getString("unionId"),
                     reqJson.getInteger("countryCode"),
                     reqJson.getString("phoneNumber"),
-                    reqJson.getString("realName")
+                    reqJson.getString("realName"),
+                    reqJson.getBoolean("isReq")
             );
         } catch (Exception e) {
             return getUserToken.err(reqJson, "WxLoginController.wxmpRegister", e);

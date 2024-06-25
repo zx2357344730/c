@@ -80,6 +80,9 @@ public class OrderInfo implements Cloneable{
 
     private String id_OP;
 
+    private String id_UC;
+    private String id_UCB;
+
     /**
      * 订单编号
      */

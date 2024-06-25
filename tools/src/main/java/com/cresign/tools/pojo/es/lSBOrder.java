@@ -103,6 +103,9 @@ public class lSBOrder {
     private String id_CP;
     private JSONArray arrP;
 
+    private String id_UC;
+    private String id_UCB;
+
     private JSONArray grpT = new JSONArray();
 
 

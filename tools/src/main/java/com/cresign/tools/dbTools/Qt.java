@@ -49,8 +49,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author kevin
- * @ClassName Qt
- * @Description
  * @updated 2022/9/11 10:05 AM
  * @ver 1.0.0
  **/
@@ -674,38 +672,38 @@ public class Qt {
 
     public void errPrint(String title, Exception e, Object... vars)
     {
-//        try {
-//            System.out.println("****[" + title + "]****");
-//            for (Object item : vars) {
-//                if (item == null) {
-//                    System.out.println("....null");
-//                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
-//                    System.out.println(this.toJArray(item));
-//                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
-//                        item.getClass().toString().startsWith("class java.util")) {
-//
-//                    System.out.println(this.toJson(item));
-//
-//                    JSONObject looper = this.toJson(item);
-//                    looper.forEach((k, v) ->{
-//                        System.out.println(k + ":" + v);
-//                    });
-//                    System.out.println("----------------------------------------");
-//
-//
-//                } else {
-//                    System.out.println(item);
-//                }
-//            }
-//            System.out.println("*****[End]*****");
-//
-//            if (e != null)
-//                e.printStackTrace();
-//        }
-//        catch (Exception ex)
-//        {
-//            System.out.println("****" + title + " is NULL ****");
-//        }
+        try {
+            System.out.println("****[" + title + "]****");
+            for (Object item : vars) {
+                if (item == null) {
+                    System.out.println("....null");
+                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
+                    System.out.println(this.toJArray(item));
+                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
+                        item.getClass().toString().startsWith("class java.util")) {
+
+                    System.out.println(this.toJson(item));
+
+                    JSONObject looper = this.toJson(item);
+                    looper.forEach((k, v) ->{
+                        System.out.println(k + ":" + v);
+                    });
+                    System.out.println("----------------------------------------");
+
+
+                } else {
+                    System.out.println(item);
+                }
+            }
+            System.out.println("*****[End]*****");
+
+            if (e != null)
+                e.printStackTrace();
+        }
+        catch (Exception ex)
+        {
+            System.out.println("****" + title + " is NULL ****");
+        }
     }
 
     public void errPrint(String title, Object... vars)
@@ -1152,6 +1150,13 @@ public class Qt {
         return array;
     }
 
+    public void upArray(JSONArray upArray, Object... val) {
+        int length = val.length;
+        for (Object o : val) {
+            upArray.add(o);
+        }
+    }
+
 //        public JSONObject setJson(String key, Object val)
 //        {
 //            JSONObject mapKey = new JSONObject();
@@ -1567,7 +1572,6 @@ public class Qt {
     public void delES(String index, JSONArray filterArray)
     {
         try {
-            this.errPrint("delES ", index, filterArray);
             DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(index);
             BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
             this.filterBuilder(filterArray, queryBuilder);
@@ -1601,7 +1605,7 @@ public class Qt {
         return countResponse.getCount();
 
     }
-    public void setES(String listType, JSONArray filterArray, JSONObject listCol) {
+    public Boolean setES(String listType, JSONArray filterArray, JSONObject listCol) {
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
@@ -1627,6 +1631,10 @@ public class Qt {
             }
             if (response.getHits().getHits().length > 0) {
                 client.bulk(bulk, RequestOptions.DEFAULT);
+                return true;
+            } else {
+                errPrint("not really in it");
+                return false;
             }
         } catch (IOException e) {
             e.printStackTrace();

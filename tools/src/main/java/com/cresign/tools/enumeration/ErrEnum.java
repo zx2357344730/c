@@ -159,6 +159,8 @@ public enum ErrEnum {
     LOCADDR_EXIST("022032"),
     //过程不同
     PROC_ERROR("022033"),
+    //refDC错误
+    REFDC_ERROR("022034"),
 
     /**
      add COUPA系列   023开头

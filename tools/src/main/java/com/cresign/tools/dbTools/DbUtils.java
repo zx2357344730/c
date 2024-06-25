@@ -2284,7 +2284,7 @@ public class DbUtils {
     }
 
     public void setStock(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer index, String locAddr,
-                         JSONArray locSpace, JSONArray spaceQty, JSONArray arrPP, JSONArray procQty, Boolean isProc, Integer lAT, String zcndesc, Integer imp) {
+                         JSONArray locSpace, JSONArray spaceQty, JSONArray arrPP, JSONArray procQty, Boolean isProc, Integer lAT, String zcndesc, Integer imp, JSONObject jsonInfo) {
         if (id_A == null) {
             JSONArray filterArray = qt.setESFilt("id_C", tokData.getString("id_C"), "id_CB", id_CB, "locAddr", locAddr);
             qt.setESFilt(filterArray, "locSpace", "contain", locSpace);
@@ -2337,7 +2337,8 @@ public class DbUtils {
                 "spaceQty", qt.cloneArr(spaceQty),
                 "lAT", lAT,
                 "isProc", isProc,
-                "log", jsonLog);
+                "log", jsonLog,
+                "jsonInfo", jsonInfo);
         if (arrPP != null && procQty != null) {
             json.put("arrPP", arrPP);
             json.put("procQty", procQty);
@@ -2345,9 +2346,19 @@ public class DbUtils {
         arrayLsbasset.add(json);
     }
 
+    public void setStock(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer index, String locAddr,
+                         JSONArray locSpace, JSONArray spaceQty, JSONArray arrPP, JSONArray procQty, Boolean isProc, Integer lAT, String zcndesc, Integer imp) {
+        this.setStock(arrayLsbasset, tokData, id_CB, id_P, id_A, wn2qty, index, locAddr, locSpace, spaceQty, arrPP, procQty, isProc, lAT, zcndesc, imp, null);
+    }
+
     public void setStock(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer index,
                          String locAddr, JSONArray locSpace, JSONArray spaceQty, Integer lAT, String zcndesc, Integer imp) {
-        this.setStock(arrayLsbasset, tokData, id_CB, id_P, id_A, wn2qty, index, locAddr, locSpace, spaceQty, null, null, null, lAT, zcndesc, imp);
+        this.setStock(arrayLsbasset, tokData, id_CB, id_P, id_A, wn2qty, index, locAddr, locSpace, spaceQty, null, null, null, lAT, zcndesc, imp, null);
+    }
+
+    public void setStock(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer index,
+                         String locAddr, JSONArray locSpace, JSONArray spaceQty, Integer lAT, String zcndesc, Integer imp, JSONObject jsonInfo) {
+        this.setStock(arrayLsbasset, tokData, id_CB, id_P, id_A, wn2qty, index, locAddr, locSpace, spaceQty, null, null, null, lAT, zcndesc, imp, jsonInfo);
     }
 
     public void setMoney(JSONArray arrayLsbasset, JSONObject tokData, String id_CB, String id_P, String id_A, Double wn2qty, Integer lAT, JSONObject action,
@@ -2906,14 +2917,22 @@ public class DbUtils {
 //                    } else if (lAT == 3) {
 //                        grp = "1005";
 //                    }
-                    AssetInfo assetInfo = new AssetInfo(id_C, id_C, id_P, wrdN,
-                            jsonOItem.getJSONObject("wrddesc"), grp, jsonOItem.getString("ref"),
-                            jsonOItem.getString("pic"), lAT);
+                    JSONObject jsonInfo = assetChgObj.getJSONObject("jsonInfo");
+                    AssetInfo assetInfo = null;
+                    lSAsset lsasset = null;
+                    if (jsonInfo != null) {
+                        assetInfo = JSON.parseObject(jsonInfo.toJSONString(), AssetInfo.class);
+                        lsasset = new lSAsset(id_A, id_C, id_C, id_C, id_P, jsonInfo.getJSONObject("wrdN"),
+                                jsonInfo.getJSONObject("wrddesc"), grp, jsonInfo.getString("pic"),
+                                jsonInfo.getString("ref"), lAT, wn2qty, wn4price);
+                    } else {
+                        assetInfo = new AssetInfo(id_C, id_C, id_P, wrdN, jsonOItem.getJSONObject("wrddesc"), grp,
+                                jsonOItem.getString("ref"), jsonOItem.getString("pic"), lAT);
+                        lsasset = new lSAsset(id_A, id_C, id_C, id_C, id_P, wrdN,
+                                jsonOItem.getJSONObject("wrddesc"), grp, jsonOItem.getString("pic"),
+                                jsonOItem.getString("ref"), lAT, wn2qty, wn4price);
+                    }
                     asset.setInfo(assetInfo);
-
-                    lSAsset lsasset = new lSAsset(id_A, id_C, id_C, id_C, id_P, wrdN,
-                            jsonOItem.getJSONObject("wrddesc"), grp, jsonOItem.getString("pic"),
-                            jsonOItem.getString("ref"), lAT, wn2qty, wn4price);
                     lsasset.setLocAddr(locAddr);
                     lsasset.setLocSpace(arrayUpdateLocSpace);
                     lsasset.setSpaceQty(arrayUpdateSpaceQty);

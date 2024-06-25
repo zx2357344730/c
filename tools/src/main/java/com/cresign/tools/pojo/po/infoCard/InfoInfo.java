@@ -68,4 +68,6 @@ public class InfoInfo {
 
     private JSONObject wrdTag;
 
+    private String refDC;
+
 }

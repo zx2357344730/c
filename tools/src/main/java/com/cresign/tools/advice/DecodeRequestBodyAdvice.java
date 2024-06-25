@@ -134,8 +134,6 @@ public class DecodeRequestBodyAdvice implements RequestBodyAdvice {
 //            String server_private_key = (String) redisTemplate0.opsForHash().get("serverEncyptKey", "private_key");
 
             if(requestData != null && !requestData.equals("")){
-                System.out.println("requestData:");
-                System.out.println(requestData);
                 Map<String,String> requestMap = new Gson().fromJson(requestData,new TypeToken<Map<String,String>>() {
                 }.getType());
                 // 密文
