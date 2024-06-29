@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.service.TimeZjServiceEmptyInsert;
+import com.cresign.action.utils.GsThisInfo;
 import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.advice.RetResult;
 import com.cresign.tools.apires.ApiResponse;
@@ -181,7 +182,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                             // 判断状态为0
                             if (clearStatusThis == 0) {
                                 // 写入清理状态方法
-                                setClearStatus(currentHandleTask.getId_O()
+                                GsThisInfo.setClearStatus(currentHandleTask.getId_O()
                                         , (currentHandleTask.getDateIndex()+1),clearStatus,1);
                                 System.out.println("进入清理-3");
                                 int nextDateIndex = (currentHandleTask.getDateIndex() + 1);
@@ -324,7 +325,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                         // 判断状态为0
                         if (clearStatusThis == 0) {
                             // 写入清理状态方法
-                            setClearStatus(currentHandleTask.getId_O()
+                            GsThisInfo.setClearStatus(currentHandleTask.getId_O()
                                     , (currentHandleTask.getDateIndex()+1),clearStatus,1);
                             int nextDateIndex = (currentHandleTask.getDateIndex() + 1);
                             if (nextDateIndex != oDates.size()) {
@@ -513,12 +514,12 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                             ,currentHandleTask.getWntDurTotal(),currentHandleTask));
                     tePFinish = (contrastTaskOne.getTePFinish()+currentHandleTask.getWntDurTotal());
                     endTime = tasks.get(0).getTePStart();
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                     System.out.println("进入这里++=33");
                     // 冲突任务集合添加对比任务2信息
                     conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                     addThisConflictInfoStatus(1, currentHandleTask.getDateIndex(), thisInfo);
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                    addThisConflictLastODate(currentHandleTask.getId_O(), currentHandleTask.getId_C(), thisInfo,actionIdO);
                     // 调用添加或更新产品状态方法
                     addSho(sho, currentHandleTask.getId_O(),currentHandleTask.getIndex().toString()
@@ -585,7 +586,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                         System.out.println("进入空-1:");
                         currentHandleTask.setWntDurTotal(0L);
                         result.put("currentHandleTask",currentHandleTask);
-                        setThisInfoTimeCount(thisInfo);
+                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                     } else if (startTime > contrastTaskTwo.getTePStart() && startTime <= contrastTaskTwo.getTePFinish()) {
                         // 任务余剩时间累加（+对比任务2的总时间）
                         zon += contrastTaskTwo.getWntDurTotal();
@@ -599,7 +600,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                         // 冲突任务集合添加对比任务2信息
                         conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                         addThisConflictInfoStatus(1, currentHandleTask.getDateIndex(), thisInfo);
-                        setThisInfoTimeCount(thisInfo);
+                        GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                        addThisConflictLastODate(currentHandleTask.getId_O(), currentHandleTask.getId_C(), thisInfo,actionIdO);
                         // 调用添加或更新产品状态方法
                         addSho(sho, currentHandleTask.getId_O(),currentHandleTask.getIndex().toString(),contrastTaskTwo.getId_O(), contrastTaskTwo.getIndex().toString(),0);
@@ -614,7 +615,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                         System.out.println("进入空-2:");
                         currentHandleTask.setWntDurTotal(0L);
                         result.put("currentHandleTask",currentHandleTask);
-                        setThisInfoTimeCount(thisInfo);
+                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                     }
                 }
             }
@@ -647,7 +648,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                             ,taskTimeKeyFirstVal, remainingTime,allImageTeDate,isGetTaskPattern,endTime);
                     System.out.println("进入空-3:");
                     result.put("currentHandleTask",currentHandleTask);
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                 } else {
                     result.put("isTimeStopState",1);
 //                    System.out.println("进入空-4-无需查看:");
@@ -674,7 +675,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                 System.out.println("进入空-5:");
                 currentHandleTask.setWntDurTotal(0L);
                 result.put("currentHandleTask",currentHandleTask);
-                setThisInfoTimeCount(thisInfo);
+                GsThisInfo.setThisInfoTimeCount(thisInfo);
             }
         } else if (contrastTaskOne.getPriority() != -1 && contrastTaskTwo.getPriority() == -1)
         {
@@ -692,7 +693,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                 // 冲突任务集合添加对比任务1信息
                 conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(),contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),contrastTaskOne));
                 addThisConflictInfoStatus(1, currentHandleTask.getDateIndex(), thisInfo);
-                setThisInfoTimeCount(thisInfo);
+                GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                addThisConflictLastODate(currentHandleTask.getId_O(), currentHandleTask.getId_C(), thisInfo,actionIdO);
                 // 调用添加或更新产品状态方法
                 addSho(sho, currentHandleTask.getId_O(),currentHandleTask.getIndex().toString(), contrastTaskOne.getId_O(),contrastTaskOne.getIndex().toString(),0);
@@ -707,7 +708,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                 System.out.println("进入空-6:");
                 currentHandleTask.setWntDurTotal(0L);
                 result.put("currentHandleTask",currentHandleTask);
-                setThisInfoTimeCount(thisInfo);
+                GsThisInfo.setThisInfoTimeCount(thisInfo);
             } else {
                 // 获取开始时间（对比任务1的结束时间+当前任务的任务总时间）
                 long startTime = contrastTaskOne.getTePFinish()+currentHandleTask.getWntDurTotal();
@@ -738,7 +739,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                                 ,taskTimeKeyFirstVal, remainingTime,allImageTeDate,isGetTaskPattern,endTime);
                         System.out.println("进入空-7:");
                         result.put("currentHandleTask",currentHandleTask);
-                        setThisInfoTimeCount(thisInfo);
+                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                     } else {
                         result.put("isTimeStopState",1);
 //                        System.out.println("进入空-8-无需查看:");
@@ -764,7 +765,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                     System.out.println("进入空-9:"+tePFinish);
                     currentHandleTask.setWntDurTotal(0L);
                     result.put("currentHandleTask",currentHandleTask);
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                 }
             }
         } else
@@ -785,7 +786,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                 // 冲突任务集合添加对比任务1信息
                 conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(),contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),contrastTaskOne));
                 addThisConflictInfoStatus(1,currentHandleTask.getDateIndex(),thisInfo);
-                setThisInfoTimeCount(thisInfo);
+                GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                addThisConflictLastODate(currentHandleTask.getId_O(), currentHandleTask.getId_C(), thisInfo,actionIdO);
                 // 调用添加或更新产品状态方法
                 addSho(sho, currentHandleTask.getId_O(),currentHandleTask.getIndex().toString(),contrastTaskOne.getId_O(), contrastTaskOne.getIndex().toString(),0);
@@ -804,7 +805,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                 System.out.println("进入空-x-1:");
                 currentHandleTask.setWntDurTotal(0L);
                 result.put("currentHandleTask",currentHandleTask);
-                setThisInfoTimeCount(thisInfo);
+                GsThisInfo.setThisInfoTimeCount(thisInfo);
             }
             // 获取余剩时间（对比时间2的开始时间-对比时间1的结束时间）
             long remainingTime = contrastTaskTwo.getTePStart() - contrastTaskOne.getTePFinish();
@@ -839,7 +840,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                         ,taskTimeKeyFirstVal, remainingTime,allImageTeDate,isGetTaskPattern,endTime);
                 System.out.println("进入空-x-2:");
                 result.put("currentHandleTask",currentHandleTask);
-                setThisInfoTimeCount(thisInfo);
+                GsThisInfo.setThisInfoTimeCount(thisInfo);
             } else {
                 // 存储时间差 - 判断对比任务2优先级等于系统，如果等于就赋值为0，否则xin等于（对比任务2的开始时间-对比任务1的结束时间）
                 long timeDifference = contrastTaskTwo.getPriority()==-1?0:contrastTaskTwo.getTePStart() - contrastTaskOne.getTePFinish();
@@ -862,13 +863,13 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                     // 更新任务集合对应的下标（i1+1）的任务信息为当前任务
                     tasks.set(i+1, TaskObj.getTaskX(contrastTaskOne.getTePFinish(),(contrastTaskOne.getTePFinish()+currentHandleTask.getWntDurTotal())
                             ,currentHandleTask.getWntDurTotal(),currentHandleTask));
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                     tePFinish = (contrastTaskOne.getTePFinish()+currentHandleTask.getWntDurTotal());
                     endTime = tasks.get(0).getTePStart();
                     // 冲突任务集合添加对比任务2信息
                     conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                     addThisConflictInfoStatus(1,currentHandleTask.getDateIndex(),thisInfo);
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                    addThisConflictLastODate(currentHandleTask.getId_O(), currentHandleTask.getId_C(), thisInfo,actionIdO);
                     // 调用添加或更新产品状态方法
                     addSho(sho, currentHandleTask.getId_O(),currentHandleTask.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
@@ -921,7 +922,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                     // 冲突任务集合添加对比任务2信息
                     conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                     addThisConflictInfoStatus(1,currentHandleTask.getDateIndex(),thisInfo);
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                    addThisConflictLastODate(currentHandleTask.getId_O(), currentHandleTask.getId_C(), thisInfo,actionIdO);
                     // 调用添加或更新产品状态方法
                     addSho(sho, currentHandleTask.getId_O(),currentHandleTask.getIndex().toString(),contrastTaskTwo.getId_O(), contrastTaskTwo.getIndex().toString(),0);
@@ -942,7 +943,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                     System.out.println("进入空-x-3:");
                     currentHandleTask.setWntDurTotal(0L);
                     result.put("currentHandleTask",currentHandleTask);
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                 } else if (startTime <= contrastTaskTwo.getTePStart()) {
 //                    System.out.println("进入这个奇怪的地方");
                     // 判断存储时间差大于0
@@ -971,7 +972,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                     System.out.println("进入空-x-4:");
                     currentHandleTask.setWntDurTotal(0L);
                     result.put("currentHandleTask",currentHandleTask);
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                 }
             }
         }
@@ -1118,7 +1119,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                         // 判断状态为0
                         if (clearStatusThis == 0) {
                             // 写入清理状态方法
-                            setClearStatus(currentHandleTask.getId_O()
+                            GsThisInfo.setClearStatus(currentHandleTask.getId_O()
                                     , (currentHandleTask.getDateIndex()+1),clearStatus,1);
                             System.out.println("进入清理-5 | timeComprehensiveHandle - 6:清理状态:"+clearStatusThis);
                             int nextDateIndex = (currentHandleTask.getDateIndex() + 1);
@@ -1245,7 +1246,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                     // 判断状态为0
                     if (clearStatusThis == 0) {
                         // 写入清理状态方法
-                        setClearStatus(currentHandleTask.getId_O()
+                        GsThisInfo.setClearStatus(currentHandleTask.getId_O()
                                 , (currentHandleTask.getDateIndex()+1),clearStatus,1);
                         System.out.println("进入清理-6 | timeComprehensiveHandle - 7 :清理状态:"+clearStatusThis);
                         int nextDateIndex = (currentHandleTask.getDateIndex() + 1);
@@ -1569,7 +1570,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                 }
                 System.out.println("ji-1:");
                 onlyRefState.put(random,1);
-                setThisInfoTimeCount(thisInfo);
+                GsThisInfo.setThisInfoTimeCount(thisInfo);
             } else {
                 // 添加控制是否跳天参数
                 result.put("isJumpDay", 1);
@@ -1597,7 +1598,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                     // 任务余剩时间累减
                     zon -= task.getWntDurTotal();
                     System.out.println("ji-2:");
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                     onlyRefState.put(random,1);
                 } else {
                     // 获取时间差2（当前任务时间-余剩时间）
@@ -1621,7 +1622,7 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
                     // 任务余剩时间累减
                     zon -= remainingTime;
                     System.out.println("ji-3:");
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                 }
                 // 调用获取当前时间戳方法
                 Long teS = getTeS(random, grpB, dep,onlyFirstTimeStamp,newestLastCurrentTimestamp);

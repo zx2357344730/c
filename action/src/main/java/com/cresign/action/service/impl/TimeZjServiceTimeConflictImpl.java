@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.action.service.TimeZjServiceTimeConflict;
+import com.cresign.action.utils.GsThisInfo;
 import com.cresign.action.utils.TaskObj;
 import com.cresign.tools.pojo.po.chkin.Task;
 import org.springframework.stereotype.Service;
@@ -73,7 +74,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
 //        System.out.println("处理时间冲突方法-q");
         // 创建冲突任务集合
 //        List<Task> conflict = new ArrayList<>();
-        JSONObject thisInfoQuiltConflictInfo = getThisInfoQuiltConflictInfo(thisInfo);
+        JSONObject thisInfoQuiltConflictInfo = GsThisInfo.getThisInfoQuiltConflictInfo(thisInfo);
         List<Task> conflict = new ArrayList<>();
         if (null != thisInfoQuiltConflictInfo && null != thisInfoQuiltConflictInfo.getJSONArray("conflict") && thisInfoQuiltConflictInfo.getJSONArray("conflict").size() != 0) {
             JSONArray conflictThis = thisInfoQuiltConflictInfo.getJSONArray("conflict");
@@ -342,7 +343,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         ,allImageTasks,allImageTotalTime,allImageTeDate,isSetImage,depAllTime,random
                         ,onlyFirstTimeStamp,actionIdO);
             }
-            setThisInfoIsConflict(thisInfo,true);
+            GsThisInfo.setThisInfoIsConflict(thisInfo,true);
         }
 
         System.out.println("当前任务清理-后:"+zon);
@@ -409,7 +410,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
             addIndexS = new JSONArray();
             indexInfo = new JSONObject();
         } else {
-            quiltConflictInfo = getThisInfoQuiltConflictInfo(thisInfo);
+            quiltConflictInfo = GsThisInfo.getThisInfoQuiltConflictInfo(thisInfo);
             addIndexS = quiltConflictInfo.getJSONArray("addIndexS");
             indexInfo = quiltConflictInfo.getJSONObject("indexInfo");
         }
@@ -431,7 +432,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
         quiltConflictInfo.put("conflict",conflictArr);
         System.out.println("写入冲突信息-setConf-end:");
         System.out.println(JSON.toJSONString(conflictArr));
-        setThisInfoQuiltConflictInfo(thisInfo,quiltConflictInfo);
+        GsThisInfo.setThisInfoQuiltConflictInfo(thisInfo,quiltConflictInfo);
         System.out.println(JSON.toJSONString(quiltConflictInfo));
         System.out.println(JSON.toJSONString(id_OAndIndexTaskInfo));
         return zon;
@@ -715,7 +716,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             task.setWntDurTotal(durTotal);
                             System.out.println("处理时间冲突核心方法--xx-1");
                             accumulation++;
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                         } else if (durTotal == 0) {
                             // 任务余剩时间累减
                             zon -= timeDiffer;
@@ -737,7 +738,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             result.put("taskIsProcessedComplete",2);
                             storageTaskIsProcessedComplete = 1;
                             isResult = true;
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                         } else {
                             // 任务余剩时间累减
                             zon -= task.getWntDurTotal();
@@ -759,7 +760,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             result.put("taskIsProcessedComplete",2);
                             storageTaskIsProcessedComplete = 1;
                             isResult = true;
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                         }
                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                         addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,wntDurTotal);
@@ -789,7 +790,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         // 冲突任务集合添加对比任务2的任务信息
                         conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(),contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),contrastTaskOne));
                         addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                        setThisInfoTimeCount(thisInfo);
+                        GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                        addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                         // 调用添加或更新产品状态方法
                         addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskOne.getId_O(),contrastTaskOne.getIndex().toString(),0);
@@ -811,7 +812,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             task.setTePFinish(contrastTaskOne.getTePFinish());
                             task.setWntDurTotal(teDurTotalNew);
                             System.out.println("处理时间冲突核心方法-one-1");
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                         } else {
                             // 任务余剩时间累减
                             zon -= task.getWntDurTotal();
@@ -832,7 +833,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             result.put("taskIsProcessedComplete",2);
                             storageTaskIsProcessedComplete = 1;
                             isResult = true;
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                         }
                         conflictHandlePattern = 5;
                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
@@ -868,7 +869,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             // 冲突任务集合添加对比任务2的任务信息
                             conflict.add(TaskObj.getTaskX(task.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                             addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                            addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                             // 调用添加或更新产品状态方法
                             addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
@@ -899,7 +900,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     ,wntDurTotal,allImageTeDate,isGetTaskPattern,endTime);
                             taskIndexAccumulation = 2;
                             conflictHandlePattern = 7;
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                         }
                     } else {
                         // 存储是否反回结果
@@ -913,7 +914,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         // 冲突任务集合添加对比任务2的任务信息
                         conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                         addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                        setThisInfoTimeCount(thisInfo);
+                        GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                        addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                         // 调用添加或更新产品状态方法
                         addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
@@ -935,7 +936,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             task.setWntDurTotal(remainingTime);
                             System.out.println("处理时间冲突核心方法--2");
                             conflictHandlePattern = 5;
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                         } else {
                             // 任务余剩时间累减
                             zon -= task.getWntDurTotal();
@@ -957,7 +958,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             System.out.println("处理时间冲突核心方法--3");
                             isResult = true;
                             storageTaskIsProcessedComplete = 1;
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                         }
                         // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                         addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,wntDurTotal);
@@ -1017,7 +1018,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         System.out.println("处理时间冲突核心方法--xx-4");
                         accumulation++;
                         taskIndexAccumulation += 1;
-                        setThisInfoTimeCount(thisInfo);
+                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                     } else if (durTotal == 0) {
                         // 任务余剩时间累减
                         zon -= timeDiffer;
@@ -1039,7 +1040,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         result.put("taskIsProcessedComplete",2);
                         storageTaskIsProcessedComplete = 1;
                         isResult = true;
-                        setThisInfoTimeCount(thisInfo);
+                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                     } else {
                         // 任务余剩时间累减
                         zon -= task.getWntDurTotal();
@@ -1061,7 +1062,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         result.put("taskIsProcessedComplete",2);
                         storageTaskIsProcessedComplete = 1;
                         isResult = true;
-                        setThisInfoTimeCount(thisInfo);
+                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                     }
                     // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                     addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,wntDurTotal);
@@ -1099,7 +1100,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                     // 冲突任务集合添加对比任务2的任务信息
                     conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                     addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                    addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                     // 调用添加或更新产品状态方法
                     addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
@@ -1115,7 +1116,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                     wntDurTotal = contrastTaskTwo.getWntDurTotal();
                     conflictHandlePattern = 1;
                     System.out.println("处理时间冲突核心方法--4");
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                 } else {
                     long surplusTime = task.getWntDurTotal() - contrastTaskTwo.getWntDurTotal();
                     // 任务余剩时间累加
@@ -1123,7 +1124,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                     // 冲突任务集合添加对比任务2的任务信息
                     conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart()
                             ,contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
-                    setThisInfoTimeCount(thisInfo);
+                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                     addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
 //                    addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                     // 调用添加或更新产品状态方法
@@ -1143,7 +1144,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         task.setWntDurTotal(surplusTime);
                         System.out.println("处理时间冲突核心方法--5-1");
                         conflictHandlePattern = 4;
-                        setThisInfoTimeCount(thisInfo);
+                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                     } else {
                         // 任务余剩时间累减
                         zon -= task.getWntDurTotal();
@@ -1161,7 +1162,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                         storageTaskIsProcessedComplete = 1;
                         isResult = true;
                         conflictHandlePattern = 3;
-                        setThisInfoTimeCount(thisInfo);
+                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                     }
                 }
                 // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
@@ -1209,7 +1210,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 // 冲突任务集合添加对比任务2的任务信息
                                 conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                                 addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                                setThisInfoTimeCount(thisInfo);
+                                GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                                addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                 // 调用添加或更新产品状态方法
                                 addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
@@ -1231,7 +1232,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 task.setWntDurTotal(0L);
                                 System.out.println("进入这里--=1-Q");
                                 conflictHandlePattern = 3;
-                                setThisInfoTimeCount(thisInfo);
+                                GsThisInfo.setThisInfoTimeCount(thisInfo);
                                 isContinue = false;
                             } else {
                                 long surplusTime = contrastTaskTwo.getTePStart() - task.getTePStart();
@@ -1263,7 +1264,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     conflictHandlePattern = 3;
                                     result.put("conflictHandlePattern",conflictHandlePattern);
                                     System.out.println("进入这里--=1");
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                                     return result;
                                 } else {
                                     // 获取时间差2（当前任务的总时间-余剩总时间）
@@ -1295,7 +1296,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         zon -= surplusTime;
                                         accumulation++;
                                         conflictHandlePattern = 4;
-                                        setThisInfoTimeCount(thisInfo);
+                                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                                     } else {
                                         // 任务集合按照指定下标（i（任务下标）+1）添加任务信息
                                         tasks.add(i+accumulation, TaskObj.getTaskX(task.getTePStart(),(task.getTePStart()+task.getWntDurTotal()),task.getWntDurTotal(),task));
@@ -1330,7 +1331,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         result.put("endTime",endTime);
                                         conflictHandlePattern = 3;
                                         result.put("conflictHandlePattern",conflictHandlePattern);
-                                        setThisInfoTimeCount(thisInfo);
+                                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                                         return result;
                                     }
                                 }
@@ -1344,7 +1345,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 // 冲突任务集合添加对比任务2的任务信息
                                 conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                                 addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                                setThisInfoTimeCount(thisInfo);
+                                GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                                addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                 // 调用添加或更新产品状态方法
                                 addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
@@ -1383,7 +1384,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 System.out.println("进入这里--=++=1-1=新的");
                                 conflictHandlePattern = 3;
                                 isContinue = false;
-                                setThisInfoTimeCount(thisInfo);
+                                GsThisInfo.setThisInfoTimeCount(thisInfo);
                             } else {
                                 long time = contrastTaskTwo.getTePStart() - contrastTaskOne.getTePFinish();
                                 // 任务余剩时间累减
@@ -1403,7 +1404,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 task.setWntDurTotal(task.getWntDurTotal() - time);
                                 System.out.println("进入这里--=++=1-2=新的");
                                 conflictHandlePattern = 4;
-                                setThisInfoTimeCount(thisInfo);
+                                GsThisInfo.setThisInfoTimeCount(thisInfo);
                             }
                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
                             addOrUpdateTeDate(getTeS(random,grpB,dep,onlyFirstTimeStamp,newestLastCurrentTimestamp),teDate,wntDurTotal);
@@ -1449,7 +1450,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             conflictHandlePattern = 3;
                             result.put("conflictHandlePattern",conflictHandlePattern);
                             System.out.println("进入这里--=2");
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                             return result;
                         } else {
                             // 获取时间差2（当前任务的总时间-余剩总时间）
@@ -1479,7 +1480,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             accumulation++;
                             conflictHandlePattern = 4;
                             isContinue = false;
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                         }
                     }
                 }
@@ -1505,7 +1506,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             // 冲突任务集合添加对比任务1的任务信息
                             conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(), contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),contrastTaskOne));
                             addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                            addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                             // 调用添加或更新产品状态方法
                             addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskOne.getId_O(),contrastTaskOne.getIndex().toString(),0);
@@ -1530,7 +1531,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             System.out.println("进入这里--=3");
                             storageTaskIsProcessedComplete = 1;
                             conflictHandlePattern = 3;
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                         } else {
                             // 判断当前任务的优先级小于对比任务2的优先级
                             if (task.getPriority() < contrastTaskTwo.getPriority()) {
@@ -1540,7 +1541,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                 // 冲突任务集合添加对比任务2的任务信息
                                 conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                                 addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                                setThisInfoTimeCount(thisInfo);
+                                GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                                addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                 // 调用添加或更新产品状态方法
                                 addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
@@ -1566,7 +1567,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     task.setWntDurTotal(surplusTime);
                                     isResult = false;
                                     conflictHandlePattern = 8;
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                                 } else {
                                     // 任务余剩时间累减
                                     zon -= task.getWntDurTotal();
@@ -1590,7 +1591,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     task.setWntDurTotal(0L);
                                     result.put("taskIsProcessedComplete",2);
                                     conflictHandlePattern = 3;
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                                 }
                             }
 //                            else {
@@ -1629,7 +1630,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             // 冲突任务集合添加对比任务1的任务信息
                             conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(),contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),contrastTaskOne));
                             addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                            addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                             // 调用添加或更新产品状态方法
                             addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskOne.getId_O(),contrastTaskOne.getIndex().toString(),0);
@@ -1653,7 +1654,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         ,teS,task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                                 System.out.println("进入这里--=5-1");
                                 conflictHandlePattern = 3;
-                                setThisInfoTimeCount(thisInfo);
+                                GsThisInfo.setThisInfoTimeCount(thisInfo);
                             } else {
                                 long recordZon = task.getWntDurTotal() - contrastTaskOne.getWntDurTotal();
                                 if (recordZon <= 0) {
@@ -1679,7 +1680,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     isEnd = 1;
 //                                    conflictHandlePattern = 6;
                                     conflictHandlePattern = 3;
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                                 } else {
                                     // 任务余剩时间累减
                                     zon -= contrastTaskOne.getWntDurTotal();
@@ -1702,7 +1703,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     System.out.println("进入这里--=5-2-New");
 //                                    isEnd = 1;
                                     conflictHandlePattern = 7;
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                                 }
                             }
                             isGetInto = true;
@@ -1716,7 +1717,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 冲突任务集合添加对比任务2的任务信息
                                     conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                                     addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                                    addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                     // 调用添加或更新产品状态方法
                                     addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
@@ -1734,7 +1735,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 冲突任务集合添加对比任务2的任务信息
                                     conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                                     addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                                    addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
 //                                    clearOldTask(contrastTaskTwo.getId_O(), contrastTaskTwo.getDateIndex(), contrastTaskTwo.getId_C());
                                     // 调用添加或更新产品状态方法
@@ -1759,7 +1760,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             ,teS, task.getWntDurTotal(),allImageTeDate,isGetTaskPattern,endTime);
                                     System.out.println("进入这里--=6");
                                     conflictHandlePattern = 3;
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                                    isGetInto = true;
                                 } else {
                                     long time = contrastTaskTwo.getWntDurTotal() - task.getWntDurTotal();
@@ -1769,7 +1770,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         // 冲突任务集合添加对比任务2的任务信息
                                         conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                                         addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                                        setThisInfoTimeCount(thisInfo);
+                                        GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                                        addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
 //                                        clearOldTask(contrastTaskTwo.getId_O(), contrastTaskTwo.getDateIndex(), contrastTaskTwo.getId_C());
                                         // 调用添加或更新产品状态方法
@@ -1795,7 +1796,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         task.setWntDurTotal(0L);
                                         System.out.println("进入这里--=6-new-1");
                                         conflictHandlePattern = 3;
-                                        setThisInfoTimeCount(thisInfo);
+                                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                                     } else {
                                         time = task.getWntDurTotal() - contrastTaskTwo.getWntDurTotal();
                                         // 任务余剩时间累加
@@ -1803,7 +1804,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         // 冲突任务集合添加对比任务2的任务信息
                                         conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                                         addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                                        setThisInfoTimeCount(thisInfo);
+                                        GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                                        addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                         // 调用添加或更新产品状态方法
                                         addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
@@ -1830,7 +1831,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         isEnd = 1;
 //                                        conflictHandlePattern = 6;
                                         conflictHandlePattern = 4;
-                                        setThisInfoTimeCount(thisInfo);
+                                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                                     }
                                 }
                                 isGetInto = true;
@@ -1870,7 +1871,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                             // 冲突任务集合添加对比任务1的任务信息
                             conflict.add(TaskObj.getTaskX(contrastTaskOne.getTePStart(),contrastTaskOne.getTePFinish(),contrastTaskOne.getWntDurTotal(),contrastTaskOne));
                             addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                            setThisInfoTimeCount(thisInfo);
+                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                             System.out.println(JSON.toJSONString(contrastTaskOne));
                             System.out.println(JSON.toJSONString(contrastTaskTwo));
 //                            addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
@@ -1901,14 +1902,14 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 任务余剩时间累减
                                     zon -= remainingTime;
                                     conflictHandlePattern = 1;
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                                 } else {
                                     // 任务余剩时间累加
                                     zon += contrastTaskTwo.getWntDurTotal();
                                     // 冲突任务集合添加对比任务2的任务信息
                                     conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                                     addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                                     // 调用添加或更新产品状态方法
                                     addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
                                     // 任务集合删除指定下标(i+1)任务
@@ -1951,7 +1952,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     endTime = tasks.get(0).getTePStart();
                                     wntDurTotal = task.getWntDurTotal();
                                     conflictHandlePattern = 3;
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                                 }
                             } else {
                                 // 判断对比任务1的总时间大于当前任务的总时间
@@ -1969,7 +1970,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     wntDurTotal = task.getWntDurTotal();
                                     System.out.println("进入新开辟的-1-1");
                                     conflictHandlePattern = 3;
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                                 } else {
                                     // 获取余剩总时间（当前任务的总时间-对比任务1的总时间）
                                     remainingTime = task.getWntDurTotal() - contrastTaskOne.getWntDurTotal();
@@ -1987,7 +1988,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     task.setWntDurTotal(remainingTime);
                                     System.out.println("进入新开辟的-1-2");
                                     conflictHandlePattern = 1;
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                                 }
                             }
                             // 调用新增或者修改任务的所在日期对象状态方法并且写入当天使用总时间
@@ -2030,7 +2031,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 任务余剩时间累减
                                     zon -= remainingTime;
                                     conflictHandlePattern = 1;
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
                                 } else {
                                     System.out.println("时间为零-跳过");
                                 }
@@ -2042,7 +2043,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                     // 冲突任务集合添加对比任务2的任务信息
                                     conflict.add(TaskObj.getTaskX(contrastTaskTwo.getTePStart(),contrastTaskTwo.getTePFinish(),contrastTaskTwo.getWntDurTotal(),contrastTaskTwo));
                                     addThisConflictInfoStatus(1,task.getDateIndex(),thisInfo);
-                                    setThisInfoTimeCount(thisInfo);
+                                    GsThisInfo.setThisInfoTimeCount(thisInfo);
 //                                    addThisConflictLastODate(task.getId_O(), task.getId_C(), thisInfo,actionIdO);
                                     // 调用添加或更新产品状态方法
                                     addSho(sho, task.getId_O(),task.getIndex().toString(), contrastTaskTwo.getId_O(),contrastTaskTwo.getIndex().toString(),0);
@@ -2078,7 +2079,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                                 // 更新当前任务的开始时间
                                                 task.setTePStart(task.getTePStart());
                                                 System.out.println("进入这里--=8");
-                                                setThisInfoTimeCount(thisInfo);
+                                                GsThisInfo.setThisInfoTimeCount(thisInfo);
                                             } else {
 //                                                // 获取余剩总时间（当前任务总时间-时间差）
 //                                                remainingTime = task.getWntDurTotal() - timeDifference;
@@ -2101,7 +2102,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                                 task.setTePStart(task.getTePStart());
                                                 System.out.println("进入这里-+=8");
                                                 conflictHandlePattern = 3;
-                                                setThisInfoTimeCount(thisInfo);
+                                                GsThisInfo.setThisInfoTimeCount(thisInfo);
                                             }
                                         } else {
                                             // 获取时间差（对比任务3的开始时间-对比任务2的开始时间）
@@ -2130,7 +2131,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                                 // 更新当前任务的开始时间
                                                 task.setTePStart(contrastTaskTwo.getTePStart());
                                                 System.out.println("进入这里--=9");
-                                                setThisInfoTimeCount(thisInfo);
+                                                GsThisInfo.setThisInfoTimeCount(thisInfo);
                                             } else {
                                                 // 任务余剩时间累减
                                                 zon -= task.getWntDurTotal();
@@ -2149,7 +2150,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                                 task.setTePStart(task.getTePStart());
                                                 System.out.println("进入这里-+=9");
                                                 conflictHandlePattern = 3;
-                                                setThisInfoTimeCount(thisInfo);
+                                                GsThisInfo.setThisInfoTimeCount(thisInfo);
                                             }
                                         }
                                     } else {
@@ -2178,7 +2179,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             endTime = tasks.get(0).getTePStart();
                                             wntDurTotal = timeDifference;
                                             System.out.println("进入这里--=22");
-                                            setThisInfoTimeCount(thisInfo);
+                                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                                             // 更新当前任务的开始时间
                                             task.setTePStart(task.getTePStart());
                                         } else {
@@ -2195,7 +2196,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             endTime = tasks.get(0).getTePStart();
                                             wntDurTotal = contrastTaskTwo.getWntDurTotal();
                                             System.out.println("进入这里--=23");
-                                            setThisInfoTimeCount(thisInfo);
+                                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                                         }
                                         // 更新当前任务总时间
                                         task.setWntDurTotal(remainingTime);
@@ -2280,7 +2281,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         task.setTePFinish((task.getTePStart()+task.getWntDurTotal()));
                                         System.out.println("进入这里++=5-2");
                                         conflictHandlePattern = conflictHandlePatternCopy;
-                                        setThisInfoTimeCount(thisInfo);
+                                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                                         break;
                                     } else {
                                         // 获取时间差2（当前任务总时间-余剩总时间）
@@ -2310,7 +2311,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         // 任务余剩时间累减
                                         zon -= remainingTime;
                                         conflictHandlePattern = 7;
-                                        setThisInfoTimeCount(thisInfo);
+                                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                                     }
                                 } else {
                                     // 判断时间差大于等于0
@@ -2349,7 +2350,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         task.setTePFinish((contrastTaskOneNew.getTePFinish()+task.getWntDurTotal()));
                                         System.out.println("进入这里--=10");
                                         conflictHandlePattern = conflictHandlePatternCopy;
-                                        setThisInfoTimeCount(thisInfo);
+                                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                                         break;
                                     } else {
                                         // 获取时间差2（当前任务总时间-余剩总时间）
@@ -2379,7 +2380,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                         // 任务余剩时间累减
                                         zon -= remainingTime;
                                         conflictHandlePattern = 7;
-                                        setThisInfoTimeCount(thisInfo);
+                                        GsThisInfo.setThisInfoTimeCount(thisInfo);
                                     }
                                 }
                             }
@@ -2444,7 +2445,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             System.out.println("进入这里再出-1");
                                             storageTaskIsProcessedComplete = 1;
                                             conflictHandlePattern = conflictHandlePatternCopy;
-                                            setThisInfoTimeCount(thisInfo);
+                                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                                             break;
                                         } else {
                                             // 获取时间差2（当前任务总时间-余剩总时间）
@@ -2474,7 +2475,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             // 任务余剩时间累减
                                             zon -= remainingTime;
                                             conflictHandlePattern = 7;
-                                            setThisInfoTimeCount(thisInfo);
+                                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                                         }
                                     } else {
                                         System.out.println("进入新的啊-q:");
@@ -2604,7 +2605,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             System.out.println("进入这里再出-1-2");
                                             storageTaskIsProcessedComplete = 1;
                                             conflictHandlePattern = conflictHandlePatternCopy;
-                                            setThisInfoTimeCount(thisInfo);
+                                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                                             break;
                                         } else {
                                             // 获取时间差2（当前任务总时间-余剩总时间）
@@ -2634,7 +2635,7 @@ public class TimeZjServiceTimeConflictImpl extends TimeZj implements TimeZjServi
                                             zon -= remainingTime;
                                             System.out.println("进入这里再出-2-2");
                                             conflictHandlePattern = 7;
-                                            setThisInfoTimeCount(thisInfo);
+                                            GsThisInfo.setThisInfoTimeCount(thisInfo);
                                         }
                                     }
                                 }

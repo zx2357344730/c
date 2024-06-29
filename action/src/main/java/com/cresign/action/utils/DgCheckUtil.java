@@ -28,7 +28,6 @@ public class DgCheckUtil {
     @Autowired
     private Qt qt;
 
-
     /**
      * 递归验证核心方法
      * @param pidList   零件id集合
@@ -184,7 +183,6 @@ public class DgCheckUtil {
     public void checkUtil(HashSet<String> id_Ps, List<JSONObject> item, String myCompId){
         for (JSONObject object : item) {
             String id_P = object.getString("id_P");
-
             if (id_Ps.contains(id_P)) {
                 continue;
             }
@@ -205,10 +203,10 @@ public class DgCheckUtil {
             checkUtilCore(pidList, id_P, myCompId, nextPart, isRecurred, isEmpty, stat, id_Ps);
 
             if (isRecurred.size() > 0) {
-                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), object.getJSONObject("wrdN").getString("cn"));
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_RECURRED.getCode(), id_P);
             }
             if (isEmpty.size() > 0) {
-                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NOT_EXIST.getCode(), object.getJSONObject("wrdN").getString("cn"));
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_PROD_NOT_EXIST.getCode(), id_P);
             }
         }
     }

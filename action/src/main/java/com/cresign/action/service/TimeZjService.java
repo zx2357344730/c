@@ -214,16 +214,20 @@ public interface TimeZjService {
     ApiResponse setAtFirstEasy(String id_O, Long teStart, String id_C
             ,int dateIndex,String layer,String id_PF);
 
+    ApiResponse getAtFirstEasyList(String id_C, JSONArray getList);
+
+    ApiResponse setAtFirstEasyList(String id_C, JSONArray setList);
+
     ApiResponse setOrderUserCount(String id_O, String id_C, Long teStart);
 
     ApiResponse clearOrderAllTaskAndSave(String id_C,String id_O);
 
     ApiResponse clearThisDayTaskAndSave(String id_C,String dep,String grpB,long thisDay);
-    ApiResponse clearThisDayTaskAndSaveNew(String id_C,String dep,String grpB,long thisDay);
+    ApiResponse clearThisDayTaskAndSaveClearFollowUp(String id_C,String dep,String grpB,long thisDay);
 
     ApiResponse clearThisDayEasyTaskAndSave(String id_C,String dep,long thisDay);
     ApiResponse clearThisDayEasyTaskAndSaveNew(String id_C,String dep,long thisDay);
-    ApiResponse clearThisDayEasyTaskAndSaveByEnd(String id_C,String dep,long thisDay);
+    ApiResponse clearThisDayEasyTaskAndSaveClearFollowUp(String id_C,String dep,long thisDay);
 
     ApiResponse setAtFirst(String id_O, Long teStart, String id_C, Integer wn0TPrior
             ,int dateIndex,String layer,String id_PF);
