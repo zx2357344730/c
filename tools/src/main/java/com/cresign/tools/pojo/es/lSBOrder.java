@@ -133,15 +133,29 @@ public class lSBOrder {
 
     private String refOP;
 
+    private String refDC;
+
     private double wn4price;
-//    private double wn2qc;
     private double wn2qty;
 
-    private double wn2qtyShip;
+    private double wn2qtyship;
+
+    private double wn2qtybreak;
+
+    private double wn2qtyfixed;
 
     private double wn2fin;
 
     private double wn2progress;
+
+    private double wn4mnymade;
+
+    private double wn4mnynow;
+
+    private double wn4mnypaid;
+
+    private double wn2cas;
+
 
     private String tmd;
 
@@ -152,8 +166,23 @@ public class lSBOrder {
     private String taStart;
     private String taFin;
 
+    private String teShip;
+    private String teGot;
+    private String tePay;
+    private String taShip;
+
+    private String taGot;
+    private String taPay;
+
     private long wntDur;
 
+    private long wntShip;
+
+    private long wntBuy;
+
+    private long wntWait;
+
+    private long wntPrep;
     private String qr;
 
     private JSONObject wrdTag;

@@ -59,6 +59,8 @@ public class InitJava {
 
     private JSONObject cardListAllow;
 
+    private JSONObject powerup;
+
     private Integer tvs = 1;
 
 //    private JSONObject statInit;

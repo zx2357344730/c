@@ -67,5 +67,10 @@ public class lNComp {
 
     private String qr;
 
+    private String zn9lat;
+    private String zn9long; //经纬度
+
+
+
 
 }

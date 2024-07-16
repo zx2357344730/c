@@ -5,7 +5,6 @@ import com.cresign.tools.dbTools.DateUtils;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.uuid.UUID19;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class InfoInfo {
 
     public InfoInfo(String id_C, String id_CP, String id_CB, JSONObject wrdN, JSONObject wrddesc, String grp,
-                    String ref, String pic, Integer lUT) {
+                    String ref, String pic) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn","");
@@ -57,8 +56,6 @@ public class InfoInfo {
 
     private String pic;
 
-    @JsonProperty("lDC")
-    private Integer lDC;
 
     private String tmd;
 

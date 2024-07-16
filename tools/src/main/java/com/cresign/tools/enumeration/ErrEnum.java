@@ -64,6 +64,8 @@ public enum ErrEnum {
     PROD_NOT_FOUND("021002"),
     //用户不存在
     USER_NOT_FOUND("021003"),
+
+    USER_NEED_LOGIN("021014"),
     //订单不存在
     ORDER_NOT_FOUND("021004"),
     //assset不存在     Login,Purchase服务在用
@@ -209,7 +211,7 @@ public enum ErrEnum {
     //公司文件容量不足
     POWER_NOT_ENOUGH("030011"),
 
-    //传入的参数错误       Login服务在用
+    //传入的参数错误
     KEY_IS_NOT_FOUND("060001"),
     // 查找的数据为空       Login服务在用
     DATA_IS_NULL("060002"),
@@ -566,6 +568,8 @@ public enum ErrEnum {
     TYPE_NOT_FOUND("051016"),
     //chkin不存在
     CHK_IN_NOT_FOUND("051017"),
+
+    TEMPA_NOT_FOUND("051019"),
 
     // 订单已过期 : tang
     ERR_ORDER_BE_OVERDUE("05001"),

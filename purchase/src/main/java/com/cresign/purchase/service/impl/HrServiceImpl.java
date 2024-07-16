@@ -1281,6 +1281,8 @@ public class HrServiceImpl implements HrService {
     public ApiResponse delLBUser(String id_U,String id_C) {
         qt.delES("lBUser",qt.setESFilt("id_U",id_U,"id_CB",id_C));
         User user = qt.getMDContent(id_U, "rolex", User.class);
+        qt.checkPowerUp(id_C, -1L, "lbuser");
+
         if (user == null || null == user.getRolex() || user.getRolex().getJSONObject("objComp").getJSONObject(id_C) == null) {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), null);
         }

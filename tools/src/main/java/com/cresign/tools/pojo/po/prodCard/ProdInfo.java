@@ -18,7 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProdInfo {
 
-    public ProdInfo(String id_C, String id_CP, String id_CB, JSONObject wrdN, JSONObject wrddesc, String grp,
+    public ProdInfo(String id_C, String id_CP, JSONObject wrdN, JSONObject wrddesc, String grp,
                   String ref, String pic, Integer lUT) {
 
         JSONObject wrdEmpty = new JSONObject();
@@ -26,7 +26,6 @@ public class ProdInfo {
 
         this.id_C = id_C;
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
-        this.id_CB = id_CB;
         this.wrdN = wrdN  == null ? (JSONObject) wrdEmpty.clone(): wrdN;
         this.wrddesc = wrddesc  == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
         this.grp = grp == null ? "1000": grp;
@@ -58,9 +57,6 @@ public class ProdInfo {
     private String refB;
 
     private String pic;
-
-//    @JsonProperty("lDC")
-//    private Integer lDC;
 
     @JsonProperty("lUT")
     private Integer lUT;

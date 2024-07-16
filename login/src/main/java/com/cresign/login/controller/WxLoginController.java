@@ -97,7 +97,7 @@ public class WxLoginController {
             return wxLoginService.wXLoginByIdWx(
                     reqJson.getString("id_WX"),
                     request.getHeader("clientType"),
-                    reqJson.getBoolean("isReq"));
+                    reqJson.getBoolean("isReq") == null ? false: reqJson.getBoolean("isReq"));
         } catch (Exception e){
             System.out.println("出现异常:");
 //            e.printStackTrace();
@@ -196,7 +196,7 @@ public class WxLoginController {
                     reqJson.getInteger("countryCode"),
                     reqJson.getString("phoneNumber"),
                     reqJson.getString("realName"),
-                    reqJson.getBoolean("isReq")
+                    reqJson.getBoolean("isReq")== null ? false: reqJson.getBoolean("isReq")
             );
         } catch (Exception e) {
             return getUserToken.err(reqJson, "WxLoginController.wxmpRegister", e);

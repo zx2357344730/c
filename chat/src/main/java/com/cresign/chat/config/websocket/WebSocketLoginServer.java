@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.chat.utils.AesUtil;
 import com.cresign.chat.utils.RsaUtil;
 import com.cresign.tools.pojo.po.LogFlow;
+import io.netty.channel.ChannelHandler.Sharable;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.stereotype.Component;
 
@@ -17,8 +18,6 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArraySet;
-import io.netty.channel.ChannelHandler.Sharable;
 
 /**
  * @author tangzejin

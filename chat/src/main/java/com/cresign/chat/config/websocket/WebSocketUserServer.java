@@ -126,6 +126,8 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                         logData.setId_Us(qt.setArray(uId));
                         logData.setLogType("msg");
                         logData.setSubType("Offline");
+                        logData.setZcndesc("在另一处登录了");
+
                         JSONObject data = new JSONObject();
                         data.put("client",client);
                         logData.setData(data);

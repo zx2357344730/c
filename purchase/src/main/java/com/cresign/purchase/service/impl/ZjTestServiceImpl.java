@@ -1986,8 +1986,7 @@ public class ZjTestServiceImpl implements ZjTestService {
             isLSProd = false;
         }
         if (!isLBProd && !isLSProd) {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
-                    LB_PROD_NOT_FOUND.getCode(),"");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LB_PROD_NOT_FOUND.getCode(),"");
         }
         if (isLBProd && isLSProd) {
             forProd.addAll(esLBProd);
@@ -2360,9 +2359,9 @@ public class ZjTestServiceImpl implements ZjTestService {
 
     @Override
     public ApiResponse aiQuestingDeepSeek(JSONObject tokData, String desc) {
-//        LogFlow usageLog = new LogFlow();
-//        usageLog.setUsageLog(tokData, "aiQuest", desc, 3, "", "lBInfo", qt.setJson("cn", "AI quest"),"1000", "");
-//        ws.sendWS(usageLog);
+        LogFlow usageLog = new LogFlow();
+        usageLog.setUsageLog(tokData, "aiQuest", desc, 3, "", "lBInfo", qt.setJson("cn", "AI quest"),"1000", "");
+        ws.sendWS(usageLog);
 
         JSONArray messages = new JSONArray();
 //        messages.add(qt.setJson("content","","role","system"));
@@ -2377,6 +2376,8 @@ public class ZjTestServiceImpl implements ZjTestService {
                 ,"https://api.deepseek.com/chat/completions"
                 ,qt.setJson("Authorization","Bearer sk-f31affd654a3409e9f6468b5875fe85e"
                         ,"Accept","application/json"));
+        JSONObject json = qt.toJson(s);
+        qt.checkPowerUp(tokData.getString("id_C"), json.getJSONObject("usage").getLong("total_tokens"), "aitoken");
         System.out.println("请求结果:");
         System.out.println(s);
         return retResult.ok(CodeEnum.OK.getCode(),s);

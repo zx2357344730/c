@@ -24,7 +24,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class lBProd {
 
     public lBProd(String id_P, String id_C, String id_CP, String id_CB, JSONObject wrdN, JSONObject wrddesc,
-                  String grp, String grpB, String ref, String refB, String pic, Integer lDC, Integer lUT) {
+                  String grp, String grpB, String ref, String refB, String pic, String refDC, Integer lUT) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn","");
@@ -40,7 +40,7 @@ public class lBProd {
         this.ref = ref == null ? "": ref;
         this.refB = refB == null ? "": refB;
         this.pic = pic  == null ? "": pic;
-        this.lDC = lDC  == null ? 0: lDC;
+        this.refDC = refDC  == null ? "": refDC;
         this.lUT = lUT  == null ? 0: lUT;
         this.arrP = new JSONArray();
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
@@ -71,7 +71,7 @@ public class lBProd {
 
     private String grpB;
 
-    private JSONArray grpT = new JSONArray();
+    private JSONArray arrGrp = new JSONArray();
 
     private String ref = "";
 
@@ -80,7 +80,7 @@ public class lBProd {
 
     private String pic = "";
 
-    private Integer lDC = 0;
+    private String refDC = "";
 
     private Integer lUT = 0;
 
@@ -92,6 +92,8 @@ public class lBProd {
 
     private double wn2sum = 0.0;
     private double wn2buy = 0.0;
+
+    private double wn2qty;//库存总数
 
     private String qr;
 

@@ -28,7 +28,7 @@ import java.io.Serializable;
 public class lSProd implements Serializable {
 
     public lSProd(String id_P, String id_C, String id_CP, JSONObject wrdN, JSONObject wrddesc, String grp,
-                  String ref, String pic, Integer lDC, Integer lUT) {
+                  String ref, String pic, String refDC, Integer lUT) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn","");
@@ -41,7 +41,7 @@ public class lSProd implements Serializable {
         this.grp = grp == null ? "1000": grp;
         this.ref = ref == null ? "": ref;
         this.pic = pic  == null ? "": pic;
-        this.lDC = lDC  == null ? 0: lDC;
+        this.refDC = refDC  == null ? "": refDC;
         this.lUT = lUT  == null ? 0: lUT;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
@@ -52,7 +52,7 @@ public class lSProd implements Serializable {
     private String id_P;
 
     private String id_C;
-    private JSONArray grpT = new JSONArray();
+    private JSONArray arrGrp = new JSONArray();
 
     private String id_CB;
 
@@ -74,17 +74,16 @@ public class lSProd implements Serializable {
 
     private String pic;
 
-    private Integer lDC;//
+    private String refDC;
 
     private Integer lUT;
 
     private Integer lCR;//
 
-//    private String picC;
-
     private double wn4price;//
 
-//    private JSONObject wrdNC;
+    private double wn2qty;//库存总数
+
 
     private String tmd;
 
@@ -95,6 +94,12 @@ public class lSProd implements Serializable {
     private JSONObject wrdTag;
 
     private Long wn0fsize;
+
+    private double wn2qtyMob;
+
+    private double wn4cost;
+
+    private Long wntLead;
 
 
 

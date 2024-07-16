@@ -5,19 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="128c9a26-d44c-4e41-b0e6-dabc284dd13b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/controller/FlowController.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/controller/FlowController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/controller/TaskController.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/controller/TaskController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/TimeZjService.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/TimeZjService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowNewServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowNewServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZj.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZj.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceComprehensiveImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceComprehensiveImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceEmptyInsertImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceEmptyInsertImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceImplX.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceImplX.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceNewImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceNewImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceTimeConflictImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceTimeConflictImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/utils/DgCheckUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/utils/DgCheckUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -70,7 +70,7 @@ public class RoleServiceImpl implements RoleService {
 
         //authFilterService.getUserUpdateAuth(id_U,id_C,"lSAsset","1003","card",new JSONArray().fluentAdd("role"));
 
-        if (grpU.equals("1099") && !(listType.equals("lSProd")|| listType.equals("lSInfo"))) {
+        if (grpU.equals("1099") && !(listType.equals("lSOrder")|| listType.equals("lSProd")|| listType.equals("lSInfo"))) {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, ErrEnum.GRP_NOT_AUTH.getCode(), null);
 
         }
@@ -82,7 +82,7 @@ public class RoleServiceImpl implements RoleService {
                 || null == asset.getRole().getJSONObject("objData").getJSONObject(grpU).getJSONObject(listType)
                 || null == asset.getRole().getJSONObject("objData").getJSONObject(grpU).getJSONObject(listType).getJSONObject(grp)) {
             //去init_java 初始化模块
-            JSONObject result = this.addModInitRole(id_C, listType);
+            JSONObject result = this.addModInitRole(id_C, listType, grp);
 
             qt.setMDContent(asset.getId(), qt.setJson("role.objData." + grpU + "." + listType + "." + grp, result), Asset.class);
 
@@ -94,57 +94,32 @@ public class RoleServiceImpl implements RoleService {
 
             //Else the data was already in the role.objData
             JSONObject grpJson = asset.getRole().getJSONObject("objData").getJSONObject(grpU).getJSONObject(listType).getJSONObject(grp);
+//            if (!grp.equals("1003") && listType.equals("lSAsset"))
+//            {
+//                grpJson.getJSONObject("card").remove("aArrange");
+//                grpJson.getJSONObject("card").remove("cSetup");
+//                grpJson.getJSONObject("card").remove("chkin");
+//                grpJson.getJSONObject("card").remove("role");
+//                grpJson.getJSONObject("card").remove("def");
+//                grpJson.getJSONObject("card").remove("control");
+//                grpJson.getJSONObject("card").remove("setPdf");
+//                grpJson.getJSONObject("card").remove("cTrigger");
+//                grpJson.getJSONObject("card").remove("chgSupp");
+//                grpJson.getJSONObject("card").remove("refAuto");
+//            }
             return retResult.ok(CodeEnum.OK.getCode(), grpJson);
 
         }
     }
-        // 最终结果返回
-//        JSONObject result = new JSONObject();
-//
-//        result.put("card", grpJson.getJSONObject("card"));
-//        result.put("batch", grpJson.getJSONObject("batch"));// mod的键
-//            for (String modKey : grpJson.keySet()) {
-//
-//                JSONObject modObj = grpJson.getJSONObject(modKey);
-//
-//                JSONObject modJson = new JSONObject();
-//                modJson.put("moduleRef", modKey);
-//
-//                JSONArray cardArray = modObj.getJSONArray("card");
-//                // 最终返回卡片权限数组
-//                JSONArray resultCardArray = new JSONArray();
-//
-//                for (Object cardObj : cardArray) {
-//                    JSONObject cardJson = (JSONObject) cardObj;
-//                    cardJson.put("rowId", grpU + "_" + listType + "_" + grp + "_" + modKey + "_" + cardJson.getString("ref"));
-//                    resultCardArray.add(cardJson);
-//                }
-//
-//                JSONArray batchArray = modObj.getJSONArray("batch");
-//                // 最终返回按钮权限数组
-//                JSONArray resultBatchArray = new JSONArray();
-//
-//                for (Object batchObj : batchArray) {
-//                    JSONObject batchJson = (JSONObject) batchObj;
-//                    batchJson.put("rowId", grpU + "_" + listType + "_" + grp + "_" + modKey + "_" + batchJson.getString("ref"));
-//                    resultBatchArray.add(batchJson);
-//                }
-//
-//
-//                modJson.put("rowId", modKey);
-//                modJson.put("cardChildren", resultCardArray);
-//                modJson.put("batchChildren", resultBatchArray);
-//
-//                result.add(modJson);
-//
-//            }
+
     @Override
     public ApiResponse updateNewestRole(String id_C, String listType, String grp, String grpU) {
 
         Asset asset = qt.getConfig(id_C, "a-auth", "role.objData."+ grpU + "." + listType + "." + grp);
         JSONObject grpJson = asset.getRole().getJSONObject("objData").getJSONObject(grpU).getJSONObject(listType).getJSONObject(grp);
 
-        JSONObject initGrpJson = this.addModInitRole(id_C, listType);
+        JSONObject initGrpJson = this.addModInitRole(id_C, listType, grp);
+
         JSONObject resultJson = qt.cloneObj(grpJson);
 
         qt.errPrint("newestRole init", null, initGrpJson);
@@ -168,7 +143,7 @@ public class RoleServiceImpl implements RoleService {
 
             for (String key : initGrpJson.getJSONObject("card").keySet()) {
                 //if init+, grp-, add to grp
-                if (!grpJson.getJSONObject("card").keySet().contains(key)) {
+                if (!grpJson.getJSONObject("card").containsKey(key)) {
                     resultJson.getJSONObject("card").put(key, initGrpJson.getJSONObject("card").getIntValue(key));
 
                 }
@@ -178,7 +153,7 @@ public class RoleServiceImpl implements RoleService {
 
             for (String key : grpJson.getJSONObject("card").keySet()) {
                 //if init+, grp-, add to grp
-                if (!initGrpJson.getJSONObject("card").keySet().contains(key)) {
+                if (!initGrpJson.getJSONObject("card").containsKey(key)) {
                     resultJson.getJSONObject("card").remove(key);
                 }
 
@@ -194,13 +169,13 @@ public class RoleServiceImpl implements RoleService {
             //check Batch:
             for (String key : initGrpJson.getJSONObject("batch").keySet()) {
                 //if init+, grp-, add to grp
-                if (!grpJson.getJSONObject("batch").keySet().contains(key)) {
+                if (!grpJson.getJSONObject("batch").containsKey(key)) {
                     resultJson.getJSONObject("batch").put(key, initGrpJson.getJSONObject("batch").getIntValue(key));
                 }
             }
             for (String key : grpJson.getJSONObject("batch").keySet()) {
                 //if init+, grp-, add to grp
-                if (!initGrpJson.getJSONObject("batch").keySet().contains(key)) {
+                if (!initGrpJson.getJSONObject("batch").containsKey(key)) {
                     resultJson.getJSONObject("batch").remove(key);
                 }
             }
@@ -362,26 +337,35 @@ public class RoleServiceImpl implements RoleService {
 
     }
 
-
-
-
-    //    @Transactional(rollbackFor = RuntimeException.class, noRollbackFor = ResponseException.class)
+/**
+ * 将一个组的角色权限复制到其他组。
+ *
+ * @param id_U 用户ID
+ * @param id_C 公司ID
+ * @param listType 列表类型
+ * @param copy_grp 要复制的组别
+ * @param to_grp 目标组别列表
+ * @param grpU 组别标识
+ * @return ApiResponse 返回API响应
+ */
     @Override
-    public ApiResponse copyGrpRoleToOtherGrp(String id_U, String id_C, String listType, String copy_grp, JSONArray
-            to_grp, String grpU) {
+    public ApiResponse copyGrpRoleToOtherGrp(String id_U, String id_C, String listType, String copy_grp, JSONArray to_grp, String grpU) {
 
-
+        // 获取资产配置，包含特定组的角色权限数据
         Asset asset = qt.getConfig(id_C, "a-auth", "role.objData." + grpU + "." + listType + "." + copy_grp);
 
-        System.out.println("asset"+asset);
-        // 没有设置职位权限
+        System.out.println("asset" + asset);
+
+        // 检查是否设置了角色权限
         if (null == asset.getRole().getJSONObject("objData").getJSONObject(grpU)) {
+            // 如果没有设置角色权限，抛出异常
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ROLE_NOT_SET.getCode(), null);
         }
 
-        // 复制的组别数据
+        // 获取要复制的组别的角色权限数据
         JSONObject copy_grp_json = asset.getRole().getJSONObject("objData").getJSONObject(grpU).getJSONObject(listType).getJSONObject(copy_grp);
 
+        // 创建一个JSON对象用于存储更新数据
         JSONObject setUpdate = new JSONObject();
 
         // 循环将复制组别的数据拷贝到要复制的组别上
@@ -389,26 +373,26 @@ public class RoleServiceImpl implements RoleService {
             setUpdate.put("role.objData." + grpU + "." + listType + "." + to_grp_key, copy_grp_json);
         }
 
+        // 更新资产内容
         qt.setMDContent(asset.getId(), setUpdate, Asset.class);
-        qt.delRD("login:get_read_auth", "compId-"+id_C);
+
+        // 删除与公司ID相关的读和读写权限缓存
+        qt.delRD("login:get_read_auth", "compId-" + id_C);
         qt.delRD("login:get_readwrite_auth", "compId-" + id_C);
 
+        // 返回成功的API响应
         return retResult.ok(CodeEnum.OK.getCode(), null);
-
-
     }
 
     /**
      * 初始化权限模块的数据
      *
-     * @param id_C
-     * @param listType
      * @author JackSon
      * @ver 1.0
      * @updated 2021-01-22 13:29
      * @return void
      */
-    private JSONObject addModInitRole(String id_C, String listType) {
+    private JSONObject addModInitRole(String id_C, String listType, String grp) {
 
         //1. check control has that mod?
         //2. get a list of all CardBatchLog we have now
@@ -420,11 +404,11 @@ public class RoleServiceImpl implements RoleService {
 
         JSONObject cardInit = initJson.getCardInit();
         JSONObject batchInit = initJson.getBatchInit();
-        JSONObject logInit = initJson.getLogInit();
+//        JSONObject logInit = initJson.getLogInit();
 
         JSONObject resultCardObj = new JSONObject();
         JSONObject resultBatchObj = new JSONObject();
-        JSONObject resultLogObj = new JSONObject();
+//        JSONObject resultLogObj = new JSONObject();
 
         JSONObject result = new JSONObject();
 
@@ -450,7 +434,6 @@ public class RoleServiceImpl implements RoleService {
 
 
             // 初始化该卡片对象数组
-            try {
                 for (String key : batchInit.keySet()) {
                     JSONObject batchJson = batchInit.getJSONObject(key);
                     JSONArray batchListType = batchInit.getJSONObject(key).getJSONArray("listType");
@@ -470,29 +453,41 @@ public class RoleServiceImpl implements RoleService {
                 result.put("card", resultCardObj);
                 result.put("batch", resultBatchObj);
 
-                //Special treatment for lSProd/lBProd to add the logAuth into it
-                // well, maybe not working this way now
-                if (listType.equals("lSProd") || listType.equals("lBProd")) {
-                    for (String key : logInit.keySet()) {
-                        JSONObject logJson = logInit.getJSONObject(key);
-
-                        for (String modKey : myModObject.keySet()) {
-                            String modArrayRef = myModObject.getJSONObject(modKey).getString("mod");
-                            Integer modArrayLevel = myModObject.getJSONObject(modKey).getInteger("bcdLevel");
-
-                            if (modArrayRef.equals(logJson.getString("modRef")) && modArrayLevel >= (logJson.getInteger("bcdLevel"))) {
-                                resultLogObj.put(logJson.getString("ref"), 0);
-                            }
-                        }
-                    }
-
-                    result.put("log", resultLogObj);
+                if (!grp.equals("1003") && listType.equals("lSAsset"))
+                {
+                    result.getJSONObject("card").remove("aArrange");
+                    result.getJSONObject("card").remove("cSetup");
+                    result.getJSONObject("card").remove("chkin");
+                    result.getJSONObject("card").remove("flowControl");
+                    result.getJSONObject("card").remove("menu");
+                    result.getJSONObject("card").remove("role");
+                    result.getJSONObject("card").remove("def");
+                    result.getJSONObject("card").remove("control");
+                    result.getJSONObject("card").remove("setPdf");
+                    result.getJSONObject("card").remove("cTrigger");
+                    result.getJSONObject("card").remove("chgSupp");
+                    result.getJSONObject("card").remove("refAuto");
                 }
 
-            } catch (Exception e)
-            {
-                e.printStackTrace();
-            }
+                //Special treatment for lSProd/lBProd to add the logAuth into it
+                // well, maybe not working this way now
+//                if (listType.equals("lSProd") || listType.equals("lBProd")) {
+//                    for (String key : logInit.keySet()) {
+//                        JSONObject logJson = logInit.getJSONObject(key);
+//
+//                        for (String modKey : myModObject.keySet()) {
+//                            String modArrayRef = myModObject.getJSONObject(modKey).getString("mod");
+//                            Integer modArrayLevel = myModObject.getJSONObject(modKey).getInteger("bcdLevel");
+//
+//                            if (modArrayRef.equals(logJson.getString("modRef")) && modArrayLevel >= (logJson.getInteger("bcdLevel"))) {
+//                                resultLogObj.put(logJson.getString("ref"), 0);
+//                            }
+//                        }
+//                    }
+//
+//                    result.put("log", resultLogObj);
+//                }
+
         return result;
     }
 }

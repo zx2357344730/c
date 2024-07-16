@@ -237,7 +237,38 @@ public class LogFlow {
         data.put("id", id);
         data.put("listType", listType);
         data.put("grp", grp);
-        data.put("info", info);
+        data.put("refOP", info);
+        this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+    }
+
+    public void setSaleLog(JSONObject tokData, String id_CB, String updateType, String zcndesc, Integer imp, String id_O, String id_OP, String listType, JSONObject wrdN, String grp)
+    {
+        this.id = "10sales";
+        this.id_FS = "";
+        this.logType = "saleflow";
+        this.subType = updateType;
+        this.dep = "";
+        this.grpU = tokData.getString("grpU");
+        this.grpB = "1000";
+        this.grp = "1000";
+        this.id_U = tokData.getString("id_U");
+        this.id_P = "";
+        this.id_O = id_O;
+        this.id_OP = id_OP;
+        this.index = 0;
+        this.id_CS = tokData.getString("id_C");
+        this.id_C = tokData.getString("id_C");//id_CB;
+
+        this.wrdN = wrdN;
+        this.imp = imp;
+        this.wrdNU = tokData.getJSONObject("wrdNReal");
+        this.pic = tokData.getString("pic");
+        this.lang = "cn";
+        this.zcndesc = zcndesc;
+        this.tzone = 8;
+        JSONObject data = this.getData();
+        data.put("listType", listType);
+        data.put("grp", grp);
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
@@ -283,24 +314,24 @@ public class LogFlow {
         this.data = data;
     }
 
-    public void setLogData_cusmsg (Double qtynow, Double price, String id_A, String grpA) {
-        JSONObject data = new JSONObject();
-
-
-        this.setLogType("cusmsg");
-        this.data = data;
-    }
-    public void setLogData_saleflow (Double qtynow, Double price, String id_A, String grpA) {
-        JSONObject data = new JSONObject();
-        data.put("wn2qtynow",qtynow);
-        data.put("wn4price", price);
-//        data.put("bcdStatus",bcdStatus);
-        data.put("id_A", id_A);
-        data.put("grpA", grpA);
-
-        this.setLogType("saleflow");
-        this.data = data;
-    }
+//    public void setLogData_cusmsg (Double qtynow, Double price, String id_A, String grpA) {
+//        JSONObject data = new JSONObject();
+//
+//
+//        this.setLogType("cusmsg");
+//        this.data = data;
+//    }
+//    public void setLogData_saleflow (Double qtynow, Double price, String id_A, String grpA) {
+//        JSONObject data = new JSONObject();
+//        data.put("wn2qtynow",qtynow);
+//        data.put("wn4price", price);
+////        data.put("bcdStatus",bcdStatus);
+//        data.put("id_A", id_A);
+//        data.put("grpA", grpA);
+//
+//        this.setLogType("saleflow");
+//        this.data = data;
+//    }
 
 
     /**

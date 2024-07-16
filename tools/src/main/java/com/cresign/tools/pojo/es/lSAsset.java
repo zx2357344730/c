@@ -59,7 +59,7 @@ public class lSAsset {
 
     private String grp;
 
-    private JSONArray grpT = new JSONArray();
+    private JSONArray arrGrp = new JSONArray();
 
 
     private String ref;
