@@ -12,7 +12,6 @@ import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.Asset;
 import com.cresign.tools.pojo.po.Order;
-import com.cresign.tools.pojo.po.Prod;
 import com.cresign.tools.pojo.po.chkin.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.http.HttpStatus;

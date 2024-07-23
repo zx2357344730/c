@@ -27,13 +27,13 @@ import java.io.Serializable;
 @Document("lSInfo")
 public class lSInfo implements Serializable {
 
-    public lSInfo(String id_P, String id_C, String id_CP, JSONObject wrdN, JSONObject wrddesc, String grp,
-                  String ref, String pic, Integer lDC) {
+    public lSInfo(String id_I, String id_C, String id_CP, JSONObject wrdN, JSONObject wrddesc, String grp,
+                  String ref, String pic, String refDC) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn","");
 
-        this.id_P = id_P;
+        this.id_I = id_I;
         this.id_C = id_C;
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
         this.wrdN = wrdN  == null ? (JSONObject) wrdEmpty.clone(): wrdN;
@@ -41,21 +41,21 @@ public class lSInfo implements Serializable {
         this.grp = grp == null ? "1000": grp;
         this.ref = ref == null ? "": ref;
         this.pic = pic  == null ? "": pic;
-        this.lDC = lDC  == null ? 0: lDC;
+        this.refDC = refDC  == null ? "": refDC;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.qr = UUID19.uuid();
 
     }
 
-    private String id_P;
+    private String id_I;
 
     private String id_C;
-    private String id_CB;
+//    private String id_CB;
 
     private String id_CP;
 
-    private String id_PP;
+    private String id_IP;
 
     private JSONObject wrdN;
 
@@ -65,21 +65,19 @@ public class lSInfo implements Serializable {
 
     private String grp;
 
-    private String qrCode = "";
+    private JSONArray arrGrp = new JSONArray();
 
-    private String grpU;
+    private String qr = "";
 
     private String ref;
 
     private String pic;
 
-    private Integer lDC;//
+    private String refDC;
 
     private String tmd;
 
     private String tmk;
-
-    private String qr;
 
     private JSONObject wrdTag;
 

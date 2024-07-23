@@ -178,9 +178,6 @@ public class DbUtils {
                 if (flowInfo.getJSONObject("refOP") == null)
                 {
                     throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), null);
-//
-//                    flowInfo.put("refOP", new JSONObject());
-//                    qt.errPrint("in refOPNull;");
                 }
                 // case 2: refOP not exists
                 else if (flowInfo.getJSONObject("refOP").getJSONObject(refOP) == null)
@@ -189,18 +186,14 @@ public class DbUtils {
                     JSONObject extraInfo = qt.getES("lSBOrder", qt.setESFilt("id_O", id_OP)).getJSONObject(0);
                     qt.upJson(refOPInfo, "wrddesc", extraInfo.getJSONObject("wrddesc"), "pic", extraInfo.getString("pic"),"tmd", extraInfo.getString("tmd"),
                             "grp", extraInfo.getString("grp"), "priority", extraInfo.getInteger("priority"), "id_CB", extraInfo.getString("id_CB"));
-//                    qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP, refOPInfo, Asset.class);
-
                         flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
                     } else {
 
                         // any case, add this index to index[]
                         if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
                             flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
-//                        qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP + ".index", refInside, Asset.class);
                         }
                     }
-//                qt.errPrint("idFC addIndex", flowInfo, id_FC, refOP, id_OP, refOPInfo, wrdN);
                     qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
                     break;
 
@@ -210,11 +203,9 @@ public class DbUtils {
                     // case 1: if index size == 1, remove the whole id_OP
                     try {
                         if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1) {
-//                        flowInfo.getJSONObject("refOP").remove(refOP);
                             qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", refOP), Asset.class);
                         } else {
                             flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
-//                        qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP + ".index", refInside), Asset.class);
                             qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
                         }
                     } catch (Exception e) {
@@ -244,15 +235,12 @@ public class DbUtils {
                     JSONObject extraInfo = qt.getES("lSBOrder", qt.setESFilt("id_O", id_OP)).getJSONObject(0);
                     qt.upJson(refOPInfo, "wrddesc", extraInfo.getJSONObject("wrddesc"), "pic", extraInfo.getString("pic"),
                             "grp", extraInfo.getString("grp"), "priority", extraInfo.getInteger("priority"), "id_CB", extraInfo.getString("id_CB"));
-//                    flowInfo.getJSONObject("refOP").put(refOP, refOPInfo);
                         qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP, refOPInfo, Asset.class);
                     } else {
                         // any case, add this index to index[]
                         if (!flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").contains(refInside)) {
-//                        flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").add(refInside);
                             qt.pushMDContent(assetS.getId(), "flowControl.objData." + i + ".refOP." + refOP + ".index", refInside, Asset.class);
                         }
-//                    qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
                     }
                     break;
 
@@ -261,13 +249,11 @@ public class DbUtils {
                     // case 1: if index size == 1, remove the whole id_OP
                     try {
                         if (flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").size() == 1) {
-//                        flowInfo.getJSONObject("refOP").remove(refOP);
                             qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP", refOP), Asset.class);
 
                         } else {
                             flowInfo.getJSONObject("refOP").getJSONObject(refOP).getJSONArray("index").remove(refInside);
                             qt.pullMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP + ".index", refInside), Asset.class);
-//                        qt.setMDContent(assetS.getId(), qt.setJson("flowControl.objData." + i + ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
                     }
                 } catch (Exception e) {
                     // here it must have an error flowcontrol
@@ -311,7 +297,6 @@ public class DbUtils {
         if (id_CS != "" && assetCollection.getJSONObject(id_CS) == null) {
             assetCollection.put(id_CS, qt.toJson(qt.getConfig(id_CS, "a-auth", "flowControl")));
         }
-        qt.errPrint(".....", assetCollection, id_CS, id_CB, assetCollection.getJSONObject(id_CS));
         if (id_CS != "" && !assetCollection.getJSONObject(id_CS).getString("id").equals("none") && assetCollection.getJSONObject(id_CS).getJSONArray("indexList") == null) {
             assetCollection.getJSONObject(id_CS).put("indexList", new JSONArray());
         }
@@ -425,7 +410,6 @@ public class DbUtils {
         for (String compId : assetCollection.keySet()) {
             if (!assetCollection.getJSONObject(compId).getString("id").equals("none")) {
                 for (int i = 0; i < assetCollection.getJSONObject(compId).getJSONArray("indexList").size(); i++) {
-//                    String refOP = assetCollection.getJSONObject(compId).getJSONArray("refList").getString(i);
                     Integer index = assetCollection.getJSONObject(compId).getJSONArray("indexList").getInteger(i);
 
                     JSONObject update = new JSONObject();
@@ -435,16 +419,11 @@ public class DbUtils {
 
                     listBulk.add(qt.setJson("type", "update", "id", assetCollection.getJSONObject(compId).getString("id"), "update", update));
                 }
-//                qt.setMDContent(assetB.getId(), qt.setJson("flowControl.objData." + i+ ".refOP." + refOP, flowInfo.getJSONObject("refOP").getJSONObject(refOP)), Asset.class);
-//                qt.setMDContent(assetCollection.getJSONObject(compId).getString("id"), qt.setJson("flowControl",
-//                        assetCollection.getJSONObject(compId).getJSONObject("flowControl")), Asset.class);
             }
         }
         if (listBulk.size() > 0) {
             qt.setMDContentMany(listBulk, Asset.class);
         }
-
-
     }
 
 //Order init oItem, action, oStock if needed
@@ -1724,7 +1703,7 @@ public class DbUtils {
     //case7: text00s.objData.3.objText.$.ref / index[2,4]
 
     public JSONObject tempaCOUPA(JSONArray arrayData, JSONObject jsonVar, JSONObject jsonEs, String listType) {
-        jsonEs.remove("grpT");
+        jsonEs.remove("arrGrp");
         Init init = qt.getInitData("cn");
 
         JSONObject jsonCol = init.getCol().getJSONObject(listType);
@@ -2233,6 +2212,8 @@ public class DbUtils {
     }
 
     public JSONObject initOQc(JSONArray oItem) {
+
+        // wn2qtybreak, wn2qtyfixed
         JSONArray actionArray = new JSONArray();
         for (int i = 0; i < oItem.size(); i++) {
             this.initOQc(oItem.getJSONObject(i), actionArray, i);
@@ -2279,7 +2260,7 @@ public class DbUtils {
     }
 
     public JSONObject initOMoney() {
-        JSONObject oMoney = qt.setJson("grp", "1000", "grpB", "1000", "mnymade", 0.0, "mnynow", 0.0, "mnypaid", 0.0);
+        JSONObject oMoney = qt.setJson("grp", "1000", "grpB", "1000", "wn4mnymade", 0.0, "wn4mnynow", 0.0, "wn4mnypaid", 0.0);
         return oMoney;
     }
 
@@ -2409,16 +2390,34 @@ public class DbUtils {
         HashSet setAuthId = new HashSet();
         JSONArray arrayId_A = new JSONArray();
         JSONArray arrayId_AB = new JSONArray();
+        JSONObject jsonChgSupp = new JSONObject();
         for (int i = 0; i < arrayLsasset.size(); i++) {
             JSONObject jsonLsasset = arrayLsasset.getJSONObject(i);
+            String id_C = jsonLsasset.getJSONObject("tokData").getString("id_C");
             String id_A = jsonLsasset.getString("id_A");
+            String id_P = jsonLsasset.getString("id_P");
+            if (jsonChgSupp.getJSONObject(id_C) == null) {
+                Asset mes = qt.getConfig(id_C, "a-mes", "chgSupp");
+                if (!mes.getId().equals("none") && mes.getChgSupp().getJSONObject("objWare") != null) {
+                    JSONObject jsonWares = mes.getChgSupp().getJSONObject("objWare");
+                    jsonChgSupp.put(id_C, jsonWares);
+                    if (jsonWares.getJSONObject(id_P) != null) {
+                        jsonLsasset.putAll(jsonWares.getJSONObject(id_P));
+                        id_P = jsonWares.getJSONObject(id_P).getString("id_P");
+                    }
+                }
+            } else {
+                JSONObject jsonWares = jsonChgSupp.getJSONObject(id_C);
+                if (jsonWares.getJSONObject(id_P) != null) {
+                    jsonLsasset.putAll(jsonWares.getJSONObject(id_P));
+                    id_P = jsonWares.getJSONObject(id_P).getString("id_P");
+                }
+            }
             if (id_A != null && !id_A.equals("")) {
                 arrayId_A.add(id_A);
                 setId_A.add(id_A);
             }
-            setId_P.add(jsonLsasset.getString("id_P"));
-
-            String id_C = jsonLsasset.getJSONObject("tokData").getString("id_C");
+            setId_P.add(id_P);
             setAuthId.add(qt.getId_A(id_C, "a-auth"));
         }
         for (int i = 0; i < arrayLbasset.size(); i++) {
@@ -2719,7 +2718,20 @@ public class DbUtils {
                     System.out.println("arrayResultLocSpace=" + arrayResultLocSpace);
                     System.out.println("arrayResultSpaceQty=" + arrayResultSpaceQty);
 
-
+                    JSONObject jsonId_C;
+                    JSONObject qtySafex = prod.getJSONObject("qtySafex");
+                    if (qtySafex != null && qtySafex.getJSONObject(id_C) != null) {
+                        jsonId_C = qtySafex.getJSONObject(id_C);
+                        if (jsonId_C.getDouble("wn2qty") == null) {
+                            jsonId_C.put("wn2qty", 0.0);
+                        }
+                    } else if (qtySafex != null) {
+                        jsonId_C = qt.setJson("wn2qty", 0.0);
+                        qtySafex.put(id_C, jsonId_C);
+                    } else {
+                        jsonId_C = qt.setJson("wn2qty", 0.0);
+                        qtySafex = qt.setJson(id_C, jsonId_C);
+                    }
                     // what is else
                     if ("resv".equals(type) && aStock.getJSONObject("resvQty") != null &&
                             aStock.getJSONObject("resvQty").getDouble(id_O + "-" + index) != null) {
@@ -2761,7 +2773,8 @@ public class DbUtils {
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
                         }
-                    } else if ("proc".equals(type)) {
+                    }
+                    else if ("proc".equals(type)) {
                         if (DoubleUtils.doubleEquals(aStock.getDouble("wn2qty"), -wn2qty)) {
                             jsonBulkAsset = qt.setJson("type", "delete",
                                     "id", id_A);
@@ -2797,7 +2810,8 @@ public class DbUtils {
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
                         }
-                    } else if ("part".equals(type)) {
+                    }
+                    else if ("part".equals(type)) {
                         if (DoubleUtils.doubleEquals(aStock.getDouble("wn4price"), -wn4price)) {
                             jsonBulkAsset = qt.setJson("type", "delete",
                                     "id", id_A);
@@ -2833,8 +2847,8 @@ public class DbUtils {
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
                         }
-                    } else if ("safex".equals(type)) {
-                        JSONObject jsonId_C = prod.getJSONObject("qtySafex").getJSONObject(id_C);
+                    }
+                    else if ("safex".equals(type)) {
                         JSONArray arraySafex = jsonId_C.getJSONArray("objSafex");
                         JSONObject jsonResv = new JSONObject();
                         Double wn2sum = wn2qty;
@@ -2879,7 +2893,8 @@ public class DbUtils {
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
                         }
-                    } else {
+                    }
+                    else {
                         if (DoubleUtils.doubleEquals(aStock.getDouble("wn2qty"), -wn2qty)) {
                             jsonBulkAsset = qt.setJson("type", "delete",
                                     "id", id_A);
@@ -2903,6 +2918,10 @@ public class DbUtils {
                             jsonBulkLsasset = qt.setJson("type", "update",
                                     "id", jsonLsa.getString("id_ES"),
                                     "update", jsonLsa);
+
+                            jsonId_C.put("wn2qty", DoubleUtils.add(jsonId_C.getDouble("wn2qty"), wn2qty));
+                            JSONObject jsonUpdateProd = qt.setJson("qtySafex", qtySafex);
+                            qt.setMDContent(id_P, jsonUpdateProd, Prod.class);
                         }
                     }
                 }

@@ -89,6 +89,8 @@ public class OrderInfo implements Cloneable{
     private String ref;
     private String refB;
 
+    private String refDC;
+
     private String qr;
 
     /**

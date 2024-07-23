@@ -116,24 +116,7 @@ public class RedirectServiceImpl implements RedirectService {
         data.put("latitude",latitude);
         log.setData(data);
         log.setId_Us(id_Us);
-        //TODO ZJ 没必要 rdInfo,
 
-//        JSONObject rdInfo = qt.getRDSet(Ws.ws_mq_prefix, entries.get("id_U").toString());
-//        if (null != rdInfo && rdInfo.size()>0) {
-//            for (String cli : rdInfo.keySet()) {
-//                //TODO ZJ 没必要 rdInfo,
-//                JSONObject cliInfo = rdInfo.getJSONObject(cli);
-//                // 发送日志
-//                ws.sendMQ(cliInfo.getString("mqKey"),log);
-//
-//            }
-//            ws.sendWS(log);
-////            JSONObject cliInfo = rdInfo.getJSONObject("uniapp");
-////            // 发送日志
-////            ws.sendMQ(cliInfo.getString("mqKey"),log);
-//        } else {
-//            return retResult.ok(CodeEnum.OK.getCode(), "操作失败，用户离线");
-//        }
         ws.sendWS(log); // why offline = 有问题?
 
         return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
@@ -446,16 +429,14 @@ public class RedirectServiceImpl implements RedirectService {
 //
 
     @Override
-    public ApiResponse generateJoinCompCode(String id_U, String id_C, String mode, JSONObject data) {
+    public ApiResponse generateJoinCompCode(String id_U, String id_C, String grpU, String mode, JSONObject data) {
 
         /*
           1. 从mongodb获取到token，到redis中查找是否有该token
           2. 根据模式判断逻辑
           3. 并返回 url 拼接 key返回给前端
          */
-        // 1.
-//        Query compQ = new Query(new Criteria("_id").is(id_C));
-//        Comp comp = mongoTemplate.findOne(compQ, Comp.class);
+
         Comp comp = qt.getMDContent(id_C,"joinCode", Comp.class);
         if (ObjectUtils.isEmpty(comp)) {
             throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
@@ -463,9 +444,7 @@ public class RedirectServiceImpl implements RedirectService {
         if (ObjectUtils.isNotEmpty(comp.getJoinCode())) {
             if (StringUtils.isNotEmpty(comp.getJoinCode().getString("token"))) {
                 String code_token = comp.getJoinCode().getString("token");
-                System.out.println("code_token"+ code_token);
                 if (qt.hasRDKey(SCANCODE_JOINCOMP, code_token)) {
-                    System.out.println("code_token2"+ code_token);
                     String url = HTTP_JOINCOMP + code_token;
                     return retResult.ok(CodeEnum.OK.getCode(), url);
                 }
@@ -476,38 +455,25 @@ public class RedirectServiceImpl implements RedirectService {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id_C", id_C);
         jsonObject.put("create_id_U", id_U);
+        jsonObject.put("grpU", grpU);
         jsonObject.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
         String token = UUID19.uuid();
-        // 2.
         if ("frequency".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("count", data.getString("count"));
             jsonObject.put("used_count", "0");
-//            redisTemplate0.opsForHash().putAll(SCANCODE_JOINCOMP + token, jsonObject);
             qt.putRDHashMany(SCANCODE_JOINCOMP,token, jsonObject, 600000L);
         } else if ("time".equals(mode)) {
             jsonObject.put("mode", mode);
             jsonObject.put("endTimeSec", data.getString("endTimeSec"));
-//            redisTemplate0.opsForHash().putAll(SCANCODE_JOINCOMP + token, jsonObject);
-//            redisTemplate0.expire(SCANCODE_JOINCOMP + token, data.getInteger("endTimeSec"), TimeUnit.SECONDS);
             qt.putRDHashMany(SCANCODE_JOINCOMP,token, jsonObject, data.getLong("endTimeSec"));
 
-        } else if ("joinVisitor".equals(mode)) {
-            jsonObject.put("mode", mode);
-            jsonObject.put("grpU",data.getString("grpU"));
-            qt.putRDHashMany(SCANCODE_JOINCOMP,token, jsonObject, 6000L);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
 
-
-//        Update update = new Update();
-//        update.set("joinCode.token", token);
-//        update.set("joinCode.data", jsonObject);
-//        mongoTemplate.updateFirst(compQ, update, Comp.class);
         qt.setMDContent(id_C,qt.setJson("joinCode.token", token,"joinCode.data", jsonObject), Comp.class);
 
-        // 4.
         String url = HTTP_JOINCOMP + token;
         return retResult.ok(CodeEnum.OK.getCode(), url);
     }
@@ -517,11 +483,9 @@ public class RedirectServiceImpl implements RedirectService {
     @Transactional
     public ApiResponse scanJoinCompCode(String token, String join_user) {
 
-//        String keyName = SCANCODE_JOINCOMP + token;
-//        Boolean hasKey = redisTemplate0.hasKey(keyName);
         if (join_user == null || join_user.equals("5f28bf314f65cc7dc2e60262"))
         {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_IS_NO_FOUND.getCode(), null);
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_NEED_LOGIN.getCode(), null);
         }
 
         if (!qt.hasRDKey(SCANCODE_JOINCOMP, token)) {
@@ -530,19 +494,16 @@ public class RedirectServiceImpl implements RedirectService {
         }
 
         // 获取到整个hash
-        Map<Object, Object> entries = qt.getRDHashAll(SCANCODE_JOINCOMP, token);
+        JSONObject entries = qt.toJson(qt.getRDHashAll(SCANCODE_JOINCOMP, token));
 
         /**
          如果是 frequency 次数模式,则需要拿出已经使用的次数和当前要限制的次数对比
          如果是 time 时间模式
          */
-        if ("frequency".equals(entries.get("mode"))) {
+        if ("frequency".equals(entries.getString("mode"))) {
 
             // 限制的次数
-            int count = Integer.parseInt(entries.get("count").toString());
-
-            ApiResponse apiResponse = null;
-
+            int count = Integer.parseInt(entries.getString("count"));
             // 已使用次数
             int used_count = Integer.parseInt(entries.get("used_count").toString());
 
@@ -552,52 +513,32 @@ public class RedirectServiceImpl implements RedirectService {
              * 如果使用次数 < 次数，则累加 used_count
              */
             if (used_count +1 == count) {
-                System.out.println("进来 used_count +1 == count");
-                //try {
-                apiResponse = joinAddData(join_user, entries,0);
-//                redisTemplate0.delete(SCANCODE_JOINCOMP, token);
-                //} catch (RuntimeException e) {
-//                redisTemplate0.opsForHash().putAll(keyName, entries);
+                this.joinAddData(join_user, entries,0);
                 qt.delRD(SCANCODE_JOINCOMP, token);
                 qt.putRDHashMany(SCANCODE_JOINCOMP,token, qt.toJson(entries), 600000L);
-                //throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
-                //}
-                return apiResponse;
 
             } else if (used_count > count) {
-                System.out.println("进来 used_count > count");
-
-//                redisTemplate0.delete(keyName);
                 qt.delRD(SCANCODE_JOINCOMP, token);
-
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
                         JOIN_COMP_CODE_OVERDUE.getCode(), null);
             } else {
-                System.out.println("进来 used_count < count");
                 // 累加
-                //try {
-                apiResponse = joinAddData(join_user, entries,0);
-//                redisTemplate0.opsForHash().increment(keyName, "used_count", 1);
+                this.joinAddData(join_user, entries,0);
                 Integer inc = Integer.parseInt(entries.get("used_count").toString()) + 1;
                 qt.putRDHash(SCANCODE_JOINCOMP,token, "used_count", inc);
-                //} catch (RuntimeException e) {
-//                redisTemplate0.opsForHash().put(keyName, "used_count", String.valueOf(used_count));
-                //throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
-                //}
-                return apiResponse;
             }
         } else if ("time".equals(entries.get("mode"))) {
-            return joinAddData(join_user, entries,0);
+            this.joinAddData(join_user, entries,0);
         } else if ("joinVisitor".equals(entries.get("mode"))) {
-            return joinAddData(join_user, entries,1);
+            this.joinAddData(join_user, entries,1);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
-
+        return retResult.ok(CodeEnum.OK.getCode(), null);
     }
 
     @Override
-    public ApiResponse resetJoinCompCode(String id_U, String id_C) {
+    public ApiResponse resetJoinCompCode(String id_U, String id_C, String grpU) {
 
         /**
          * 1. 判断该公司是否存在
@@ -606,76 +547,66 @@ public class RedirectServiceImpl implements RedirectService {
          * 4. 并返回 url 拼接 key返回给前端
          */
 
-        // 1.
-//        Query compQ = new Query(new Criteria("_id").is(id_C));
-//        Comp comp = mongoTemplate.findOne(compQ, Comp.class);
-        Comp comp = qt.getMDContent(id_C,"joinCode", Comp.class);
+        // 1. 获取公司信息，判断是否存在
+        Comp comp = qt.getMDContent(id_C, "joinCode", Comp.class);
         if (ObjectUtils.isEmpty(comp)) {
-            throw new ErrorResponseException(HttpStatus.OK, CodeEnum.NOT_FOUND.getCode(), "");
-
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), "");
         }
 
-        // 2.
+        // 2. 提取并更新二维码数据
         JSONObject dataJson = comp.getJoinCode().getJSONObject("data");
         dataJson.put("create_time", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        dataJson.put("grpU", grpU);
 
         String token = UUID19.uuid();
-        String keyName = SCANCODE_JOINCOMP + token;
-
         String mode = dataJson.getString("mode");
 
+        // 根据不同的模式设置二维码数据的过期时间
         if ("frequency".equals(mode)) {
-//            redisTemplate0.opsForHash().putAll(keyName, dataJson);
-            qt.putRDHashMany(SCANCODE_JOINCOMP,token, dataJson, 600000L);
+            qt.putRDHashMany(SCANCODE_JOINCOMP, token, dataJson, 600000L);
         } else if ("time".equals(mode)) {
-            qt.putRDHashMany(SCANCODE_JOINCOMP,token, dataJson, dataJson.getLong("endTimeSec"));
-//            redisTemplate0.opsForHash().putAll(keyName, dataJson);
-//            redisTemplate0.expire(keyName, dataJson.getInteger("endTimeSec"), TimeUnit.SECONDS);
+            qt.putRDHashMany(SCANCODE_JOINCOMP, token, dataJson, dataJson.getLong("endTimeSec"));
         } else if ("joinVisitor".equals(mode)) {
-//            redisTemplate0.opsForHash().putAll(keyName, dataJson);
-            qt.putRDHashMany(SCANCODE_JOINCOMP,token, dataJson, 600000L);
+            qt.putRDHashMany(SCANCODE_JOINCOMP, token, dataJson, 600000L);
         } else {
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, CodeEnum.BAD_REQUEST.getCode(), null);
         }
 
-//        mongoTemplate.updateFirst(compQ, Update.update("joinCode.token",token), Comp.class);
-        qt.setMDContent(id_C,qt.setJson("joinCode.token",token), Comp.class);
+        // 更新公司信息的二维码数据
+        qt.setMDContent(id_C, qt.setJson("joinCode.token", token, "joinCode.data", dataJson), Comp.class);
 
-        // 3.
+        // 3. 删除旧的二维码token
         if (StringUtils.isNotEmpty(comp.getJoinCode().getString("token"))) {
             String code_token = comp.getJoinCode().getString("token");
-//            if (redisTemplate0.hasKey(SCANCODE_JOINCOMP + code_token)) {
             if (qt.hasRDKey(SCANCODE_JOINCOMP, code_token)) {
-//                redisTemplate0.delete(SCANCODE_JOINCOMP + code_token);
-                qt.delRD(SCANCODE_JOINCOMP , code_token);
+                qt.delRD(SCANCODE_JOINCOMP, code_token);
             }
         }
 
-
-        // 4.
+        // 4. 生成新的二维码URL并返回
         String url = HTTP_JOINCOMP + token;
         return retResult.ok(CodeEnum.OK.getCode(), url);
     }
 
-    private ApiResponse joinAddData(String join_user, Map <Object, Object> entries,int type) {
+    private void joinAddData(String join_user, JSONObject entries,int type) {
         /*
           1. 先检查公司是否存在
           2. 将用户加入公司
           type: 0 = joinComp, 1 = joinVisitor
          */
 
-        if (join_user.equals("5f28bf314f65cc7dc2e60262")) {
-            return retResult.ok(CodeEnum.OK.getCode(), null);
-        }
+            if (join_user.equals("5f28bf314f65cc7dc2e60262")) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_NEED_LOGIN.getCode(), null) ;
+            }
+            String id_C = entries.getString("id_C");
 
-            Comp compOne = qt.getMDContent(entries.get("id_C").toString(), "info", Comp.class);
+            Comp compOne = qt.getMDContent(id_C, "info", Comp.class);
             if (ObjectUtils.isEmpty(compOne)) {
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null) ;
             }
 
             // 判断用户存不存在
             User userJson = qt.getMDContent(join_user,"info", User.class);
-            //JSONObject userJson = (JSONObject) JSON.toJSON(mongoTemplate.findOne(userQ, User.class));
             User userOne = qt.getMDContent(join_user, "rolex.objComp", User.class);
 
             // 不存在则返回出去
@@ -683,7 +614,7 @@ public class RedirectServiceImpl implements RedirectService {
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_IS_NO_FOUND.getCode(), null);
             }
 
-            if (null != userOne.getRolex().getJSONObject("objComp").getJSONObject(entries.get("id_C").toString())) {
+            if (null != userOne.getRolex().getJSONObject("objComp").getJSONObject(id_C)) {
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_JOIN_IS_HAVE.getCode(), null);
             }
 
@@ -701,26 +632,31 @@ public class RedirectServiceImpl implements RedirectService {
             rolex.put("modAuth", modAuth);
             rolex.put("wrdNC", compOne.getInfo().getWrdN());
             rolex.put("picC", compOne.getInfo().getPic());
-            rolex.put("id_C", entries.get("id_C"));
+            rolex.put("id_C", id_C);
 
             if (type==0) {
-                rolex.put("grpU", "1009");
-            } else {
-                rolex.put("grpU", entries.get("grpU"));
+                rolex.put("grpU", entries.getString("grpU"));
+                if (!entries.getString("grpU").equals("1099") && !entries.getString("grpU").equals("1009") && !entries.getString("grpU").equals("1010"))
+                {
+                    qt.checkPowerUp(id_C, 1L, "lbuser");
+                }
+
+            }
+            else {
+                rolex.put("grpU", "1099");
             }
             rolex.put("dep", "1000");
 
-            qt.setMDContent(join_user, qt.setJson("rolex.objComp." + entries.get("id_C"), rolex, "info.def_C", entries.get("id_C")), User.class);
+            qt.setMDContent(join_user, qt.setJson("rolex.objComp." + id_C, rolex, "info.def_C", id_C), User.class);
 
-
-            JSONArray searchResult = qt.getES("lBUser", qt.setESFilt("id_CB", entries.get("id_C"), "id_U", join_user), 1);
+            JSONArray searchResult = qt.getES("lBUser", qt.setESFilt("id_CB", id_C, "id_U", join_user), 1);
 
             if (searchResult.size() > 0) {
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_JOIN_IS_HAVE.getCode(), null);
             }
 
-            lBUser addLBUser = new lBUser(join_user, entries.get("id_C").toString(), userJson.getInfo().getWrdN(),
-                    compOne.getInfo().getWrdN(), userJson.getInfo().getWrdNReal(), userJson.getInfo().getWrddesc(), "1009",
+            lBUser addLBUser = new lBUser(join_user, id_C, userJson.getInfo().getWrdN(),
+                    compOne.getInfo().getWrdN(), userJson.getInfo().getWrdNReal(), userJson.getInfo().getWrddesc(), entries.getString("grpU"),
                     userJson.getInfo().getMbn(), "", userJson.getInfo().getId_WX(), userJson.getInfo().getPic(), "1000");
 
             qt.addES("lbuser", qt.toJson(addLBUser));
@@ -728,29 +664,21 @@ public class RedirectServiceImpl implements RedirectService {
             //在这里发switchComp 的日志
             JSONObject data = qt.setJson("type", "addComp");
             LogFlow log = new LogFlow();
-            log.setSysLog(entries.get("id_C").toString(), "mut_switch", "加入新公司", 3, qt.setJson("cn", "系统权限更新"));
+            log.setSysLog(id_C, "mut_switch", "加入新公司", 3, qt.setJson("cn", "系统权限更新"));
             log.setId_Us(qt.setArray(join_user));
             log.setData(data);
             ws.sendWS(log);
-
-        
-        return retResult.ok(CodeEnum.OK.getCode(), null);
-
     }
 
 
     @Override
     public ApiResponse scanCode(String token,String listType , String id_U) {
 
-//        String keyName = SCANCODE_SHAREPROD + token;
-
-//        Boolean hasKey = redisTemplate0.hasKey(keyName);
         Boolean hasKey = qt.hasRDKey(SCANCODE_SHAREPROD, token);
         if (!hasKey) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 PROD_CODE_OVERDUE.getCode(),null);
         }
-//        Map<Object, Object> entries = redisTemplate0.opsForHash().entries(keyName);
         Map<Object, Object> entries = qt.getRDHashAll(SCANCODE_SHAREPROD,token);
         JSONObject prodJson = (JSONObject) JSONObject.toJSON(entries);
 
@@ -776,20 +704,8 @@ PROD_CODE_OVERDUE.getCode(),null);
 
                 ApiResponse apiResponse = null;
                 try {
-//                    if (listType.equals("lNUser")){
-//                        apiResponse = shareUserCode(id_U, prodJson);
-//                    }else if (listType.equals("lSProd")){
-//                        apiResponse = shareProdCode(id_U, prodJson);
-//                    }else if (listType.equals("lNComp")){
-//                        apiResponse = shareCompCode(id_U, prodJson);
-//                    }else if (listType.equals("lSOrder") || listType.equals("lBOrder")){
-//                        apiResponse = shareOrderCode(id_U, prodJson,listType);
-//                    }
-
-//                    redisTemplate0.delete(keyName);
                     qt.delRD(SCANCODE_SHAREPROD, token);
                 } catch (RuntimeException e) {
-//                    redisTemplate0.opsForHash().putAll(keyName, entries);
                     qt.putRDHashMany(SCANCODE_SHAREPROD, token,JSONObject.parseObject(JSON.toJSONString(entries)),60000L);
                     throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
                 }
@@ -798,7 +714,6 @@ PROD_CODE_OVERDUE.getCode(),null);
             } else if (used_count > count) {
                 System.out.println("进来 used_count > count");
 
-//                redisTemplate0.delete(keyName);
                 qt.delRD(SCANCODE_SHAREPROD, token);
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.
 PROD_CODE_OVERDUE.getCode(), null);
@@ -817,10 +732,8 @@ PROD_CODE_OVERDUE.getCode(), null);
                         apiResponse = shareOrderCode(id_U, prodJson,listType);
                     }
                     //使用次数+1
-//                    redisTemplate0.opsForHash().increment(keyName, "used_count", 1);
                     qt.incRD(SCANCODE_SHAREPROD, token,"used_count", 1);
                 } catch (RuntimeException e) {
-//                    redisTemplate0.opsForHash().put(keyName, "used_count", String.valueOf(used_count));
                     qt.putRDHash(SCANCODE_SHAREPROD, token,"used_count", String.valueOf(used_count));
                     throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
                 }

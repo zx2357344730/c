@@ -34,7 +34,7 @@ public class lBUser implements Serializable {
         this.id_U = id_U;
         this.id_CB = id_CB;
         this.wrdN = wrdN == null ? (JSONObject) wrdEmpty.clone(): wrdN;
-        this.wrdNCB = wrdNCB == null ? (JSONObject) wrdEmpty.clone(): wrdNCB;
+//        this.wrdNCB = wrdNCB == null ? (JSONObject) wrdEmpty.clone(): wrdNCB;
         this.wrdNReal = wrdNReal == null ? (JSONObject) wrdEmpty.clone(): wrdNReal;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
         this.mbn = mbn == null ? "": mbn;
@@ -55,7 +55,7 @@ public class lBUser implements Serializable {
 
     private JSONObject wrdN;
 
-    private JSONObject wrdNCB;
+//    private JSONObject wrdNCB;
 
     private String grpU;
 
@@ -69,9 +69,9 @@ public class lBUser implements Serializable {
 
     private JSONObject wrddesc;
 
-    private String id_APP;
+    private String id_APP; //try delete
 
-    private String id_WX;
+    private String id_WX; //try delete.. later
 
     private String cem;
 

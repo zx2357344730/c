@@ -2507,7 +2507,7 @@
 //    }
 //
 //    public JSONObject initOMoney() {
-//        JSONObject oMoney = qt.setJson("grp", "1000", "grpB", "1000", "mnymade", 0.0, "mnynow", 0.0, "mnypaid", 0.0);
+//        JSONObject oMoney = qt.setJson("grp", "1000", "grpB", "1000", "wn4mnymade", 0.0, "wn4mnynow", 0.0, "wn4mnypaid", 0.0);
 //        return oMoney;
 //    }
 //

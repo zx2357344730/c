@@ -173,7 +173,7 @@ public interface RedirectService {
      * @updated 2021/5/5 15:56
      * @return com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse generateJoinCompCode(String id_U, String id_C, String mode, JSONObject data);
+    ApiResponse generateJoinCompCode(String id_U, String id_C, String grpU, String mode, JSONObject data);
 
 
     /**
@@ -197,7 +197,7 @@ public interface RedirectService {
      * @updated 2021/5/7 12:00
      * @return com.cresign.tools.apires.ApiResponse
      */
-    ApiResponse resetJoinCompCode(String id_U, String id_C);
+    ApiResponse resetJoinCompCode(String id_U, String id_C, String grpU);
 
 
 }

@@ -365,7 +365,7 @@ public class ModuleServicelmpl implements ModuleService {
                 , lsprod.getJSONObject("wrddesc")==null?new JSONObject():lsprod.getJSONObject("wrddesc")
                 , getStrIsNull(lsprod.getString("grp")), getStrIsNull(lsprod.getString("grpB"))
                 , getStrIsNull(lsprod.getString("ref")), getStrIsNull(lsprod.getString("refB"))
-                , getStrIsNull(lsprod.getString("pic")),lsprod.getInteger("lDC")
+                , getStrIsNull(lsprod.getString("pic")),lsprod.getString("refDC")
                 , lsprod.getInteger("lUT")==null?0:lsprod.getInteger("lUT"));
         // 写入lbprod信息
 //        coupaUtil.updateES_lBProd(lbprod);

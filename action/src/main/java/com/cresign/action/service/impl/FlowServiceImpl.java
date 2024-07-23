@@ -1231,11 +1231,9 @@ public class FlowServiceImpl implements FlowService {
                 JSONObject upPrntsData = new JSONObject();
 
                 upPrntsData.put("id_O", upperOItem.getId_O());
+                upPrntsData.put("id_OP", upperAction.getId_OP());
                 upPrntsData.put("index", upperOItem.getIndex());
-
                 upPrntsData.put("wn2qtyneed", objOItem.getWn2qtyneed());
-
-
                 upPrntsData.put("wrdN", upperOItem.getWrdN());
                 objAction.getUpPrnts().add(upPrntsData);
 
@@ -1623,6 +1621,7 @@ public class FlowServiceImpl implements FlowService {
                         OrderAction subAction = objActionCollection.get(subId_O).get(subIndex);
                         JSONObject upPrntsData = new JSONObject();
                         upPrntsData.put("id_O", upperOItem.getId_O());
+                        upPrntsData.put("id_OP", upperAction.getId_OP());
                         upPrntsData.put("index", upperOItem.getIndex());
                         upPrntsData.put("wrdN", upperOItem.getWrdN());
                         upPrntsData.put("wn2qtyneed",  upperOItem.getWn2qtyneed() * unitAction.getSubParts().getJSONObject(i).getDouble("qtyEach"));
@@ -1634,6 +1633,7 @@ public class FlowServiceImpl implements FlowService {
                     JSONObject upPrntsData = new JSONObject();
                     upPrntsData.put("id_O", upperOItem.getId_O());
                     upPrntsData.put("index", upperOItem.getIndex());
+                    upPrntsData.put("id_OP", upperAction.getId_OP());
                     upPrntsData.put("wn2qtyneed", upperOItem.getWn2qtyneed() * partArray.getJSONObject(partIndex).getDouble("wn4qtyneed"));
                     upPrntsData.put("wrdN", upperOItem.getWrdN());
 
@@ -2104,7 +2104,6 @@ public class FlowServiceImpl implements FlowService {
             if (isRecurred.size() == 0 && isEmpty.size() == 0) {
                 JSONObject probKey = new JSONObject();
                 probKey.put("part.wn0Count", stat.getInteger("count"));
-//                coupaUtil.updateProdByListKeyVal(id_P, probKey);
                 qt.setMDContent(id_P,probKey,Prod.class);
             }
 
@@ -2130,7 +2129,6 @@ public class FlowServiceImpl implements FlowService {
                 ,JSONArray isRecurred,JSONArray isEmpty, JSONObject stat){
 
             // 根据父编号获取父产品信息
-//            Prod thisItem = coupaUtil.getProdByListKey(id_P, Arrays.asList("part","info"));
             Prod thisItem = qt.getMDContent(id_P, qt.strList("info", "part"), Prod.class);
             //System.out.println("thiItem"+thisItem);
 
@@ -2278,14 +2276,8 @@ public class FlowServiceImpl implements FlowService {
                 }
                 stat.put("count", stat.getInteger("count") + 1);
 
-
-//                JSONArray partDataES = dbUtils.getEsKey("id_P", thisItem.getString("id_P"), "id_CB", id_C, "lBProd");
-
                 JSONArray partDataES = qt.getES("lBProd", qt.setESFilt("id_P", thisItem.getString("id_P"), "id_CB", id_C));
 
-                //System.out.println(partDataES);
-//            Prod thisProd = coupaUtil.getProdByListKey(
-//                    thisItem.getString("id_P"), Arrays.asList("part","info"));
                 Prod thisProd = qt.getMDContent(thisItem.getString("id_P"), qt.strList("info", "part"), Prod.class);
 
                 int bmdptValue =0;
@@ -2298,7 +2290,6 @@ public class FlowServiceImpl implements FlowService {
                     //System.out.println("prodInfo");
                     //System.out.println(prodInfo);
                     JSONObject part = thisProd.getPart();
-//                Comp compById = coupaUtil.getCompByListKey(id_C, Arrays.asList("info"));
                     Comp compById = qt.getMDContent(id_C, "info", Comp.class);
 
                     if (null == compById || null == compById.getInfo() || !prodInfo.getId_C().equals(id_C)) {

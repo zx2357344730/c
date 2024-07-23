@@ -72,7 +72,7 @@ public class GetUserIdByToken {
             throw new ErrorResponseException(((ErrorResponseException) e).getStatus(),
                     ((ErrorResponseException) e).getCode(), ((ErrorResponseException) e).getDes());
         }
-        e.printStackTrace();
+//        e.printStackTrace();
         StringWriter writer = new StringWriter();
         PrintWriter printWriter= new PrintWriter(writer);
         e.printStackTrace(printWriter);

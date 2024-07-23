@@ -8,6 +8,7 @@ import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.po.*;
+import com.google.gson.JsonArray;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.lang.StringUtils;
@@ -42,6 +43,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Future;
@@ -218,49 +220,59 @@ public class Qt {
         }
         return result;
     }
-
-    public InitJava getInitData()
-    {
-        if (initData.get("cn_java") == null)
-        {
+    // 获取特定语言的初始化数据
+    public InitJava getInitData() {
+        // 检查是否存在特定语言的初始化数据
+        if (initData.get("cn_java") == null) {
+            // 如果不存在，则从配置中获取并转换为InitJava对象
             return this.jsonTo(this.setupInit("cn_java"), InitJava.class);
         } else {
+            // 如果存在，则检查版本是否一致
             String ver = this.getRDSetStr("InitData", "cn_java");
-
-            if (ver.equals(initData.getJSONObject("cn_java").getInteger("ver").toString()))
-            {
+            if (ver.equals(initData.getJSONObject("cn_java").getInteger("ver").toString())) {
+                // 如果版本一致，直接返回现有数据
                 return this.jsonTo(initData.get("cn_java"), InitJava.class);
             } else {
+                // 如果版本不一致，重新获取并转换为InitJava对象
                 return this.jsonTo(this.setupInit("cn_java"), InitJava.class);
             }
         }
     }
 
-    public JSONObject setupInit(String setKey) // key = initJava etc idJson's key, setKey = cn_java etc lang
-    {
-        Info resultObj = this.getMDContent(idJson.getString(setKey), Arrays.asList("tvs","jsonInfo"), Info.class);
+    // 设置初始化数据
+    private JSONObject setupInit(String setKey) { // setKey = cn_java etc lang
+        // 从配置中获取内容并转换为Info对象
+        Info resultObj = this.getMDContent(idJson.getString(setKey), Arrays.asList("tvs", "jsonInfo"), Info.class);
+        // 将版本信息添加到JSON对象中
         resultObj.getJsonInfo().getJSONObject("objData").put("ver", resultObj.getTvs());
+        // 将初始化数据存储到initData中
         initData.put(setKey, resultObj.getJsonInfo().getJSONObject("objData"));
-        this.setRDSet("InitData", setKey, resultObj.getTvs(),7776000L);
+        // 设置Redis数据
+        this.setRDSet("InitData", setKey, resultObj.getTvs(), 7776000L);
+        // 返回初始化数据
         return resultObj.getJsonInfo().getJSONObject("objData");
     }
 
-    public Init getInitData(String lang)
-    {
-        if (initData.get(lang) == null)
-        {
+    // 获取特定语言的初始化数据
+    public Init getInitData(String lang) {
+        // 检查是否存在特定语言的初始化数据
+        if (initData.get(lang) == null) {
+            // 如果不存在，则从配置中获取并转换为Init对象
             return this.jsonTo(this.setupInit(lang), Init.class);
         } else {
+            // 如果存在，则检查版本是否一致
             String ver = this.getRDSetStr("InitData", lang);
-
-            if (ver.equals(initData.getJSONObject(lang).getInteger("ver").toString()))
-            {
+            if (ver.equals(initData.getJSONObject(lang).getInteger("ver").toString())) {
+                // 如果版本一致，直接返回现有数据
                 return this.jsonTo(initData.get(lang), Init.class);
             } else {
+                // 如果版本不一致，重新获取并转换为Init对象
                 return this.jsonTo(this.setupInit(lang), Init.class);
             }
         }
     }
+
+
 
 
 //    public Init getInitData(String lang)
@@ -672,38 +684,38 @@ public class Qt {
 
     public void errPrint(String title, Exception e, Object... vars)
     {
-        try {
-            System.out.println("****[" + title + "]****");
-            for (Object item : vars) {
-                if (item == null) {
-                    System.out.println("....null");
-                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
-                    System.out.println(this.toJArray(item));
-                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
-                        item.getClass().toString().startsWith("class java.util")) {
-
-                    System.out.println(this.toJson(item));
-
-                    JSONObject looper = this.toJson(item);
-                    looper.forEach((k, v) ->{
-                        System.out.println(k + ":" + v);
-                    });
-                    System.out.println("----------------------------------------");
-
-
-                } else {
-                    System.out.println(item);
-                }
-            }
-            System.out.println("*****[End]*****");
-
-            if (e != null)
-                e.printStackTrace();
-        }
-        catch (Exception ex)
-        {
-            System.out.println("****" + title + " is NULL ****");
-        }
+//        try {
+//            System.out.println("****[" + title + "]****");
+//            for (Object item : vars) {
+//                if (item == null) {
+//                    System.out.println("....null");
+//                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
+//                    System.out.println(this.toJArray(item));
+//                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
+//                        item.getClass().toString().startsWith("class java.util")) {
+//
+//                    System.out.println(this.toJson(item));
+//
+//                    JSONObject looper = this.toJson(item);
+//                    looper.forEach((k, v) ->{
+//                        System.out.println(k + ":" + v);
+//                    });
+//                    System.out.println("----------------------------------------");
+//
+//
+//                } else {
+//                    System.out.println(item);
+//                }
+//            }
+//            System.out.println("*****[End]*****");
+//
+//            if (e != null)
+//                e.printStackTrace();
+//        }
+//        catch (Exception ex)
+//        {
+//            System.out.println("****" + title + " is NULL ****");
+//        }
     }
 
     public void errPrint(String title, Object... vars)
@@ -942,34 +954,36 @@ public class Qt {
     public void setMDContentMany(List<JSONObject> listBulk, Class<?> classType) {
 //        System.out.println("listBulk=" + listBulk);
         try {
-            BulkOperations bulk = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, classType);
-            listBulk.forEach(jsonBulk -> {
-                String type = jsonBulk.getString("type");
-                if (type.equals("insert")) {
-                    bulk.insert(JSON.parseObject(jsonBulk.getJSONObject("insert").toJSONString(), classType));
-                } else if (type.equals("update")) {
-                    Query query = new Query(new Criteria("_id").is(jsonBulk.getString("id")));
+            if(listBulk.size() > 0) {
+                BulkOperations bulk = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, classType);
+                listBulk.forEach(jsonBulk -> {
+                    String type = jsonBulk.getString("type");
+                    if (type.equals("insert")) {
+                        bulk.insert(JSON.parseObject(jsonBulk.getJSONObject("insert").toJSONString(), classType));
+                    } else if (type.equals("update")) {
+                        Query query = new Query(new Criteria("_id").is(jsonBulk.getString("id")));
 
-                    Update update = new Update();
-                    for (String key : jsonBulk.getJSONObject("update").keySet())
-                    {
-                        Object val = jsonBulk.getJSONObject("update").get(key);
-                        if (val == null) {
-                            update.unset(key);
-                        } else {
-                            update.set(key, val);
+                        Update update = new Update();
+                        for (String key : jsonBulk.getJSONObject("update").keySet()) {
+                            Object val = jsonBulk.getJSONObject("update").get(key);
+                            if (val == null) {
+                                update.unset(key);
+                            } else {
+                                update.set(key, val);
+                            }
                         }
-                    }
-                    update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-                    update.inc("tvs", 1);
-                    bulk.updateOne(query, update);
+                        update.set("info.tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+                        update.inc("tvs", 1);
+                        bulk.updateOne(query, update);
 
-                } if (type.equals("delete")) {
-                    Query query = new Query(new Criteria("_id").is(jsonBulk.getString("id")));
-                    bulk.remove(query);
-                }
-            });
-            BulkWriteResult execute = bulk.execute();
+                    }
+                    if (type.equals("delete")) {
+                        Query query = new Query(new Criteria("_id").is(jsonBulk.getString("id")));
+                        bulk.remove(query);
+                    }
+                });
+                bulk.execute();
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.SAVE_DB_ERROR.getCode(), e.toString());
@@ -1765,22 +1779,23 @@ public class Qt {
 
     public void setESMany(String logType, List<JSONObject> listBulk) {
         try {
-            System.out.println("listBulk=" + listBulk);
-            BulkRequest bulk = new BulkRequest();
-            listBulk.forEach(jsonBulk ->{
-                String type = jsonBulk.getString("type");
-                String logT = jsonBulk.getString("logType") == null ? logType : jsonBulk.getString("logType");
-                if (type.equals("insert")) {
-                    bulk.add(new IndexRequest(logT).source(jsonBulk.getJSONObject("insert")));
-                } else if (type.equals("update")) {
-                    JSONObject jsonEs = jsonBulk.getJSONObject("update");
-                    jsonEs.remove("id_ES");
-                    bulk.add(new UpdateRequest(logT, jsonBulk.getString("id")).doc(jsonEs, XContentType.JSON));
-                } else if (type.equals("delete")) {
-                    bulk.add(new DeleteRequest(logT, jsonBulk.getString("id")));
-                }
-            });
-            if (listBulk.size() > 0) {
+            if(listBulk.size() > 0)
+            {
+                System.out.println("listBulk=" + listBulk);
+                BulkRequest bulk = new BulkRequest();
+                listBulk.forEach(jsonBulk -> {
+                    String type = jsonBulk.getString("type");
+                    String logT = jsonBulk.getString("logType") == null ? logType : jsonBulk.getString("logType");
+                    if (type.equals("insert")) {
+                        bulk.add(new IndexRequest(logT).source(jsonBulk.getJSONObject("insert")));
+                    } else if (type.equals("update")) {
+                        JSONObject jsonEs = jsonBulk.getJSONObject("update");
+                        jsonEs.remove("id_ES");
+                        bulk.add(new UpdateRequest(logT, jsonBulk.getString("id")).doc(jsonEs, XContentType.JSON));
+                    } else if (type.equals("delete")) {
+                        bulk.add(new DeleteRequest(logT, jsonBulk.getString("id")));
+                    }
+                });
                 client.bulk(bulk, RequestOptions.DEFAULT);
             }
         } catch (IOException e) {
@@ -1945,6 +1960,44 @@ public class Qt {
 //            incMDContent(asset.getId(), jsonUpdate, Asset.class);
             incMDContent(asset.getId(), setJson("powerup.capacity.used", fileSize), Asset.class);
 
+        }
+    }
+
+    //capacity,sprod,aiToken
+    public void checkPowerUp(String id_C, Long size, String type) {
+        Asset asset = getConfig(id_C, "a-core", Arrays.asList("powerup", "view"));
+        System.out.println("id_C=" + id_C);
+        System.out.println("asset=" + asset);
+        JSONObject powerCount = this.getInitData().getPowerup();
+        if (powerCount.getLong(type) == null)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.POWER_NOT_ENOUGH.getCode(), "");
+        }
+        if (!asset.getId().equals("none")) {
+            JSONObject jsonUpdate;
+            JSONObject powerup;
+            if (asset.getPowerup() == null) {
+                JSONObject jsonData = this.setJson("total", powerCount.getLong(type), "used", size, "status", true);
+                powerup = this.setJson(type, jsonData);
+                JSONArray view = asset.getView();
+                view.add("powerup");
+                jsonUpdate = this.setJson("view", view, "powerup", powerup);
+            } else {
+                powerup = asset.getPowerup();
+                if (powerup.getJSONObject(type) == null) {
+                    JSONObject jsonData = this.setJson("total", powerCount.getLong(type), "used", size, "status", true);
+                    powerup.put(type, jsonData);
+                } else {
+                    JSONObject jsonData = powerup.getJSONObject(type);
+                    //超额
+                    if (size > 0 && size + jsonData.getLong("used") > jsonData.getLong("total")) {
+                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.POWER_NOT_ENOUGH.getCode(), "");
+                    }
+                    jsonData.put("used", jsonData.getLong("used") + size);
+                }
+                jsonUpdate = this.setJson("powerup", powerup);
+            }
+            this.setMDContent(asset.getId(), jsonUpdate, Asset.class);
         }
     }
 
@@ -2355,7 +2408,7 @@ public class Qt {
         // 2. "order.oItem.objItem[4].lST"
         // 2. XXXXX "order.oItem.objItem[].lST"
         // 3. ["info.abc", "order.oItem.objItem"]
-        
+
         JSONArray arrayResult = new JSONArray();
         for (int i = 0; i < arrayField.size(); i++) {
             String field = arrayField.getString(i);

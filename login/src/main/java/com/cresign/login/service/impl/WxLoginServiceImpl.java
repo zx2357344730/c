@@ -27,7 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,9 +40,6 @@ import java.util.Map;
 @RefreshScope
 public class WxLoginServiceImpl implements WxLoginService {
 
-
-    @Autowired
-    private HttpServletRequest request;
 
     @Autowired
     private LoginResult loginResult;
@@ -216,7 +212,7 @@ public class WxLoginServiceImpl implements WxLoginService {
         //获取encryptedData
         String encryptedData = reqJson.getString("encryptedData");
 
-        Boolean isNew = reqJson.getBoolean("isNew");
+//        Boolean isNew = true;
 
         // 登录凭证不能为空
         if (code == null || code.length() == 0) {
@@ -225,13 +221,13 @@ public class WxLoginServiceImpl implements WxLoginService {
         // 1、向微信服务器 使用登录凭证 code 获取 session_key 和 openid
         //
         // 请求参数
-        String secret = wxSpSecret;
-        String appid = wxSpAppId;
-        if  (isNew != null && isNew)
-        {
-            secret = wxSpSecretNew;
-            appid = wxSpAppIdNew;
-        }
+//        String secret = wxSpSecret;
+//        String appid = wxSpAppId;
+//        if  (isNew != null && isNew)
+//        {
+        String secret = wxSpSecretNew;
+        String  appid = wxSpAppIdNew;
+//        }
         String params = "appid=" + appid + "&secret=" + secret + "&js_code=" + code + "&grant_type="
                 + grant_type;
         // 发送请求
@@ -320,9 +316,9 @@ public class WxLoginServiceImpl implements WxLoginService {
                     JSONObject tokData = qt.setJson("grpU", "1000", "id_U", user.getId(), "id_C", "61a5940b01902729e2576ead", "wrdNReal", user.getInfo().getWrdNReal(),
                             "pic", user.getInfo().getPic());
                     LogFlow logUsage = new LogFlow();
-                    logUsage.setUsageLog(tokData, "enquiry", tokData.getJSONObject("wrdNReal").getString("cn") + "想了解产品[" + user.getInfo().getMbn() + "]",
+                    logUsage.setUsageLog(tokData, "enquiry", tokData.getJSONObject("wrdNReal").getString("cn") + "想了解AEN [" + user.getInfo().getMbn() + "]",
                             5, "", "", user.getInfo().getWrdNReal(),
-                            "", "");
+                            "", "了解AEN");
 
                     ws.sendESOnly(logUsage);
                 }
@@ -538,8 +534,9 @@ WX_NOT_BIND.getCode(), null);
         JSONObject wrdNMap = new JSONObject();
         wrdNMap.put("cn", nickName);
         JSONObject wrdNReal = new JSONObject();
-        wrdNReal.put("cn", realName);
-        User user = new User();
+
+        wrdNReal.put("cn", realName.equals("") ? nickName : realName);
+        User user;
 
         JSONArray es = qt.getES("lNUser", qt.setESFilt("id_WX", "exact", unionId));
         if (null != es && es.size() > 0) {
@@ -574,9 +571,9 @@ WX_NOT_BIND.getCode(), null);
             JSONObject tokData = qt.setJson("grpU", "1000", "id_U", user.getId(), "id_C", "61a5940b01902729e2576ead", "wrdNReal", user.getInfo().getWrdNReal(),
                     "pic", user.getInfo().getPic());
             LogFlow logUsage = new LogFlow();
-            logUsage.setUsageLog(tokData, "enquiry", tokData.getJSONObject("wrdNReal").getString("cn") + "想了解产品[" + phoneNumber + "]",
+            logUsage.setUsageLog(tokData, "enquiry", tokData.getJSONObject("wrdNReal").getString("cn") + "想了解AEN [" + phoneNumber + "]",
                     5, "", "", user.getInfo().getWrdNReal(),
-                    "", "");
+                    "", "了解AEN");
 
             ws.sendESOnly(logUsage);
         }

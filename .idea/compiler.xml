@@ -20,6 +20,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="action" options="-parameters" />
       <module name="ccpl" options="-parameters" />
+      <module name="ccpl2" options="-parameters" />
       <module name="chat" options="-parameters" />
       <module name="cresign_java" options="" />
       <module name="gateway" options="-parameters" />

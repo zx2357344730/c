@@ -228,7 +228,9 @@ public class ActionServiceImpl implements ActionService {
                 orderAction.getId_OP(), id_O,index,orderOItem.getId_CB(),orderOItem.getId_C(), "",tokData.getString("dep"),message,3,orderOItem.getWrdN(),tokData.getJSONObject("wrdNU"));
 
         logL.setLogData_action(orderAction,orderOItem);
-        logL.getData().put("bcdStatus", -1 * bcdStatus);
+        logL.setActionTime(DateUtils.getTimeStamp(), 0L, "repush");
+
+        logL.getData().put("bcdStatus", 0);
         logL.getData().put("wn0prog", 0);
 
             ws.sendWS(logL);
@@ -679,6 +681,7 @@ public class ActionServiceImpl implements ActionService {
 
                 OrderOItem orderOItem = qt.jsonTo(actData.get("orderOItem"), OrderOItem.class);
                 OrderAction orderAction = qt.jsonTo(actData.get("orderAction"), OrderAction.class);
+                JSONObject orderInfo = actData.getJSONObject("info");
 
 
                  // [E1323] xxxx产品 - 工序 " " 拼接zcndesc
@@ -955,20 +958,37 @@ public class ActionServiceImpl implements ActionService {
                     logL.setLogData_action(orderAction, orderOItem);
                     logL.getData().put("id_Us",actData.getJSONArray("id_Us"));
 
+
                     if (duraType.equals("start") || duraType.equals("resume")) {
                         logL.setActionTime(DateUtils.getTimeStamp(), 0L, duraType);
+                        //if resume, check previous => wntWait / wntProb
+                        //if start, check previous(0) pushed time => wntWait
+
                     } else if (duraType.equals("end") || duraType.equals("pause") || duraType.equals("allEnd")) {
                         logL.setActionTime(0L, DateUtils.getTimeStamp(), duraType);
+                        //if pause, check previous => wntDur
+                        //if allEnd, check previous => wntDur
+
                     }
 
                     qt.errPrint("logL is", logL);
                     ws.sendWS(logL);
                 }
 
+                long time = 0;
+
                 // setup User's Fav card
                 if (duraType.equals("start"))
+                {
                     this.setFavRecent(tokData.getString("id_C"), tokData.getString("id_U"), id_O, index, id_FC, id_FS,
                             orderOItem.getWrdN(), orderOItem.getPic());
+
+                    LogFlow logSale = new LogFlow();
+                    logSale.setSaleLog(tokData, orderInfo.getString("id_CB"), "start", "开始执行", 4, id_O, id_O, "",
+                            orderInfo.getJSONObject("wrdN"), orderOItem.getGrpB());
+                    ws.sendWS(logSale);
+                }
+
                 else if (duraType.equals("end")) {
                     this.removeFavRecent(qt.setArray(tokData.getString("id_U")), id_O, index);
                     orderAction.getId_Us().remove(tokData.getString("id_U"));
@@ -978,12 +998,17 @@ public class ActionServiceImpl implements ActionService {
                     this.removeFavRecent(orderAction.getId_Us(), id_O, index);
                     orderAction.setId_Us(new JSONArray());
 
+                    LogFlow logSale = new LogFlow();
+                    logSale.setSaleLog(tokData, orderInfo.getString("id_CB"), "finish", "执行完毕", 4, id_O, id_O, "",
+                            orderInfo.getJSONObject("wrdN"), orderOItem.getGrpB());
+                    ws.sendWS(logSale);
+
                     LogFlow logDURA = new LogFlow("action", id_FC,
                         id_FS, "userStat", tokData.getString("id_U"), tokData.getString("grpU"), orderOItem.getId_P(), orderOItem.getGrpB(), orderOItem.getGrp(),
                         orderAction.getId_OP(), id_O, index, compId, orderOItem.getId_C(), "", tokData.getString("dep"), "", 3, orderOItem.getWrdN(), tokData.getJSONObject("wrdNU"));
 
                     // I am just fixing this by putting the "finish" time into calculation and ignoring the last log
-                    this.sumDura(id_O, index, logDURA);
+                    time = this.sumDura(id_O, index, logDURA);
                 }
 
 
@@ -1003,6 +1028,7 @@ public class ActionServiceImpl implements ActionService {
                         }
                             else {
                             oDate.put("taFin", dateNow);
+                            oDate.put("wntDur", time);
                             listCol.put("taFin", dateNow);
                         }
                         mapKey.put("oDate",oDate);
@@ -1270,7 +1296,7 @@ public class ActionServiceImpl implements ActionService {
         }
 
 
-    private void sumDura(String id_O, Integer index, LogFlow log) {
+    private long sumDura(String id_O, Integer index, LogFlow log) {
 
         JSONObject filt1 = qt.setJson("filtKey", "id_O", "method", "eq", "filtVal", id_O);
         JSONObject filt2 = qt.setJson("filtKey", "index", "method", "exact", "filtVal", index);
@@ -1309,6 +1335,7 @@ public class ActionServiceImpl implements ActionService {
             log.setData(qt.setJson("wntDur", ms));
             log.setZcndesc("任务总用时" + time);
             ws.sendWS(log);
+            return ms;
         } catch (Exception e)
         {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ES_GET_DATA_IS_NULL.getCode(), "没有关联订单");
@@ -1616,18 +1643,14 @@ public class ActionServiceImpl implements ActionService {
         JSONArray orderList = orderMainData.getCasItemx().getJSONObject(myCompId).getJSONArray("objOrder");
         JSONObject assetCollection = new JSONObject();
 
-
         for (Integer n = 0; n < orderList.size(); n++) {
 
             Order thisOrder = qt.getMDContent(orderList.getJSONObject(n).getString("id_O"), Arrays.asList( "info","oItem", "action"), Order.class);
-
             if (thisOrder != null) {
                 orderDataList.add(thisOrder);
                 if (thisOrder.getInfo().getLST() != 7) {
                     throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_NEED_FINAL.getCode(), "");
                 }
-            } else {
-                orderList.remove(n);
             }
         }
         // After checked all lST, they are all 7 and ready to push
@@ -1695,7 +1718,7 @@ public class ActionServiceImpl implements ActionService {
                             unitAction.setBcdStatus(0);
                             unitAction.setBisPush(1);
 
-                            qt.setMDContent(orderList.getJSONObject(i).getString("id_O"), qt.setJson("action.objAction." + j, unitAction), Order.class);
+                            qt.setMDContent(orderData.getId(), qt.setJson("action.objAction." + j, unitAction), Order.class);
 
                             JSONObject fcCheck = grpBGroup.getJSONObject(unitOItem.getGrpB());
                             JSONObject fsCheck = grpGroup.getJSONObject(unitOItem.getGrp());
@@ -2649,7 +2672,9 @@ public class ActionServiceImpl implements ActionService {
         // if I am both buyer and seller, internal order, whatever side I am, set it to both final
         if (order.getInfo().getId_C().equals(id_C) && order.getInfo().getId_C().equals(order.getInfo().getId_CB())) { //Check C== CB
             order.getInfo().setLST(7);
-        } // I am id_CB Buyer
+            mdJson = qt.setJson("info.lST", order.getInfo().getLST(), "info.id_UCB", tokData.getString("id_U"));
+
+        }// I am id_CB Buyer
         else if (id_C.equals(order.getInfo().getId_CB())) { //if Seller is REAL
             if (qt.judgeComp(id_C, order.getInfo().getId_C()) == 1) {
                 if (order.getInfo().getLST() == 6) { // if they confirmed, set to both confirm
@@ -2694,6 +2719,11 @@ public class ActionServiceImpl implements ActionService {
         logUsage.setUsageLog(tokData, "confirm", desc, 2, id_O, listType,
                 qt.setJson("cn", desc), listType == "lBOrder" ? order.getInfo().getGrpB(): order.getInfo().getGrp(), "");
         ws.sendESOnly(logUsage);
+
+        LogFlow logSale = new LogFlow();
+        logSale.setSaleLog(tokData, order.getInfo().getId_CB(), "confirm", desc, 4, id_O, id_O,  listType,
+                order.getInfo().getWrdN(), listType == "lBOrder" ? order.getInfo().getGrpB(): order.getInfo().getGrp());
+        ws.sendWS(logSale);
 
         return order.getInfo().getLST();
     }

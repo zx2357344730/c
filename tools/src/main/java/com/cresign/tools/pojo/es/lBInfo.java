@@ -23,13 +23,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "lBInfo")
 public class lBInfo {
 
-    public lBInfo(String id_P, String id_C, String id_CP, String id_CB, JSONObject wrdN, JSONObject wrddesc,
-                  String grp, String grpB, String ref, String refB, String pic, Integer lDC) {
+    public lBInfo(String id_I, String id_C, String id_CP, String id_CB, JSONObject wrdN, JSONObject wrddesc,
+                  String grp, String grpB, String ref, String refB, String pic, String refDC) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn","");
 
-        this.id_P = id_P;
+//        this.id_P = id_P;
+        this.id_I = id_I;
         this.id_C = id_C;
         this.id_CP = id_CP == null || id_CP.equals("") ? id_C: id_CP;
         this.id_CB = id_CB;
@@ -40,12 +41,13 @@ public class lBInfo {
         this.ref = ref == null ? "": ref;
         this.refB = refB == null ? "": refB;
         this.pic = pic  == null ? "": pic;
-//        this.lDC = lDC  == null ? 0: lDC;
+        this.refDC = refDC  == null ? "": refDC;
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
     private String id_P;
+    private String id_I;
 
     private String id_C;
 
@@ -53,7 +55,8 @@ public class lBInfo {
 
     private String id_CP;
 
-    private String id_PP;
+//    private String id_PP
+    private String id_IP;;
 
     private JSONObject wrdN;
 
@@ -65,7 +68,7 @@ public class lBInfo {
 
     private String grpB;
 
-    private JSONArray grpT = new JSONArray();
+    private JSONArray arrGrp = new JSONArray();
 
     private String ref;
 
@@ -73,7 +76,7 @@ public class lBInfo {
 
     private String pic;
 
-//    private Integer lDC;
+    private String refDC;
 
     private String tmd;
 
