@@ -879,7 +879,6 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             JSONObject timeHandleInfo = timeZjService.timeHandle(task, hTeStart, grpB, dep, id_O, index, 1
                     , random, isCanOnlyOnceTimeEmptyInsert, teDate, timeConflictCopy
                     , isGetTaskPattern, sho,isSaveAppearEmpty,csSta
-//                    ,false
                     ,randomAll,xbAndSbAll,actionIdO,objTaskAll,recordId_OIndexState,storageTaskWhereTime
                     ,allImageTotalTime,allImageTasks,onlyFirstTimeStamp,newestLastCurrentTimestamp
                     ,onlyRefState,recordNoOperation,clearStatus,thisInfo,allImageTeDate,false,depAllTime);
@@ -930,7 +929,6 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
         JSONObject result = new JSONObject();
         // 创建存储被冲突的任务当前处理下标
         int conflictInd = operateIndex;
-//        int conflictInd = operateIndex;
         // 存储问题状态参数: isProblemState = 0 正常、isPd = 1 订单编号为空、isPd = 2 主生产部件
         int isProblemState = 0;
         boolean isEndList = false;
@@ -1141,9 +1139,7 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                         JSONObject emptyInsertAndEmptyInsertConflictHandleInfo
                                 = timeZjServiceEmptyInsert.emptyInsertAndEmptyInsertConflictHandle(conflictTaskCopy, taskOne
                                 , taskTwo, tasks, j, conflictInd, zon, conflict,teDateTask,random,dep,grpB,oDates
-                                ,dgInfo,taskTimeKeyFirstVal,timeConflictCopy
-                                ,isGetTaskPattern
-//                            ,1
+                                ,dgInfo,taskTimeKeyFirstVal,timeConflictCopy,isGetTaskPattern
                                 ,sho,csSta,randomAll,xbAndSbAll,actionIdO,objTaskAll
                                 ,recordId_OIndexState,storageTaskWhereTime,allImageTotalTime,allImageTasks
                                 ,onlyFirstTimeStamp,newestLastCurrentTimestamp,onlyRefState,recordNoOperation

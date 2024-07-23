@@ -201,6 +201,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         // before getting so many id_A, get myComp id_A first for future use
         Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
         List<Order> addOrder = new ArrayList<>();
+        Map<String,Asset> assetMap = new HashMap<>();
         // 遍历键，并创建采购单
         for (String thisOrderId : actionCollection) {
 
@@ -278,6 +279,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             }
 //            System.out.println(JSON.toJSONString(oDateObj));
             JSONObject oDateIsNull = new JSONObject();
+            JSONObject queryId = new JSONObject();
             for (String layer : oDateObj.keySet()) {
                 JSONObject prodInfo = oDateObj.getJSONObject(layer);
                 for (String prodId : prodInfo.keySet()) {
@@ -292,20 +294,74 @@ public class FlowNewServiceImpl implements FlowNewService {
                             JSONObject jsonObject = grpBGroup.getJSONObject(oDate.getString("grpB"));
                             if (null != jsonObject) {
                                 oDate.put("dep",jsonObject.getString("dep"));
-                                oDatesP.set(i,oDate);
-                                partInfo.put("oDates",oDatesP);
-                                prodInfo.put(prodId,partInfo);
-                                oDateObj.put(layer,prodInfo);
-                            } else {
+//                                oDatesP.set(i,oDate);
+//                                partInfo.put("oDates",oDatesP);
+//                                prodInfo.put(prodId,partInfo);
+//                                oDateObj.put(layer,prodInfo);
+                            }
+                            else {
                                 jsonObject = grpGroup.getJSONObject(oDate.getString("grpB"));
                                 if (null != jsonObject) {
                                     oDate.put("dep",jsonObject.getString("dep"));
-                                    oDatesP.set(i,oDate);
-                                    partInfo.put("oDates",oDatesP);
-                                    prodInfo.put(prodId,partInfo);
-                                    oDateObj.put(layer,prodInfo);
+//                                    oDatesP.set(i,oDate);
+//                                    partInfo.put("oDates",oDatesP);
+//                                    prodInfo.put(prodId,partInfo);
+//                                    oDateObj.put(layer,prodInfo);
                                 }
                             }
+
+                            String dep = oDate.getString("dep");
+                            String grpB = oDate.getString("grpB");
+                            JSONObject depIdData = queryId.getJSONObject(dep);
+                            if (null != depIdData) {
+                                if (depIdData.containsKey(grpB)) {
+                                    oDate.put("grpUNum",queryId.getJSONObject(dep).getInteger(grpB));
+                                } else {
+                                    oDate.put("grpUNum",1);
+                                    System.out.println("grpUNum信息为空-默认-人数写入:");
+                                }
+                            }
+                            else {
+                                depIdData = new JSONObject();
+                                Asset as;
+                                if (assetMap.containsKey(dep)) {
+                                    as = assetMap.get(dep);
+                                } else {
+                                    as = qt.getConfig(myCompId, "d-" + dep, "chkin");
+                                    assetMap.put(dep,as);
+                                }
+                                if (null == as || null == as.getChkin() || null == as.getChkin().getJSONObject("objChkin")) {
+                                    oDate.put("grpUNum",1);
+                                    depIdData.put(grpB,1);
+                                    System.out.println("Asset为空-默认-人数写入:");
+                                }
+                                else {
+                                    JSONObject objChkin = as.getChkin().getJSONObject("objChkin");
+                                    for (String grpBChk : objChkin.keySet()) {
+                                        JSONObject grpBChkData = objChkin.getJSONObject(grpBChk);
+                                        Integer wn0UserCount = grpBChkData.getInteger("wn0UserCount");
+                                        JSONObject wnUser = grpBChkData.getJSONObject("wnUser");
+                                        if (null!= wnUser && wnUser.containsKey(teStart+"")) {
+                                            depIdData.put(grpB,wnUser.getInteger(teStart+""));
+                                            System.out.println("最新人数写入:");
+                                        } else {
+                                            if (null != wn0UserCount && wn0UserCount > 0) {
+                                                depIdData.put(grpB,wn0UserCount);
+                                                System.out.println("wn0UserCount-人数写入:");
+                                            } else {
+                                                depIdData.put(grpB,1);
+                                                System.out.println("wn0UserCount为空-默认-人数写入:");
+                                            }
+                                        }
+                                    }
+                                    oDate.put("grpUNum",depIdData.getInteger(grpB));
+                                }
+                                queryId.put(dep,depIdData);
+                            }
+                            oDatesP.set(i,oDate);
+                            partInfo.put("oDates",oDatesP);
+                            prodInfo.put(prodId,partInfo);
+                            oDateObj.put(layer,prodInfo);
                         }
                     }
                 }
@@ -390,6 +446,14 @@ public class FlowNewServiceImpl implements FlowNewService {
                     newPO_Action.put("grpBGroup", grpBGroup);
                     newPO_Action.put("grpGroup", grpGroup);
                     newPO_Action.put("wn2progress", 0.0);
+
+                    JSONObject oDate = new JSONObject();
+                    JSONArray objData = new JSONArray();
+                    for (OrderAction orderAction : unitAction) {
+                        objData.add(qt.setJson("index",orderAction.getIndex(),"id_O",orderAction.getId_O()));
+                    }
+                    oDate.put("objData",objData);
+                    newPO.setODate(oDate);
 
                     //Create oStock
                     JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(unitOItem));
@@ -1078,11 +1142,11 @@ public class FlowNewServiceImpl implements FlowNewService {
         //////////////////// if this Item has part, go into dgProc
         if (!id_P.equals("")) {
             Prod thisProd = dgProd.get(id_P);
-            if (thisProd != null && (thisProd.getId().equals("637ddfa4677ce967c017208a") || thisProd.getId().equals("64b89aff4eba86461d75e723"))) {
-                System.out.println("new-thisProd:"+id_P+",layer:"+layer+",id_PF:"+id_PF);
-                System.out.println(JSON.toJSONString(thisProd));
-//                System.out.println(JSON.toJSONString(thisProd.getPart().getJSONArray("objItem")));
-            }
+//            if (thisProd != null && (thisProd.getId().equals("637ddfa4677ce967c017208a") || thisProd.getId().equals("64b89aff4eba86461d75e723"))) {
+//                System.out.println("new-thisProd:"+id_P+",layer:"+layer+",id_PF:"+id_PF);
+//                System.out.println(JSON.toJSONString(thisProd));
+////                System.out.println(JSON.toJSONString(thisProd.getPart().getJSONArray("objItem")));
+//            }
 //            // **System.out.println("thisProd" + thisProd);
             if (thisProd != null && thisProd.getPart() != null && thisProd.getPart().getJSONArray("objItem").size() > 0 &&
                     thisProd.getInfo().getId_C().equals(myCompId)) {
@@ -1308,6 +1372,14 @@ public class FlowNewServiceImpl implements FlowNewService {
         salesOrder_Action.put("grpBGroup", grpBGroup);
         salesOrder_Action.put("grpGroup", grpGroup);
         salesOrder_Action.put("wn2progress", 0.0);
+
+        JSONObject oDate = new JSONObject();
+        JSONArray objData = new JSONArray();
+        for (OrderAction orderAction : salesAction) {
+            objData.add(qt.setJson("index",orderAction.getIndex(),"id_O",orderAction.getId_O()));
+        }
+        oDate.put("objData",objData);
+        orderParentData.setODate(oDate);
         //ZJ
 //        salesOrder_Action.put("oDates", oDates);
 //        salesOrder_Action.put("oTasks", oTasks);

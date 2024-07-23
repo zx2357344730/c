@@ -190,8 +190,16 @@ public interface TimeZjService {
      */
     ApiResponse getTeStartList(JSONArray orderInfo);
 
+    /**
+     * 自测使用（不用管）
+     * @return  执行结果
+     */
     ApiResponse updateODate();
 
+    /**
+     * 自测使用（不用管）
+     * @return  执行结果
+     */
     ApiResponse delExcessiveODateField();
 
     /**

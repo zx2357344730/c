@@ -142,6 +142,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         }
         // 获取递归订单列表
         JSONObject oDateObj = salesOrderData.getCasItemx().getJSONObject("java").getJSONObject("oDateObj");
+        // 调用合并任务，和清理物料，和获取最大物料开始时间方法
         mergeDelSumMaxTimeByODateObj(id_O, oDateObj);
 
         // 抛出操作成功异常
@@ -395,8 +396,13 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 JSONArray oDates = partInfo.getJSONArray("oDates");
                 for (int i = 0; i < oDates.size(); i++) {
                     JSONObject oDate = oDates.getJSONObject(i);
-                    getGrpB(oDate.getString("grpB"),oDate.getString("dep"), assetMap,id_C
-                            ,depAllTime,xbAndSbAll,grpBGroupIdOJ,oDate.getString("id_O"),teStart);
+                    boolean grpBResult = getGrpB(oDate.getString("grpB"), oDate.getString("dep"), assetMap, id_C
+                            , depAllTime, xbAndSbAll, grpBGroupIdOJ, oDate.getString("id_O"), teStart);
+                    if (grpBResult) {
+                        System.out.println("set错误");
+                        // 返回为空错误信息
+                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_NULL.getCode(), "资产信息为空");
+                    }
                 }
                 setOrderFatherId(salesOrderData.getId(),thisInfo,actionIdO,objOrder,oDateObj);
 
@@ -860,8 +866,13 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 JSONArray oDates = partInfo.getJSONArray("oDates");
                 for (int i = 0; i < oDates.size(); i++) {
                     JSONObject oDate = oDates.getJSONObject(i);
-                    getGrpB(oDate.getString("grpB"),oDate.getString("dep"), assetMap,id_C
-                            ,depAllTime,xbAndSbAll,grpBGroupIdOJ,oDate.getString("id_O"),teStart);
+                    boolean grpBResult = getGrpB(oDate.getString("grpB"), oDate.getString("dep"), assetMap, id_C
+                            , depAllTime, xbAndSbAll, grpBGroupIdOJ, oDate.getString("id_O"), teStart);
+                    if (grpBResult) {
+                        System.out.println("set错误-2");
+                        // 返回为空错误信息
+                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_NULL.getCode(), "资产信息为空");
+                    }
                 }
                 setOrderFatherId(salesOrderData.getId(),thisInfo,actionIdO,objOrder,oDateObj);
 
@@ -1409,8 +1420,13 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 JSONArray oDates = partInfo.getJSONArray("oDates");
                 for (int i = 0; i < oDates.size(); i++) {
                     JSONObject oDate = oDates.getJSONObject(i);
-                    getGrpB(oDate.getString("grpB"),oDate.getString("dep"), assetMap,id_C
-                            ,depAllTime,xbAndSbAll,grpBGroupIdOJ,oDate.getString("id_O"),teStart);
+                    boolean grpBResult = getGrpB(oDate.getString("grpB"), oDate.getString("dep"), assetMap, id_C
+                            , depAllTime, xbAndSbAll, grpBGroupIdOJ, oDate.getString("id_O"), teStart);
+                    if (grpBResult) {
+                        System.out.println("正常get错误:");
+                        // 返回为空错误信息
+                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_NULL.getCode(), "资产信息为空");
+                    }
                 }
                 setOrderFatherId(salesOrderData.getId(),thisInfo,actionIdO,objOrder,oDateObj);
 
@@ -1916,8 +1932,13 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 firstConflictIndex.put("z",oDate.getString("id_O")+"+"+oDate.getString("index"));
                 firstConflictId_O.put(oDate.getString("index"),firstConflictIndex);
                 sho.put(oDate.getString("id_O"),firstConflictId_O);
-                getGrpB(oDate.getString("grpB"),oDate.getString("dep"), assetMap,id_C
-                        ,depAllTime,xbAndSbAll,grpBGroupIdOJ,oDate.getString("id_O"),endTime);
+                boolean grpBResult = getGrpB(oDate.getString("grpB"), oDate.getString("dep"), assetMap, id_C
+                        , depAllTime, xbAndSbAll, grpBGroupIdOJ, oDate.getString("id_O"), endTime);
+                if (grpBResult) {
+                    System.out.println("正常get错误-获取上一个信息:");
+                    // 返回为空错误信息
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_NULL.getCode(), "资产信息为空");
+                }
             }
             // 获取指定的全局任务信息方法
             JSONObject tasksAndZon = getTasksAndZon(endTime, grpB, dep, id_C,objTaskAll,depAllTime);
@@ -2990,7 +3011,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
      * @param id_OInside    订单编号
      * @param teS   当天开始时间戳
      */
-    public void getGrpB(String grpB,String dep, Map<String,Asset> assetMap, String id_C, JSONObject depAllTime
+    public boolean getGrpB(String grpB,String dep, Map<String,Asset> assetMap, String id_C, JSONObject depAllTime
             , JSONObject xbAndSbAll, JSONObject grpBGroupIdOJ, String id_OInside
             ,long teS){
         // 创建存储部门字典
@@ -3004,7 +3025,10 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         }
         JSONObject chkGrpB;
         if (null == assetDep || null == assetDep.getChkin() || null == assetDep.getChkin().getJSONObject("objChkin") || null == assetDep.getChkin().getJSONObject("objChkin").getJSONObject(grpB)) {
-            chkGrpB = TaskObj.getChkinJava();
+//            chkGrpB = TaskObj.getChkinJava();
+//            // 返回为空错误信息
+//            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_NULL.getCode(), "资产信息为空");
+            return true;
         } else {
             JSONObject chkin = assetDep.getChkin();
             JSONObject objChkin = chkin.getJSONObject("objChkin");
@@ -3145,6 +3169,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         depMap.put("id_O",id_OInside);
         // 添加信息
         grpBGroupIdOJ.put(grpB,depMap);
+        return false;
     }
 
     /**
@@ -3663,6 +3688,9 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
         JSONObject casItemx = salesOrderData.getCasItemx();
+        OrderInfo info = salesOrderData.getInfo();
+        String refOP = info.getRef();
+        int priority = info.getPriority()==null?10:info.getPriority();
         // 获取递归存储的时间处理信息
         JSONObject oDateObj = casItemx.getJSONObject("java").getJSONObject("oDateObj");
         List<Integer> layerList = new ArrayList<>();
@@ -3708,7 +3736,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         System.out.println("layerList:"+teStart);
         System.out.println(JSON.toJSONString(layerList));
         dgTimeEasy(layerList.get(0),oDateObj,id_C,id_O
-                ,true,teStart,assetGrpMap,objEasy,thisEasy);
+                ,true,teStart,assetGrpMap,objEasy,thisEasy,refOP,priority);
         System.out.println("objEasy:");
         System.out.println(JSON.toJSONString(objEasy));
         System.out.println("thisEasy:");
@@ -3759,6 +3787,9 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
         JSONObject casItemx = salesOrderData.getCasItemx();
+        OrderInfo info = salesOrderData.getInfo();
+        String refOP = info.getRef();
+        int priority = info.getPriority()==null?10:info.getPriority();
         // 获取递归存储的时间处理信息
         JSONObject oDateObj = casItemx.getJSONObject("java").getJSONObject("oDateObj");
         JSONObject layerData = oDateObj.getJSONObject(layer);
@@ -3782,7 +3813,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
         System.out.println("oDateObj:"+layer+","+id_C+","+id_O+","+teStart+","+id_PF+","+dateIndex);
         System.out.println(JSON.toJSONString(oDateObj));
         dgTimeEasySet(Integer.parseInt(layer),oDateObj,id_C,id_O
-                ,teStart,assetGrpMap,objEasy,thisEasy,id_PF,dateIndex);
+                ,teStart,assetGrpMap,objEasy,thisEasy,id_PF,dateIndex,refOP,priority);
         System.out.println("objEasy:");
         System.out.println(JSON.toJSONString(objEasy));
         System.out.println("DepTeSta:");
@@ -4001,7 +4032,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
      */
     private void dgTimeEasy(int layer,JSONObject oDateObj,String id_C,String id_O
             ,boolean isFirst,long teStart,Map<String,JSONObject> assetGrpMap,JSONObject objEasy
-            ,JSONObject thisEasy){
+            ,JSONObject thisEasy,String refOP,int priority){
         if (layer > 0) {
             JSONObject prodInfo = oDateObj.getJSONObject(layer + "");
             for (String prodId : prodInfo.keySet()) {
@@ -4012,12 +4043,12 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                     // 获取i对应的时间处理信息
                     JSONObject oDate = oDates.getJSONObject(i);
                     dgTimeHandleCore(oDate,objEasy,id_C,thisEasy,teStart
-                            ,assetGrpMap,prodId,layer,i,id_O,oDates);
+                            ,assetGrpMap,prodId,layer,i,id_O,oDates,refOP,priority);
                 }
                 qt.setMDContent(id_O,qt.setJson("casItemx.java.oDateObj."+layer+"."+prodId+".oDates",oDates),Order.class);
             }
             dgTimeEasy(layer-1,oDateObj,id_C,id_O,false
-                    ,teStart,assetGrpMap,objEasy,thisEasy);
+                    ,teStart,assetGrpMap,objEasy,thisEasy,refOP,priority);
         }
     }
 
@@ -4037,7 +4068,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
      */
     private void dgTimeHandleCore(JSONObject oDate,JSONObject objEasy,String id_C
             ,JSONObject thisEasy,long teStart,Map<String, JSONObject> assetGrpMap
-            ,String prodId,int layer,int i,String id_O,JSONArray oDates){
+            ,String prodId,int layer,int i,String id_O,JSONArray oDates,String refOP,int priority){
         // 获取时间处理的组别
         String grpB = oDate.getString("grpB");
         String dep = oDate.getString("dep");
@@ -4059,18 +4090,21 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             }
         }
         long wntLeft;
+        long wntTotal;
         JSONArray easyTasks;
         JSONObject teStaObj;
         if (null != depEasy) {
             teStaObj = depEasy.getJSONObject(teStart + "");
             if (null != teStaObj) {
                 wntLeft = teStaObj.getLong("wntLeft");
+                wntTotal = teStaObj.getLong("wntTotal");
                 easyTasks = teStaObj.getJSONArray("easyTasks");
             } else {
                 teStaObj = new JSONObject();
                 easyTasks = new JSONArray();
                 wntLeft = getTotalTime(assetGrpMap,grpB,id_C,dep,teStart);
                 teStaObj.put("wntTotal",wntLeft);
+                wntTotal = wntLeft;
             }
         }
         else {
@@ -4079,9 +4113,31 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             easyTasks = new JSONArray();
             wntLeft = getTotalTime(assetGrpMap,grpB,id_C,dep,teStart);
             teStaObj.put("wntTotal",wntLeft);
+            wntTotal = wntLeft;
         }
         JSONObject teEasyDate = new JSONObject();
         long totalDur = (long) (wntDurTotal + wntPrep);
+//        int needDay = (int) (totalDur / wntTotal);
+//        if (needDay > 0) {
+//            long needTotalDur = needDay * wntTotal;
+//            totalDur = totalDur - needTotalDur;
+//            Long depSta = teStart;
+//            for (int j = 0; j < needDay; j++) {
+//                teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft,id_O
+//                        ,oDate.getString("id_O"),oDate.getInteger("index"),refOP,priority));
+//                wntLeft = 0L;
+//                teStaObj.put("wntLeft",wntLeft);
+//                depEasy.put(depSta+"",teStaObj);
+//                teEasyDate.put(depSta+"",wntLeft);
+//                objEasy.put(dep,depEasy);
+//
+//                easyDepTeSta = GsThisInfo.getEasyDepTeSta(thisEasy);
+//                depSta = easyDepTeSta.getLong(dep);
+//                depSta+=86400;
+//                easyDepTeSta.put(dep,depSta);
+//                GsThisInfo.setEasyDepTeSta(thisEasy,easyDepTeSta);
+//            }
+//        }
         if (wntLeft == 0) {
             JSONObject easyDepTeStaNew = GsThisInfo.getEasyDepTeSta(thisEasy);
             Long depSta = easyDepTeStaNew.getLong(dep);
@@ -4089,24 +4145,24 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             wntLeft = teStaObj.getLong("wntLeft");
             if (wntLeft == 0) {
                 dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
-                        ,totalDur,oDate,prodId,layer,i,teEasyDate,id_O);
+                        ,totalDur,oDate,prodId,layer,i,teEasyDate,id_O,refOP,priority);
             } else {
                 long totalTimeNew = wntLeft - totalDur;
                 if (totalTimeNew < 0) {
                     long disparityTime = totalDur - wntLeft;
                     teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft, id_O
-                            ,oDate.getString("id_O"),oDate.getInteger("index")));
+                            ,oDate.getString("id_O"),oDate.getInteger("index"),refOP,priority));
                     wntLeft = 0L;
                     teStaObj.put("wntLeft",wntLeft);
                     depEasy.put(depSta+"",teStaObj);
                     teEasyDate.put(depSta+"",wntLeft);
                     objEasy.put(dep,depEasy);
                     dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
-                            ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O);
+                            ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O,refOP,priority);
                 } else {
                     teStaObj.put("wntLeft",totalTimeNew);
                     teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur,id_O
-                            ,oDate.getString("id_O"),oDate.getInteger("index")));
+                            ,oDate.getString("id_O"),oDate.getInteger("index"),refOP,priority));
                     depEasy.put(depSta+"",teStaObj);
                     teEasyDate.put(depSta+"",totalDur);
                     objEasy.put(dep,depEasy);
@@ -4118,18 +4174,18 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             if (totalTimeNew < 0) {
                 long disparityTime = totalDur - wntLeft;
                 teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft,id_O
-                        ,oDate.getString("id_O"),oDate.getInteger("index")));
+                        ,oDate.getString("id_O"),oDate.getInteger("index"),refOP,priority));
                 wntLeft = 0L;
                 teStaObj.put("wntLeft",wntLeft);
                 depEasy.put(teStart+"",teStaObj);
                 teEasyDate.put(teStart+"",wntLeft);
                 objEasy.put(dep,depEasy);
                 dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
-                        ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O);
+                        ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O,refOP,priority);
             } else {
                 teStaObj.put("wntLeft",totalTimeNew);
                 teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur,id_O
-                        ,oDate.getString("id_O"),oDate.getInteger("index")));
+                        ,oDate.getString("id_O"),oDate.getInteger("index"),refOP,priority));
                 depEasy.put(teStart+"",teStaObj);
                 teEasyDate.put(teStart+"",totalDur);
                 objEasy.put(dep,depEasy);
@@ -4154,7 +4210,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
      */
     private void dgTimeEasySet(int layer,JSONObject oDateObj,String id_C,String id_O
             ,long teStart,Map<String,JSONObject> assetGrpMap,JSONObject objEasy
-            ,JSONObject thisEasy,String id_PF,int dateIndex){
+            ,JSONObject thisEasy,String id_PF,int dateIndex,String refOP,int priority){
         if (layer > 0) {
             JSONObject prodInfo = oDateObj.getJSONObject(layer + "");
             JSONObject partInfo = prodInfo.getJSONObject(id_PF);
@@ -4164,7 +4220,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 // 获取i对应的时间处理信息
                 JSONObject oDate = oDates.getJSONObject(i);
                 dgTimeHandleCore(oDate,objEasy,id_C,thisEasy,teStart
-                        ,assetGrpMap,id_PF,layer,i,id_O,oDates);
+                        ,assetGrpMap,id_PF,layer,i,id_O,oDates,refOP,priority);
 //                // 获取时间处理的组别
 //                String grpB = oDate.getString("grpB");
 //                String dep = oDate.getString("dep");
@@ -4267,7 +4323,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             }
             qt.setMDContent(id_O,qt.setJson("casItemx.java.oDateObj."+layer+"."+id_PF+".oDates",oDates),Order.class);
             dgTimeEasy(layer-1,oDateObj,id_C,id_O,false
-                    ,teStart,assetGrpMap,objEasy,thisEasy);
+                    ,teStart,assetGrpMap,objEasy,thisEasy,refOP,priority);
         }
     }
 
@@ -4285,11 +4341,11 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
      * @return  简化任务集合
      */
     private JSONArray setEasyTask(JSONArray easyTasks,JSONObject oDate,String prodId,int layer,int i
-            ,long timeTotal,String id_OP,String id_O,int index){
+            ,long timeTotal,String id_OP,String id_O,int index,String refOP,int priority){
         easyTasks.add(qt.setJson("wrdN",oDate.getJSONObject("wrdN"),"index",oDate.getInteger("index")
                 ,"id_O",oDate.getString("id_O"),"id_P",oDate.getString("id_P"),"id_PF",prodId
-                ,"layer",layer,"dateIndex",i,"timeTotal",timeTotal,"id_OP",id_OP,"priority",0
-                ,"id_O",id_O,"index",index));
+                ,"layer",layer,"dateIndex",i,"timeTotal",timeTotal,"id_OP",id_OP,"priority",priority
+                ,"id_O",id_O,"index",index,"refOP",refOP));
         return easyTasks;
     }
 
@@ -4342,7 +4398,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
      */
     private void dgSkipDay(JSONObject objEasy,JSONObject thisEasy,String dep
             ,Map<String, JSONObject> assetGrpMap,String grpB,String id_C,long totalDur,JSONObject oDate
-            ,String prodId,int layer,int i,JSONObject teEasyDate,String id_O){
+            ,String prodId,int layer,int i,JSONObject teEasyDate,String id_O,String refOP,int priority){
         System.out.println("进入跳天-totalDur:"+totalDur);
         JSONObject easyDepTeSta = GsThisInfo.getEasyDepTeSta(thisEasy);
         Long depSta = easyDepTeSta.getLong(dep);
@@ -4359,24 +4415,24 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             teStaObj.put("wntTotal",wntLeft);
             if (wntLeft == 0) {
                 dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
-                        ,totalDur,oDate,prodId,layer,i,teEasyDate,id_O);
+                        ,totalDur,oDate,prodId,layer,i,teEasyDate,id_O,refOP,priority);
             } else {
                 long totalTimeNew = wntLeft - totalDur;
                 if (totalTimeNew < 0) {
                     long disparityTime = totalDur - wntLeft;
                     teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft,id_O
-                            ,oDate.getString("id_O"),oDate.getInteger("index")));
+                            ,oDate.getString("id_O"),oDate.getInteger("index"),refOP,priority));
                     wntLeft = 0L;
                     teStaObj.put("wntLeft",wntLeft);
                     depEasy.put(depSta+"",teStaObj);
                     teEasyDate.put(depSta+"",wntLeft);
                     objEasy.put(dep,depEasy);
                     dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
-                            ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O);
+                            ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O,refOP,priority);
                 } else {
                     teStaObj.put("wntLeft",totalTimeNew);
                     teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur,id_O
-                            ,oDate.getString("id_O"),oDate.getInteger("index")));
+                            ,oDate.getString("id_O"),oDate.getInteger("index"),refOP,priority));
                     depEasy.put(depSta+"",teStaObj);
                     teEasyDate.put(depSta+"",totalDur);
                     objEasy.put(dep,depEasy);
@@ -4387,24 +4443,24 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             easyTasks = teStaObj.getJSONArray("easyTasks");
             if (wntLeft == 0) {
                 dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
-                        ,totalDur,oDate,prodId,layer,i,teEasyDate,id_O);
+                        ,totalDur,oDate,prodId,layer,i,teEasyDate,id_O,refOP,priority);
             } else {
                 long totalTimeNew = wntLeft - totalDur;
                 if (totalTimeNew < 0) {
                     long disparityTime = totalDur - wntLeft;
                     teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,wntLeft,id_O
-                            ,oDate.getString("id_O"),oDate.getInteger("index")));
+                            ,oDate.getString("id_O"),oDate.getInteger("index"),refOP,priority));
                     wntLeft = 0L;
                     teStaObj.put("wntLeft",wntLeft);
                     depEasy.put(depSta+"",teStaObj);
                     teEasyDate.put(depSta+"",wntLeft);
                     objEasy.put(dep,depEasy);
                     dgSkipDay(objEasy,thisEasy,dep,assetGrpMap,grpB,id_C
-                            ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O);
+                            ,disparityTime,oDate,prodId,layer,i,teEasyDate,id_O,refOP,priority);
                 } else {
                     teStaObj.put("wntLeft",totalTimeNew);
                     teStaObj.put("easyTasks",setEasyTask(easyTasks,oDate,prodId,layer,i,totalDur,id_O
-                            ,oDate.getString("id_O"),oDate.getInteger("index")));
+                            ,oDate.getString("id_O"),oDate.getInteger("index"),refOP,priority));
                     depEasy.put(depSta+"",teStaObj);
                     teEasyDate.put(depSta+"",totalDur);
                     objEasy.put(dep,depEasy);

@@ -478,7 +478,7 @@ public class CosUpload {
      *
      * ##Params: localFile
      */
-    public String uploadPE(File localFile, String path, String name, int nameIS, Date expiration) throws CosClientException{
+    public String uploadPE(File localFile, String path, String name, int nameIS, Date expiration,String hz) throws CosClientException{
 
         COSCredentials cred = new BasicCOSCredentials(secretId,secretKey);
         // 生成cos客户端
@@ -492,10 +492,11 @@ public class CosUpload {
         try {
 
             // 获取图片后缀名
-            String substring = fileName.substring(fileName.lastIndexOf("."));
+//            String substring = fileName.substring(fileName.lastIndexOf("."));
+            System.out.println("substring:"+ hz);
 
             // 指定要上传到 COS 上的路径
-            fileName = path + name + substring;
+            fileName = path + name + hz;
 
             // 放入文件
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName2, fileName , localFile);
@@ -517,7 +518,7 @@ public class CosUpload {
 
                 }
             } else {
-                return name + substring;
+                return name + hz;
             }
 
         } catch (Exception e) {

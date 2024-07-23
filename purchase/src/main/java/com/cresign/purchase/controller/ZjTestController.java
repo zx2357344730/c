@@ -667,4 +667,37 @@ public class ZjTestController {
             return getUserToken.err(new JSONObject(), "ZjTestController.aiQuestingDeepSeek", e);
         }
     }
+
+    @SecurityParameter
+    @PostMapping("/v1/aiQuestingDeepSeekByObj")
+    public ApiResponse aiQuestingDeepSeekByObj(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.aiQuestingDeepSeekByObj(tokData,resJson.getJSONObject("descObj"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.aiQuestingDeepSeekByObj", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/setCosFileByAt")
+    public ApiResponse setCosFileByAt(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.setCosFileByAt(resJson.getString("id_A"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.setCosFileByAt", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/setStFt")
+    public ApiResponse setStFt(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.setStFt(resJson.getString("id_O"),resJson.getJSONObject("setObj"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.setStFt", e);
+        }
+    }
 }

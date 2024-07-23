@@ -1313,8 +1313,6 @@ public class TimeZjServiceEmptyInsertImpl extends TimeZj implements TimeZjServic
      */
     public ApiResponse removeTime(String id_O, String id_C){
         // 调用方法获取订单信息
-//        Order order = coupaUtil.getOrderByListKey(
-//                id_O, Arrays.asList("casItemx","action"));
         Order order = qt.getMDContent(id_O,qt.strList("casItemx","action"), Order.class);
         // 判断订单是否为空
         if (null == order || null == order.getCasItemx() || null == order.getAction()) {

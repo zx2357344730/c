@@ -208,7 +208,7 @@ public class TaskController {
     }
 
     /**
-     *
+     * 自测使用（不用管）
      * @return  开始时间
      */
     @SecurityParameter
@@ -222,8 +222,8 @@ public class TaskController {
     }
 
     /**
-     *
-     * @return  开始时间
+     * 自测使用（不用管）
+     * @return  执行结果
      */
     @SecurityParameter
     @PostMapping("/v1/delExcessiveODateField")
@@ -235,6 +235,11 @@ public class TaskController {
         }
     }
 
+    /**
+     * 清理任务api
+     * @param reqJson   请求结果
+     * @return  执行结果
+     */
     @SecurityParameter
     @PostMapping("/v1/getClearOldTask")
     public ApiResponse getClearOldTask(@RequestBody JSONObject reqJson){

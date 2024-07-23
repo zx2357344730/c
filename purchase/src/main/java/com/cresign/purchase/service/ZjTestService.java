@@ -221,4 +221,13 @@ public interface ZjTestService {
      * @return  执行结果
      */
     ApiResponse aiQuestingDeepSeek(JSONObject tokData,String desc);
+    ApiResponse aiQuestingDeepSeekByObj(JSONObject tokData,JSONObject descObj);
+
+    ApiResponse setCosFileByAt(String id_A);
+
+    ApiResponse setStFt(String id_O,JSONObject setObj);
+
+    ApiResponse genJoinGroupCode(String id_C);
+
+    ApiResponse scanJoinGroupCode(String id_U,String token);
 }

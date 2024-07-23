@@ -3,6 +3,7 @@ package com.cresign.purchase.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.cresign.purchase.service.ZjTestService;
 import com.cresign.purchase.utils.ExcelUtils;
 import com.cresign.tools.advice.RetResult;
@@ -17,6 +18,7 @@ import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.*;
 import com.cresign.tools.pojo.po.*;
+import com.cresign.tools.pojo.po.orderCard.OrderAction;
 import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.cresign.tools.request.HttpClientUtil;
@@ -31,7 +33,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -1088,8 +1092,6 @@ public class ZjTestServiceImpl implements ZjTestService {
         }
         return retResult.ok(CodeEnum.OK.getCode(), result);
     }
-
-
 
     @Override
     public ApiResponse testEx(String id_C,String fileName,String id_U
@@ -2380,6 +2382,146 @@ public class ZjTestServiceImpl implements ZjTestService {
         System.out.println("请求结果:");
         System.out.println(s);
         return retResult.ok(CodeEnum.OK.getCode(),s);
+    }
+
+    @Override
+    public ApiResponse aiQuestingDeepSeekByObj(JSONObject tokData,JSONObject descObj) {
+        JSONObject result = new JSONObject();
+        for (String key : descObj.keySet()) {
+            JSONObject descInfo = descObj.getJSONObject(key);
+            JSONArray messages = new JSONArray();
+            messages.add(qt.setJson("content",descInfo.getString("desc"),"role","user"));
+            String s = HttpClientUtil.sendPostHeader(qt.setJson("messages",messages,"model","deepseek-chat")
+                    ,"https://api.deepseek.com/chat/completions"
+                    ,qt.setJson("Authorization","Bearer sk-f31affd654a3409e9f6468b5875fe85e"
+                            ,"Accept","application/json"));
+            result.put(key,s);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(),result);
+    }
+
+    @Override
+    public ApiResponse setCosFileByAt(String id_A) {
+        Asset asset = qt.getMDContent(id_A, "", Asset.class);
+        if (null == asset || null == asset.getAArrange()) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_NULL.getCode(),"资产为空");
+        }
+        JSONObject aArrange = asset.getAArrange();
+        return createTempFileSetData(aArrange,id_A);
+    }
+
+    @Override
+    public ApiResponse setStFt(String id_O, JSONObject setObj) {
+        Order order = qt.getMDContent(id_O, qt.strList("action", "oDate"), Order.class);
+        System.out.println(JSON.toJSONString(order));
+        if (null == order) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_FOUND.getCode(),"订单不存在");
+        }
+        JSONObject oDate;
+        JSONArray objData;
+        if (null == order.getODate() || null == order.getODate().getJSONArray("objData")) {
+            if (null == order.getAction() || null==order.getAction().getJSONArray("objAction")) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_FOUND.getCode(),"订单不存在");
+            }
+            JSONArray objAction = order.getAction().getJSONArray("objAction");
+
+            oDate = new JSONObject();
+            objData = new JSONArray();
+            for (int i = 0; i < objAction.size(); i++) {
+                JSONObject unitAction = objAction.getJSONObject(i);
+                objData.add(qt.setJson("index",unitAction.getInteger("index")
+                        ,"id_O",unitAction.getString("id_O")));
+            }
+        } else {
+            oDate = order.getODate();
+            objData = oDate.getJSONArray("objData");
+        }
+        for (String key : setObj.keySet()) {
+            int index = Integer.parseInt(key);
+            JSONObject oDateInfo = objData.getJSONObject(index);
+            JSONObject obj = setObj.getJSONObject(key);
+            oDateInfo.put("teStart",obj.getLong("teStart"));
+            oDateInfo.put("teFin",obj.getLong("teFin"));
+            objData.set(index,oDateInfo);
+        }
+        oDate.put("objData",objData);
+        qt.setMDContent(id_O,qt.setJson("oDate.objData",objData), Order.class);
+        return retResult.ok(CodeEnum.OK.getCode(),oDate);
+    }
+
+    @Override
+    public ApiResponse genJoinGroupCode(String id_C) {
+//        String QR_URL = "https://www.cresign.cn/qrCode?qrType=qrJoinGroup&t=";
+        String QR_URL = "http://127.0.0.1:8080/qrCode?qrType=qrJoinGroup&t=";
+        String token = UUID19.uuid();
+
+        qt.setRDSet("join_group",token,id_C,60L);
+        String url = QR_URL + token;
+        return retResult.ok(CodeEnum.OK.getCode(), url);
+    }
+
+    @Override
+    public ApiResponse scanJoinGroupCode(String id_U, String token) {
+        String join_group = qt.getRDSetStr("join_group", token);
+        if (null == join_group) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ADDINDEX_ERROR.getCode(),null);
+        }
+        User user = qt.getMDContent(id_U,qt.strList("info"), User.class);
+        if (user == null) {
+            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), null);
+        }
+        UserInfo userInfo = user.getInfo();
+        // 创建日志
+        LogFlow logFlow = new LogFlow();
+        // 设置日志基础属性
+        logFlow.setImp(3);
+        logFlow.setLogType("join");
+        logFlow.setSubType("group");
+        logFlow.setZcndesc("加入群");
+        logFlow.setId_U(id_U);
+        logFlow.setId_Us(qt.setArray(id_U));
+        logFlow.setId_C(join_group);
+        logFlow.setWrdN(userInfo.getWrdN());
+        logFlow.setWrdNU(userInfo.getWrdNReal());
+        logFlow.setPic(userInfo.getPic());
+        logFlow.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        // 创建日志详细数据
+        JSONObject data = new JSONObject();
+        // 设置日志详细数据
+        data.put("date",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        data.put("type","normal");
+        data.put("chkType","normal");
+        data.put("locLat","0");
+        data.put("locLong","0");
+        // 获取当前时间日期
+        LocalDate date = getDate(data.getString("date"));
+        // 添加当前时间日期
+        data.put("theSameDay",date.getYear()+"/"+ date.getMonthValue()+"/"+ date.getDayOfMonth());
+        logFlow.setData(data);
+        ws.sendWS(logFlow);
+        return retResult.ok(CodeEnum.OK.getCode(), "打卡成功");
+    }
+
+    private ApiResponse createTempFileSetData(JSONObject aArrange,String aId){
+        try {
+            File tempFile = File.createTempFile(".json", "");
+            System.out.println("name:"+tempFile.getName());
+            // 向文件写入内容
+            FileWriter fileWriter = new FileWriter(tempFile);
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+            System.out.println("aArrange:");
+            System.out.println(JSON.toJSONString(aArrange));
+            // JSON格式化输出并且写入
+//            bufferedWriter.write(JSON.toJSONString(aArrange,SerializerFeature.PrettyFormat)); // 将数据写入文件
+            bufferedWriter.write(JSON.toJSONString(aArrange)); // 将数据写入文件
+            bufferedWriter.newLine(); // 写入一个新行
+            bufferedWriter.close();
+            fileWriter.close();
+            cos.uploadPE(tempFile,"/at/",aId+ "_" + DateUtils.getDateNow(DateEnum.DATE_FOLDER_FULL.getDate()),0,null,".json");
+            return retResult.ok(CodeEnum.OK.getCode(),"成功");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private long[] getSonPart(String id_P){

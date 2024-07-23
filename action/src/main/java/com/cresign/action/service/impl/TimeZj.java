@@ -543,8 +543,9 @@ public class TimeZj {
         Asset assetDep = qt.getConfig(id_C,"d-"+dep,"chkin");
         JSONObject chkGrpB;
         if (null == assetDep || null == assetDep.getChkin() || null == assetDep.getChkin().getJSONObject("objChkin")) {
-            chkGrpB = TaskObj.getChkinJava();
+//            chkGrpB = TaskObj.getChkinJava();
             System.out.println("获取系统:");
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ASSET_NULL.getCode(), "资产信息为空");
         } else {
             JSONObject chkin = assetDep.getChkin();
             JSONObject objChkin = chkin.getJSONObject("objChkin");
@@ -3944,177 +3945,451 @@ public class TimeZj {
     protected JSONObject mergeTaskByPriorODateObj(JSONObject oDateObj){
         // 创建存储部门序号信息字典
         JSONObject depPrior = new JSONObject();
-        // 创建存储删除下标
-        JSONArray delDateIndex = new JSONArray();
+//        // 创建存储删除下标
+//        JSONArray delDateIndex = new JSONArray();
         System.out.println("开始输出:");
         System.out.println(JSON.toJSONString(oDateObj));
-        // 创建存储更新任务信息
-        JSONObject updateTask = new JSONObject();
+//        // 创建存储更新任务信息
+//        JSONObject updateTask = new JSONObject();
         Map<String,Order> orderMap = new HashMap<>();
-        for (String layer : oDateObj.keySet()) {
-            JSONObject prodObj = oDateObj.getJSONObject(layer);
-            for (String prodId : prodObj.keySet()) {
-                JSONObject pratInfo = prodObj.getJSONObject(prodId);
-                JSONArray oDates = pratInfo.getJSONArray("oDates");
-                // 遍历获取递归存储的时间处理信息
-                for (int i = 0; i < oDates.size(); i++) {
-                    // 获取i对应的时间处理信息
-                    JSONObject oDate = oDates.getJSONObject(i);
-                    String grpB = oDate.getString("grpB");
-                    String dep = oDate.getString("dep");
-                    // 根据组别获取部门
-                    int priorItem = oDate.getInteger("priorItem");
-                    oDate.put("grpUNum",oDate.getInteger("grpUNum")==null?1:oDate.getInteger("grpUNum"));
-                    // 获取类别
-                    Integer bmdpt = oDate.getInteger("bmdpt");
-                    if (bmdpt == 3 || (oDate.getBoolean("isSto") != null && oDate.getBoolean("isSto"))) {
-                        // 添加当前下标
-                        delDateIndex.add(i);
-                        System.out.println("开始输出:物料返回：");
-                        continue;
-                    } else if (oDate.getBoolean("empty")) {
-                        // 添加当前下标
-                        delDateIndex.add(i);
-                        System.out.println("开始输出:空任务返回：");
-                        continue;
-                    }
-
-                    int bcdStatus;
-                    Order orderData;
-                    String id_O = oDate.getString("id_O");
-                    // 判断不为空
-                    if (!orderMap.containsKey(id_O)) {
-                        // 调用方法获取订单信息
-                        orderData = qt.getMDContent(id_O,"action", Order.class);
-                        orderMap.put(id_O,orderData);
-                    } else {
-                        orderData = orderMap.get(id_O);
-                    }
-                    if (null == orderData || null == orderData.getAction()
-                            || null == orderData.getAction().getJSONArray("objAction")
-                            || null == orderData.getAction().getJSONArray("objAction")
-                            .getJSONObject(oDate.getInteger("index"))) {
-                        System.out.println("开始输出:为空返回："+id_O);
-                    } else {
-                        // 获取进度信息
-                        bcdStatus = orderData.getAction().getJSONArray("objAction")
-                                .getJSONObject(oDate.getInteger("index")).getInteger("bcdStatus");
-                        if (bcdStatus == 2 || bcdStatus == 8) {
-                            // 添加当前下标
-                            delDateIndex.add(i);
-                            System.out.println("开始输出:完成后返回：");
-                            continue;
-                        }
-                    }
-
-                    Long wntDur = oDate.getLong("wntDur");
-                    Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
-                    // 存储任务总时间
-                    long taskTotalTime = (long)(wntDur * wn2qtyneed);
-                    long wntDurTotal;
-                    // 计算总时间
-                    if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {
-                        wntDurTotal = taskTotalTime / oDate.getInteger("grpUNum");
-                    } else {
-                        wntDurTotal = (long) Math.ceil((double) (taskTotalTime / oDate.getInteger("grpUNum")));
-                    }
-                    oDate.put("wntDurTotal",wntDurTotal);
-                    if (bmdpt == 2) {
-                        continue;
-                    }
-                    // 获取部门的信息
-                    JSONObject grpBPrior = depPrior.getJSONObject(dep);
-                    // 定义存储任务数据和任务信息
-                    JSONObject priorMap;
-                    // 判断为空
-                    if (null == grpBPrior) {
-                        // 添加新数据
-                        grpBPrior = new JSONObject();
-                        priorMap = new JSONObject();
-                        JSONObject priorInfo = new JSONObject();
-                        priorInfo.put("oDate",oDate);
-                        priorInfo.put("index",i);
-                        priorMap.put(priorItem + "",priorInfo);
-                    } else {
-                        // 获取组别的信息
-                        priorMap = grpBPrior.getJSONObject(grpB);
-                        // 判断为空
-                        if (null == priorMap) {
-                            // 创建新的
-                            priorMap = new JSONObject();
-                            JSONObject priorInfo = new JSONObject();
-                            priorInfo.put("oDate",oDate);
-                            priorInfo.put("index",i);
-                            priorMap.put(priorItem + "",priorInfo);
-                        } else {
-                            // 获取序号信息
-                            JSONObject priorInfo = priorMap.getJSONObject(priorItem + "");
-                            // 判断为空
-                            if (null == priorInfo) {
-                                priorInfo = new JSONObject();
-                                priorInfo.put("oDate",oDate);
-                                priorInfo.put("index",i);
-                            } else {
-                                JSONObject datePrior = priorInfo.getJSONObject("oDate");
-                                // 获取合并任务数据列表
-                                JSONArray mergeDates = datePrior.getJSONArray("mergeDates");
-                                if (null == mergeDates || mergeDates.size() == 0) {
-                                    // 创建列表
-                                    mergeDates = new JSONArray();
-                                    // 添加之前的任务数据信息
-                                    mergeDates.add(qt.setJson("id_O",datePrior.getString("id_O")
-                                            ,"index",datePrior.getInteger("index")
-                                            ,"wntDurTotal",datePrior.getLong("wntDurTotal")
-                                            ,"wntPrep",datePrior.getLong("wntPrep")));
-                                }
-                                // 添加当前下标
-                                delDateIndex.add(i);
-                                // 添加当前任务数据信息
-                                mergeDates.add(qt.setJson("id_O",oDate.getString("id_O")
-                                        ,"index",oDate.getInteger("index")
-                                        ,"wntDurTotal",oDate.getLong("wntDurTotal")
-                                        ,"wntPrep",oDate.getLong("wntPrep")));
-                                datePrior.put("mergeDates",mergeDates);
-                                // 更新准备时间
-                                datePrior.put("wntPrep",datePrior.getLong("wntPrep")+oDate.getLong("wntPrep"));
-                                // 更新任务总时间
-                                datePrior.put("wntDurTotal",datePrior.getLong("wntDurTotal")+oDate.getLong("wntDurTotal"));
-                                priorInfo.put("oDate",datePrior);
-                                // 获取之前存储下标
-                                int index = priorInfo.getInteger("index");
-                                // 添加下标到更新
-                                updateTask.put(index+"",JSONObject.parseObject(JSON.toJSONString(datePrior)));
-                            }
-                            priorMap.put(priorItem + "",priorInfo);
-                        }
-                    }
-                    // 更新信息
-                    grpBPrior.put(grpB,priorMap);
-                    depPrior.put(dep,grpBPrior);
-                    oDates.set(i,oDate);
-                }
-                // 遍历更新任务
-                for (String s : updateTask.keySet()) {
-                    oDates.set(Integer.parseInt(s),updateTask.getJSONObject(s));
-                }
-                // 遍历删除任务
-                for (int i = delDateIndex.size()-1; i >= 0; i--) {
-                    int index = delDateIndex.getInteger(i);
-                    oDates.remove(index);
-                }
-                pratInfo.put("oDates",oDates);
-                prodObj.put(prodId,pratInfo);
-                oDateObj.put(layer,prodObj);
-            }
-        }
+        mergeDSMTCore(orderMap,depPrior,oDateObj,false);
+//        for (String layer : oDateObj.keySet()) {
+//            JSONObject prodObj = oDateObj.getJSONObject(layer);
+//            for (String prodId : prodObj.keySet()) {
+//                // 创建存储更新任务信息
+//                JSONObject updateTask = new JSONObject();
+//                JSONObject pratInfo = prodObj.getJSONObject(prodId);
+//                JSONArray oDates = pratInfo.getJSONArray("oDates");
+//                // 创建存储删除下标
+//                JSONArray delDateIndex = new JSONArray();
+//                mergeDateFor(delDateIndex,oDates,orderMap,depPrior,updateTask);
+//                // 遍历获取递归存储的时间处理信息
+////                for (int i = 0; i < oDates.size(); i++) {
+////                    // 获取i对应的时间处理信息
+////                    JSONObject oDate = oDates.getJSONObject(i);
+////                    String grpB = oDate.getString("grpB");
+////                    String dep = oDate.getString("dep");
+////                    // 根据组别获取部门
+////                    int priorItem = oDate.getInteger("priorItem");
+////                    oDate.put("grpUNum",oDate.getInteger("grpUNum")==null?1:oDate.getInteger("grpUNum"));
+////                    // 获取类别
+////                    Integer bmdpt = oDate.getInteger("bmdpt");
+////                    if (bmdpt == 3 || (oDate.getBoolean("isSto") != null && oDate.getBoolean("isSto"))) {
+////                        // 添加当前下标
+////                        delDateIndex.add(i);
+////                        System.out.println("开始输出:物料返回：");
+////                        continue;
+////                    } else if (oDate.getBoolean("empty")) {
+////                        // 添加当前下标
+////                        delDateIndex.add(i);
+////                        System.out.println("开始输出:空任务返回：");
+////                        continue;
+////                    }
+////
+////                    int bcdStatus;
+////                    Order orderData;
+////                    String id_O = oDate.getString("id_O");
+////                    // 判断不为空
+////                    if (!orderMap.containsKey(id_O)) {
+////                        // 调用方法获取订单信息
+////                        orderData = qt.getMDContent(id_O,"action", Order.class);
+////                        orderMap.put(id_O,orderData);
+////                    } else {
+////                        orderData = orderMap.get(id_O);
+////                    }
+////                    if (null == orderData || null == orderData.getAction()
+////                            || null == orderData.getAction().getJSONArray("objAction")
+////                            || null == orderData.getAction().getJSONArray("objAction")
+////                            .getJSONObject(oDate.getInteger("index"))) {
+////                        System.out.println("开始输出:为空返回："+id_O);
+////                    } else {
+////                        // 获取进度信息
+////                        bcdStatus = orderData.getAction().getJSONArray("objAction")
+////                                .getJSONObject(oDate.getInteger("index")).getInteger("bcdStatus");
+////                        if (bcdStatus == 2 || bcdStatus == 8) {
+////                            // 添加当前下标
+////                            delDateIndex.add(i);
+////                            System.out.println("开始输出:完成后返回：");
+////                            continue;
+////                        }
+////                    }
+////
+////                    if (bmdpt == 2) {
+////                        oDates.set(i,oDate);
+////                        continue;
+////                    }
+////
+////                    Long wntDur = oDate.getLong("wntDur");
+////                    Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
+////                    // 存储任务总时间
+////                    long taskTotalTime = (long)(wntDur * wn2qtyneed);
+////                    long wntDurTotal;
+////                    // 计算总时间
+////                    if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {
+////                        wntDurTotal = taskTotalTime / oDate.getInteger("grpUNum");
+////                    } else {
+////                        wntDurTotal = (long) Math.ceil((double) (taskTotalTime / oDate.getInteger("grpUNum")));
+////                    }
+////                    oDate.put("wntDurTotal",wntDurTotal);
+//////                    if (bmdpt == 2) {
+//////                        continue;
+//////                    }
+////
+////                    mergeDateCore(depPrior, dep, grpB, oDate, i, priorItem, oDates, delDateIndex, updateTask);
+//////                    // 获取部门的信息
+//////                    JSONObject grpBPrior = depPrior.getJSONObject(dep);
+//////                    // 定义存储任务数据和任务信息
+//////                    JSONObject priorMap;
+//////                    // 判断为空
+//////                    if (null == grpBPrior) {
+//////                        // 添加新数据
+//////                        grpBPrior = new JSONObject();
+//////                        priorMap = new JSONObject();
+//////                        JSONObject priorInfo = new JSONObject();
+//////                        priorInfo.put("oDate",oDate);
+//////                        priorInfo.put("index",i);
+//////                        priorMap.put(priorItem + "",priorInfo);
+//////                    }
+//////                    else {
+//////                        // 获取组别的信息
+//////                        priorMap = grpBPrior.getJSONObject(grpB);
+//////                        // 判断为空
+//////                        if (null == priorMap) {
+//////                            // 创建新的
+//////                            priorMap = new JSONObject();
+//////                            JSONObject priorInfo = new JSONObject();
+//////                            priorInfo.put("oDate",oDate);
+//////                            priorInfo.put("index",i);
+//////                            priorMap.put(priorItem + "",priorInfo);
+//////                        } else {
+//////                            // 获取序号信息
+//////                            JSONObject priorInfo = priorMap.getJSONObject(priorItem + "");
+//////                            // 判断为空
+//////                            if (null == priorInfo) {
+//////                                priorInfo = new JSONObject();
+//////                                priorInfo.put("oDate",oDate);
+//////                                priorInfo.put("index",i);
+//////                            } else {
+//////                                JSONObject datePrior = priorInfo.getJSONObject("oDate");
+//////                                // 获取合并任务数据列表
+//////                                JSONArray mergeDates = datePrior.getJSONArray("mergeDates");
+//////                                if (null == mergeDates || mergeDates.size() == 0) {
+//////                                    // 创建列表
+//////                                    mergeDates = new JSONArray();
+//////                                    // 添加之前的任务数据信息
+////////                                    mergeDates.add(qt.setJson(
+////////                                            "wrdN",qt.cloneObj(datePrior.getJSONObject("wrdN"))
+////////                                            ,"id_O",datePrior.getString("id_O")
+////////                                            ,"id_P",datePrior.getString("id_P")
+////////                                            ,"index",datePrior.getInteger("index")
+////////                                            ,"layer",datePrior.getInteger("layer")
+////////                                            ,"id_PF",datePrior.getString("id_PF")
+////////                                            ,"dateIndex",i
+////////                                            ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+////////                                            ,"wntPrep",datePrior.getLong("wntPrep")));
+//////                                    addMergeDate(mergeDates,i,datePrior);
+//////                                }
+//////                                // 添加当前下标
+//////                                delDateIndex.add(i);
+//////                                // 添加当前任务数据信息
+////////                                mergeDates.add(qt.setJson(
+////////                                        "wrdN",qt.cloneObj(datePrior.getJSONObject("wrdN"))
+////////                                        ,"id_O",datePrior.getString("id_O")
+////////                                        ,"id_P",datePrior.getString("id_P")
+////////                                        ,"index",datePrior.getInteger("index")
+////////                                        ,"layer",datePrior.getInteger("layer")
+////////                                        ,"id_PF",datePrior.getString("id_PF")
+////////                                        ,"dateIndex",i
+////////                                        ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+////////                                        ,"wntPrep",datePrior.getLong("wntPrep")));
+//////                                addMergeDate(mergeDates,i,depPrior);
+//////                                datePrior.put("mergeDates",mergeDates);
+//////                                // 更新准备时间
+//////                                datePrior.put("wntPrep",datePrior.getLong("wntPrep")+oDate.getLong("wntPrep"));
+//////                                // 更新任务总时间
+//////                                datePrior.put("wntDurTotal",datePrior.getLong("wntDurTotal")+oDate.getLong("wntDurTotal"));
+//////                                priorInfo.put("oDate",datePrior);
+//////                                // 获取之前存储下标
+//////                                int index = priorInfo.getInteger("index");
+//////                                // 添加下标到更新
+//////                                updateTask.put(index+"",JSONObject.parseObject(JSON.toJSONString(datePrior)));
+//////                            }
+//////                            priorMap.put(priorItem + "",priorInfo);
+//////                        }
+//////                    }
+//////                    // 更新信息
+//////                    grpBPrior.put(grpB,priorMap);
+//////                    depPrior.put(dep,grpBPrior);
+//////                    oDates.set(i,oDate);
+////                }
+//                // 遍历更新任务
+//                for (String s : updateTask.keySet()) {
+//                    oDates.set(Integer.parseInt(s),updateTask.getJSONObject(s));
+//                }
+//                // 遍历删除任务
+//                for (int i = delDateIndex.size()-1; i >= 0; i--) {
+////                    int index = delDateIndex.getInteger(i);
+////                    oDates.remove(index);
+//
+//                    JSONObject delInfo = delDateIndex.getJSONObject(i);
+//                    int index = delInfo.getInteger("index");
+//                    oDates.remove(index);
+//                }
+//                pratInfo.put("oDates",oDates);
+//                prodObj.put(prodId,pratInfo);
+////                oDateObj.put(layer,prodObj);
+//            }
+//            oDateObj.put(layer,prodObj);
+//        }
         return oDateObj;
     }
+
+    /**
+     * 以同部门同组别同序号进行合并任务,并且删除物料和返回最大物料开始时间
+     * @param id_OP 父订单编号
+     * @param oDateObj  所有零件信息
+     */
     protected void mergeDelSumMaxTimeByODateObj(String id_OP,JSONObject oDateObj){
         // 创建存储部门序号信息字典
         JSONObject depPrior = new JSONObject();
         System.out.println("开始oDateObj-3:");
         System.out.println(JSON.toJSONString(oDateObj));
         Map<String,Order> orderMap = new HashMap<>();
+        mergeDSMTCore(orderMap,depPrior,oDateObj,true);
+//        for (String layer : oDateObj.keySet()) {
+//            JSONObject prodObj = oDateObj.getJSONObject(layer);
+//            System.out.println("layer:"+layer);
+//            for (String prodId : prodObj.keySet()) {
+//                // 创建存储更新任务信息
+//                JSONObject updateTask = new JSONObject();
+//                JSONObject pratInfo = prodObj.getJSONObject(prodId);
+//                JSONArray oDates = pratInfo.getJSONArray("oDates");
+//                // 创建存储删除下标
+//                JSONArray delDateIndex = new JSONArray();
+//                System.out.println("oDates-开始:");
+//                System.out.println(JSON.toJSONString(oDates));
+//                mergeDateFor(delDateIndex,oDates,orderMap,depPrior,updateTask);
+//                // 遍历获取递归存储的时间处理信息
+////                for (int i = 0; i < oDates.size(); i++) {
+////                    // 获取i对应的时间处理信息
+////                    JSONObject oDate = oDates.getJSONObject(i);
+////                    String grpB = oDate.getString("grpB");
+////                    String dep = oDate.getString("dep");
+////                    // 根据组别获取部门
+////                    int priorItem = oDate.getInteger("priorItem");
+////                    oDate.put("grpUNum",oDate.getInteger("grpUNum")==null?1:oDate.getInteger("grpUNum"));
+////                    // 获取类别
+////                    Integer bmdpt = oDate.getInteger("bmdpt");
+////                    if (bmdpt == 3) {
+////                        // 添加当前下标
+////                        delDateIndex.add(qt.setJson("index",i,"type",0));
+////                        System.out.println("输出:物料返回");
+////                        continue;
+////                    }
+////                    if ((oDate.getBoolean("isSto") != null && oDate.getBoolean("isSto"))) {
+////                        delDateIndex.add(qt.setJson("index",i,"type",1));
+////                        System.out.println("输出:使用库存返回");
+////                        continue;
+////                    }
+////                    if (oDate.getBoolean("empty")) {
+////                        // 添加当前下标
+////                        delDateIndex.add(qt.setJson("index",i,"type",1));
+////                        System.out.println("开始输出:空任务返回：");
+////                        continue;
+////                    }
+////
+////                    int bcdStatus;
+////                    Order orderData;
+////                    String id_O = oDate.getString("id_O");
+////                    // 判断不为空
+////                    if (!orderMap.containsKey(id_O)) {
+////                        // 调用方法获取订单信息
+////                        orderData = qt.getMDContent(id_O,"action", Order.class);
+////                        orderMap.put(id_O,orderData);
+////                    } else {
+////                        orderData = orderMap.get(id_O);
+////                    }
+////                    if (null != orderData && null != orderData.getAction()
+////                            && null != orderData.getAction().getJSONArray("objAction")
+////                            && null != orderData.getAction().getJSONArray("objAction")
+////                            .getJSONObject(oDate.getInteger("index"))) {
+////                        // 获取进度信息
+////                        bcdStatus = orderData.getAction().getJSONArray("objAction")
+////                                .getJSONObject(oDate.getInteger("index")).getInteger("bcdStatus");
+////                        if (bcdStatus == 2 || bcdStatus == 8) {
+////                            // 添加当前下标
+////                            delDateIndex.add(qt.setJson("index",i,"type",2));
+////                            System.out.println("输出:进度已完成返回");
+////                            continue;
+////                        }
+////                    }
+////
+////                    if (bmdpt == 2) {
+////                        oDates.set(i,oDate);
+////                        continue;
+////                    }
+////
+////                    Long wntDur = oDate.getLong("wntDur");
+////                    Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
+////                    // 存储任务总时间
+////                    long taskTotalTime = (long)(wntDur * wn2qtyneed);
+////                    long wntDurTotal;
+////                    // 计算总时间
+////                    if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {
+////                        wntDurTotal = taskTotalTime / oDate.getInteger("grpUNum");
+////                    } else {
+////                        wntDurTotal = (long) Math.ceil((double) (taskTotalTime / oDate.getInteger("grpUNum")));
+////                    }
+////                    oDate.put("wntDurTotal",wntDurTotal);
+////
+////                    mergeDateCore(depPrior, dep, grpB, oDate, i, priorItem, oDates, delDateIndex, updateTask);
+//////                    // 获取部门的信息
+//////                    JSONObject grpBPrior = depPrior.getJSONObject(dep);
+//////                    // 定义存储任务数据和任务信息
+//////                    JSONObject priorMap;
+//////                    // 判断为空
+//////                    if (null == grpBPrior) {
+//////                        // 添加新数据
+//////                        grpBPrior = new JSONObject();
+//////                        priorMap = new JSONObject();
+//////                        JSONObject priorInfo = new JSONObject();
+//////                        priorInfo.put("oDate",oDate);
+//////                        priorInfo.put("index",i);
+//////                        priorMap.put(priorItem + "",priorInfo);
+//////                    }
+//////                    else {
+//////                        // 获取组别的信息
+//////                        priorMap = grpBPrior.getJSONObject(grpB);
+//////                        // 判断为空
+//////                        if (null == priorMap) {
+//////                            // 创建新的
+//////                            priorMap = new JSONObject();
+//////                            JSONObject priorInfo = new JSONObject();
+//////                            priorInfo.put("oDate",oDate);
+//////                            priorInfo.put("index",i);
+//////                            priorMap.put(priorItem + "",priorInfo);
+//////                        } else {
+//////                            // 获取序号信息
+//////                            JSONObject priorInfo = priorMap.getJSONObject(priorItem + "");
+//////                            // 判断为空
+//////                            if (null == priorInfo) {
+//////                                priorInfo = new JSONObject();
+//////                                priorInfo.put("oDate",oDate);
+//////                                priorInfo.put("index",i);
+//////                            }
+//////                            else {
+////////                                System.out.println("进入合并信息:"+i);
+////////                                System.out.println(JSON.toJSONString(oDate));
+////////                                System.out.println(JSON.toJSONString(priorInfo));
+//////                                JSONObject datePrior = priorInfo.getJSONObject("oDate");
+//////                                // 获取合并任务数据列表
+//////                                JSONArray mergeDates = datePrior.getJSONArray("mergeDates");
+//////                                if (null == mergeDates || mergeDates.size() == 0) {
+//////                                    // 创建列表
+//////                                    mergeDates = new JSONArray();
+//////                                    // 添加之前的任务数据信息
+////////                                    mergeDates.add(qt.setJson(
+////////                                            "wrdN",qt.cloneObj(datePrior.getJSONObject("wrdN"))
+////////                                            ,"id_O",datePrior.getString("id_O")
+////////                                            ,"id_P",datePrior.getString("id_P")
+////////                                            ,"index",datePrior.getInteger("index")
+////////                                            ,"layer",datePrior.getInteger("layer")
+////////                                            ,"id_PF",datePrior.getString("id_PF")
+////////                                            ,"dateIndex",i
+////////                                            ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+////////                                            ,"wntPrep",datePrior.getLong("wntPrep")));
+//////                                    addMergeDate(mergeDates,i,datePrior);
+//////                                }
+//////                                // 添加当前下标
+//////                                delDateIndex.add(qt.setJson("index",i,"type",3));
+//////                                // 添加当前任务数据信息
+////////                                mergeDates.add(qt.setJson(
+////////                                        "wrdN",qt.cloneObj(datePrior.getJSONObject("wrdN"))
+////////                                        ,"id_O",datePrior.getString("id_O")
+////////                                        ,"id_P",datePrior.getString("id_P")
+////////                                        ,"index",datePrior.getInteger("index")
+////////                                        ,"layer",datePrior.getInteger("layer")
+////////                                        ,"id_PF",datePrior.getString("id_PF")
+////////                                        ,"dateIndex",i
+////////                                        ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+////////                                        ,"wntPrep",datePrior.getLong("wntPrep")));
+//////                                addMergeDate(mergeDates,i,datePrior);
+//////                                datePrior.put("mergeDates",mergeDates);
+//////                                // 更新准备时间
+//////                                datePrior.put("wntPrep",datePrior.getLong("wntPrep")+oDate.getLong("wntPrep"));
+//////                                // 更新任务总时间
+//////                                datePrior.put("wntDurTotal",datePrior.getLong("wntDurTotal")+oDate.getLong("wntDurTotal"));
+//////                                priorInfo.put("oDate",datePrior);
+//////                                // 获取之前存储下标
+//////                                int index = priorInfo.getInteger("index");
+//////                                // 添加下标到更新
+//////                                updateTask.put(index+"",datePrior);
+//////                            }
+//////                            priorMap.put(priorItem + "",priorInfo);
+//////                        }
+//////                    }
+//////                    // 更新信息
+//////                    grpBPrior.put(grpB,priorMap);
+//////                    depPrior.put(dep,grpBPrior);
+//////                    oDates.set(i,oDate);
+////                }
+//                System.out.println("oDates-结束:");
+//                System.out.println(JSON.toJSONString(oDates));
+//                System.out.println("updateTask:");
+//                System.out.println(JSON.toJSONString(updateTask));
+//                // 遍历更新任务
+//                for (String s : updateTask.keySet()) {
+//                    oDates.set(Integer.parseInt(s),updateTask.getJSONObject(s));
+//                }
+//                // 创建存储最大时间
+//                long maxTeDurTotal = 0;
+//                // 遍历删除任务
+//                for (int i = delDateIndex.size()-1; i >= 0; i--) {
+//                    JSONObject delInfo = delDateIndex.getJSONObject(i);
+//                    int type = delInfo.getInteger("type");
+//                    int index = delInfo.getInteger("index");
+//                    if (type == 0) {
+//                        // 获取时间处理数据
+//                        JSONObject oDate = oDates.getJSONObject(index);
+//                        // 获取时间处理的实际准备时间
+//                        Long wntPrep = oDate.getLong("wntPrep");
+//                        Long wntDur = oDate.getLong("wntDur");
+//                        Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
+//                        // 存储任务总时间
+//                        long taskTotalTime = (long)(wntDur * wn2qtyneed);
+//                        oDate.put("grpUNum",oDate.getInteger("grpUNum")==null?1:oDate.getInteger("grpUNum"));
+//                        long grpUNum;
+//                        // 计算总时间
+//                        if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {
+//                            grpUNum = taskTotalTime / oDate.getInteger("grpUNum");
+//                        } else {
+//                            grpUNum = (long) Math.ceil((double) (taskTotalTime / oDate.getInteger("grpUNum")));
+//                        }
+//                        // 获取时间处理的总任务时间
+//                        long wntDurTotal = grpUNum+wntPrep;
+//                        if (wntDurTotal > maxTeDurTotal) {
+//                            maxTeDurTotal = wntDurTotal;
+//                        }
+//                    }
+//                    oDates.remove(index);
+//                }
+//                System.out.println("oDates-zui:");
+//                System.out.println(JSON.toJSONString(oDates));
+//                pratInfo.put("oDates",oDates);
+//                pratInfo.put("maxTeDurTotal",maxTeDurTotal);
+//                prodObj.put(prodId,pratInfo);
+//            }
+//            oDateObj.put(layer,prodObj);
+//        }
+        System.out.println("depPrior:");
+        System.out.println(JSON.toJSONString(depPrior));
+        System.out.println("结束oDateObj:");
+        System.out.println(JSON.toJSONString(oDateObj));
+        qt.setMDContent(id_OP,qt.setJson("casItemx.java.oDateObj",oDateObj), Order.class);
+    }
+
+    private void mergeDSMTCore(Map<String,Order> orderMap,JSONObject depPrior
+            ,JSONObject oDateObj,boolean isSumMax){
         for (String layer : oDateObj.keySet()) {
             JSONObject prodObj = oDateObj.getJSONObject(layer);
             System.out.println("layer:"+layer);
@@ -4122,153 +4397,176 @@ public class TimeZj {
                 // 创建存储更新任务信息
                 JSONObject updateTask = new JSONObject();
                 JSONObject pratInfo = prodObj.getJSONObject(prodId);
-                System.out.println("id_PF:"+prodId);
                 JSONArray oDates = pratInfo.getJSONArray("oDates");
                 // 创建存储删除下标
                 JSONArray delDateIndex = new JSONArray();
                 System.out.println("oDates-开始:");
                 System.out.println(JSON.toJSONString(oDates));
+                mergeDateFor(delDateIndex,oDates,orderMap,depPrior,updateTask);
                 // 遍历获取递归存储的时间处理信息
-                for (int i = 0; i < oDates.size(); i++) {
-                    // 获取i对应的时间处理信息
-                    JSONObject oDate = oDates.getJSONObject(i);
-                    String grpB = oDate.getString("grpB");
-                    String dep = oDate.getString("dep");
-                    // 根据组别获取部门
-                    int priorItem = oDate.getInteger("priorItem");
-                    oDate.put("grpUNum",oDate.getInteger("grpUNum")==null?1:oDate.getInteger("grpUNum"));
-                    // 获取类别
-                    Integer bmdpt = oDate.getInteger("bmdpt");
-                    if (bmdpt == 3) {
-                        // 添加当前下标
-                        delDateIndex.add(qt.setJson("index",i,"type",0));
-                        System.out.println("输出:物料返回");
-                        continue;
-                    }
-                    if ((oDate.getBoolean("isSto") != null && oDate.getBoolean("isSto"))) {
-                        delDateIndex.add(qt.setJson("index",i,"type",1));
-                        System.out.println("输出:使用库存返回");
-                        continue;
-                    }
-
-                    int bcdStatus;
-                    Order orderData;
-                    String id_O = oDate.getString("id_O");
-                    // 判断不为空
-                    if (!orderMap.containsKey(id_O)) {
-                        // 调用方法获取订单信息
-                        orderData = qt.getMDContent(id_O,"action", Order.class);
-                        orderMap.put(id_O,orderData);
-                    } else {
-                        orderData = orderMap.get(id_O);
-                    }
-                    if (null != orderData && null != orderData.getAction()
-                            && null != orderData.getAction().getJSONArray("objAction")
-                            && null != orderData.getAction().getJSONArray("objAction")
-                            .getJSONObject(oDate.getInteger("index"))) {
-                        // 获取进度信息
-                        bcdStatus = orderData.getAction().getJSONArray("objAction")
-                                .getJSONObject(oDate.getInteger("index")).getInteger("bcdStatus");
-                        if (bcdStatus == 2 || bcdStatus == 8) {
-                            // 添加当前下标
-                            delDateIndex.add(qt.setJson("index",i,"type",2));
-                            System.out.println("输出:进度已完成返回");
-                            continue;
-                        }
-                    }
-
-                    if (bmdpt == 2) {
-                        oDates.set(i,oDate);
-                        continue;
-                    }
-                    Long wntDur = oDate.getLong("wntDur");
-                    Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
-                    // 存储任务总时间
-                    long taskTotalTime = (long)(wntDur * wn2qtyneed);
-                    long wntDurTotal;
-                    // 计算总时间
-                    if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {
-                        wntDurTotal = taskTotalTime / oDate.getInteger("grpUNum");
-                    } else {
-                        wntDurTotal = (long) Math.ceil((double) (taskTotalTime / oDate.getInteger("grpUNum")));
-                    }
-                    oDate.put("wntDurTotal",wntDurTotal);
-
-                    // 获取部门的信息
-                    JSONObject grpBPrior = depPrior.getJSONObject(dep);
-                    // 定义存储任务数据和任务信息
-                    JSONObject priorMap;
-                    // 判断为空
-                    if (null == grpBPrior) {
-                        // 添加新数据
-                        grpBPrior = new JSONObject();
-                        priorMap = new JSONObject();
-                        JSONObject priorInfo = new JSONObject();
-                        priorInfo.put("oDate",oDate);
-                        priorInfo.put("index",i);
-                        priorMap.put(priorItem + "",priorInfo);
-                    }
-                    else {
-                        // 获取组别的信息
-                        priorMap = grpBPrior.getJSONObject(grpB);
-                        // 判断为空
-                        if (null == priorMap) {
-                            // 创建新的
-                            priorMap = new JSONObject();
-                            JSONObject priorInfo = new JSONObject();
-                            priorInfo.put("oDate",oDate);
-                            priorInfo.put("index",i);
-                            priorMap.put(priorItem + "",priorInfo);
-                        } else {
-                            // 获取序号信息
-                            JSONObject priorInfo = priorMap.getJSONObject(priorItem + "");
-                            // 判断为空
-                            if (null == priorInfo) {
-                                priorInfo = new JSONObject();
-                                priorInfo.put("oDate",oDate);
-                                priorInfo.put("index",i);
-                            } else {
-                                System.out.println("进入合并信息:"+i);
-                                System.out.println(JSON.toJSONString(oDate));
-                                System.out.println(JSON.toJSONString(priorInfo));
-                                JSONObject datePrior = priorInfo.getJSONObject("oDate");
-                                // 获取合并任务数据列表
-                                JSONArray mergeDates = datePrior.getJSONArray("mergeDates");
-                                if (null == mergeDates || mergeDates.size() == 0) {
-                                    // 创建列表
-                                    mergeDates = new JSONArray();
-                                    // 添加之前的任务数据信息
-                                    mergeDates.add(qt.setJson("id_O",datePrior.getString("id_O")
-                                            ,"index",datePrior.getInteger("index")
-                                            ,"wntDurTotal",datePrior.getLong("wntDurTotal")
-                                            ,"wntPrep",datePrior.getLong("wntPrep")));
-                                }
-                                // 添加当前下标
-                                delDateIndex.add(qt.setJson("index",i,"type",3));
-                                // 添加当前任务数据信息
-                                mergeDates.add(qt.setJson("id_O",oDate.getString("id_O")
-                                        ,"index",oDate.getInteger("index")
-                                        ,"wntDurTotal",oDate.getLong("wntDurTotal")
-                                        ,"wntPrep",oDate.getLong("wntPrep")));
-                                datePrior.put("mergeDates",mergeDates);
-                                // 更新准备时间
-                                datePrior.put("wntPrep",datePrior.getLong("wntPrep")+oDate.getLong("wntPrep"));
-                                // 更新任务总时间
-                                datePrior.put("wntDurTotal",datePrior.getLong("wntDurTotal")+oDate.getLong("wntDurTotal"));
-                                priorInfo.put("oDate",datePrior);
-                                // 获取之前存储下标
-                                int index = priorInfo.getInteger("index");
-                                // 添加下标到更新
-                                updateTask.put(index+"",datePrior);
-                            }
-                            priorMap.put(priorItem + "",priorInfo);
-                        }
-                    }
-                    // 更新信息
-                    grpBPrior.put(grpB,priorMap);
-                    depPrior.put(dep,grpBPrior);
-                    oDates.set(i,oDate);
-                }
+//                for (int i = 0; i < oDates.size(); i++) {
+//                    // 获取i对应的时间处理信息
+//                    JSONObject oDate = oDates.getJSONObject(i);
+//                    String grpB = oDate.getString("grpB");
+//                    String dep = oDate.getString("dep");
+//                    // 根据组别获取部门
+//                    int priorItem = oDate.getInteger("priorItem");
+//                    oDate.put("grpUNum",oDate.getInteger("grpUNum")==null?1:oDate.getInteger("grpUNum"));
+//                    // 获取类别
+//                    Integer bmdpt = oDate.getInteger("bmdpt");
+//                    if (bmdpt == 3) {
+//                        // 添加当前下标
+//                        delDateIndex.add(qt.setJson("index",i,"type",0));
+//                        System.out.println("输出:物料返回");
+//                        continue;
+//                    }
+//                    if ((oDate.getBoolean("isSto") != null && oDate.getBoolean("isSto"))) {
+//                        delDateIndex.add(qt.setJson("index",i,"type",1));
+//                        System.out.println("输出:使用库存返回");
+//                        continue;
+//                    }
+//                    if (oDate.getBoolean("empty")) {
+//                        // 添加当前下标
+//                        delDateIndex.add(qt.setJson("index",i,"type",1));
+//                        System.out.println("开始输出:空任务返回：");
+//                        continue;
+//                    }
+//
+//                    int bcdStatus;
+//                    Order orderData;
+//                    String id_O = oDate.getString("id_O");
+//                    // 判断不为空
+//                    if (!orderMap.containsKey(id_O)) {
+//                        // 调用方法获取订单信息
+//                        orderData = qt.getMDContent(id_O,"action", Order.class);
+//                        orderMap.put(id_O,orderData);
+//                    } else {
+//                        orderData = orderMap.get(id_O);
+//                    }
+//                    if (null != orderData && null != orderData.getAction()
+//                            && null != orderData.getAction().getJSONArray("objAction")
+//                            && null != orderData.getAction().getJSONArray("objAction")
+//                            .getJSONObject(oDate.getInteger("index"))) {
+//                        // 获取进度信息
+//                        bcdStatus = orderData.getAction().getJSONArray("objAction")
+//                                .getJSONObject(oDate.getInteger("index")).getInteger("bcdStatus");
+//                        if (bcdStatus == 2 || bcdStatus == 8) {
+//                            // 添加当前下标
+//                            delDateIndex.add(qt.setJson("index",i,"type",2));
+//                            System.out.println("输出:进度已完成返回");
+//                            continue;
+//                        }
+//                    }
+//
+//                    if (bmdpt == 2) {
+//                        oDates.set(i,oDate);
+//                        continue;
+//                    }
+//
+//                    Long wntDur = oDate.getLong("wntDur");
+//                    Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
+//                    // 存储任务总时间
+//                    long taskTotalTime = (long)(wntDur * wn2qtyneed);
+//                    long wntDurTotal;
+//                    // 计算总时间
+//                    if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {
+//                        wntDurTotal = taskTotalTime / oDate.getInteger("grpUNum");
+//                    } else {
+//                        wntDurTotal = (long) Math.ceil((double) (taskTotalTime / oDate.getInteger("grpUNum")));
+//                    }
+//                    oDate.put("wntDurTotal",wntDurTotal);
+//
+//                    mergeDateCore(depPrior, dep, grpB, oDate, i, priorItem, oDates, delDateIndex, updateTask);
+////                    // 获取部门的信息
+////                    JSONObject grpBPrior = depPrior.getJSONObject(dep);
+////                    // 定义存储任务数据和任务信息
+////                    JSONObject priorMap;
+////                    // 判断为空
+////                    if (null == grpBPrior) {
+////                        // 添加新数据
+////                        grpBPrior = new JSONObject();
+////                        priorMap = new JSONObject();
+////                        JSONObject priorInfo = new JSONObject();
+////                        priorInfo.put("oDate",oDate);
+////                        priorInfo.put("index",i);
+////                        priorMap.put(priorItem + "",priorInfo);
+////                    }
+////                    else {
+////                        // 获取组别的信息
+////                        priorMap = grpBPrior.getJSONObject(grpB);
+////                        // 判断为空
+////                        if (null == priorMap) {
+////                            // 创建新的
+////                            priorMap = new JSONObject();
+////                            JSONObject priorInfo = new JSONObject();
+////                            priorInfo.put("oDate",oDate);
+////                            priorInfo.put("index",i);
+////                            priorMap.put(priorItem + "",priorInfo);
+////                        } else {
+////                            // 获取序号信息
+////                            JSONObject priorInfo = priorMap.getJSONObject(priorItem + "");
+////                            // 判断为空
+////                            if (null == priorInfo) {
+////                                priorInfo = new JSONObject();
+////                                priorInfo.put("oDate",oDate);
+////                                priorInfo.put("index",i);
+////                            }
+////                            else {
+//////                                System.out.println("进入合并信息:"+i);
+//////                                System.out.println(JSON.toJSONString(oDate));
+//////                                System.out.println(JSON.toJSONString(priorInfo));
+////                                JSONObject datePrior = priorInfo.getJSONObject("oDate");
+////                                // 获取合并任务数据列表
+////                                JSONArray mergeDates = datePrior.getJSONArray("mergeDates");
+////                                if (null == mergeDates || mergeDates.size() == 0) {
+////                                    // 创建列表
+////                                    mergeDates = new JSONArray();
+////                                    // 添加之前的任务数据信息
+//////                                    mergeDates.add(qt.setJson(
+//////                                            "wrdN",qt.cloneObj(datePrior.getJSONObject("wrdN"))
+//////                                            ,"id_O",datePrior.getString("id_O")
+//////                                            ,"id_P",datePrior.getString("id_P")
+//////                                            ,"index",datePrior.getInteger("index")
+//////                                            ,"layer",datePrior.getInteger("layer")
+//////                                            ,"id_PF",datePrior.getString("id_PF")
+//////                                            ,"dateIndex",i
+//////                                            ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+//////                                            ,"wntPrep",datePrior.getLong("wntPrep")));
+////                                    addMergeDate(mergeDates,i,datePrior);
+////                                }
+////                                // 添加当前下标
+////                                delDateIndex.add(qt.setJson("index",i,"type",3));
+////                                // 添加当前任务数据信息
+//////                                mergeDates.add(qt.setJson(
+//////                                        "wrdN",qt.cloneObj(datePrior.getJSONObject("wrdN"))
+//////                                        ,"id_O",datePrior.getString("id_O")
+//////                                        ,"id_P",datePrior.getString("id_P")
+//////                                        ,"index",datePrior.getInteger("index")
+//////                                        ,"layer",datePrior.getInteger("layer")
+//////                                        ,"id_PF",datePrior.getString("id_PF")
+//////                                        ,"dateIndex",i
+//////                                        ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+//////                                        ,"wntPrep",datePrior.getLong("wntPrep")));
+////                                addMergeDate(mergeDates,i,datePrior);
+////                                datePrior.put("mergeDates",mergeDates);
+////                                // 更新准备时间
+////                                datePrior.put("wntPrep",datePrior.getLong("wntPrep")+oDate.getLong("wntPrep"));
+////                                // 更新任务总时间
+////                                datePrior.put("wntDurTotal",datePrior.getLong("wntDurTotal")+oDate.getLong("wntDurTotal"));
+////                                priorInfo.put("oDate",datePrior);
+////                                // 获取之前存储下标
+////                                int index = priorInfo.getInteger("index");
+////                                // 添加下标到更新
+////                                updateTask.put(index+"",datePrior);
+////                            }
+////                            priorMap.put(priorItem + "",priorInfo);
+////                        }
+////                    }
+////                    // 更新信息
+////                    grpBPrior.put(grpB,priorMap);
+////                    depPrior.put(dep,grpBPrior);
+////                    oDates.set(i,oDate);
+//                }
                 System.out.println("oDates-结束:");
                 System.out.println(JSON.toJSONString(oDates));
                 System.out.println("updateTask:");
@@ -4284,13 +4582,13 @@ public class TimeZj {
                     JSONObject delInfo = delDateIndex.getJSONObject(i);
                     int type = delInfo.getInteger("type");
                     int index = delInfo.getInteger("index");
-                    if (type == 0) {
+                    if (type == 0&&isSumMax) {
                         // 获取时间处理数据
                         JSONObject oDate = oDates.getJSONObject(index);
                         // 获取时间处理的实际准备时间
-                        Long wntPrep = oDate.getLong("wntPrep");
-                        Long wntDur = oDate.getLong("wntDur");
-                        Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
+                        long wntPrep = oDate.getLong("wntPrep")==null?60:oDate.getLong("wntPrep");
+                        Long wntDur = oDate.getLong("wntDur")==null?60:oDate.getLong("wntDur");
+                        Double wn2qtyneed = oDate.getDouble("wn2qtyneed")==null?2:oDate.getDouble("wn2qtyneed");
                         // 存储任务总时间
                         long taskTotalTime = (long)(wntDur * wn2qtyneed);
                         oDate.put("grpUNum",oDate.getInteger("grpUNum")==null?1:oDate.getInteger("grpUNum"));
@@ -4312,16 +4610,285 @@ public class TimeZj {
                 System.out.println("oDates-zui:");
                 System.out.println(JSON.toJSONString(oDates));
                 pratInfo.put("oDates",oDates);
-                pratInfo.put("maxTeDurTotal",maxTeDurTotal);
+                if (isSumMax) {
+                    pratInfo.put("maxTeDurTotal",maxTeDurTotal);
+                }
                 prodObj.put(prodId,pratInfo);
             }
             oDateObj.put(layer,prodObj);
         }
-        System.out.println("depPrior:");
-        System.out.println(JSON.toJSONString(depPrior));
-        System.out.println("结束oDateObj:");
-        System.out.println(JSON.toJSONString(oDateObj));
-        qt.setMDContent(id_OP,qt.setJson("casItemx.java.oDateObj",oDateObj), Order.class);
+    }
+
+    private void mergeDateFor(JSONArray delDateIndex,JSONArray oDates,Map<String, Order> orderMap
+            ,JSONObject depPrior,JSONObject updateTask){
+        for (int i = 0; i < oDates.size(); i++) {
+            // 获取i对应的时间处理信息
+            JSONObject oDate = oDates.getJSONObject(i);
+            String grpB = oDate.getString("grpB");
+            String dep = oDate.getString("dep");
+            // 根据组别获取部门
+            int priorItem = oDate.getInteger("priorItem");
+//            int priorItem = oDate.getInteger("wn0prior");
+            oDate.put("grpUNum",oDate.getInteger("grpUNum")==null?1:oDate.getInteger("grpUNum"));
+            // 获取类别
+            Integer bmdpt = oDate.getInteger("bmdpt");
+            if (bmdpt == 3) {
+                // 添加当前下标
+                delDateIndex.add(qt.setJson("index",i,"type",0));
+                System.out.println("输出:物料返回");
+                continue;
+            }
+            if ((oDate.getBoolean("isSto") != null && oDate.getBoolean("isSto"))) {
+                delDateIndex.add(qt.setJson("index",i,"type",1));
+                System.out.println("输出:使用库存返回");
+                continue;
+            }
+            if (oDate.getBoolean("empty")) {
+                // 添加当前下标
+                delDateIndex.add(qt.setJson("index",i,"type",1));
+                System.out.println("开始输出:空任务返回：");
+                continue;
+            }
+
+            int bcdStatus;
+            Order orderData;
+            String id_O = oDate.getString("id_O");
+            // 判断不为空
+            if (!orderMap.containsKey(id_O)) {
+                // 调用方法获取订单信息
+                orderData = qt.getMDContent(id_O,"action", Order.class);
+                orderMap.put(id_O,orderData);
+            } else {
+                orderData = orderMap.get(id_O);
+            }
+            if (null != orderData && null != orderData.getAction()
+                    && null != orderData.getAction().getJSONArray("objAction")
+                    && null != orderData.getAction().getJSONArray("objAction")
+                    .getJSONObject(oDate.getInteger("index"))) {
+                // 获取进度信息
+                bcdStatus = orderData.getAction().getJSONArray("objAction")
+                        .getJSONObject(oDate.getInteger("index")).getInteger("bcdStatus");
+                if (bcdStatus == 2 || bcdStatus == 8) {
+                    // 添加当前下标
+                    delDateIndex.add(qt.setJson("index",i,"type",2));
+                    System.out.println("输出:进度已完成返回");
+                    continue;
+                }
+            }
+
+            if (bmdpt == 2) {
+                oDates.set(i,oDate);
+                continue;
+            }
+
+            Long wntDur = oDate.getLong("wntDur");
+            Double wn2qtyneed = oDate.getDouble("wn2qtyneed");
+            // 存储任务总时间
+            long taskTotalTime = (long)(wntDur * wn2qtyneed);
+            long wntDurTotal;
+            // 计算总时间
+            if (taskTotalTime % oDate.getInteger("grpUNum") == 0) {
+                wntDurTotal = taskTotalTime / oDate.getInteger("grpUNum");
+            } else {
+                wntDurTotal = (long) Math.ceil((double) (taskTotalTime / oDate.getInteger("grpUNum")));
+            }
+            oDate.put("wntDurTotal",wntDurTotal);
+
+            mergeDateCore(depPrior, dep, grpB, oDate, i, priorItem, oDates, delDateIndex, updateTask);
+//                    // 获取部门的信息
+//                    JSONObject grpBPrior = depPrior.getJSONObject(dep);
+//                    // 定义存储任务数据和任务信息
+//                    JSONObject priorMap;
+//                    // 判断为空
+//                    if (null == grpBPrior) {
+//                        // 添加新数据
+//                        grpBPrior = new JSONObject();
+//                        priorMap = new JSONObject();
+//                        JSONObject priorInfo = new JSONObject();
+//                        priorInfo.put("oDate",oDate);
+//                        priorInfo.put("index",i);
+//                        priorMap.put(priorItem + "",priorInfo);
+//                    }
+//                    else {
+//                        // 获取组别的信息
+//                        priorMap = grpBPrior.getJSONObject(grpB);
+//                        // 判断为空
+//                        if (null == priorMap) {
+//                            // 创建新的
+//                            priorMap = new JSONObject();
+//                            JSONObject priorInfo = new JSONObject();
+//                            priorInfo.put("oDate",oDate);
+//                            priorInfo.put("index",i);
+//                            priorMap.put(priorItem + "",priorInfo);
+//                        } else {
+//                            // 获取序号信息
+//                            JSONObject priorInfo = priorMap.getJSONObject(priorItem + "");
+//                            // 判断为空
+//                            if (null == priorInfo) {
+//                                priorInfo = new JSONObject();
+//                                priorInfo.put("oDate",oDate);
+//                                priorInfo.put("index",i);
+//                            }
+//                            else {
+////                                System.out.println("进入合并信息:"+i);
+////                                System.out.println(JSON.toJSONString(oDate));
+////                                System.out.println(JSON.toJSONString(priorInfo));
+//                                JSONObject datePrior = priorInfo.getJSONObject("oDate");
+//                                // 获取合并任务数据列表
+//                                JSONArray mergeDates = datePrior.getJSONArray("mergeDates");
+//                                if (null == mergeDates || mergeDates.size() == 0) {
+//                                    // 创建列表
+//                                    mergeDates = new JSONArray();
+//                                    // 添加之前的任务数据信息
+////                                    mergeDates.add(qt.setJson(
+////                                            "wrdN",qt.cloneObj(datePrior.getJSONObject("wrdN"))
+////                                            ,"id_O",datePrior.getString("id_O")
+////                                            ,"id_P",datePrior.getString("id_P")
+////                                            ,"index",datePrior.getInteger("index")
+////                                            ,"layer",datePrior.getInteger("layer")
+////                                            ,"id_PF",datePrior.getString("id_PF")
+////                                            ,"dateIndex",i
+////                                            ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+////                                            ,"wntPrep",datePrior.getLong("wntPrep")));
+//                                    addMergeDate(mergeDates,i,datePrior);
+//                                }
+//                                // 添加当前下标
+//                                delDateIndex.add(qt.setJson("index",i,"type",3));
+//                                // 添加当前任务数据信息
+////                                mergeDates.add(qt.setJson(
+////                                        "wrdN",qt.cloneObj(datePrior.getJSONObject("wrdN"))
+////                                        ,"id_O",datePrior.getString("id_O")
+////                                        ,"id_P",datePrior.getString("id_P")
+////                                        ,"index",datePrior.getInteger("index")
+////                                        ,"layer",datePrior.getInteger("layer")
+////                                        ,"id_PF",datePrior.getString("id_PF")
+////                                        ,"dateIndex",i
+////                                        ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+////                                        ,"wntPrep",datePrior.getLong("wntPrep")));
+//                                addMergeDate(mergeDates,i,datePrior);
+//                                datePrior.put("mergeDates",mergeDates);
+//                                // 更新准备时间
+//                                datePrior.put("wntPrep",datePrior.getLong("wntPrep")+oDate.getLong("wntPrep"));
+//                                // 更新任务总时间
+//                                datePrior.put("wntDurTotal",datePrior.getLong("wntDurTotal")+oDate.getLong("wntDurTotal"));
+//                                priorInfo.put("oDate",datePrior);
+//                                // 获取之前存储下标
+//                                int index = priorInfo.getInteger("index");
+//                                // 添加下标到更新
+//                                updateTask.put(index+"",datePrior);
+//                            }
+//                            priorMap.put(priorItem + "",priorInfo);
+//                        }
+//                    }
+//                    // 更新信息
+//                    grpBPrior.put(grpB,priorMap);
+//                    depPrior.put(dep,grpBPrior);
+//                    oDates.set(i,oDate);
+        }
+    }
+    private void mergeDateCore(JSONObject depPrior,String dep,String grpB,JSONObject oDate
+            ,int i,int priorItem,JSONArray oDates,JSONArray delDateIndex,JSONObject updateTask){
+        // 获取部门的信息
+        JSONObject grpBPrior = depPrior.getJSONObject(dep);
+        // 定义存储任务数据和任务信息
+        JSONObject priorMap;
+        // 判断为空
+        if (null == grpBPrior) {
+            // 添加新数据
+            grpBPrior = new JSONObject();
+            priorMap = new JSONObject();
+            JSONObject priorInfo = new JSONObject();
+            priorInfo.put("oDate",oDate);
+            priorInfo.put("index",i);
+            priorMap.put(priorItem + "",priorInfo);
+        }
+        else {
+            // 获取组别的信息
+            priorMap = grpBPrior.getJSONObject(grpB);
+            // 判断为空
+            if (null == priorMap) {
+                // 创建新的
+                priorMap = new JSONObject();
+                JSONObject priorInfo = new JSONObject();
+                priorInfo.put("oDate",oDate);
+                priorInfo.put("index",i);
+                priorMap.put(priorItem + "",priorInfo);
+            } else {
+                // 获取序号信息
+                JSONObject priorInfo = priorMap.getJSONObject(priorItem + "");
+                // 判断为空
+                if (null == priorInfo) {
+                    priorInfo = new JSONObject();
+                    priorInfo.put("oDate",oDate);
+                    priorInfo.put("index",i);
+                }
+                else {
+//                                System.out.println("进入合并信息:"+i);
+//                                System.out.println(JSON.toJSONString(oDate));
+//                                System.out.println(JSON.toJSONString(priorInfo));
+                    JSONObject datePrior = priorInfo.getJSONObject("oDate");
+                    // 获取合并任务数据列表
+                    JSONArray mergeDates = datePrior.getJSONArray("mergeDates");
+                    if (null == mergeDates || mergeDates.size() == 0) {
+                        // 创建列表
+                        mergeDates = new JSONArray();
+                        // 添加之前的任务数据信息
+//                                    mergeDates.add(qt.setJson(
+//                                            "wrdN",qt.cloneObj(datePrior.getJSONObject("wrdN"))
+//                                            ,"id_O",datePrior.getString("id_O")
+//                                            ,"id_P",datePrior.getString("id_P")
+//                                            ,"index",datePrior.getInteger("index")
+//                                            ,"layer",datePrior.getInteger("layer")
+//                                            ,"id_PF",datePrior.getString("id_PF")
+//                                            ,"dateIndex",i
+//                                            ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+//                                            ,"wntPrep",datePrior.getLong("wntPrep")));
+                        addMergeDate(mergeDates,i,datePrior);
+                    }
+                    // 添加当前下标
+                    delDateIndex.add(qt.setJson("index",i,"type",3));
+                    // 添加当前任务数据信息
+//                                mergeDates.add(qt.setJson(
+//                                        "wrdN",qt.cloneObj(datePrior.getJSONObject("wrdN"))
+//                                        ,"id_O",datePrior.getString("id_O")
+//                                        ,"id_P",datePrior.getString("id_P")
+//                                        ,"index",datePrior.getInteger("index")
+//                                        ,"layer",datePrior.getInteger("layer")
+//                                        ,"id_PF",datePrior.getString("id_PF")
+//                                        ,"dateIndex",i
+//                                        ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+//                                        ,"wntPrep",datePrior.getLong("wntPrep")));
+                    addMergeDate(mergeDates,i,oDate);
+                    datePrior.put("mergeDates",mergeDates);
+                    // 更新准备时间
+                    datePrior.put("wntPrep",datePrior.getLong("wntPrep")+oDate.getLong("wntPrep"));
+                    // 更新任务总时间
+                    datePrior.put("wntDurTotal",datePrior.getLong("wntDurTotal")+oDate.getLong("wntDurTotal"));
+                    priorInfo.put("oDate",datePrior);
+                    // 获取之前存储下标
+                    int index = priorInfo.getInteger("index");
+                    // 添加下标到更新
+                    updateTask.put(index+"",datePrior);
+                }
+                priorMap.put(priorItem + "",priorInfo);
+            }
+        }
+        // 更新信息
+        grpBPrior.put(grpB,priorMap);
+        depPrior.put(dep,grpBPrior);
+        oDates.set(i,oDate);
+    }
+    private void addMergeDate(JSONArray mergeDates,int i,JSONObject datePrior){
+        mergeDates.add(qt.setJson(
+                "wrdN",qt.cloneObj(datePrior.getJSONObject("wrdN"))
+                ,"id_O",datePrior.getString("id_O")
+                ,"id_P",datePrior.getString("id_P")
+                ,"index",datePrior.getInteger("index")
+                ,"layer",datePrior.getInteger("layer")
+                ,"id_PF",datePrior.getString("id_PF")
+                ,"dateIndex",i
+                ,"wntDurTotal",datePrior.getLong("wntDurTotal")
+                ,"wntPrep",datePrior.getLong("wntPrep")));
     }
 
     /**
@@ -4506,8 +5073,7 @@ public class TimeZj {
      * @param oDateObj oDateObj信息
      */
     protected void setOrderFatherId(String id_O,JSONObject thisInfo,JSONObject actionIdO
-            ,JSONArray objOrder,JSONObject oDateObj
-    ){
+            ,JSONArray objOrder,JSONObject oDateObj){
         System.out.println("setOrderFatherId:添加前:");
         System.out.println(JSON.toJSONString(actionIdO));
         actionIdO.put(id_O,oDateObj);
