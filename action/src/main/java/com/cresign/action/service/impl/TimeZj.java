@@ -3381,6 +3381,7 @@ public class TimeZj {
         JSONObject depClearTasks = new JSONObject();
         for (String id_OP : clearTasksReal.keySet()) {
             JSONObject opData = clearTasksReal.getJSONObject(id_OP);
+            qt.setMDContent(id_OP,qt.setJson("casItemx.java.bmdEA",0), Order.class);
             for (String layerIn : opData.keySet()) {
                 JSONObject layerData = opData.getJSONObject(layerIn);
                 for (String id_PFIn : layerData.keySet()) {

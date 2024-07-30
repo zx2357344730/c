@@ -2386,17 +2386,59 @@ public class ZjTestServiceImpl implements ZjTestService {
     }
 
     @Override
-    public ApiResponse aiQuestingDeepSeekByObj(JSONObject tokData,JSONObject descObj) {
+    public ApiResponse aiQuestingDeepSeekByObj(JSONObject tokData,JSONObject descObj,String lang) {
+//        String s = null;
         JSONObject result = new JSONObject();
-        for (String key : descObj.keySet()) {
-            JSONObject descInfo = descObj.getJSONObject(key);
-            JSONArray messages = new JSONArray();
-            messages.add(qt.setJson("content",descInfo.getString("desc"),"role","user"));
-            String s = HttpClientUtil.sendPostHeader(qt.setJson("messages",messages,"model","deepseek-chat")
-                    ,"https://api.deepseek.com/chat/completions"
-                    ,qt.setJson("Authorization","Bearer sk-f31affd654a3409e9f6468b5875fe85e"
-                            ,"Accept","application/json"));
-            result.put(key,s);
+        try {
+
+//            StringBuilder descAll = new StringBuilder();
+//            List<String> descList = new ArrayList<>(descObj.keySet());
+//            for (int i = 0; i < descList.size(); i++) {
+//                String key = descList.get(i);
+//                if (i == descList.size() - 1) {
+//                    descAll.append(descObj.getString(key));
+//                } else {
+//                    descAll.append(descObj.getString(key));
+//                    descAll.append(",");
+//                }
+//            }
+//            for (String key : descObj.keySet()) {
+//                String desc = descObj.getString(key);
+////                descAll.append(desc);
+//                result.put(key,desc);
+//            }
+//            JSONArray messages = new JSONArray();
+//            System.out.println(descAll);
+//            messages.add(qt.setJson("content", descAll.toString(),"role","user"));
+            for (String key : descObj.keySet()) {
+                String desc = descObj.getString(key)+",的"+lang+"怎么说?";
+                String translateResult = HttpClientUtil.sendPostHeader(qt.setJson("messages"
+                                , qt.setArray(qt.setJson("content", desc, "role", "user")), "model", "deepseek-chat")
+                        , "https://api.deepseek.com/chat/completions"
+                        , qt.setJson("Authorization", "Bearer sk-f31affd654a3409e9f6468b5875fe85e"
+                                , "Accept", "application/json"));
+                JSONObject objResult = JSONObject.parseObject(translateResult);
+                String content = objResult.getJSONArray("choices").getJSONObject(0)
+                        .getJSONObject("message").getString("content");
+//                System.out.println(content);
+//                System.out.println(Arrays.toString(split));
+//                System.out.println("---");
+                String splitResult;
+                String[] split = content.split("\"");
+//                System.out.println(Arrays.toString(split));
+//                System.out.println("---");
+                int lastSlashIndex = content.lastIndexOf("\"");
+                if (lastSlashIndex!=(content.length()-1)) {
+                    splitResult = split[split.length-2];
+//                    System.out.println(split[split.length-2]);
+                } else {
+                    splitResult = split[split.length-1];
+//                    System.out.println(split[split.length-1]);
+                }
+                result.put(key,splitResult);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
         }
         return retResult.ok(CodeEnum.OK.getCode(),result);
     }

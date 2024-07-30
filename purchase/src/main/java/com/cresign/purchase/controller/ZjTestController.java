@@ -673,7 +673,7 @@ public class ZjTestController {
     public ApiResponse aiQuestingDeepSeekByObj(@RequestBody JSONObject resJson) {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
-            return zjService.aiQuestingDeepSeekByObj(tokData,resJson.getJSONObject("descObj"));
+            return zjService.aiQuestingDeepSeekByObj(tokData,resJson.getJSONObject("descObj"),resJson.getString("lang"));
         } catch (Exception e) {
             return getUserToken.err(new JSONObject(), "ZjTestController.aiQuestingDeepSeekByObj", e);
         }

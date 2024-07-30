@@ -221,7 +221,7 @@ public interface ZjTestService {
      * @return  执行结果
      */
     ApiResponse aiQuestingDeepSeek(JSONObject tokData,String desc);
-    ApiResponse aiQuestingDeepSeekByObj(JSONObject tokData,JSONObject descObj);
+    ApiResponse aiQuestingDeepSeekByObj(JSONObject tokData,JSONObject descObj,String lang);
 
     ApiResponse setCosFileByAt(String id_A);
 

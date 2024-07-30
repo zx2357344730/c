@@ -1358,7 +1358,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         nowData.put("objOrder", casItemData);
         casItemx.put(myCompId, nowData);
         JSONObject java = new JSONObject();
-        java.put("oDates",oDates);
+//        java.put("oDates",oDates);
         casItemx.put("java",java);
 
         // 创建产品零件递归信息
