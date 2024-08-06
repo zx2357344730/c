@@ -88,7 +88,7 @@ public interface TimeZjServiceComprehensive {
     void taskLastHandle(JSONObject timeConflictCopy, String id_C, String randomAll, JSONObject objTaskAll, JSONObject storageTaskWhereTime
             , JSONObject allImageTotalTime, Map<String,Map<String, Map<Long, List<Task>>>> allImageTasks, JSONObject recordNoOperation
             , String id_O, JSONArray objOrderList,JSONObject actionIdO,JSONObject allImageTeDate
-            ,JSONObject depAllTime,JSONObject thisInfo,JSONObject oDateObj);
+            ,JSONObject depAllTime,JSONObject thisInfo,JSONObject oDateObj,JSONObject oDate);
 
     /**
      * 时间处理收尾（结束）方法 ( TimeZjServiceImplX.timeHandle()方法的，分割到该类 )

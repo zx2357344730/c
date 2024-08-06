@@ -2411,7 +2411,7 @@ public class ZjTestServiceImpl implements ZjTestService {
 //            System.out.println(descAll);
 //            messages.add(qt.setJson("content", descAll.toString(),"role","user"));
             for (String key : descObj.keySet()) {
-                String desc = descObj.getString(key)+",的"+lang+"怎么说?";
+                String desc = descObj.getString(key)+",翻译成"+lang+"";
                 String translateResult = HttpClientUtil.sendPostHeader(qt.setJson("messages"
                                 , qt.setArray(qt.setJson("content", desc, "role", "user")), "model", "deepseek-chat")
                         , "https://api.deepseek.com/chat/completions"
@@ -2420,26 +2420,56 @@ public class ZjTestServiceImpl implements ZjTestService {
                 JSONObject objResult = JSONObject.parseObject(translateResult);
                 String content = objResult.getJSONArray("choices").getJSONObject(0)
                         .getJSONObject("message").getString("content");
-//                System.out.println(content);
+                System.out.println(descObj.getString(key)+"-翻译后-"+content);
+////                System.out.println(Arrays.toString(split));
+////                System.out.println("---");
+//                String splitResult;
+//                String[] split = content.split("\"");
 //                System.out.println(Arrays.toString(split));
 //                System.out.println("---");
-                String splitResult;
-                String[] split = content.split("\"");
+//                int lastSlashIndex = content.lastIndexOf("\"");
+//                if (lastSlashIndex!=(content.length()-1)) {
+//                    splitResult = split[split.length-2];
+////                    System.out.println(split[split.length-2]);
+//                } else {
+//                    splitResult = split[split.length-1];
+////                    System.out.println(split[split.length-1]);
+//                }
+//                System.out.println(JSON.toJSONString(splitResult));
+                result.put(key,content);
+
+//                String[] split = content.split("\"");
 //                System.out.println(Arrays.toString(split));
 //                System.out.println("---");
-                int lastSlashIndex = content.lastIndexOf("\"");
-                if (lastSlashIndex!=(content.length()-1)) {
-                    splitResult = split[split.length-2];
-//                    System.out.println(split[split.length-2]);
-                } else {
-                    splitResult = split[split.length-1];
-//                    System.out.println(split[split.length-1]);
-                }
-                result.put(key,splitResult);
+//                int lastSlashIndex = content.lastIndexOf("\"");
+//                List<String> sureResult = new ArrayList<>();
+//                if (lastSlashIndex!=(content.length()-1)) {
+//                    System.out.println("-1-");
+////                System.out.println(split[split.length-2]);
+////                result.add(split[split.length-2]);
+//                    for (int i = split.length-2; i >= 0; i-=2) {
+//                        sureResult.add(split[i]);
+//                    }
+//                } else {
+//                    System.out.println("-2-");
+////                System.out.println(split[split.length-1]);
+//                    for (int i = split.length-1; i >= 0; i-=2) {
+//                        sureResult.add(split[i]);
+//                    }
+//                }
+//                int index = content.indexOf("\"");
+//                System.out.println("index:"+index);
+//                if (sureResult.size() >= 2 && index == 0) {
+//                    sureResult.remove(sureResult.size()-1);
+//                }
+//                Set<String> resultNew = new HashSet<>(sureResult);
+//                System.out.println(JSON.toJSONString(resultNew));
+//                result.put(key,resultNew);
             }
         } catch (Exception e){
             e.printStackTrace();
         }
+        System.out.println(JSON.toJSONString(result));
         return retResult.ok(CodeEnum.OK.getCode(),result);
     }
 
@@ -2597,5 +2627,40 @@ public class ZjTestServiceImpl implements ZjTestService {
         result[1] = wntPrep;
         qt.setMDContent(id_P,qt.setJson("part.objItem",objItem), Prod.class);
         return result;
+    }
+
+    @Override
+    public ApiResponse updateOrderLDG(String id_O, String id_C) {
+        Order order = qt.getMDContent(id_O, "casItemx."+id_C, Order.class);
+        if (null == order || null == order.getCasItemx() || null == order.getCasItemx().getJSONObject(id_C)) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_FOUND.getCode(),"订单不存在");
+        }
+        JSONObject casInfo = order.getCasItemx().getJSONObject(id_C);
+        if (null == casInfo.getInteger("teOrderCount")) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"不是主订单");
+        }
+        Integer teOrderCount = casInfo.getInteger("teOrderCount");
+        Integer taOrderCount = casInfo.getInteger("taOrderCount");
+        if (Objects.equals(teOrderCount, taOrderCount)) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"无需更新");
+        }
+        JSONArray objOrder = casInfo.getJSONArray("objOrder");
+        int thisOrderCount = 0;
+        for (int i = 0; i < objOrder.size(); i++) {
+            JSONObject obj = objOrder.getJSONObject(i);
+            if (!obj.getString("id_O").equals(id_O)) {
+                Order mdContent = qt.getMDContent(obj.getString("id_O"), "info", Order.class);
+                if (null != mdContent && null != mdContent.getInfo()) {
+                    if (mdContent.getInfo().getLST() == 7) {
+                        thisOrderCount++;
+                    }
+                }
+            }
+        }
+        if (teOrderCount == thisOrderCount) {
+            qt.setMDContent(id_O,qt.setJson("action.lDG",2
+                    ,"casItemx."+id_C+".taOrderCount",thisOrderCount), Order.class);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), "更新状态成功");
     }
 }

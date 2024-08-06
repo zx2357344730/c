@@ -50,6 +50,7 @@ public interface ActionService {
 
     ApiResponse dgActivateAll(String id_O, JSONObject tokData);
     ApiResponse dgActivateStorage(JSONObject tokData, String id_O);
+    ApiResponse mergeAllAndStorage(String id_O, JSONObject tokData);
     String dgActivateStoSingle(JSONObject tokData, String id_O, Integer index);
 
     ApiResponse dgActivateSingle(String id_O, Integer index, String myCompId, String id_U, String grpU, String dep,JSONObject wrdNU);

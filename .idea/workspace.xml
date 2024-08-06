@@ -6,16 +6,21 @@
   <component name="ChangeListManager">
     <list default="true" id="128c9a26-d44c-4e41-b0e6-dabc284dd13b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/TimeZjServiceComprehensive.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/TimeZjServiceComprehensive.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowNewServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/FlowNewServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZj.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZj.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceComprehensiveImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceComprehensiveImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceImplX.java" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/java/com/cresign/action/service/impl/TimeZjServiceImplX.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/action/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/action/src/main/resources/bootstrap.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/SetAuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/controller/SetAuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/SetAuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/SetAuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SetAuthServicelmpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/java/com/cresign/login/service/impl/SetAuthServicelmpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/login/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/login/src/main/resources/bootstrap.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ActionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ActionController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ZjTestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/controller/ZjTestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/ActionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/ActionService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/ZjTestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/ZjTestService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ActionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ActionServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ZjTestServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/java/com/cresign/purchase/service/impl/ZjTestServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/purchase/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/purchase/src/main/resources/bootstrap.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/CosUpload.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/dbTools/CosUpload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/orderCard/OrderOItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/tools/src/main/java/com/cresign/tools/pojo/po/orderCard/OrderOItem.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +85,7 @@
       <recent name="com.cresign.action.utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.PurchaseApp">
+  <component name="RunManager" selected="Application.LoginApp">
     <configuration name="ActionApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.cresign.action.ActionApp" />
       <module name="action" />
@@ -177,8 +182,8 @@
       <list>
         <item itemvalue="Application.PurchaseApp" />
         <item itemvalue="Application.GatewayApp" />
-        <item itemvalue="Application.ActionApp" />
         <item itemvalue="Application.LoginApp" />
+        <item itemvalue="Application.ActionApp" />
         <item itemvalue="Application.Chat2App" />
       </list>
     </recent_temporary>

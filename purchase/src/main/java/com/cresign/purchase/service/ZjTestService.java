@@ -230,4 +230,6 @@ public interface ZjTestService {
     ApiResponse genJoinGroupCode(String id_C);
 
     ApiResponse scanJoinGroupCode(String id_U,String token);
+
+    ApiResponse updateOrderLDG(String id_O,String id_C);
 }

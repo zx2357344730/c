@@ -102,6 +102,26 @@ public class OrderOItem {
     }
 
     /**
+     * 单人单件用时
+     */
+    private long wntDur;
+    /**
+     * 采购 / 购买 时间
+     */
+    private long wntSafe;
+    /**
+     * 准备时间
+     */
+    private long wntPrep;
+    /**
+     * 损耗率
+     */
+    private double wn2qtymore;
+    /**
+     * 父订单的ref编号
+     */
+    private String refOP;
+    /**
      * 产品id
      */
     private String id_P = "";

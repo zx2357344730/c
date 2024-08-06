@@ -102,6 +102,17 @@ public class ActionController {
     }
 
     @SecurityParameter
+    @PostMapping("/v1/mergeAllAndStorage")
+    public ApiResponse mergeAllAndStorage(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return actionService.mergeAllAndStorage(reqJson.getString("id_O"), tokData);
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "ActionController.mergeAllAndStorage", e);
+        }
+    }
+
+    @SecurityParameter
     @PostMapping("/v1/dgActivateStoSingle")
     public ApiResponse dgActivateStoSingle(@RequestBody JSONObject reqJson) {
         JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));

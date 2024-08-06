@@ -184,7 +184,8 @@ public class SetAuthServicelmpl implements SetAuthService {
             result.put("id_C", id_C);
             result.put("token",token);
             return retResult.ok(CodeEnum.OK.getCode(), result);
-        } else {
+        }
+        else {
             // if user don't need to do anything, this is lSUser
             JSONArray es = qt.getES("lSUser", qt.setESFilt("id_U", id_U, "id_C", id_C));
             UserInfo info = user.getInfo();
@@ -219,6 +220,88 @@ public class SetAuthServicelmpl implements SetAuthService {
             return retResult.ok(CodeEnum.OK.getCode(), result);
         }
 
+    }
+
+    @Override
+    public ApiResponse switchCompSpecial(String id_U, String id_C
+//            , String grpU
+            , String clientType) {
+        if (id_U.equals("5f28bf314f65cc7dc2e60262"))
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGIN_NOTFOUND_USER.getCode(), null);
+        }
+        /*
+            设置 用户下次登录的公司 def_C
+         */
+
+        // 通过id_U查询该用户
+        User user = qt.getMDContent(id_U, Arrays.asList("rolex.objComp."+ id_C, "info"), User.class);
+        //  here delete old Token,
+        JSONObject userRolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
+        // if user actually exists in this company
+        if (userRolex != null) {
+            String token = oauth.setToken(user, id_C, userRolex.getString("grpU"),
+                    userRolex.getString("dep"), clientType);
+            Comp comp = qt.getMDContent(id_C, "info", Comp.class);
+            JSONObject updateData = new JSONObject();
+            if (!comp.getInfo().getPic().equals(userRolex.getString("picC")) ||
+                    !comp.getInfo().getWrdN().equals(userRolex.getJSONObject("wrdNC")))
+            {
+                updateData.put("rolex.objComp."+id_C+".wrdNC", comp.getInfo().getWrdN());
+                updateData.put("rolex.objComp."+id_C+".picC", comp.getInfo().getPic());
+
+            }
+
+            // 4. update def_C
+            updateData.put("info.def_C", id_C);
+
+            qt.setMDContent(id_U, updateData, User.class);
+
+            JSONObject result = new JSONObject();
+            result.put("grpU", userRolex.getString("grpU"));
+            result.put("dep", userRolex.getString("dep"));
+            result.put("picC", comp.getInfo().getPic());
+            result.put("wrdNC", comp.getInfo().getWrdN());
+//            result.put("wrdNU", comp.getInfo().getJSONObject("wrdN"));
+            result.put("id_C", id_C);
+            result.put("token",token);
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+        }
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOGIN_NOTFOUND_USER.getCode(), null);
+//        else {
+//            // if user don't need to do anything, this is lSUser
+//            JSONArray es = qt.getES("lSUser", qt.setESFilt("id_U", id_U, "id_C", id_C));
+//            UserInfo info = user.getInfo();
+//            Comp compInfo = qt.getMDContent(id_C, "info", Comp.class);
+//            Asset asset = qt.getConfig(id_C, "a-auth", "role");
+//            if (null == asset || null == asset.getRole()) {
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), null);
+//            }
+//            String thisGrpU;
+//            if (null == compInfo || null == compInfo.getInfo()) {
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.COMP_NOT_FOUND.getCode(), null);
+//            }
+//            if (null == es || es.size() == 0) {
+//                thisGrpU = "1099";
+//                lSUser lsUser = new lSUser(id_U,id_C, info.getWrdN()
+//                        ,info.getWrdNReal(),info.getWrddesc(),thisGrpU,info.getMbn(),"", info.getPic());
+//                qt.addES("lSUser",lsUser);
+//                addRoleCompInfo(id_C, id_U,thisGrpU,compInfo.getInfo().getPic(),compInfo.getInfo().getWrdN());
+//            } else {
+//                JSONObject jsonObject = es.getJSONObject(0);
+//                thisGrpU = jsonObject.getString("grpU");
+//                addRoleCompInfo(id_C, id_U,thisGrpU
+//                        ,compInfo.getInfo().getPic(),compInfo.getInfo().getWrdN());
+//            }
+//
+//            JSONObject result = new JSONObject();
+//            result.put("grpU", grpU);
+//            result.put("dep", "1000");
+//            result.put("picC", compInfo.getInfo().getPic());
+//            result.put("wrdNC", compInfo.getInfo().getWrdN());
+//            result.put("id_C", id_C);
+//            return retResult.ok(CodeEnum.OK.getCode(), result);
+//        }
     }
 
     @Override

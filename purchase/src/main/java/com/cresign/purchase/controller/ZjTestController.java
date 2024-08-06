@@ -700,4 +700,15 @@ public class ZjTestController {
             return getUserToken.err(new JSONObject(), "ZjTestController.setStFt", e);
         }
     }
+
+    @SecurityParameter
+    @PostMapping("/v1/updateOrderLDG")
+    public ApiResponse updateOrderLDG(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.updateOrderLDG(resJson.getString("id_O"),resJson.getString("id_C"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.updateOrderLDG", e);
+        }
+    }
 }

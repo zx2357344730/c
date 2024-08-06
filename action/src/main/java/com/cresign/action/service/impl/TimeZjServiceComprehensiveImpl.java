@@ -277,9 +277,9 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             , Map<String,Map<String, Map<Long, List<Task>>>> allImageTasks
             , JSONObject recordNoOperation, String id_O, JSONArray objOrderList
             ,JSONObject actionIdO,JSONObject allImageTeDate,JSONObject depAllTime
-            ,JSONObject thisInfo,JSONObject oDateObj){
+            ,JSONObject thisInfo,JSONObject oDateObj,JSONObject oDateOrder){
         System.out.println();
-        System.out.println("！！！-最后输出这里-！！！:");
+        System.out.println("！！！-最后输出这里-！！！id_O:"+id_O);
         System.out.println();
         System.out.println("输出--是否有未操作到的情况被处理--");
         JSONArray jsonArray = recordNoOperation.getJSONArray(randomAll);
@@ -570,6 +570,7 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
         Map<String,Asset> assetMap = new HashMap<>();
         System.out.println("处理的objTaskAll-2:");
         System.out.println(JSON.toJSONString(objTaskAll));
+        JSONObject groupOrderDate = new JSONObject();
         // 遍历全局任务信息的部门信息
         objTaskAll.keySet().forEach(dep -> {
             // 获取全局任务信息的部门信息
@@ -600,6 +601,17 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                     for (int i = 0; i < overallTasks.size(); i++) {
                         // 获取并且转换任务信息
                         Task task = JSONObject.parseObject(JSON.toJSONString(overallTasks.getJSONObject(i)), Task.class);
+
+                        if (task.getPriority() != -1) {
+                            JSONArray objDateGroup = groupOrderDate.getJSONArray(task.getId_O());
+                            if (null == objDateGroup || objDateGroup.size() == 0) {
+                                objDateGroup = new JSONArray();
+                            }
+                            objDateGroup.add(qt.setJson("id_O",task.getId_O(),"index",task.getIndex()
+                                    ,"tePStart",task.getTePStart(),"tePFinish",task.getTePFinish()));
+                            groupOrderDate.put(task.getId_O(),objDateGroup);
+                        }
+
                         // 判断任务为空任务
                         if (task.getPriority() != -1 && task.getWntDurTotal() == 0 && task.getTeDelayDate() == 0) {
                             // 添加删除下标
@@ -731,7 +743,8 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             JSONObject objTask;
             if (null == aArrange) {
                 objTask = objTaskAll.getJSONObject(dep);
-            } else {
+            }
+            else {
                 objTask = aArrange.getJSONObject("objTask");
                 // 获取全局任务信息的部门信息
                 JSONObject depOverallTask = objTaskAll.getJSONObject(dep);
@@ -780,6 +793,21 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             }
             System.out.println("最终写入数据库-结束");
         });
+        System.out.println("新groupOrderDate:");
+        System.out.println(JSON.toJSONString(groupOrderDate));
+        if (oDateOrder == null) {
+            oDateOrder = new JSONObject();
+        }
+        JSONObject objDate = oDateOrder.getJSONObject("objDate");
+        if (null == objDate) {
+            objDate = new JSONObject();
+        }
+        for (String key : groupOrderDate.keySet()) {
+            JSONArray dateArray = groupOrderDate.getJSONArray(key);
+            objDate.put(key,dateArray);
+        }
+        oDateOrder.put("objDate",objDate);
+        qt.setMDContent(id_O,qt.setJson("oDate",oDateOrder), Order.class);
         if (null != isQzTz.getInteger(randomAll) && isQzTz.getInteger(randomAll) == 1) {
             System.out.println("-----出现强制停止-----");
             System.out.println();

@@ -118,7 +118,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         if (salesOrderData.getInfo().getLST() != 7) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_NEED_FINAL.getCode(), "需要两方确认");
         }
-
+        JSONObject objActionCount = new JSONObject();
         // 转换oItem为list
         JSONArray oParent_objItem = salesOrderData.getOItem().getJSONArray("objItem");
 
@@ -140,7 +140,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                 salesOrderData.getInfo().getRefB() : salesOrderData.getInfo().getRef();
 
         // 创建递归存储的时间处理信息
-        List<OrderODate> oDates = new ArrayList<>();
+//        List<OrderODate> oDates = new ArrayList<>();
         /*
          * 内部结构
          * {
@@ -163,21 +163,17 @@ public class FlowNewServiceImpl implements FlowNewService {
             OrderAction objAction = new OrderAction(100, 0, 0, 1, salesOrderData.getId(),
                     refOP, objOItem.getId_P(), id_OParent, item, objOItem.getRKey(), 0, 0,
                     new JSONArray(), new JSONArray(), new JSONArray(), new JSONArray(), salesOrderData.getInfo().getWrdN(), objOItem.getWrdN());
-           
+//           addBmdPtCount(objActionCount,objOItem.getId_O(),2);
             ////////////////actually dg ///////////////////////
             JSONObject isJsLj = new JSONObject();
             isJsLj.put("1", 0);
             //dgType: 1 = firstLayer (sales Items), 2 = regular/subTask or subProd, 3 = depSplit regular
             // T/P - T/P -T/P.... problem is id_P == ""?
             this.dgProcess(
-                    1, myCompId, id_OParent,
-                    objOItem, objAction,
-                    casItemData,
-                    oParent_objItem, item,
-                    objOItemCollection, objActionCollection,
-                    pidActionCollection,
-                    objOItem.getId_P(), oDates
-                    , mergeJ, 0, null, isJsLj, dgProd,divideOrder,oDateObj,0,mergeInfo);
+                    1, myCompId, id_OParent, objOItem, objAction, casItemData,
+                    oParent_objItem, item, objOItemCollection, objActionCollection,
+                    pidActionCollection, objOItem.getId_P(), mergeJ, 0, null, isJsLj
+                    , dgProd,divideOrder,oDateObj,0,mergeInfo,refOP,objActionCount);
         }
 
         // 判断递归结果是否为空
@@ -200,10 +196,18 @@ public class FlowNewServiceImpl implements FlowNewService {
 
         // 获取递归结果键
         Set<String> actionCollection = objActionCollection.keySet();
+        System.out.println("actionCollection:");
+        System.out.println(JSON.toJSONString(actionCollection));
         // before getting so many id_A, get myComp id_A first for future use
         Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
         List<Order> addOrder = new ArrayList<>();
         Map<String,Asset> assetMap = new HashMap<>();
+        System.out.println("objActionCount:");
+        System.out.println(JSON.toJSONString(objActionCount));
+//        for (String key : objActionCount.keySet()) {
+//            JSONObject obj = objActionCount.getJSONObject(key);
+//            qt.setMDContent(key,qt.setJson("action.objActionCount",obj), Order.class);
+//        }
         // 遍历键，并创建采购单
         for (String thisOrderId : actionCollection) {
 
@@ -347,7 +351,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                                         } else {
                                             if (null != wn0UserCount && wn0UserCount > 0) {
                                                 depIdData.put(grpB,wn0UserCount);
-                                                System.out.println("wn0UserCount-人数写入:");
+//                                                System.out.println("wn0UserCount-人数写入:");
                                             } else {
                                                 depIdData.put(grpB,1);
                                                 System.out.println("wn0UserCount为空-默认-人数写入:");
@@ -381,14 +385,18 @@ public class FlowNewServiceImpl implements FlowNewService {
             }
 
             if (id_OParent.equals(thisOrderId)) {
-
+                System.out.println("zhu!!:"+(actionCollection.size()-2));
+                System.out.println(JSON.toJSONString(objActionCount.getJSONObject(salesOrderData.getId())));
                 // make sales order Action
                 if (setOrder) {
-                    this.updateSalesOrder(casItemData, unitAction, unitOItem, salesOrderData, grpBGroup, grpGroup, prodCompId
-                            , oDates, setOrder);
+                    this.updateSalesOrder(casItemData, unitAction, unitOItem, salesOrderData
+                            , grpBGroup, grpGroup, prodCompId, setOrder,(actionCollection.size()-1)
+                            ,objActionCount.getJSONObject(salesOrderData.getId()));
                 }
             }
             else {
+                System.out.println("fu!!:");
+                System.out.println(JSON.toJSONString(objActionCount.getJSONObject(thisOrderId)));
                 // else make Purchase Order
                 if (setOrder) {
 
@@ -449,6 +457,8 @@ public class FlowNewServiceImpl implements FlowNewService {
                     newPO_Action.put("grpBGroup", grpBGroup);
                     newPO_Action.put("grpGroup", grpGroup);
                     newPO_Action.put("wn2progress", 0.0);
+                    newPO_Action.put("lDG", 1);
+                    newPO_Action.put("objActionCount",objActionCount.getJSONObject(thisOrderId));
 
                     JSONObject oDate = new JSONObject();
                     JSONArray objData = new JSONArray();
@@ -491,6 +501,32 @@ public class FlowNewServiceImpl implements FlowNewService {
         // END FOR
         // 抛出操作成功异常
         return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
+    }
+    public void addBmdPtCount(JSONObject objActionCount,String id_O,int bmdpt){
+        JSONObject countInfo;
+        if (!objActionCount.containsKey(id_O)) {
+            countInfo = new JSONObject();
+            countInfo.put("teBmdPt1",0);
+            countInfo.put("teBmdPt2",0);
+            countInfo.put("teBmdPt3",0);
+            countInfo.put("taBmdPt1",0);
+            countInfo.put("taBmdPt2",0);
+            countInfo.put("taBmdPt3",0);
+        } else {
+            countInfo = objActionCount.getJSONObject(id_O);
+        }
+        switch (bmdpt){
+            case 1:
+                countInfo.put("teBmdPt1",countInfo.getInteger("teBmdPt1")+1);
+                break;
+            case 2:
+                countInfo.put("teBmdPt2",countInfo.getInteger("teBmdPt2")+1);
+                break;
+            case 3:
+                countInfo.put("teBmdPt3",countInfo.getInteger("teBmdPt3")+1);
+                break;
+        }
+        objActionCount.put(id_O,countInfo);
     }
 
     @Override
@@ -733,10 +769,11 @@ public class FlowNewServiceImpl implements FlowNewService {
             JSONArray casItemData,JSONArray partArray, Integer partIndex,
             Map<String, List<OrderOItem>> objOItemCollection,
             Map<String, List<OrderAction>> objActionCollection,
-            Map<String, OrderAction> pidActionCollection,
-            String id_PF, List<OrderODate> oDates, JSONObject mergeJ
-            , int csSta, String csId_P, JSONObject isJsLj, Map<String, Prod> dgProd
-            ,String divideOrder,JSONObject oDateObj,int layer,JSONObject mergeInfo) {
+            Map<String, OrderAction> pidActionCollection, String id_PF
+//            , List<OrderODate> oDates
+            , JSONObject mergeJ, int csSta, String csId_P, JSONObject isJsLj, Map<String, Prod> dgProd
+            ,String divideOrder,JSONObject oDateObj,int layer,JSONObject mergeInfo,String refOP
+            ,JSONObject objActionCount) {
         //ZJ
         isJsLj.put("1", (isJsLj.getInteger("1") + 1));
         int dq = isJsLj.getInteger("1");
@@ -818,7 +855,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             }
             // 添加信息
             orderODate.setCsSta(timeHandleSerialNoIsOneInside);
-            oDates.add(orderODate);
+//            oDates.add(orderODate);
             JSONObject layerObj = oDateObj.getJSONObject(layer + "");
             JSONObject prodObj;
             boolean isSetProdObj = false;
@@ -989,6 +1026,11 @@ public class FlowNewServiceImpl implements FlowNewService {
 
             objOItem.setTmd(dateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             objOItem.setSeq("3"); // set DGAction specific seq = 3
+            objOItem.setRefOP(refOP);
+            objOItem.setWn2qtymore(partInfo.getDouble("wn2qtymore")==null?0:partInfo.getDouble("wn2qtymore"));
+            objOItem.setWntPrep(partInfo.getLong("wntPrep")==null?60:partInfo.getLong("wntPrep"));
+            objOItem.setWntSafe(partInfo.getLong("wntSafe")==null?3600:partInfo.getLong("wntSafe"));
+            objOItem.setWntDur(partInfo.getLong("wntDur")==null?30:partInfo.getLong("wntDur"));
 
             // if C=CB and bmdpt =1 means it's my own process, I cannot set grp
             if (prodCompId.equals(myCompId) && partInfo.getInteger("bmdpt").equals(1)) {
@@ -1157,20 +1199,17 @@ public class FlowNewServiceImpl implements FlowNewService {
                 objAction.setBmdpt(2);
                 layer++;
                 OrderODate orderODate = setODate(id_PF, objOItem, partInfo, objAction, timeHandleSerialNoIsOneInside
-                        , oDates, mergeJ, oDateObj, layer, upperOItem.getId_P(),false,mergeInfo);
+                        , mergeJ, oDateObj, layer, upperOItem.getId_P(),false,mergeInfo,objActionCount);
                 // the first item's bmdpt != 6, if ==6 then ALL parts in that part will == 6, then need pick by igura
                 if (partArrayNext.getJSONObject(0).getInteger("bmdpt") != 6) {
                     // 进下一层处理part递归
                     for (int item = 0; item < partArrayNext.size(); item++) {
                         this.dgProcess(
-                                dgType + 1, myCompId, id_OParent,
-                                objOItem, objAction,
-                                casItemData, partArrayNext, item,
-                                objOItemCollection, objActionCollection,
-                                pidActionCollection,
-                                thisProd.getId(), oDates
-                                , mergeJ, timeHandleSerialNoIsOneInside
-                                , csId_P, isJsLj, dgProd,divideOrder,oDateObj,layer,mergeInfo);
+                                dgType + 1, myCompId, id_OParent, objOItem, objAction,
+                                casItemData, partArrayNext, item, objOItemCollection, objActionCollection,
+                                pidActionCollection, thisProd.getId(), mergeJ, timeHandleSerialNoIsOneInside
+                                , csId_P, isJsLj, dgProd,divideOrder,oDateObj,layer,mergeInfo,refOP
+                                ,objActionCount);
 //                        //changed dgType
 //                        // now check the last time and put into objAction a key
 //                        if (dgType == 2 && item + 1 == partArrayNext.size()) {
@@ -1218,11 +1257,12 @@ public class FlowNewServiceImpl implements FlowNewService {
             else {
                 if (layer == 0) {
                     setODate(id_PF,objOItem,partInfo,objAction,timeHandleSerialNoIsOneInside
-                            ,oDates,mergeJ,oDateObj,1, upperOItem.getId_P()
-                            ,true,mergeInfo);
+                            ,mergeJ,oDateObj,1, upperOItem.getId_P()
+                            ,true,mergeInfo,objActionCount);
                 } else {
                     setODate(id_PF,objOItem,partInfo,objAction,timeHandleSerialNoIsOneInside
-                            ,oDates,mergeJ,oDateObj,layer, upperOItem.getId_P(),true,mergeInfo);
+                            ,mergeJ,oDateObj,layer, upperOItem.getId_P(),true
+                            ,mergeInfo,objActionCount);
                 }
             }
         }
@@ -1230,9 +1270,10 @@ public class FlowNewServiceImpl implements FlowNewService {
     }
 
     private OrderODate setODate(String id_PF,OrderOItem objOItem,JSONObject partInfo,OrderAction objAction
-            ,int timeHandleSerialNoIsOneInside,List<OrderODate> oDates,JSONObject mergeJ
-            ,JSONObject oDateObj,int layer,String uppId_P,boolean isSetODateObj
-            ,JSONObject mergeInfo){
+            ,int timeHandleSerialNoIsOneInside
+//            ,List<OrderODate> oDates
+            ,JSONObject mergeJ,JSONObject oDateObj,int layer,String uppId_P,boolean isSetODateObj
+            ,JSONObject mergeInfo,JSONObject objActionCount){
         // 创建订单时间操作处理专用类
         OrderODate orderODate = new OrderODate();
         // 添加时间操作处理信息
@@ -1293,12 +1334,13 @@ public class FlowNewServiceImpl implements FlowNewService {
         orderODate.setGrpB("".equals(objOItem.getGrpB())?objOItem.getGrp():objOItem.getGrpB());
         orderODate.setWrdN(qt.setJson("cn",objOItem.getWrdN().getString("cn")));
         orderODate.setLayer(layer);
-        oDates.add(orderODate);
-        // 判断存储零件编号的合并信息记录合并时的下标为空
-        if (null == mergeJ.getInteger(objOItem.getId_P())) {
-            // 添加下标信息
-            mergeJ.put(objOItem.getId_P(), oDates.size() - 1);
-        }
+        addBmdPtCount(objActionCount, orderODate.getId_O(), orderODate.getBmdpt());
+//        oDates.add(orderODate);
+//        // 判断存储零件编号的合并信息记录合并时的下标为空
+//        if (null == mergeJ.getInteger(objOItem.getId_P())) {
+//            // 添加下标信息
+//            mergeJ.put(objOItem.getId_P(), oDates.size() - 1);
+//        }
 
         if (!isSetODateObj) {
             return orderODate;
@@ -1330,6 +1372,11 @@ public class FlowNewServiceImpl implements FlowNewService {
             oDatesP = new JSONArray();
         }
         oDatesP.add(orderODate);
+        // 判断存储零件编号的合并信息记录合并时的下标为空
+        if (null == mergeJ.getInteger(objOItem.getId_P())) {
+            // 添加下标信息
+            mergeJ.put(objOItem.getId_P(), oDatesP.size() - 1);
+        }
         if (objAction.getBmdpt() != 1 && !mergeInfo.containsKey(objOItem.getId_P())) {
             mergeInfo.put(objOItem.getId_P(),qt.setJson("layer",layer,"id_PF",uppId_P
                     ,"dateIndex",oDatesP.size()-1,"qty",objOItem.getWn2qtyneed()));
@@ -1350,12 +1397,15 @@ public class FlowNewServiceImpl implements FlowNewService {
     public void updateSalesOrder(JSONArray casItemData, List<OrderAction> salesAction
             , List<OrderOItem> salesOItem, Order orderParentData
             , JSONObject grpBGroup, JSONObject grpGroup, String myCompId
-            , List<OrderODate> oDates,boolean isSet
+//            , List<OrderODate> oDates
+            ,boolean isSet,int orderCount,JSONObject objActionCount
     ) {
         // 添加订单基础信息存储
         JSONObject casItemx = new JSONObject();
         JSONObject nowData = new JSONObject();
         nowData.put("objOrder", casItemData);
+        nowData.put("teOrderCount",orderCount);
+        nowData.put("taOrderCount",0);
         casItemx.put(myCompId, nowData);
         JSONObject java = new JSONObject();
 //        java.put("oDates",oDates);
@@ -1366,18 +1416,20 @@ public class FlowNewServiceImpl implements FlowNewService {
 
         // 添加对应的产品零件递归信息
         salesOrder_Action.put("objAction", salesAction);
-        salesOrder_Action.put("isDg", "true");
         salesOrder_Action.put("grpBGroup", grpBGroup);
         salesOrder_Action.put("grpGroup", grpGroup);
         salesOrder_Action.put("wn2progress", 0.0);
+        salesOrder_Action.put("lDG", 1);
+        salesOrder_Action.put("objActionCount",objActionCount);
 
-        JSONObject oDate = new JSONObject();
-        JSONArray objData = new JSONArray();
-        for (OrderAction orderAction : salesAction) {
-            objData.add(qt.setJson("index",orderAction.getIndex(),"id_O",orderAction.getId_O()));
-        }
-        oDate.put("objData",objData);
-        orderParentData.setODate(oDate);
+//        JSONObject oDate = new JSONObject();
+//        JSONArray objData = new JSONArray();
+//        for (OrderAction orderAction : salesAction) {
+//            objData.add(qt.setJson("index",orderAction.getIndex(),"id_O",orderAction.getId_O()));
+//        }
+//        oDate.put("objData",objData);
+//        orderParentData.setODate(oDate);
+
         //ZJ
 //        salesOrder_Action.put("oDates", oDates);
 //        salesOrder_Action.put("oTasks", oTasks);
