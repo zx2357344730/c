@@ -37,6 +37,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -2386,11 +2387,17 @@ public class ZjTestServiceImpl implements ZjTestService {
     }
 
     @Override
-    public ApiResponse aiQuestingDeepSeekByObj(JSONObject tokData,JSONObject descObj,String lang) {
+    public ApiResponse aiQuestingDeepSeekByObj(JSONObject tokData,JSONObject descObj,String lang,String theOriginal) {
 //        String s = null;
         JSONObject result = new JSONObject();
+//        String y = "中文";
         try {
 
+            Date now = new Date();
+            DateFormat df = DateFormat.getTimeInstance();
+            String currentTime = df.format(now);
+            System.out.println("开始时间:"+currentTime);
+            int size = descObj.keySet().size();
 //            StringBuilder descAll = new StringBuilder();
 //            List<String> descList = new ArrayList<>(descObj.keySet());
 //            for (int i = 0; i < descList.size(); i++) {
@@ -2411,16 +2418,23 @@ public class ZjTestServiceImpl implements ZjTestService {
 //            System.out.println(descAll);
 //            messages.add(qt.setJson("content", descAll.toString(),"role","user"));
             for (String key : descObj.keySet()) {
-                String desc = descObj.getString(key)+",翻译成"+lang+"";
-                String translateResult = HttpClientUtil.sendPostHeader(qt.setJson("messages"
+                String desc = "'"+descObj.getString(key)+"'是"+theOriginal+",翻译成"+lang
+                        +",不需要解释,把翻译结果以纯json返回,json键名为're'";
+                String translateResult = HttpClientUtil.sendPostAsync(qt.setJson("messages"
                                 , qt.setArray(qt.setJson("content", desc, "role", "user")), "model", "deepseek-chat")
                         , "https://api.deepseek.com/chat/completions"
                         , qt.setJson("Authorization", "Bearer sk-f31affd654a3409e9f6468b5875fe85e"
-                                , "Accept", "application/json"));
-                JSONObject objResult = JSONObject.parseObject(translateResult);
-                String content = objResult.getJSONArray("choices").getJSONObject(0)
-                        .getJSONObject("message").getString("content");
-                System.out.println(descObj.getString(key)+"-翻译后-"+content);
+                                , "Accept", "application/json"),result,key);
+//                String translateResult = HttpClientUtil.sendPostHeaderAndAsync(qt.setJson("messages"
+//                                , qt.setArray(qt.setJson("content", desc, "role", "user")), "model", "deepseek-chat")
+//                        , "https://api.deepseek.com/chat/completions"
+//                        , qt.setJson("Authorization", "Bearer sk-f31affd654a3409e9f6468b5875fe85e"
+//                                , "Accept", "application/json"),result,key);
+//                JSONObject objResult = JSONObject.parseObject(translateResult);
+//                String content = objResult.getJSONArray("choices").getJSONObject(0)
+//                        .getJSONObject("message").getString("content");
+//                System.out.println(descObj.getString(key)+"-翻译后-"+content);
+
 ////                System.out.println(Arrays.toString(split));
 ////                System.out.println("---");
 //                String splitResult;
@@ -2436,7 +2450,7 @@ public class ZjTestServiceImpl implements ZjTestService {
 ////                    System.out.println(split[split.length-1]);
 //                }
 //                System.out.println(JSON.toJSONString(splitResult));
-                result.put(key,content);
+//                result.put(key,content);
 
 //                String[] split = content.split("\"");
 //                System.out.println(Arrays.toString(split));
@@ -2464,8 +2478,24 @@ public class ZjTestServiceImpl implements ZjTestService {
 //                }
 //                Set<String> resultNew = new HashSet<>(sureResult);
 //                System.out.println(JSON.toJSONString(resultNew));
+////                List<String> list = new ArrayList<>(resultNew);
 //                result.put(key,resultNew);
+
+//                String modifiedString = content.replace("```json", "");
+//                modifiedString = modifiedString.replace("```","");
+//                System.out.println(modifiedString);
+//                result.put(key,JSONObject.parseObject(modifiedString).getString("re"));
             }
+            System.out.println(JSON.toJSONString(result));
+            while (true) {
+                if (result.keySet().size() == size) {
+                    System.out.println("all全部请求成功!");
+                    break;
+                }
+            }
+            now = new Date();
+            currentTime = df.format(now);
+            System.out.println("结束时间:"+currentTime);
         } catch (Exception e){
             e.printStackTrace();
         }
