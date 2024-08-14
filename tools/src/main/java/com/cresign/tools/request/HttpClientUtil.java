@@ -1,6 +1,5 @@
 package com.cresign.tools.request;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -17,25 +16,14 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.nio.client.HttpAsyncClient;
-import org.apache.http.nio.client.methods.HttpAsyncMethods;
-import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Future;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.util.EntityUtils;
 
 /*
  * 利用HttpClient进行post请求的工具类(https发送)
@@ -194,65 +182,7 @@ public class HttpClientUtil {
 //        return result;
     }
 
-    public static String sendPostHeaderAndAsync(JSONObject json, String URL,JSONObject newHeader,JSONObject resultObj
-            ,String keyOutside) {
-        CloseableHttpAsyncClient httpclient = HttpAsyncClients.createDefault();
-        String result;
-        try {
-            httpclient.start();
-            HttpPost request = new HttpPost(URL);
-            RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(50000).setSocketTimeout(80000).build();
-            request.setConfig(requestConfig);
-            request.setHeader("Content-Type", "application/json");
-            for (String key : newHeader.keySet()) {
-                request.setHeader(key, newHeader.getString(key));
-            }
-            StringEntity s = new StringEntity(json.toString(), "utf-8");
-            s.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
-                    "application/json"));
-            request.setEntity(s);
-            Future<HttpResponse> future = httpclient.execute(request, null);
-            // 获取结果
-            HttpResponse response = future.get();
-            // 获取响应输入流
-            InputStream inStream = response.getEntity().getContent();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    inStream, StandardCharsets.UTF_8));
-            StringBuilder strBer = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null)
-                strBer.append(line).append("\n");
-            inStream.close();
-            result = strBer.toString();
-            httpclient.close();
-            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-//                System.out.println("请求服务器成功，做相应处理");
-                JSONObject objResult = JSONObject.parseObject(result);
-                String content = objResult.getJSONArray("choices").getJSONObject(0)
-                        .getJSONObject("message").getString("content");
-//                System.out.println(descObj.getString(key)+"-翻译后-"+content);
-                String modifiedString = content.replace("```json", "");
-                modifiedString = modifiedString.replace("```","");
-                System.out.println(modifiedString);
-                resultObj.put(keyOutside,JSONObject.parseObject(modifiedString).getString("re"));
-                return result;
-            } else {
-                System.out.println("请求服务端失败" + result);
-                return "";
-            }
-        } catch (Exception e) {
-            try {
-                httpclient.close();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-            System.out.println("请求异常："+e.getMessage());
-            throw new RuntimeException(e);
-        }
-//        return result;
-    }
-
-    public static String sendPostAsync(JSONObject json, String URL,JSONObject newHeader,JSONObject resultObj
+    public static void sendPostAsync(JSONObject json, String URL,JSONObject newHeader,JSONObject resultObj
             ,String keyOutside){
         CloseableHttpAsyncClient httpclient = HttpAsyncClients.createDefault();
         try {
@@ -268,7 +198,7 @@ public class HttpClientUtil {
             s.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
                     "application/json"));
             request.setEntity(s);
-            Future<HttpResponse> execute = httpclient.execute(request, new FutureCallback<HttpResponse>() {
+            httpclient.execute(request, new FutureCallback<HttpResponse>() {
                 public void completed(HttpResponse response) {
                     try {
                         // 获取响应输入流
@@ -287,9 +217,9 @@ public class HttpClientUtil {
                                 .getJSONObject("message").getString("content");
                         String modifiedString = content.replace("```json", "");
                         modifiedString = modifiedString.replace("```", "");
-                        System.out.println(modifiedString);
+//                        System.out.println(modifiedString);
                         resultObj.put(keyOutside, JSONObject.parseObject(modifiedString).getString("re"));
-                        System.out.println("请求成功:");
+//                        System.out.println("请求成功:");
                         // 处理响应
 //                        System.out.println(response.getStatusLine());
                     } catch (Exception e) {
@@ -307,10 +237,8 @@ public class HttpClientUtil {
                     System.out.println("请求取消");
                 }
             });
-            return "1";
         } catch (Exception e) {
             e.printStackTrace();
-            return "2";
         }
     }
  

@@ -3,7 +3,6 @@ package com.cresign.purchase.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.cresign.purchase.service.ZjTestService;
 import com.cresign.purchase.utils.ExcelUtils;
 import com.cresign.tools.advice.RetResult;
@@ -18,7 +17,6 @@ import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
 import com.cresign.tools.pojo.es.*;
 import com.cresign.tools.pojo.po.*;
-import com.cresign.tools.pojo.po.orderCard.OrderAction;
 import com.cresign.tools.pojo.po.orderCard.OrderInfo;
 import com.cresign.tools.pojo.po.userCard.UserInfo;
 import com.cresign.tools.request.HttpClientUtil;
@@ -42,6 +40,11 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author tang
@@ -2363,7 +2366,8 @@ public class ZjTestServiceImpl implements ZjTestService {
     @Override
     public ApiResponse aiQuestingDeepSeek(JSONObject tokData, String desc) {
         LogFlow usageLog = new LogFlow();
-        usageLog.setUsageLog(tokData, "aiQuest", desc, 3, "", "lBInfo", qt.setJson("cn", "AI quest"),"1000", "");
+        usageLog.setUsageLog(tokData, "aiQuest", desc, 3, ""
+                , "lBInfo", qt.setJson("cn", "AI quest"),"1000", "");
         ws.sendWS(usageLog);
 
         JSONArray messages = new JSONArray();
@@ -2388,111 +2392,51 @@ public class ZjTestServiceImpl implements ZjTestService {
 
     @Override
     public ApiResponse aiQuestingDeepSeekByObj(JSONObject tokData,JSONObject descObj,String lang,String theOriginal) {
-//        String s = null;
         JSONObject result = new JSONObject();
-//        String y = "中文";
         try {
-
             Date now = new Date();
             DateFormat df = DateFormat.getTimeInstance();
             String currentTime = df.format(now);
             System.out.println("开始时间:"+currentTime);
             int size = descObj.keySet().size();
-//            StringBuilder descAll = new StringBuilder();
-//            List<String> descList = new ArrayList<>(descObj.keySet());
-//            for (int i = 0; i < descList.size(); i++) {
-//                String key = descList.get(i);
-//                if (i == descList.size() - 1) {
-//                    descAll.append(descObj.getString(key));
-//                } else {
-//                    descAll.append(descObj.getString(key));
-//                    descAll.append(",");
-//                }
-//            }
-//            for (String key : descObj.keySet()) {
-//                String desc = descObj.getString(key);
-////                descAll.append(desc);
-//                result.put(key,desc);
-//            }
-//            JSONArray messages = new JSONArray();
-//            System.out.println(descAll);
-//            messages.add(qt.setJson("content", descAll.toString(),"role","user"));
             for (String key : descObj.keySet()) {
                 String desc = "'"+descObj.getString(key)+"'是"+theOriginal+",翻译成"+lang
                         +",不需要解释,把翻译结果以纯json返回,json键名为're'";
-                String translateResult = HttpClientUtil.sendPostAsync(qt.setJson("messages"
+                HttpClientUtil.sendPostAsync(qt.setJson("messages"
                                 , qt.setArray(qt.setJson("content", desc, "role", "user")), "model", "deepseek-chat")
                         , "https://api.deepseek.com/chat/completions"
                         , qt.setJson("Authorization", "Bearer sk-f31affd654a3409e9f6468b5875fe85e"
                                 , "Accept", "application/json"),result,key);
-//                String translateResult = HttpClientUtil.sendPostHeaderAndAsync(qt.setJson("messages"
-//                                , qt.setArray(qt.setJson("content", desc, "role", "user")), "model", "deepseek-chat")
-//                        , "https://api.deepseek.com/chat/completions"
-//                        , qt.setJson("Authorization", "Bearer sk-f31affd654a3409e9f6468b5875fe85e"
-//                                , "Accept", "application/json"),result,key);
-//                JSONObject objResult = JSONObject.parseObject(translateResult);
-//                String content = objResult.getJSONArray("choices").getJSONObject(0)
-//                        .getJSONObject("message").getString("content");
-//                System.out.println(descObj.getString(key)+"-翻译后-"+content);
-
-////                System.out.println(Arrays.toString(split));
-////                System.out.println("---");
-//                String splitResult;
-//                String[] split = content.split("\"");
-//                System.out.println(Arrays.toString(split));
-//                System.out.println("---");
-//                int lastSlashIndex = content.lastIndexOf("\"");
-//                if (lastSlashIndex!=(content.length()-1)) {
-//                    splitResult = split[split.length-2];
-////                    System.out.println(split[split.length-2]);
-//                } else {
-//                    splitResult = split[split.length-1];
-////                    System.out.println(split[split.length-1]);
-//                }
-//                System.out.println(JSON.toJSONString(splitResult));
-//                result.put(key,content);
-
-//                String[] split = content.split("\"");
-//                System.out.println(Arrays.toString(split));
-//                System.out.println("---");
-//                int lastSlashIndex = content.lastIndexOf("\"");
-//                List<String> sureResult = new ArrayList<>();
-//                if (lastSlashIndex!=(content.length()-1)) {
-//                    System.out.println("-1-");
-////                System.out.println(split[split.length-2]);
-////                result.add(split[split.length-2]);
-//                    for (int i = split.length-2; i >= 0; i-=2) {
-//                        sureResult.add(split[i]);
-//                    }
-//                } else {
-//                    System.out.println("-2-");
-////                System.out.println(split[split.length-1]);
-//                    for (int i = split.length-1; i >= 0; i-=2) {
-//                        sureResult.add(split[i]);
-//                    }
-//                }
-//                int index = content.indexOf("\"");
-//                System.out.println("index:"+index);
-//                if (sureResult.size() >= 2 && index == 0) {
-//                    sureResult.remove(sureResult.size()-1);
-//                }
-//                Set<String> resultNew = new HashSet<>(sureResult);
-//                System.out.println(JSON.toJSONString(resultNew));
-////                List<String> list = new ArrayList<>(resultNew);
-//                result.put(key,resultNew);
-
-//                String modifiedString = content.replace("```json", "");
-//                modifiedString = modifiedString.replace("```","");
-//                System.out.println(modifiedString);
-//                result.put(key,JSONObject.parseObject(modifiedString).getString("re"));
             }
             System.out.println(JSON.toJSONString(result));
-            while (true) {
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            AtomicBoolean isTrue = new AtomicBoolean(false);
+            AtomicInteger count = new AtomicInteger();
+            // 这里写你要执行的任务逻辑
+            Runnable task = () -> {
                 if (result.keySet().size() == size) {
                     System.out.println("all全部请求成功!");
-                    break;
+                    isTrue.set(true);
                 }
-            }
+                if (!isTrue.get()) {
+                    if (count.get() > 40) {
+                        executor.shutdown();
+                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"请求超时,内部异常!");
+                    }
+                    count.getAndIncrement();
+                } else {
+                    executor.shutdown();
+                }
+            };
+            // 第一个参数是要执行的任务，第二个参数是延迟多少时间开始执行，第三个参数是每隔多少时间重复执行
+            executor.scheduleAtFixedRate(task, 4, 2, TimeUnit.SECONDS);
+//            System.out.println(JSON.toJSONString(result));
+//            while (true) {
+//                if (result.keySet().size() == size) {
+//                    System.out.println("all全部请求成功!");
+//                    break;
+//                }
+//            }
             now = new Date();
             currentTime = df.format(now);
             System.out.println("结束时间:"+currentTime);
@@ -2501,6 +2445,33 @@ public class ZjTestServiceImpl implements ZjTestService {
         }
         System.out.println(JSON.toJSONString(result));
         return retResult.ok(CodeEnum.OK.getCode(),result);
+    }
+
+    public void spStr(JSONObject result,String key,String content){
+        String[] split = content.split("\"");
+        System.out.println(Arrays.toString(split));
+        System.out.println("---");
+        int lastSlashIndex = content.lastIndexOf("\"");
+        List<String> sureResult = new ArrayList<>();
+        if (lastSlashIndex!=(content.length()-1)) {
+            System.out.println("-1-");
+            for (int i = split.length-2; i >= 0; i-=2) {
+                sureResult.add(split[i]);
+            }
+        } else {
+            System.out.println("-2-");
+            for (int i = split.length-1; i >= 0; i-=2) {
+                sureResult.add(split[i]);
+            }
+        }
+        int index = content.indexOf("\"");
+        System.out.println("index:"+index);
+        if (sureResult.size() >= 2 && index == 0) {
+            sureResult.remove(sureResult.size()-1);
+        }
+        Set<String> resultNew = new HashSet<>(sureResult);
+        System.out.println(JSON.toJSONString(resultNew));
+        result.put(key,resultNew);
     }
 
     @Override

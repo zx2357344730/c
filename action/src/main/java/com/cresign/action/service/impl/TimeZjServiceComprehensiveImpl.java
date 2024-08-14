@@ -277,7 +277,7 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
             , Map<String,Map<String, Map<Long, List<Task>>>> allImageTasks
             , JSONObject recordNoOperation, String id_O, JSONArray objOrderList
             ,JSONObject actionIdO,JSONObject allImageTeDate,JSONObject depAllTime
-            ,JSONObject thisInfo,JSONObject oDateObj,JSONObject oDateOrder){
+            ,JSONObject thisInfo,JSONObject oDateObj){
         System.out.println();
         System.out.println("！！！-最后输出这里-！！！id_O:"+id_O);
         System.out.println();
@@ -608,7 +608,8 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
                                 objDateGroup = new JSONArray();
                             }
                             objDateGroup.add(qt.setJson("id_O",task.getId_O(),"index",task.getIndex()
-                                    ,"tePStart",task.getTePStart(),"tePFinish",task.getTePFinish()));
+                                    ,"tePStart",task.getTePStart(),"tePFinish",task.getTePFinish()
+                                    ,"wnteDurTot",task.getWntDurTotal()));
                             groupOrderDate.put(task.getId_O(),objDateGroup);
                         }
 
@@ -795,19 +796,73 @@ public class TimeZjServiceComprehensiveImpl extends TimeZj implements TimeZjServ
         });
         System.out.println("新groupOrderDate:");
         System.out.println(JSON.toJSONString(groupOrderDate));
-        if (oDateOrder == null) {
-            oDateOrder = new JSONObject();
-        }
-        JSONObject objDate = oDateOrder.getJSONObject("objDate");
-        if (null == objDate) {
-            objDate = new JSONObject();
-        }
         for (String key : groupOrderDate.keySet()) {
             JSONArray dateArray = groupOrderDate.getJSONArray(key);
-            objDate.put(key,dateArray);
+            JSONObject mergeMap = new JSONObject();
+            JSONArray removeIndex = new JSONArray();
+            for (int i = 0; i < dateArray.size(); i++) {
+                JSONObject date = dateArray.getJSONObject(i);
+                Integer index = date.getInteger("index");
+                if (mergeMap.containsKey(index + "")) {
+                    JSONObject dateInfo = mergeMap.getJSONObject(index + "");
+                    Long tePStart = dateInfo.getLong("tePStart");
+                    dateInfo.put("tePStart",tePStart);
+                    long wnteDurTot = dateInfo.getLong("wnteDurTot") + date.getLong("wnteDurTot");
+                    dateInfo.put("wnteDurTot",wnteDurTot);
+                    dateInfo.put("tePFinish",(tePStart+wnteDurTot));
+                    removeIndex.add(i);
+                    mergeMap.put(index + "",dateInfo);
+                    int thisIndex = dateInfo.getInteger("thisIndex");
+                    dateArray.set(thisIndex,dateInfo);
+                } else {
+                    date.put("thisIndex",i);
+                    mergeMap.put(index+"",date);
+                }
+            }
+            for (int i = removeIndex.size()-1; i >= 0; i--) {
+                int index = removeIndex.getInteger(i);
+                dateArray.remove(index);
+            }
+            System.out.println("dateArray:");
+            System.out.println(JSON.toJSONString(dateArray));
+//            objDate.put(key,dateArray);
+            Order order = qt.getMDContent(key, qt.strList("oDate","action"), Order.class);
+            if (null != order) {
+                JSONArray objData = null;
+                if (null == order.getODate() || null == order.getODate().getJSONArray("objData")) {
+                    if (null != order.getAction() && null != order.getAction().getJSONArray("objAction")) {
+                        JSONArray objAction = order.getAction().getJSONArray("objAction");
+                        objData = new JSONArray();
+                        for (int i = 0; i < objAction.size(); i++) {
+                            objData.add(qt.setJson("index",i));
+                        }
+                    } else {
+                        qt.setMDContent(key,qt.setJson("oDate.objData",dateArray), Order.class);
+                    }
+                } else {
+                    objData = order.getODate().getJSONArray("objData");
+                }
+                if (null != objData) {
+                    for (int i = 0; i < dateArray.size(); i++) {
+                        JSONObject dateInfo = dateArray.getJSONObject(i);
+                        Integer index = dateInfo.getInteger("index");
+                        Long tePStart = dateInfo.getLong("tePStart");
+                        Long tePFinish = dateInfo.getLong("tePFinish");
+                        Long wnteDurTot = dateInfo.getLong("wnteDurTot");
+                        JSONObject data = objData.getJSONObject(index);
+                        data.put("teStart",tePStart);
+                        data.put("teFin",tePFinish);
+                        data.put("wnteDurTot",wnteDurTot);
+                        objData.set(index,data);
+                    }
+                    qt.setMDContent(key,qt.setJson("oDate.objData",objData), Order.class);
+                }
+            } else {
+                qt.setMDContent(key,qt.setJson("oDate.objData",dateArray), Order.class);
+            }
         }
-        oDateOrder.put("objDate",objDate);
-        qt.setMDContent(id_O,qt.setJson("oDate",oDateOrder), Order.class);
+//        oDateOrder.put("objDate",objDate);
+
         if (null != isQzTz.getInteger(randomAll) && isQzTz.getInteger(randomAll) == 1) {
             System.out.println("-----出现强制停止-----");
             System.out.println();

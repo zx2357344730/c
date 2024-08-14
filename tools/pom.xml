@@ -12,11 +12,6 @@
     <artifactId>tools</artifactId>
 
     <dependencies>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpasyncclient</artifactId>
-            <version>4.1.4</version>
-        </dependency>
 
         <!-- Base64编码需要,生成AES和RSA加密  -->
         <dependency>

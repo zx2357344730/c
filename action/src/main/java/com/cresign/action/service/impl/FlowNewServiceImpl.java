@@ -83,7 +83,6 @@ public class FlowNewServiceImpl implements FlowNewService {
             // 返回为空错误信息
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
         }
-
         if (!salesOrderData.getInfo().getId_C().equals(myCompId)) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_SUPPLIER_ID_IS_NULL.getCode(), "必须是自己生产的");
         }
@@ -385,18 +384,18 @@ public class FlowNewServiceImpl implements FlowNewService {
             }
 
             if (id_OParent.equals(thisOrderId)) {
-                System.out.println("zhu!!:"+(actionCollection.size()-2));
+                System.out.println("zhu!!:"+(actionCollection.size()-1));
                 System.out.println(JSON.toJSONString(objActionCount.getJSONObject(salesOrderData.getId())));
                 // make sales order Action
                 if (setOrder) {
                     this.updateSalesOrder(casItemData, unitAction, unitOItem, salesOrderData
                             , grpBGroup, grpGroup, prodCompId, setOrder,(actionCollection.size()-1)
-                            ,objActionCount.getJSONObject(salesOrderData.getId()));
+                            ,objActionCount);
                 }
             }
             else {
                 System.out.println("fu!!:");
-                System.out.println(JSON.toJSONString(objActionCount.getJSONObject(thisOrderId)));
+//                System.out.println(JSON.toJSONString(objActionCount.getJSONObject(thisOrderId)));
                 // else make Purchase Order
                 if (setOrder) {
 
@@ -426,11 +425,13 @@ public class FlowNewServiceImpl implements FlowNewService {
                     view.add("action");
                     view.add("oItem");
                     view.add("oStock");
+                    view.add("oDate");
                     newPO.setView(view);
 
                     JSONArray objCard = new JSONArray();
                     objCard.add("action");
                     objCard.add("oStock");
+                    objCard.add("oDate");
 
                     Double wn2qty = 0.0;
                     Double wn4price = 0.0;
@@ -458,20 +459,21 @@ public class FlowNewServiceImpl implements FlowNewService {
                     newPO_Action.put("grpGroup", grpGroup);
                     newPO_Action.put("wn2progress", 0.0);
                     newPO_Action.put("lDG", 1);
-                    newPO_Action.put("objActionCount",objActionCount.getJSONObject(thisOrderId));
+                    newPO_Action.put("objCount",objActionCount.getJSONObject(thisOrderId));
 
-                    JSONObject oDate = new JSONObject();
-                    JSONArray objData = new JSONArray();
-                    for (OrderAction orderAction : unitAction) {
-                        objData.add(qt.setJson("index",orderAction.getIndex(),"id_O",orderAction.getId_O()));
-                    }
-                    oDate.put("objData",objData);
-                    newPO.setODate(oDate);
+//                    JSONObject oDate = new JSONObject();
+//                    JSONArray objData = new JSONArray();
+//                    for (OrderAction orderAction : unitAction) {
+//                        objData.add(qt.setJson("index",orderAction.getIndex(),"id_O",orderAction.getId_O()));
+//                    }
+//                    oDate.put("objData",objData);
+//                    newPO.setODate(oDate);
 
                     //Create oStock
                     JSONObject newPO_oStock = dbu.initOStock(qt.list2Arr(unitOItem));
                     newPO.setOStock(newPO_oStock);
                     newPO.setAction(newPO_Action);
+                    newPO.setODate(dbu.initODate(qt.list2Arr(unitOItem)));
 
                     // 创建lSBOrder订单
                     lSBOrder lsbOrder = new lSBOrder(prodCompId, targetCompId, "", "", id_OParent, thisOrderId, arrayId_P,
@@ -506,24 +508,24 @@ public class FlowNewServiceImpl implements FlowNewService {
         JSONObject countInfo;
         if (!objActionCount.containsKey(id_O)) {
             countInfo = new JSONObject();
-            countInfo.put("teBmdPt1",0);
-            countInfo.put("teBmdPt2",0);
-            countInfo.put("teBmdPt3",0);
-            countInfo.put("taBmdPt1",0);
-            countInfo.put("taBmdPt2",0);
-            countInfo.put("taBmdPt3",0);
+            countInfo.put("wnePT1",0);
+            countInfo.put("wnePT2",0);
+            countInfo.put("wnePT3",0);
+            countInfo.put("wnaPT1",0);
+            countInfo.put("wnaPT2",0);
+            countInfo.put("wnaPT3",0);
         } else {
             countInfo = objActionCount.getJSONObject(id_O);
         }
         switch (bmdpt){
             case 1:
-                countInfo.put("teBmdPt1",countInfo.getInteger("teBmdPt1")+1);
+                countInfo.put("wnePT1",countInfo.getInteger("wnePT1")+1);
                 break;
             case 2:
-                countInfo.put("teBmdPt2",countInfo.getInteger("teBmdPt2")+1);
+                countInfo.put("wnePT2",countInfo.getInteger("wnePT2")+1);
                 break;
             case 3:
-                countInfo.put("teBmdPt3",countInfo.getInteger("teBmdPt3")+1);
+                countInfo.put("wnePT3",countInfo.getInteger("wnePT3")+1);
                 break;
         }
         objActionCount.put(id_O,countInfo);
@@ -1031,6 +1033,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             objOItem.setWntPrep(partInfo.getLong("wntPrep")==null?60:partInfo.getLong("wntPrep"));
             objOItem.setWntSafe(partInfo.getLong("wntSafe")==null?3600:partInfo.getLong("wntSafe"));
             objOItem.setWntDur(partInfo.getLong("wntDur")==null?30:partInfo.getLong("wntDur"));
+            objOItem.setWn4cost(partInfo.getInteger("wn4cost")==null?0:partInfo.getInteger("wn4cost"));
 
             // if C=CB and bmdpt =1 means it's my own process, I cannot set grp
             if (prodCompId.equals(myCompId) && partInfo.getInteger("bmdpt").equals(1)) {
@@ -1420,7 +1423,25 @@ public class FlowNewServiceImpl implements FlowNewService {
         salesOrder_Action.put("grpGroup", grpGroup);
         salesOrder_Action.put("wn2progress", 0.0);
         salesOrder_Action.put("lDG", 1);
-        salesOrder_Action.put("objActionCount",objActionCount);
+        int wnePT1 = 0;
+        int wnePT2 = 0;
+        int wnePT3 = 0;
+        for (String key : objActionCount.keySet()) {
+            if (!key.equals(orderParentData.getId())) {
+                JSONObject countInfo = objActionCount.getJSONObject(key);
+                wnePT1 += countInfo.getInteger("wnePT1");
+                wnePT2 += countInfo.getInteger("wnePT2");
+                wnePT3 += countInfo.getInteger("wnePT3");
+            }
+        }
+        JSONObject objCount = new JSONObject();
+        objCount.put("wnePT1",wnePT1);
+        objCount.put("wnePT2",wnePT2);
+        objCount.put("wnePT3",wnePT3);
+        objCount.put("wnaPT1",0);
+        objCount.put("wnaPT2",0);
+        objCount.put("wnaPT3",0);
+        salesOrder_Action.put("objCount",objCount);
 
 //        JSONObject oDate = new JSONObject();
 //        JSONArray objData = new JSONArray();
@@ -1439,6 +1460,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         JSONArray objCard = new JSONArray();
         objCard.add("action");
         objCard.add("oStock");
+        objCard.add("oDate");
         salesOrder_OItem = orderParentData.getOItem();
         salesOrder_OItem.put("objCard", objCard);
 
@@ -1449,6 +1471,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         orderParentData.setCasItemx(casItemx);
         // 设置oItem.objCard信息
         orderParentData.setOItem(salesOrder_OItem);
+        orderParentData.setODate(dbu.initODate(qt.list2Arr(salesOItem)));
 
         JSONArray view = orderParentData.getView();
         // **System.out.println("got all ok Sales");
@@ -1465,6 +1488,9 @@ public class FlowNewServiceImpl implements FlowNewService {
         }
         if (!view.contains("oStock") && !view.contains("VoStock")) {
             view.add("oStock");
+        }
+        if (!view.contains("oDate") && !view.contains("VoDate")) {
+            view.add("oDate");
         }
         // 设置view值
 

@@ -222,7 +222,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
             , int dateIndexMain, String layerMain, String id_PFMain){
         TimeZj.isZ = 6;
         // 调用方法获取订单信息
-        Order salesOrderData = qt.getMDContent(id_O,qt.strList("oItem", "info", "view", "action", "casItemx","oDate"), Order.class);
+        Order salesOrderData = qt.getMDContent(id_O,qt.strList("oItem", "info", "view", "action", "casItemx"), Order.class);
         // 判断订单是否为空
         if (null == salesOrderData || null == salesOrderData.getAction() || null == salesOrderData.getOItem()
                 || null == salesOrderData.getCasItemx() || null == salesOrderData.getInfo()) {
@@ -744,7 +744,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 // 调用任务最后处理方法
                 timeZjServiceComprehensive.taskLastHandle(timeConflictCopy,id_C,randomAll,objTaskAll
                         ,storageTaskWhereTime,allImageTotalTime,allImageTasks,recordNoOperation,salesOrderData.getId()
-                        ,objOrderList,actionIdO,allImageTeDate,depAllTime,thisInfo,oDateObj,salesOrderData.getODate());
+                        ,objOrderList,actionIdO,allImageTeDate,depAllTime,thisInfo,oDateObj);
 
                 // 递归完成了，删除存储当前唯一编号的第一个当前时间戳
                 onlyFirstTimeStamp.remove(random);
@@ -1213,7 +1213,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 // 调用任务最后处理方法
                 timeZjServiceComprehensive.taskLastHandle(timeConflictCopy,id_C,randomAll,objTaskAll
                         ,storageTaskWhereTime,allImageTotalTime,allImageTasks,recordNoOperation,salesOrderData.getId()
-                        ,objOrderList,actionIdO,allImageTeDate,depAllTime,thisInfo,oDateObj,salesOrderData.getODate());
+                        ,objOrderList,actionIdO,allImageTeDate,depAllTime,thisInfo,oDateObj);
 
                 // 递归完成了，删除存储当前唯一编号的第一个当前时间戳
                 onlyFirstTimeStamp.remove(random);
@@ -1262,7 +1262,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
     public void atFirstODateObj(int wn0TPrior,long teStart,String id_O,String id_C){
         TimeZj.isZ = 6;
         // 调用方法获取订单信息
-        Order salesOrderData = qt.getMDContent(id_O,qt.strList("oItem", "info", "view", "action", "casItemx","oDate"), Order.class);
+        Order salesOrderData = qt.getMDContent(id_O,qt.strList("oItem", "info", "view", "action", "casItemx"), Order.class);
         // 判断订单是否为空
         if (null == salesOrderData || null == salesOrderData.getAction() || null == salesOrderData.getOItem()
                 || null == salesOrderData.getCasItemx() || null == salesOrderData.getInfo()) {
@@ -1769,7 +1769,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                 // 调用任务最后处理方法
                 timeZjServiceComprehensive.taskLastHandle(timeConflictCopy,id_C,randomAll,objTaskAll
                         ,storageTaskWhereTime,allImageTotalTime,allImageTasks,recordNoOperation,salesOrderData.getId()
-                        ,objOrderList,actionIdO,allImageTeDate,depAllTime,thisInfo,oDateObj,salesOrderData.getODate());
+                        ,objOrderList,actionIdO,allImageTeDate,depAllTime,thisInfo,oDateObj);
 
                 // 递归完成了，删除存储当前唯一编号的第一个当前时间戳
                 onlyFirstTimeStamp.remove(random);

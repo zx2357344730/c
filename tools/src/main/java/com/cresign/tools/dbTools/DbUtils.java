@@ -450,6 +450,9 @@ public class DbUtils {
             if (order.getOQc() != null) {
                 arrayCard.add("oQc");
             }
+            if (order.getODate() != null) {
+                arrayCard.add("oDate");
+            }
             order.getOItem().put("objCard", arrayCard);
         }
         if (arrayArrP == null || arrayOItem.size() != arrayArrP.size()) {
@@ -521,6 +524,17 @@ public class DbUtils {
                             this.initOQc(arrayOItem.getJSONObject(i), order.getOQc().getJSONArray("objQc"), i);
                         }
                     }
+                    break;
+                case "oDate":
+                    if (null == order.getODate()) {
+                        order.setODate(this.initODate(order.getOItem().getJSONArray("objItem")));
+                        order.getView().add("oDate");
+                    }
+                    // Check if all oItem has a action, if not, init it
+                    for (int i = 0; i < arrayOItem.size(); i++) {
+                        this.initODateObjData(arrayOItem.getJSONObject(i), order.getODate().getJSONArray("objData"), i);
+                    }
+                    arrayData = order.getODate().getJSONArray("objData");
                     break;
             }
             jsonCard.put(arrayCard.getString(n), arrayData);
@@ -698,6 +712,8 @@ public class DbUtils {
         if (action != null && cardList.contains("action")) {
             result.put("action", order.getAction());
             order.getAction().put("wn2progress", wn2progress);
+            qt.upJson(listCol,"lDG",order.getAction().getInteger("lDG"));
+//            order.getAction().put("lDG", );
         }
         if (null != oQc && cardList.contains("oQc")) {
             result.put("oQc", order.getOQc());
@@ -2211,6 +2227,60 @@ public class DbUtils {
         return action;
     }
 
+    public JSONObject initODate(JSONArray oItem){
+        JSONArray objData = new JSONArray();
+        for (int i = 0; i < oItem.size(); i++) {
+            this.initODateObjData(oItem.getJSONObject(i), objData, i);
+        }
+        JSONObject oDate = new JSONObject();
+        oDate.put("objData", objData);
+        oDate.put("teStart", "");
+        oDate.put("teFin", "");
+        oDate.put("taStart", "");
+        oDate.put("taFin", "");//完成
+        oDate.put("taPay", "");//付款
+        oDate.put("tePay", "");
+        oDate.put("taShip", "");//出货
+        oDate.put("taGot", "");//收货
+        oDate.put("teShip", "");
+        oDate.put("teGot", "");
+        oDate.put("wntDur", 0);
+        oDate.put("wntPrep", 0);//准备
+        oDate.put("wntWait", 0);//等待
+        oDate.put("wntShip", 0);//运输
+        oDate.put("wntBuy", 0);//采购用时
+        oDate.put("wntaDur", 0);//生产用时
+        oDate.put("wntaPrep", 0);//准备
+        oDate.put("wntaWait", 0);//等待
+        oDate.put("wntaShip", 0);//运输
+        oDate.put("wntaBuy", 0);//采购用时
+        return oDate;
+    }
+
+    public void initODateObjData(JSONObject orderOItem, JSONArray objData, Integer index){
+        if (objData.size() <= index || null == objData.getJSONObject(index)) {
+            JSONObject data = qt.setJson(
+                    "teStart", 0,
+                    "wnteDurTot", 0,
+                    "teFin", 0,
+                    "taStart", 0,
+                    "taFin", 0,
+                    "wntaDurtot", 0
+            );
+            objData.set(index, data);
+        }
+
+        objData.getJSONObject(index).put("index", index);
+        objData.getJSONObject(index).put("wntDur", orderOItem.getLong("wntDur")==null?0:orderOItem.getLong("wntDur"));
+        objData.getJSONObject(index).put("wntPrep", orderOItem.getLong("wntPrep")==null?0:orderOItem.getLong("wntPrep"));
+
+        if (null == objData.getJSONObject(index).getLong("wntWait")) {
+            objData.getJSONObject(index).put("wntWait", orderOItem.getLong("wntWait"));
+        } else {
+            objData.getJSONObject(index).put("wntWait", 0);
+        }
+    }
+
     public JSONObject initOQc(JSONArray oItem) {
 
         // wn2qtybreak, wn2qtyfixed
@@ -2225,10 +2295,16 @@ public class DbUtils {
 
     public JSONArray initOStock(JSONObject orderOItem, JSONArray oStock, Integer index) {
 
-        JSONObject oStockData = qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
+        JSONObject oStockData = qt.setJson(
+                "index",index,
+                "wn2qtynow", 0.0,
+                "wn2qtyship",0.0,
+                "wn2qtyshipnow",0.0,
+                "wn2qtymade", 0.0,
                 "id_P", orderOItem.getString("id_P"),
                 "resvQty", new JSONObject(),
-                "rKey", orderOItem.getString("rKey"));
+                "rKey", orderOItem.getString("rKey")
+        );
 
         oStockData.put("objShip", qt.setArray(
                 qt.setJson("wn2qtyship", 0.0, "wn2qtyshipnow", 0.0,

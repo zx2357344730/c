@@ -101,6 +101,7 @@ public class OrderOItem {
         this.rKey =  UUID19.uuid8();
     }
 
+    private int wn4cost;
     /**
      * 单人单件用时
      */

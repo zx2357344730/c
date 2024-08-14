@@ -2330,8 +2330,31 @@ public class FlowServiceImpl implements FlowService {
                 thisItem.put("pic", partDataES.getJSONObject(0).getString("pic"));
                 thisItem.put("wrdN", partDataES.getJSONObject(0).getJSONObject("wrdN"));
                 thisItem.put("wrddesc", partDataES.getJSONObject(0).getJSONObject("wrddesc"));
-                thisItem.put("ref", partDataES.getJSONObject(0).getString("refB"));
-                thisItem.put("bmdpt", bmdptValue);
+            thisItem.put("ref", partDataES.getJSONObject(0).getString("refB"));
+            thisItem.put("refB", partDataES.getJSONObject(0).getString("ref")==null?""
+                    :partDataES.getJSONObject(0).getString("ref"));
+            thisItem.put("bmdpt", bmdptValue);
+            thisItem.put("id_PP", id_P);
+            if (null != partDataES.getJSONObject(0).getDouble("wn4cost")) {
+                thisItem.put("wn4cost", partDataES.getJSONObject(0).getDouble("wn4cost"));
+            } else {
+                thisItem.put("wn4cost", 0);
+            }
+            if (null != partDataES.getJSONObject(0).getLong("wntSafe")) {
+                thisItem.put("wntSafe", partDataES.getJSONObject(0).getLong("wntSafe"));
+            } else {
+                thisItem.put("wntSafe", 0);
+            }
+            if (null != partDataES.getJSONObject(0).getJSONObject("wrdTagB")) {
+                thisItem.put("wrdTagB", qt.cloneObj(partDataES.getJSONObject(0).getJSONObject("wrdTagB")));
+            } else {
+                thisItem.put("wrdTagB", new JSONObject());
+            }
+            if (null != partDataES.getJSONObject(0).getLong("wn0fsize")) {
+                thisItem.put("wn0fsize", partDataES.getJSONObject(0).getLong("wn0fsize"));
+            } else {
+                thisItem.put("wn0fsize", 0);
+            }
                 partItem.set(item, thisItem);
         }
         qt.setMDContent(id_P, qt.setJson("part.objItem", partItem),Prod.class);

@@ -29,6 +29,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 @Service
 public class ActionServiceImpl implements ActionService {
@@ -731,19 +733,21 @@ public class ActionServiceImpl implements ActionService {
 
 
             JSONArray id_Us = orderAction.getId_Us() == null ? new JSONArray() : orderAction.getId_Us();
-            Order order;
             Integer lDG = actData.getInteger("lDG");
-            JSONObject objActionCount = actData.getJSONObject("objActionCount");
-                // 判断属于什么操作
+            JSONObject objCount = actData.getJSONObject("objCount");
+            JSONObject oDateOld = actData.getJSONObject("oDate");
+            JSONObject setODate = null;
+            // 判断属于什么操作
                 switch (status) {
                     case 0: // ready
                         message = taskName + "[准备开始] " + msg;
                         orderAction.setBcdStatus(status);
                         isStateChg = true;
-                        if (lDG == 1 && orderAction.getBmdpt()==3) {
-                            lDG = 3;
-                            mapKey.put("action.lDG",lDG);
-                        }
+//                        if (lDG == 1 && orderAction.getBmdpt()==3) {
+//                            lDG = 3;
+//                            mapKey.put("action.lDG",lDG);
+//                            qt.setMDContent(orderAction.getId_OP(),qt.setJson("action.lDG",3), Order.class);
+//                        }
                         break;
                     case 1:
                         // Start an OItem, DG just start, Task just start, Quest start + update Prob
@@ -767,30 +771,57 @@ public class ActionServiceImpl implements ActionService {
                         isStateChg = true;
                         duraType = "start";
 
-                        order = qt.getMDContent(orderAction.getId_OP(), "oDate", Order.class);
-                        if (null != order && null != order.getODate() && null != order.getODate().getJSONObject("objDate")) {
-                            JSONObject objDate = order.getODate().getJSONObject("objDate");
-                            JSONArray dateArray = objDate.getJSONArray(orderAction.getId_O());
-                            if (null != dateArray && dateArray.size() > 0) {
-                                boolean isTrue = false;
-                                for (int i = 0; i < dateArray.size(); i++) {
-                                    JSONObject date = dateArray.getJSONObject(i);
-                                    if (Objects.equals(date.getInteger("index"), orderAction.getIndex())) {
-                                        date.put("taPStart",(System.currentTimeMillis()/1000));
-                                        dateArray.set(i,date);
-                                        isTrue = true;
-                                        break;
-                                    }
-                                }
-                                if (isTrue) {
-                                    qt.setMDContent(orderAction.getId_OP(),qt.setJson("oDate.objDate."+orderAction.getId_O()
-                                            ,dateArray), Order.class);
-                                }
+//                        order = qt.getMDContent(orderAction.getId_OP(), "oDate", Order.class);
+//                        if (null != order && null != order.getODate() && null != order.getODate().getJSONObject("objDate")) {
+//                            JSONObject objDate = order.getODate().getJSONObject("objDate");
+//                            JSONArray dateArray = objDate.getJSONArray(orderAction.getId_O());
+//                            if (null != dateArray && dateArray.size() > 0) {
+//                                boolean isTrue = false;
+//                                for (int i = 0; i < dateArray.size(); i++) {
+//                                    JSONObject date = dateArray.getJSONObject(i);
+//                                    if (Objects.equals(date.getInteger("index"), orderAction.getIndex())) {
+//                                        date.put("taPStart",(System.currentTimeMillis()/1000));
+//                                        dateArray.set(i,date);
+//                                        isTrue = true;
+//                                        break;
+//                                    }
+//                                }
+//                                if (isTrue) {
+//                                    qt.setMDContent(orderAction.getId_OP(),qt.setJson("oDate.objDate."+orderAction.getId_O()
+//                                            ,dateArray), Order.class);
+//                                }
+//                            }
+//                        }
+
+                        if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
+                            setODate = new JSONObject();
+                            JSONArray objData = oDateOld.getJSONArray("objData");
+                            JSONObject data = objData.getJSONObject(orderAction.getIndex());
+                            if (null != data) {
+                                data.put("taStart",(System.currentTimeMillis()/1000));
+                                objData.set(orderAction.getIndex(),data);
+                                setODate.put("objData",objData);
+                            }
+                        } else {
+                            setODate = new JSONObject();
+                            JSONArray objData = new JSONArray();
+                            for (int i = 0; i <= orderAction.getIndex(); i++) {
+                                objData.add(qt.setJson("index",i));
+                            }
+                            JSONObject data = objData.getJSONObject(orderAction.getIndex());
+                            if (null != data) {
+                                data.put("taStart",(System.currentTimeMillis()/1000));
+                                objData.set(orderAction.getIndex(),data);
+//                                data.put("taStart",(System.currentTimeMillis()/1000));
+                                setODate.put("objData",objData);
                             }
                         }
                         if (lDG == 1 && orderAction.getBmdpt()==3) {
                             lDG = 3;
                             mapKey.put("action.lDG",lDG);
+                            String dateNow = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+                            qt.setMDContent(orderAction.getId_OP(),qt.setJson("action.lDG",3,"oDate.taStart",dateNow), Order.class);
+                            qt.setES("lsborder", qt.setESFilt("id_O", orderAction.getId_OP()), qt.setJson("lDG",lDG,"taStart", dateNow));
                         }
                         break;
                     case 2:                    // 2 = finish, set qtyfin setNextDesc
@@ -814,28 +845,41 @@ public class ActionServiceImpl implements ActionService {
                         isStateChg = true;
                         duraType = "allEnd";
 
-                        order = qt.getMDContent(orderAction.getId_OP(), "oDate", Order.class);
-                        if (null != order && null != order.getODate() && null != order.getODate().getJSONObject("objDate")) {
-                            JSONObject objDate = order.getODate().getJSONObject("objDate");
-                            JSONArray dateArray = objDate.getJSONArray(orderAction.getId_O());
-                            if (null != dateArray && dateArray.size() > 0) {
-                                boolean isTrue = false;
-                                for (int i = 0; i < dateArray.size(); i++) {
-                                    JSONObject date = dateArray.getJSONObject(i);
-                                    if (Objects.equals(date.getInteger("index"), orderAction.getIndex())) {
-                                        date.put("taPFinish",(System.currentTimeMillis()/1000));
-                                        dateArray.set(i,date);
-                                        isTrue = true;
-                                        break;
-                                    }
-                                }
-                                if (isTrue) {
-                                    qt.setMDContent(orderAction.getId_OP(),qt.setJson("oDate.objDate."+orderAction.getId_O()
-                                            ,dateArray), Order.class);
-                                }
+//                        order = qt.getMDContent(orderAction.getId_OP(), "oDate", Order.class);
+//                        if (null != order && null != order.getODate() && null != order.getODate().getJSONObject("objDate")) {
+//                            JSONObject objDate = order.getODate().getJSONObject("objDate");
+//                            JSONArray dateArray = objDate.getJSONArray(orderAction.getId_O());
+//                            if (null != dateArray && dateArray.size() > 0) {
+//                                boolean isTrue = false;
+//                                for (int i = 0; i < dateArray.size(); i++) {
+//                                    JSONObject date = dateArray.getJSONObject(i);
+//                                    if (Objects.equals(date.getInteger("index"), orderAction.getIndex())) {
+//                                        date.put("taPFinish",(System.currentTimeMillis()/1000));
+//                                        dateArray.set(i,date);
+//                                        isTrue = true;
+//                                        break;
+//                                    }
+//                                }
+//                                if (isTrue) {
+//                                    qt.setMDContent(orderAction.getId_OP(),qt.setJson("oDate.objDate."+orderAction.getId_O()
+//                                            ,dateArray), Order.class);
+//                                }
+//                            }
+//                        }
+                        if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
+                            setODate = new JSONObject();
+                            JSONArray objData = oDateOld.getJSONArray("objData");
+                            JSONObject data = objData.getJSONObject(orderAction.getIndex());
+                            if (null != data) {
+                                long taFin = System.currentTimeMillis() / 1000;
+                                long wntaDurtot = taFin - data.getLong("taStart");
+                                data.put("taFin",taFin);
+                                data.put("wntaDurtot",wntaDurtot);
+                                objData.set(orderAction.getIndex(),data);
+                                setODate.put("objData",objData);
                             }
                         }
-                        setActCount(objActionCount, orderAction.getBmdpt(), lDG,mapKey);
+                        lDG = setActCount(objCount, orderAction.getBmdpt(), lDG,mapKey,orderAction.getId_OP());
                         break;
                     case -2:                    // 2 = finish, set qtyfin setNextDesc
 //                        if (orderAction.getBcdStatus() != 2 && orderAction.getBcdStatus() != 1 && orderAction.getBcdStatus() != 3 && orderAction.getBcdStatus() != -8 && orderAction.getBcdStatus() != 7) {
@@ -851,28 +895,20 @@ public class ActionServiceImpl implements ActionService {
                         isStateChg = true;
                         duraType = "allEnd";
 
-                        order = qt.getMDContent(orderAction.getId_OP(), "oDate", Order.class);
-                        if (null != order && null != order.getODate() && null != order.getODate().getJSONObject("objDate")) {
-                            JSONObject objDate = order.getODate().getJSONObject("objDate");
-                            JSONArray dateArray = objDate.getJSONArray(orderAction.getId_O());
-                            if (null != dateArray && dateArray.size() > 0) {
-                                boolean isTrue = false;
-                                for (int i = 0; i < dateArray.size(); i++) {
-                                    JSONObject date = dateArray.getJSONObject(i);
-                                    if (Objects.equals(date.getInteger("index"), orderAction.getIndex())) {
-                                        date.put("taPFinish",(System.currentTimeMillis()/1000));
-                                        dateArray.set(i,date);
-                                        isTrue = true;
-                                        break;
-                                    }
-                                }
-                                if (isTrue) {
-                                    qt.setMDContent(orderAction.getId_OP(),qt.setJson("oDate.objDate."+orderAction.getId_O()
-                                            ,dateArray), Order.class);
-                                }
+                        if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
+                            setODate = new JSONObject();
+                            JSONArray objData = oDateOld.getJSONArray("objData");
+                            JSONObject data = objData.getJSONObject(orderAction.getIndex());
+                            if (null != data) {
+                                long taFin = System.currentTimeMillis() / 1000;
+                                long wntaDurtot = taFin - data.getLong("taStart");
+                                data.put("taFin",taFin);
+                                data.put("wntaDurtot",wntaDurtot);
+                                objData.set(orderAction.getIndex(),data);
+                                setODate.put("objData",objData);
                             }
                         }
-                        setActCount(objActionCount, orderAction.getBmdpt(), lDG,mapKey);
+                        lDG = setActCount(objCount, orderAction.getBmdpt(), lDG,mapKey,orderAction.getId_OP());
                         break;
                     case 3:
                     case -8: // resume OItem
@@ -953,28 +989,20 @@ public class ActionServiceImpl implements ActionService {
                         isStateChg = true;
                         duraType = "allEnd";
 
-                        order = qt.getMDContent(orderAction.getId_OP(), "oDate", Order.class);
-                        if (null != order && null != order.getODate() && null != order.getODate().getJSONObject("objDate")) {
-                            JSONObject objDate = order.getODate().getJSONObject("objDate");
-                            JSONArray dateArray = objDate.getJSONArray(orderAction.getId_O());
-                            if (null != dateArray && dateArray.size() > 0) {
-                                boolean isTrue = false;
-                                for (int i = 0; i < dateArray.size(); i++) {
-                                    JSONObject date = dateArray.getJSONObject(i);
-                                    if (Objects.equals(date.getInteger("index"), orderAction.getIndex())) {
-                                        date.put("taPFinish",(System.currentTimeMillis()/1000));
-                                        dateArray.set(i,date);
-                                        isTrue = true;
-                                        break;
-                                    }
-                                }
-                                if (isTrue) {
-                                    qt.setMDContent(orderAction.getId_OP(),qt.setJson("oDate.objDate."+orderAction.getId_O()
-                                            ,dateArray), Order.class);
-                                }
+                        if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
+                            setODate = new JSONObject();
+                            JSONArray objData = oDateOld.getJSONArray("objData");
+                            JSONObject data = objData.getJSONObject(orderAction.getIndex());
+                            if (null != data) {
+                                long taFin = System.currentTimeMillis() / 1000;
+                                long wntaDurtot = taFin - data.getLong("taStart");
+                                data.put("taFin",taFin);
+                                data.put("wntaDurtot",wntaDurtot);
+                                objData.set(orderAction.getIndex(),data);
+                                setODate.put("objData",objData);
                             }
                         }
-                        setActCount(objActionCount, orderAction.getBmdpt(), lDG,mapKey);
+                        lDG = setActCount(objCount, orderAction.getBmdpt(), lDG,mapKey,orderAction.getId_OP());
                         break;
                     case 54:
                         // 设置备注信息
@@ -1118,24 +1146,65 @@ public class ActionServiceImpl implements ActionService {
                     {
                         JSONObject oDate = actData.getJSONObject("oDate");
                         String dateNow = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
-
-                        if (listCol.getInteger("lST") == 8 ) {
+                        if ((lDG == 1 || lDG == 3) && status == 1 && "".equals(oDate.getString("taStart"))) {
                             oDate.put("taStart", dateNow);
                             listCol.put("taStart", dateNow);
+                            LogFlow usageLog = new LogFlow();
+                            usageLog.setUsageLog(tokData, "lSTchg", "订单开始执行", 3, id_O,
+                                    orderOItem.getId_CB().equals(tokData.getString("id_C")) ? "lBOrder" : "lSOrder", actData.getJSONObject("info").getJSONObject("wrdN"),"1000", "");
                         }
-                            else {
+                        if (lDG == 6 && "".equals(oDate.getString("taFin"))) {
+                            long wntDur;
+                            if (!"".equals(oDate.getString("taStart"))) {
+                                String taStart = oDate.getString("taStart");
+                                long taStartTimeStamp = getTimeStamp(taStart);
+                                long taFinTimeStamp = getTimeStamp(dateNow);
+                                wntDur = taFinTimeStamp - taStartTimeStamp;
+                            } else {
+                                wntDur = time;
+                            }
+                            oDate.put("wntDur", wntDur);
                             oDate.put("taFin", dateNow);
-                            oDate.put("wntDur", time);
                             listCol.put("taFin", dateNow);
+                            listCol.put("wntDur", wntDur);
+                            LogFlow usageLog = new LogFlow();
+                            usageLog.setUsageLog(tokData, "lSTchg", "订单全部完成", 3, id_O,
+                                    orderOItem.getId_CB().equals(tokData.getString("id_C")) ? "lBOrder" : "lSOrder", actData.getJSONObject("info").getJSONObject("wrdN"),"1000", "");
+                        }
+//                        if (listCol.getInteger("lST") == 8 ) {
+//                            oDate.put("taStart", dateNow);
+//                            listCol.put("taStart", dateNow);
+//                        }
+//                            else {
+//                            oDate.put("taFin", dateNow);
+//                            oDate.put("wntDur", time);
+//                            listCol.put("taFin", dateNow);
+//                        }
+                        if (null != setODate) {
+                            for (String key : setODate.keySet()) {
+                                oDate.put(key,setODate.getJSONArray(key));
+                            }
                         }
                         mapKey.put("oDate",oDate);
+                    } else {
+                        if (null != setODate) {
+                            for (String key : setODate.keySet()) {
+                                mapKey.put("oDate."+key,setODate.getJSONArray(key));
+                            }
+                        }
                     }
                     qt.setES("lsborder", qt.setESFilt("id_O", id_O), listCol);
                     // send a log to record order status change
-                    LogFlow usageLog = new LogFlow();
-                    usageLog.setUsageLog(tokData, "lSTchg", listCol.getInteger("lST") == 8 ? "订单开始执行" : "订单全部完成", 3, id_O,
-                            orderOItem.getId_CB().equals(tokData.getString("id_C")) ? "lBOrder" : "lSOrder", actData.getJSONObject("info").getJSONObject("wrdN"),"1000", "");
+//                    LogFlow usageLog = new LogFlow();
+//                    usageLog.setUsageLog(tokData, "lSTchg", listCol.getInteger("lST") == 8 ? "订单开始执行" : "订单全部完成", 3, id_O,
+//                            orderOItem.getId_CB().equals(tokData.getString("id_C")) ? "lBOrder" : "lSOrder", actData.getJSONObject("info").getJSONObject("wrdN"),"1000", "");
 //                    ws.sendWS(usageLog);
+                } else {
+                    if (null != setODate) {
+                        for (String key : setODate.keySet()) {
+                            mapKey.put("oDate."+key,setODate.getJSONArray(key));
+                        }
+                    }
                 }
 
             //*** here we update id_O, then we update status of the order
@@ -1273,49 +1342,149 @@ public class ActionServiceImpl implements ActionService {
         }
     }
 
-    public void setActCount(JSONObject objActionCount,int bmdpt,int lDG,JSONObject mapKey){
-        if (null != objActionCount) {
-//            Integer bmdpt = orderAction.getBmdpt();
-            switch (bmdpt){
-                case 1:
-                    objActionCount.put("taBmdPt1",objActionCount.getInteger("taBmdPt1")+1);
-                    break;
-                case 2:
-                    objActionCount.put("taBmdPt2",objActionCount.getInteger("taBmdPt2")+1);
-                    break;
-                case 3:
-                    objActionCount.put("taBmdPt3",objActionCount.getInteger("taBmdPt3")+1);
-                    break;
-            }
-            Integer teBmdPt1 = objActionCount.getInteger("teBmdPt1");
-            Integer teBmdPt2 = objActionCount.getInteger("teBmdPt2");
-            Integer teBmdPt3 = objActionCount.getInteger("teBmdPt3");
-            Integer taBmdPt1 = objActionCount.getInteger("taBmdPt1");
-            Integer taBmdPt2 = objActionCount.getInteger("taBmdPt2");
-            Integer taBmdPt3 = objActionCount.getInteger("taBmdPt3");
+    public int setActCount(JSONObject objActionCount,int bmdpt,int lDG,JSONObject mapKey,String id_OP){
+        Order order = qt.getMDContent(id_OP, qt.strList("action","oDate"), Order.class);
+        if (null != order && null != order.getAction() && null != order.getAction().getJSONObject("objCount")) {
+            JSONObject objCount = order.getAction().getJSONObject("objCount");
+            addTaPt(bmdpt, objCount);
+            Integer teBmdPt1 = objCount.getInteger("wnePT1");
+            Integer teBmdPt2 = objCount.getInteger("wnePT2");
+            Integer teBmdPt3 = objCount.getInteger("wnePT3");
+            Integer taBmdPt1 = objCount.getInteger("wnaPT1");
+            Integer taBmdPt2 = objCount.getInteger("wnaPT2");
+            Integer taBmdPt3 = objCount.getInteger("wnaPT3");
             boolean isSetLDG = false;
             if (teBmdPt3 != 0) {
                 if (teBmdPt3.equals(taBmdPt3)) {
                     lDG = 4;
                     isSetLDG = true;
                 }
+            } else {
+                lDG = 4;
+                isSetLDG = true;
             }
             if (teBmdPt2 != 0) {
                 if (teBmdPt2.equals(taBmdPt2)) {
                     lDG = 5;
                     isSetLDG = true;
                 }
+            } else {
+                lDG = 5;
+                isSetLDG = true;
             }
             if (teBmdPt1 != 0) {
                 if (teBmdPt1.equals(taBmdPt1)) {
                     lDG = 6;
                     isSetLDG = true;
                 }
+            } else {
+                lDG = 6;
+                isSetLDG = true;
             }
-            mapKey.put("action.objActionCount",objActionCount);
+            JSONObject setJson = qt.setJson("action.objCount", objCount);
+            if (isSetLDG) {
+                setJson.put("action.lDG",lDG);
+                JSONObject col = qt.setJson("lDG", lDG);
+                if (lDG == 6) {
+                    String dateNow = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
+                    if (null != order.getODate()) {
+                        JSONObject oDate = order.getODate();
+                        if (oDate.containsKey("taStart") && !"".equals(oDate.getString("taStart"))) {
+                            String taStart = oDate.getString("taStart");
+                            long taStartTimeStamp = getTimeStamp(taStart);
+                            long taFinTimeStamp = getTimeStamp(dateNow);
+                            long wntDur = taFinTimeStamp - taStartTimeStamp;
+                            setJson.put("oDate.wntDur",wntDur);
+                            col.put("wntDur",wntDur);
+                        } else {
+                            setJson.put("oDate.wntDur",0);
+                            col.put("wntDur", 0);
+                        }
+                    } else {
+                        setJson.put("oDate.wntDur",0);
+                        col.put("wntDur", 0);
+                    }
+                    col.put("taFin", dateNow);
+                    setJson.put("oDate.taFin",dateNow);
+                }
+                qt.setES("lsborder", qt.setESFilt("id_O", id_OP), col);
+            }
+            qt.setMDContent(id_OP,setJson, Order.class);
+        }
+        if (null != objActionCount) {
+            addTaPt(bmdpt, objActionCount);
+            Integer teBmdPt1 = objActionCount.getInteger("wnePT1");
+            Integer teBmdPt2 = objActionCount.getInteger("wnePT2");
+            Integer teBmdPt3 = objActionCount.getInteger("wnePT3");
+            Integer taBmdPt1 = objActionCount.getInteger("wnaPT1");
+            Integer taBmdPt2 = objActionCount.getInteger("wnaPT2");
+            Integer taBmdPt3 = objActionCount.getInteger("wnaPT3");
+            boolean isSetLDG = false;
+            if (teBmdPt3 != 0) {
+                if (teBmdPt3.equals(taBmdPt3)) {
+                    lDG = 4;
+                    isSetLDG = true;
+                }
+            } else {
+                lDG = 4;
+                isSetLDG = true;
+            }
+            if (teBmdPt2 != 0) {
+                if (teBmdPt2.equals(taBmdPt2)) {
+                    lDG = 5;
+                    isSetLDG = true;
+                }
+            } else {
+                lDG = 5;
+                isSetLDG = true;
+            }
+            if (teBmdPt1 != 0) {
+                if (teBmdPt1.equals(taBmdPt1)) {
+                    lDG = 6;
+                    isSetLDG = true;
+                }
+            } else {
+                lDG = 6;
+                isSetLDG = true;
+            }
+            mapKey.put("action.objCount",objActionCount);
             if (isSetLDG) {
                 mapKey.put("action.lDG",lDG);
             }
+        }
+        return lDG;
+    }
+
+    public long getTimeStamp(String dateString){
+        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate());
+//        String dateString = "2024/08/14 00:00:00";
+        try {
+            Date date = sdf.parse(dateString);
+            long timeStamp = date.getTime();
+            return timeStamp / 1000;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    public String getTimeDate(long timestamp){
+        SimpleDateFormat sdf = new SimpleDateFormat(DateEnum.DATE_TIME_FULL.getDate());
+        Date date = new Date((timestamp*1000));
+        return sdf.format(date);
+    }
+
+    public void addTaPt(int bmdpt,JSONObject objActionCount){
+        switch (bmdpt){
+            case 1:
+                objActionCount.put("wnaPT1",objActionCount.getInteger("wnaPT1")+1);
+                break;
+            case 2:
+            case 4:
+                objActionCount.put("wnaPT2",objActionCount.getInteger("wnaPT2")+1);
+                break;
+            case 3:
+                objActionCount.put("wnaPT3",objActionCount.getInteger("wnaPT3")+1);
+                break;
         }
     }
 
@@ -1648,7 +1817,7 @@ public class ActionServiceImpl implements ActionService {
         JSONArray oItemArray = order.getOItem().getJSONArray("objItem");
         JSONObject grpBGroup = order.getAction().getJSONObject("grpBGroup");
         JSONObject grpGroup = order.getAction().getJSONObject("grpGroup");
-        JSONObject objActionCount = order.getAction().getJSONObject("objActionCount");
+        JSONObject objCount = order.getAction().getJSONObject("objCount");
         int lDG = order.getAction().getInteger("lDG")==null?1:order.getAction().getInteger("lDG");
 
         // 判断信息为空
@@ -1696,7 +1865,7 @@ public class ActionServiceImpl implements ActionService {
         result.put("info",qt.toJson(order.getInfo()));
         result.put("oDate", order.getODate());
         result.put("size", oItemArray.size());
-        result.put("objActionCount", objActionCount);
+        result.put("objCount", objCount);
         result.put("lDG", lDG);
 
         //System.out.println(result);
@@ -2000,169 +2169,144 @@ public class ActionServiceImpl implements ActionService {
     }
 
     public ApiResponse mergeAllAndStorage(String id_O, JSONObject tokData){
-        String myCompId = tokData.getString("id_C");
-        Asset asset = qt.getConfig(myCompId, "a-auth", "def");
-        JSONObject objlBP = asset.getDef().getJSONObject("objlBP");
-        Order orderMainData = qt.getMDContent(id_O, "casItemx", Order.class);
-        List <Order> orderDataList = new ArrayList<>();
-        JSONArray orderList = orderMainData.getCasItemx().getJSONObject(myCompId).getJSONArray("objOrder");
-        JSONObject assetCollection = new JSONObject();
-        for (int n = 0; n < orderList.size(); n++) {
-            Order listOrder = qt.getMDContent(orderList.getJSONObject(n).getString("id_O"), Arrays.asList( "id", "info","oItem", "action"), Order.class);
-            if (listOrder != null) {
-                if (listOrder.getInfo().getLST() != 7) {
-                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_NEED_FINAL.getCode(), "");
+        try {
+            String myCompId = tokData.getString("id_C");
+            Asset asset = qt.getConfig(myCompId, "a-auth", "def");
+            JSONObject objlBP = asset.getDef().getJSONObject("objlBP");
+            Order orderMainData = qt.getMDContent(id_O, "casItemx", Order.class);
+            List <Order> orderDataList = new ArrayList<>();
+            JSONArray orderList = orderMainData.getCasItemx().getJSONObject(myCompId).getJSONArray("objOrder");
+            JSONObject assetCollection = new JSONObject();
+            for (int n = 0; n < orderList.size(); n++) {
+                Order listOrder = qt.getMDContent(orderList.getJSONObject(n).getString("id_O"), Arrays.asList( "id", "info","oItem", "action"), Order.class);
+                if (listOrder != null) {
+                    if (listOrder.getInfo().getLST() != 7) {
+                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_ORDER_NEED_FINAL.getCode(), "");
+                    }
+                    orderDataList.add(listOrder);
                 }
-                orderDataList.add(listOrder);
             }
-        }
 
-        for (Order orderData : orderDataList) {
+            for (Order orderData : orderDataList) {
 
-            JSONArray objAction = orderData.getAction().getJSONArray("objAction");
-            JSONArray objOItem = orderData.getOItem().getJSONArray("objItem");
-            JSONObject grpBGroup = orderData.getAction().getJSONObject("grpBGroup");
-            JSONObject grpGroup = orderData.getAction().getJSONObject("grpGroup");
+                JSONArray objAction = orderData.getAction().getJSONArray("objAction");
+                JSONArray objOItem = orderData.getOItem().getJSONArray("objItem");
+                JSONObject grpBGroup = orderData.getAction().getJSONObject("grpBGroup");
+                JSONObject grpGroup = orderData.getAction().getJSONObject("grpGroup");
 
-            for (int j = 0; j < objAction.size(); j++) {
-                OrderAction unitAction = qt.cloneThis(objAction.getJSONObject(j), OrderAction.class);
-                OrderOItem unitOItem = qt.cloneThis(objOItem.getJSONObject(j), OrderOItem.class);
-                if (unitAction.getBisPush() != 1) {
-                    JSONObject lbP = objlBP.getJSONObject(unitOItem.getGrpB());
-                    boolean isSto = lbP.getBoolean("isSto") != null && lbP.getBoolean("isSto");
-                    // if bmdpt == 4, && sumPrev == 0, my subParts [prior == 0] starts
-                    // for each subParts
-                    // check if wn0prior == 0, if so dgActivate
-                    if (isSto) {
-                        if (unitAction.getBmdpt() == 3 && unitAction.getSumPrev() == 0) {
-                            //                // 根据零件递归信息获取零件信息，并且制作日志
-                            unitAction.setBcdStatus(0);
-                            unitAction.setBisPush(1);
-
-                            qt.setMDContent(orderData.getId(), qt.setJson("action.objAction." + j, unitAction), Order.class);
-
-                            JSONObject fcCheck = grpBGroup.getJSONObject(unitOItem.getGrpB());
-                            JSONObject fsCheck = grpGroup.getJSONObject(unitOItem.getGrp());
-                            String id_FS = "";
-                            String id_FC = "";
-
-                            if (fcCheck != null) {
-                                id_FC = fcCheck.getString("id_Flow") != null
-                                        && !unitOItem.getId_C().equals(myCompId) ?
-                                        fcCheck.getString("id_Flow") : "";
-                            }
-
-                            if (fsCheck != null) {
-                                id_FS = fsCheck.getString("id_Flow") != null
-                                        && !unitOItem.getId_C().equals(myCompId) ?
-                                        fsCheck.getString("id_Flow") : "";
-                            }
-
-                            dbu.updateRefOP2(assetCollection, myCompId, unitOItem.getId_C(),
-                                    id_FC, id_FS, unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getId_O(), unitAction.getIndex(), true);
-
-                            String msgText = "[" + unitAction.getRefOP() + "] " + unitOItem.getWrdN().get("cn") + " 准备开始";
-                            LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
-                                    id_FC,
-                                    id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"),
-                                    unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(), id_O, unitAction.getId_O(), unitAction.getIndex(),
-                                    unitOItem.getId_CB(), unitOItem.getId_C(), "", tokData.getString("dep"), msgText, 3, unitOItem.getWrdN(), tokData.getJSONObject("wrdNReal"));
-                            logLP.setLogData_action(unitAction, unitOItem);
-                            logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
-
-
-                            //System.out.println(logLP);
-                            ws.sendWS(logLP);
-                            // 发送日志
+                for (int j = 0; j < objAction.size(); j++) {
+                    OrderAction unitAction = qt.cloneThis(objAction.getJSONObject(j), OrderAction.class);
+                    OrderOItem unitOItem = qt.cloneThis(objOItem.getJSONObject(j), OrderOItem.class);
+                    if (unitAction.getBmdpt() == 3) {
+                        System.out.println("action+oItem:");
+                        System.out.println(JSON.toJSONString(unitAction));
+                        System.out.println(JSON.toJSONString(unitOItem));
+                    }
+                    if (unitAction.getBisPush() != 1) {
+                        boolean isSto;
+                        JSONObject lbP = objlBP.getJSONObject(unitOItem.getGrpB());
+                        if (null == lbP) {
+                            isSto = false;
+                        } else {
+                            isSto = lbP.getBoolean("isSto") != null && lbP.getBoolean("isSto");
                         }
-                        else if (unitAction.getBmdpt() == 3 && unitAction.getSumPrev() == 0 && unitAction.getProb() == null) {
+                        // if bmdpt == 4, && sumPrev == 0, my subParts [prior == 0] starts
+                        // for each subParts
+                        // check if wn0prior == 0, if so dgActivate
+                        if (isSto) {
                             this.createStoQuest(assetCollection, tokData, orderData, orderData.getId(), j);
-                        }
-                    } else {
-                        if (unitAction.getBmdpt() == 4 && unitAction.getSumPrev() == 0) {
-                            for (int k = 0; k < unitAction.getSubParts().size(); k++) {
-                                JSONObject subOrderData = this.getActionData(unitAction.getSubParts().getJSONObject(k).getString("id_O"),
-                                        unitAction.getSubParts().getJSONObject(k).getInteger("index"));
-                                OrderOItem subOItem = qt.cloneThis(subOrderData.get("orderOItem"), OrderOItem.class);
-                                OrderAction subAction = qt.cloneThis(subOrderData.get("orderAction"), OrderAction.class);
+                        } else {
+                            if (unitAction.getBmdpt() == 4 && unitAction.getSumPrev() == 0) {
+                                for (int k = 0; k < unitAction.getSubParts().size(); k++) {
+                                    JSONObject subOrderData = this.getActionData(unitAction.getSubParts().getJSONObject(k).getString("id_O"),
+                                            unitAction.getSubParts().getJSONObject(k).getInteger("index"));
+                                    OrderOItem subOItem = qt.cloneThis(subOrderData.get("orderOItem"), OrderOItem.class);
+                                    OrderAction subAction = qt.cloneThis(subOrderData.get("orderAction"), OrderAction.class);
 
-                                if (subOItem.getWn0prior() == 1) {
-                                    subAction.setBcdStatus(0);
-                                    subAction.setBisPush(1);
+                                    if (subOItem.getWn0prior() == 1) {
+                                        subAction.setBcdStatus(0);
+                                        subAction.setBisPush(1);
 
-                                    JSONObject mapKey = new JSONObject();
-                                    mapKey.put("action.objAction." + unitAction.getSubParts().getJSONObject(k).getInteger("index"), subAction);
-                                    qt.setMDContent(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey, Order.class);
-                                    //System.out.println("unit " + subOItem.getGrpB() + subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
-                                    String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
+                                        JSONObject mapKey = new JSONObject();
+                                        mapKey.put("action.objAction." + unitAction.getSubParts().getJSONObject(k).getInteger("index"), subAction);
+                                        qt.setMDContent(unitAction.getSubParts().getJSONObject(k).getString("id_O"), mapKey, Order.class);
+                                        //System.out.println("unit " + subOItem.getGrpB() + subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()));
+                                        String logType = subOrderData.getJSONObject("grpBGroup").getJSONObject(subOItem.getGrpB()).getString("logType");
 
-                                    dbu.updateRefOP2(assetCollection, subOrderData.getJSONObject("info").getString("id_CB"), subOrderData.getJSONObject("info").getString("id_C"),
-                                            subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), subAction.getId_OP(), subAction.getRefOP(), subAction.getWrdNP(), subAction.getId_O(), subAction.getIndex(), true);
+                                        dbu.updateRefOP2(assetCollection, subOrderData.getJSONObject("info").getString("id_CB"), subOrderData.getJSONObject("info").getString("id_C"),
+                                                subOrderData.getString("id_FC"), subOrderData.getString("id_FS"), subAction.getId_OP(), subAction.getRefOP(), subAction.getWrdNP(), subAction.getId_O(), subAction.getIndex(), true);
 
-                                    LogFlow logLP = new LogFlow(logType, subOrderData.getString("id_FC"),
-                                            subOrderData.getString("id_FS"), "stateChg",
-                                            tokData.getString("id_U"), tokData.getString("grpU"), subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
-                                            id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
-                                            unitAction.getSubParts().getJSONObject(k).getInteger("index"),
-                                            subOItem.getId_CB(), subOItem.getId_C(),
-                                            "", tokData.getString("dep"), subOItem.getWrdN().get("cn") + " 准备开始", 3, subOItem.getWrdN(), tokData.getJSONObject("wrdNReal"));
-                                    logLP.setLogData_action(subAction, subOItem);
-                                    logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
-                                    ws.sendWS(logLP);
-                                }
+                                        LogFlow logLP = new LogFlow(logType, subOrderData.getString("id_FC"),
+                                                subOrderData.getString("id_FS"), "stateChg",
+                                                tokData.getString("id_U"), tokData.getString("grpU"), subOItem.getId_P(), subOItem.getGrpB(), subOItem.getGrp(),
+                                                id_O, unitAction.getSubParts().getJSONObject(k).getString("id_O"),
+                                                unitAction.getSubParts().getJSONObject(k).getInteger("index"),
+                                                subOItem.getId_CB(), subOItem.getId_C(),
+                                                "", tokData.getString("dep"), subOItem.getWrdN().get("cn") + " 准备开始", 3, subOItem.getWrdN(), tokData.getJSONObject("wrdNReal"));
+                                        logLP.setLogData_action(subAction, subOItem);
+                                        logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+                                        ws.sendWS(logLP);
+                                    }
 //                            else {
 //                                //System.out.println("break @ " + k);
 //                                break;
 //                            }
+                                }
                             }
-                        }
-                        else if (unitAction.getBmdpt() == 3 && unitAction.getSumPrev() == 0) {
-                            //                // 根据零件递归信息获取零件信息，并且制作日志
-                            unitAction.setBcdStatus(0);
-                            unitAction.setBisPush(1);
+                            else if (unitAction.getBmdpt() == 3 && unitAction.getSumPrev() == 0) {
+                                System.out.println("进入物料:");
+                                //                // 根据零件递归信息获取零件信息，并且制作日志
+                                unitAction.setBcdStatus(0);
+                                unitAction.setBisPush(1);
 
-                            qt.setMDContent(orderData.getId(), qt.setJson("action.objAction." + j, unitAction), Order.class);
+                                qt.setMDContent(orderData.getId(), qt.setJson("action.objAction." + j, unitAction), Order.class);
 
-                            JSONObject fcCheck = grpBGroup.getJSONObject(unitOItem.getGrpB());
-                            JSONObject fsCheck = grpGroup.getJSONObject(unitOItem.getGrp());
-                            String id_FS = "";
-                            String id_FC = "";
+                                JSONObject fcCheck = grpBGroup.getJSONObject(unitOItem.getGrpB());
+                                JSONObject fsCheck = grpGroup.getJSONObject(unitOItem.getGrp());
+                                String id_FS = "";
+                                String id_FC = "";
 
-                            if (fcCheck != null) {
-                                id_FC = fcCheck.getString("id_Flow") != null
-                                        && !unitOItem.getId_C().equals(myCompId) ?
-                                        fcCheck.getString("id_Flow") : "";
+                                if (fcCheck != null) {
+                                    id_FC = fcCheck.getString("id_Flow") != null
+                                            && !unitOItem.getId_C().equals(myCompId) ?
+                                            fcCheck.getString("id_Flow") : "";
+                                }
+
+                                if (fsCheck != null) {
+                                    id_FS = fsCheck.getString("id_Flow") != null
+                                            && !unitOItem.getId_C().equals(myCompId) ?
+                                            fsCheck.getString("id_Flow") : "";
+                                }
+
+                                dbu.updateRefOP2(assetCollection, myCompId, unitOItem.getId_C(),
+                                        id_FC, id_FS, unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getId_O(), unitAction.getIndex(), true);
+
+                                String msgText = "[" + unitAction.getRefOP() + "] " + unitOItem.getWrdN().get("cn") + " 准备开始";
+                                LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
+                                        id_FC,
+                                        id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"),
+                                        unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(), id_O, unitAction.getId_O(), unitAction.getIndex(),
+                                        unitOItem.getId_CB(), unitOItem.getId_C(), "", tokData.getString("dep"), msgText, 3, unitOItem.getWrdN(), tokData.getJSONObject("wrdNReal"));
+                                logLP.setLogData_action(unitAction, unitOItem);
+                                logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+
+
+                                //System.out.println(logLP);
+                                ws.sendWS(logLP);
+                                // 发送日志
+                            } else {
+                                System.out.println("进入else");
                             }
-
-                            if (fsCheck != null) {
-                                id_FS = fsCheck.getString("id_Flow") != null
-                                        && !unitOItem.getId_C().equals(myCompId) ?
-                                        fsCheck.getString("id_Flow") : "";
-                            }
-
-                            dbu.updateRefOP2(assetCollection, myCompId, unitOItem.getId_C(),
-                                    id_FC, id_FS, unitAction.getId_OP(), unitAction.getRefOP(), unitAction.getWrdNP(), unitAction.getId_O(), unitAction.getIndex(), true);
-
-                            String msgText = "[" + unitAction.getRefOP() + "] " + unitOItem.getWrdN().get("cn") + " 准备开始";
-                            LogFlow logLP = new LogFlow(fcCheck.getString("logType"),
-                                    id_FC,
-                                    id_FS, "stateChg", tokData.getString("id_U"), tokData.getString("grpU"),
-                                    unitOItem.getId_P(), unitOItem.getGrpB(), unitOItem.getGrp(), id_O, unitAction.getId_O(), unitAction.getIndex(),
-                                    unitOItem.getId_CB(), unitOItem.getId_C(), "", tokData.getString("dep"), msgText, 3, unitOItem.getWrdN(), tokData.getJSONObject("wrdNReal"));
-                            logLP.setLogData_action(unitAction, unitOItem);
-                            logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
-
-
-                            //System.out.println(logLP);
-                            ws.sendWS(logLP);
-                            // 发送日志
                         }
                     }
                 }
             }
-        }
 
-        dbu.setMDRefOP(assetCollection);
+            dbu.setMDRefOP(assetCollection);
+        } catch (Exception e) {
+            System.out.println("出现异常:"+e.getMessage());
+            e.printStackTrace();
+        }
         return retResult.ok(CodeEnum.OK.getCode(), "AllAndStorage");
     }
 
@@ -2229,6 +2373,8 @@ public class ActionServiceImpl implements ActionService {
             Prod prod = qt.getMDContent(unitOItem.getId_P(), Arrays.asList("qtySafex."+myCompId,"view"), Prod.class);
 
             JSONObject qtySafex = qt.cloneObj(prod.getQtySafex());
+            System.out.println("qtySafex:");
+            System.out.println(JSON.toJSONString(qtySafex));
             JSONObject jsonSafex = qt.setJson("id_O", id_O, "index", index, "refOP",
                     unitAction.getRefOP(),
                     "wrdNO", unitOItem.getWrdN(), "wn2qty", unitOItem.getWn2qtyneed());
@@ -2984,20 +3130,22 @@ public class ActionServiceImpl implements ActionService {
             return order.getInfo().getLST();
         }
         String id_OP = order.getInfo().getId_OP();
-        Order orderOP = qt.getMDContent(id_OP, "casItemx."+id_C, Order.class);
-        if (null == orderOP || null == orderOP.getCasItemx() || null == orderOP.getCasItemx().getJSONObject(id_C)) {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_FOUND.getCode(),"父订单不存在");
-        }
-        JSONObject casInfo = orderOP.getCasItemx().getJSONObject(id_C);
-        if (null != casInfo.getInteger("teOrderCount")) {
-            Integer teOrderCount = casInfo.getInteger("teOrderCount");
-            Integer taOrderCount = casInfo.getInteger("taOrderCount");
-            taOrderCount++;
-            if (Objects.equals(teOrderCount, taOrderCount)) {
-                qt.setMDContent(id_OP,qt.setJson("action.lDG",2
-                        ,"casItemx."+id_C+".taOrderCount",taOrderCount), Order.class);
-            } else {
-                qt.setMDContent(id_OP,qt.setJson("casItemx."+id_C+".taOrderCount",taOrderCount), Order.class);
+        if (null != id_OP) {
+            Order orderOP = qt.getMDContent(id_OP, "casItemx."+id_C, Order.class);
+            if (null != orderOP && null != orderOP.getCasItemx() && null != orderOP.getCasItemx().getJSONObject(id_C)) {
+//                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_FOUND.getCode(),"父订单不存在");
+                JSONObject casInfo = orderOP.getCasItemx().getJSONObject(id_C);
+                if (null != casInfo.getInteger("teOrderCount")) {
+                    Integer teOrderCount = casInfo.getInteger("teOrderCount");
+                    Integer taOrderCount = casInfo.getInteger("taOrderCount");
+                    taOrderCount++;
+                    if (Objects.equals(teOrderCount, taOrderCount)) {
+                        qt.setMDContent(id_OP,qt.setJson("action.lDG",2
+                                ,"casItemx."+id_C+".taOrderCount",taOrderCount), Order.class);
+                    } else {
+                        qt.setMDContent(id_OP,qt.setJson("casItemx."+id_C+".taOrderCount",taOrderCount), Order.class);
+                    }
+                }
             }
         }
         // if I am both buyer and seller, internal order, whatever side I am, set it to both final
