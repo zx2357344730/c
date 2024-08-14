@@ -59,6 +59,8 @@ public class lBAsset {
 
     private String grp;
 
+    private String grpP;
+
     private String ref;
 
     private String pic;
@@ -70,7 +72,6 @@ public class lBAsset {
     private Double wn4value;
 
     private Double wn2qtyResv; //被预约了的数量
-
 
     private Integer lAT; //Asset Type
 

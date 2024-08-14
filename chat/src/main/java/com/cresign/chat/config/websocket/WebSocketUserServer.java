@@ -566,10 +566,10 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                     qt.errPrint("rdSet", null, rdSet, clientType, token);
                     if (rdSet == null) {
                         // 通过id_U查询该用户
-                        User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp."+ id_C), User.class);
+                        User user = qt.getMDContent(id_U, qt.strList("info", "rolex."+ id_C), User.class);
                         token = oauth.setToken(user, id_C,
-                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
-                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
+                                user.getRolex().getJSONObject(id_C).getString("grpU"),
+                                user.getRolex().getJSONObject(id_C).getString("dep"),
                                 clientType);
                         qt.setRDExpire(clientType+"RefreshToken",refreshToken,
                                 clientType.equals("web")? 604800L : 3888000L);

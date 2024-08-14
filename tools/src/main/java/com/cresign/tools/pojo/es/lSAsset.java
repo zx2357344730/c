@@ -32,6 +32,8 @@ public class lSAsset {
         this.wrdN = wrdN == null ? (JSONObject) wrdEmpty.clone() : wrdN;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
         this.grp = grp == null ? "1000" : grp;
+//        this.grpP = grpP == null ? "1000" : grpP;
+
         this.ref = ref == null ? "" : ref;
         this.pic = pic == null ? "" : pic;
         this.lAT = lAT == null ? 0 : lAT;
@@ -58,6 +60,7 @@ public class lSAsset {
     private JSONObject wrddesc;
 
     private String grp;
+    private String grpP;
 
     private JSONArray arrGrp = new JSONArray();
 

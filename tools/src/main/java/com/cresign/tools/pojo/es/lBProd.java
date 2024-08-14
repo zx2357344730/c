@@ -95,6 +95,8 @@ public class lBProd {
 
     private double wn2qty;//库存总数
 
+    private Long wntSafe = 0L;
+
     private String qr;
 
     private String tmd;

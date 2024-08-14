@@ -241,10 +241,10 @@ public class LogFlow {
         this.tmd = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
     }
 
-    public void setSaleLog(JSONObject tokData, String id_CB, String updateType, String zcndesc, Integer imp, String id_O, String id_OP, String listType, JSONObject wrdN, String grp)
+    public void setSaleLog(JSONObject tokData, String id_C, String id_CB, String id_FC, String id_FS, String updateType, String zcndesc, Integer imp, String id_O, String id_OP, String listType, JSONObject wrdN, String grp)
     {
-        this.id = "10sales";
-        this.id_FS = "";
+        this.id = id_FC;
+        this.id_FS = id_FS;
         this.logType = "saleflow";
         this.subType = updateType;
         this.dep = "";
@@ -256,8 +256,8 @@ public class LogFlow {
         this.id_O = id_O;
         this.id_OP = id_OP;
         this.index = 0;
-        this.id_CS = tokData.getString("id_C");
-        this.id_C = tokData.getString("id_C");//id_CB;
+        this.id_CS = id_C;
+        this.id_C = id_CB;
 
         this.wrdN = wrdN;
         this.imp = imp;

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.cresign.tools.enumeration.CodeEnum;
 import com.cresign.tools.enumeration.DateEnum;
 import com.cresign.tools.enumeration.ErrEnum;
 import com.cresign.tools.exception.ErrorResponseException;
@@ -1198,16 +1199,16 @@ public class Qt {
 
     /**
      * 根据id_C和ref获取id_A
+     * @Return 2 = same comp, 1 = real comp, 0 = fake comp
      * @author Rachel
      * @Date 2022/01/14
      * @param id_C 公司id
-     * @Return java.lang.String
-     * @Card
      **/
 
     public int judgeComp(String id_C,String compOther){
 
         JSONArray result = this.getES("lSAsset", this.setESFilt("id_C",compOther,"ref","a-auth"), 1);
+
         // 2 = same comp
         // 1 = real comp
         // 0 = fake comp
@@ -1339,7 +1340,8 @@ public class Qt {
         return JSONObject.parseObject(JSON.toJSONString(data), classType);
         } catch (Exception e)
         {
-            return null;
+            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ES_DB_ERROR.getCode(), e.toString());
         }
     }
 
@@ -1350,7 +1352,8 @@ public class Qt {
             return JSONObject.parseObject(JSON.toJSONString(data));
         } catch (Exception e)
         {
-            return null;
+            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ES_DB_ERROR.getCode(), e.toString());
         }
     }
 
@@ -1360,26 +1363,11 @@ public class Qt {
         return  JSONArray.parseArray(JSON.toJSONString(data));
         } catch (Exception e)
         {
-            return null;
+            e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ES_DB_ERROR.getCode(), e.toString());
         }
     }
 
-    /////////////////-------------------------------------------
-//    public LogFlow getLogRecent(String logType, String id_O, Integer index, String id_C, boolean isSL) {
-//
-//        JSONArray filt = new JSONArray();
-//        this.setESFilt(filt, "id_O","eq",id_O);
-//        this.setESFilt(filt, "index","eq",index);
-//
-//        if (isSL)
-//            this.setESFilt(filt, "id_CS","eq",id_C);
-//        else
-//            this.setESFilt(filt, "id_C","eq",id_C);
-//
-//        JSONArray result = this.getES(logType, filt,1, 1, "tmd", "desc");
-//
-//        return this.jsonTo(result.getJSONObject(0), LogFlow.class);
-//    }
 
     public JSONArray mapES_IDX(String listType, JSONArray convertArray) {
         JSONArray result = new JSONArray();
@@ -1496,6 +1484,53 @@ public class Qt {
         T prodES = this.cloneThis(listProdES.getJSONObject(0), classType);
 
         return prodES;
+    }
+
+    public JSONObject getEsByRef(String listType, String id_C, JSONArray arrayRef) {
+        JSONObject jsonRefId = new JSONObject();
+        String compId = "";
+        String refKey = "";
+        String idKey = "";
+        JSONArray filterArray;
+        if (listType.equals("lSComp")) {
+            compId = "id_C";
+            refKey = "refCB";
+            idKey = "id_CB";
+            listType = "lSBComp";
+        } else if (listType.equals("lBComp")) {
+            compId = "id_CB";
+            refKey = "refC";
+            idKey = "id_C";
+            listType = "lSBComp";
+        } else if (listType.equals("lSProd")) {
+            compId = "id_C";
+            refKey = "ref";
+            idKey = "id_P";
+        } else if (listType.equals("lBProd")) {
+            compId = "id_CB";
+            refKey = "refB";
+            idKey = "id_P";
+        } else if (listType.equals("lSOrder")) {
+            compId = "id_C";
+            refKey = "ref";
+            idKey = "id_O";
+            listType = "lSBOrder";
+        } else if (listType.equals("lBOrder")) {
+            compId = "id_CB";
+            refKey = "refB";
+            idKey = "id_O";
+            listType = "lSBOrder";
+        }
+
+        filterArray = this.setESFilt(compId, id_C);
+        this.setESFilt(filterArray, refKey, "contain", arrayRef);
+        JSONArray arrayEs = this.getES(listType, filterArray);
+        for (int i = 0; i < arrayEs.size(); i++) {
+            JSONObject jsonEs = arrayEs.getJSONObject(i);
+            jsonEs.put("id", jsonEs.getString(idKey));
+            jsonRefId.put(jsonEs.getString(refKey), jsonEs);
+        }
+        return jsonRefId;
     }
 
     public JSONArray getES(String index, JSONArray filterArray) {
@@ -1965,7 +2000,8 @@ public class Qt {
 
     //capacity,sprod,aiToken
     public void checkPowerUp(String id_C, Long size, String type) {
-        Asset asset = getConfig(id_C, "a-core", Arrays.asList("powerup", "view"));
+
+        Asset asset = getConfig(id_C, "a-core", "powerup");
         System.out.println("id_C=" + id_C);
         System.out.println("asset=" + asset);
         JSONObject powerCount = this.getInitData().getPowerup();
@@ -1979,9 +2015,8 @@ public class Qt {
             if (asset.getPowerup() == null) {
                 JSONObject jsonData = this.setJson("total", powerCount.getLong(type), "used", size, "status", true);
                 powerup = this.setJson(type, jsonData);
-                JSONArray view = asset.getView();
-                view.add("powerup");
-                jsonUpdate = this.setJson("view", view, "powerup", powerup);
+
+                jsonUpdate = this.setJson("powerup", powerup);
             } else {
                 powerup = asset.getPowerup();
                 if (powerup.getJSONObject(type) == null) {
@@ -2466,4 +2501,251 @@ public class Qt {
             return true;
         }
     }
+
+    public JSONObject actionChart(String id_O) {
+        HashSet setUpId_O = new HashSet();
+        HashSet setSubId_O = new HashSet();
+        JSONObject jsonId_O = new JSONObject();
+        JSONObject jsonUpId_OIndex = new JSONObject();
+        JSONObject jsonAction = new JSONObject();
+        JSONObject jsonExcludeId_OIndex = new JSONObject();
+        JSONObject jsonObjStock = new JSONObject();
+
+        Order order = this.getMDContent(id_O, Arrays.asList("info","action","oItem","oStock"), Order.class);
+
+        if (order.getAction() == null || order.getAction().getJSONArray("objAction").size() == 0)
+        {
+            return new JSONObject();
+        }
+        JSONArray arrayObjAction = order.getAction().getJSONArray("objAction");
+        Integer num = 0;
+        for (int a = 0; a < arrayObjAction.size(); a++) {
+            JSONObject jsonObjAction = order.getAction().getJSONArray("objAction").getJSONObject(a);
+            JSONObject jsonObjItem = order.getOItem().getJSONArray("objItem").getJSONObject(a);
+
+            if (order.getOStock().getJSONArray("objData").size() <= a)
+            {
+                jsonObjStock.put("wn2qtynow", 0.0);
+                jsonObjStock.put("wn2qtymade", 0.0);
+            } else {
+                jsonObjStock = order.getOStock().getJSONArray("objData").getJSONObject(a);
+            }
+
+            JSONArray arrayUpPrnt = jsonObjAction.getJSONArray("upPrnts");
+            JSONArray arraySubPart = jsonObjAction.getJSONArray("subParts");
+            for (int i = 0; i < arrayUpPrnt.size(); i++) {
+                JSONObject jsonUpPrnt = arrayUpPrnt.getJSONObject(i);
+                String upPrntId_O = jsonUpPrnt.getString("id_O");
+                Integer upPrntIndex = jsonUpPrnt.getInteger("index");
+                setUpId_O.add(upPrntId_O);
+                if (jsonId_O.getJSONArray(upPrntId_O) != null) {
+                    JSONArray arrayIndex = jsonId_O.getJSONArray(upPrntId_O);
+                    arrayIndex.add(upPrntIndex);
+                } else {
+                    JSONArray arrayIndex = new JSONArray();
+                    arrayIndex.add(upPrntIndex);
+                    jsonId_O.put(upPrntId_O, arrayIndex);
+                }
+
+                if (jsonUpId_OIndex.getJSONArray(upPrntId_O + "." + upPrntIndex) != null) {
+                    JSONArray arraySubId_OIndex = jsonUpId_OIndex.getJSONArray(upPrntId_O + "." + upPrntIndex);
+                    arraySubId_OIndex.add(id_O + "." + a);
+                } else {
+                    JSONArray arraySubId_OIndex = new JSONArray();
+                    arraySubId_OIndex.add(id_O + "." + a);
+                    jsonUpId_OIndex.put(upPrntId_O + "." + upPrntIndex, arraySubId_OIndex);
+                }
+            }
+            for (int i = 0; i < arraySubPart.size(); i++) {
+                JSONObject jsonSubPart = arraySubPart.getJSONObject(i);
+                String subPartId_O = jsonSubPart.getString("id_O");
+                Integer subPartIndex = jsonSubPart.getInteger("index");
+                setSubId_O.add(subPartId_O);
+                if (jsonId_O.getJSONArray(subPartId_O) != null) {
+                    JSONArray arrayIndex = jsonId_O.getJSONArray(subPartId_O);
+                    arrayIndex.add(subPartIndex);
+                } else {
+                    JSONArray arrayIndex = new JSONArray();
+                    arrayIndex.add(subPartIndex);
+                    jsonId_O.put(subPartId_O, arrayIndex);
+                }
+
+                if (jsonUpId_OIndex.getJSONArray(id_O + "." + a) != null) {
+                    JSONArray arraySubId_OIndex = jsonUpId_OIndex.getJSONArray(id_O + "." + a);
+                    arraySubId_OIndex.add(subPartId_O + "." + subPartIndex);
+                } else {
+                    JSONArray arraySubId_OIndex = new JSONArray();
+                    arraySubId_OIndex.add(subPartId_O + "." + subPartIndex);
+                    jsonUpId_OIndex.put(id_O + "." + a, arraySubId_OIndex);
+                }
+            }
+            jsonObjAction.put("name", "[" + num + "] " + jsonObjAction.getJSONObject("wrdN").getString("cn"));
+            jsonObjAction.put("wn2qtyneed", jsonObjItem.getDouble("wn2qtyneed"));
+
+            jsonObjAction.put("id_O", id_O);
+            jsonObjAction.put("wrdNO", order.getInfo().getWrdN());
+            jsonObjAction.put("id_C", order.getInfo().getId_C());
+            jsonObjAction.put("lST", order.getInfo().getLST());
+            jsonObjAction.put("grpB", order.getInfo().getGrpB());
+            jsonObjAction.put("refB", jsonObjItem.getString("refB"));
+            jsonObjAction.put("ref", jsonObjItem.getString("ref"));
+
+            jsonObjAction.put("wn4price", jsonObjItem.getDouble("wn4price"));
+            jsonObjAction.put("wn2qtynow", jsonObjStock.getDouble("wn2qtynow"));
+            jsonObjAction.put("wn2qtymade", jsonObjStock.getDouble("wn2qtymade"));
+            num++;
+            jsonAction.put(id_O + "." + a, jsonObjAction);
+            jsonExcludeId_OIndex.put(id_O + "." + a, "");
+//            System.out.println("setId_O=" + setId_O);
+//            System.out.println("jsonId_O=" + jsonId_O);
+//            System.out.println("jsonAction=" + jsonAction);
+//            System.out.println("jsonUpId_OIndex=" + jsonUpId_OIndex);
+//            System.out.println("jsonExcludeId_OIndex=" + jsonExcludeId_OIndex);
+        }
+        recursionActionChart(setUpId_O, jsonId_O, jsonAction, jsonUpId_OIndex, jsonExcludeId_OIndex, num, "up");
+        recursionActionChart(setSubId_O, jsonId_O, jsonAction, jsonUpId_OIndex, jsonExcludeId_OIndex, num, "sub");
+        System.out.println("setUpId_O=" + setUpId_O);
+        System.out.println("setSubId_O=" + setSubId_O);
+        System.out.println("jsonId_O=" + jsonId_O);
+        System.out.println("jsonAction=" + jsonAction);
+        System.out.println("jsonUpId_OIndex=" + jsonUpId_OIndex);
+        System.out.println("jsonExcludeId_O=" + jsonExcludeId_OIndex);
+        JSONArray arrayRelation = new JSONArray();
+        jsonUpId_OIndex.forEach((upId_OIndex, v) ->{
+            HashSet<String> setSubId_OIndex = JSON.parseObject(JSON.toJSONString(jsonUpId_OIndex.getJSONArray(upId_OIndex)), HashSet.class);
+            for (String subId_OIndex : setSubId_OIndex) {
+                JSONObject jsonRelation = new JSONObject();
+                JSONObject jsonUp = jsonAction.getJSONObject(upId_OIndex);
+                JSONObject jsonSub = jsonAction.getJSONObject(subId_OIndex);
+                this.errPrint("what is", subId_OIndex);
+                jsonRelation.put("source", jsonUp.getString("name"));
+                jsonRelation.put("target", jsonSub.getString("name"));
+                jsonRelation.put("value", jsonSub.getDouble("wn2qtyneed"));
+
+                jsonRelation.put("upBcdStatus", jsonUp.getInteger("bcdStatus"));
+                jsonRelation.put("upWn2qtyneed", jsonUp.getDouble("wn2qtyneed"));
+                jsonRelation.put("upWn4price", jsonUp.getDouble("wn4price"));
+                jsonRelation.put("upWn2qtynow", jsonUp.getDouble("wn2qtynow"));
+                jsonRelation.put("upWn2qtymade", jsonUp.getDouble("wn2qtymade"));
+
+                jsonRelation.put("subBcdStatus", jsonSub.getInteger("bcdStatus"));
+                jsonRelation.put("subWn2qtyneed", jsonSub.getDouble("wn2qtyneed"));
+                jsonRelation.put("subWn4price", jsonSub.getDouble("wn4price"));
+                jsonRelation.put("subWn2qtynow", jsonSub.getDouble("wn2qtynow"));
+                jsonRelation.put("subWn2qtymade", jsonSub.getDouble("wn2qtymade"));
+
+                arrayRelation.add(jsonRelation);
+            }
+        });
+
+        JSONArray arrayAction = new JSONArray();
+        jsonAction.forEach((id_OIndex, v) ->{
+            arrayAction.add(jsonAction.getJSONObject(id_OIndex));
+//            JSONObject jsonName = new JSONObject();
+//            jsonName.put("name", jsonAction.getJSONObject(id_OIndex).getString("name"));
+//            arrayAction.add(jsonName);
+        });
+        JSONObject jsonResult = new JSONObject();
+        jsonResult.put("action", arrayAction);
+        jsonResult.put("relation", arrayRelation);
+        System.out.println("jsonResult=" + jsonResult);
+        return jsonResult;
+    }
+
+    private void recursionActionChart(HashSet setId_O, JSONObject jsonUpId_O, JSONObject jsonAction, JSONObject jsonUpId_OIndex, JSONObject jsonExcludeId_OIndex, Integer num, String type) {
+
+//        List<Order> orders = (List<Order>) dbUtils.getMongoListFields(setId_O, Arrays.asList("action","oItem","oStock"), Order.class);
+
+        List<Order> orders = this.getMDContentMany(setId_O, Arrays.asList("info","action","oItem","oStock"), Order.class);
+        setId_O = new HashSet();
+        JSONObject jsonId_O = new JSONObject();
+        for (Order order : orders) {
+            String id_O = order.getId();
+            this.errPrint("actionChart", null, order);
+
+            JSONArray arrayObjAction = order.getAction().getJSONArray("objAction");
+            JSONArray arrayObjItem = order.getOItem().getJSONArray("objItem");
+            JSONArray arrayObjStock = order.getOStock().getJSONArray("objData");
+            HashSet<Integer> setIndex = JSON.parseObject(JSON.toJSONString(jsonUpId_O.getJSONArray(id_O)), HashSet.class);
+            for (Integer index : setIndex) {
+                if (jsonExcludeId_OIndex.getString(id_O + "." + index) == null) {
+                    jsonExcludeId_OIndex.put(id_O + "." + index, "");
+                    this.errPrint("arrayObj", null, arrayObjAction, index, id_O);
+                    JSONObject jsonObjAction = arrayObjAction.getJSONObject(index);
+                    JSONObject jsonObjItem = arrayObjItem.getJSONObject(index);
+                    JSONObject jsonObjStock = arrayObjStock.getJSONObject(index);
+
+                    JSONArray arrayUpPrnt = jsonObjAction.getJSONArray("upPrnts");
+                    JSONArray arraySubPart = jsonObjAction.getJSONArray("subParts");
+                    if (type.equals("up")) {
+                        for (int i = 0; i < arrayUpPrnt.size(); i++) {
+                            JSONObject jsonUpPrnt = arrayUpPrnt.getJSONObject(i);
+                            String upPrntId_O = jsonUpPrnt.getString("id_O");
+                            Integer upPrntIndex = jsonUpPrnt.getInteger("index");
+                            setId_O.add(upPrntId_O);
+                            if (jsonId_O.getJSONArray(upPrntId_O) != null) {
+                                JSONArray arrayIndex = jsonId_O.getJSONArray(upPrntId_O);
+                                arrayIndex.add(upPrntIndex);
+                            } else {
+                                JSONArray arrayIndex = new JSONArray();
+                                arrayIndex.add(upPrntIndex);
+                                jsonId_O.put(upPrntId_O, arrayIndex);
+                            }
+
+                            if (jsonUpId_OIndex.getJSONArray(upPrntId_O + "." + upPrntIndex) != null) {
+                                JSONArray arraySubId_OIndex = jsonUpId_OIndex.getJSONArray(upPrntId_O + "." + upPrntIndex);
+                                arraySubId_OIndex.add(id_O + "." + index);
+                            } else {
+                                JSONArray arraySubId_OIndex = new JSONArray();
+                                arraySubId_OIndex.add(id_O + "." + index);
+                                jsonUpId_OIndex.put(upPrntId_O + "." + upPrntIndex, arraySubId_OIndex);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < arraySubPart.size(); i++) {
+                            JSONObject jsonSubPart = arraySubPart.getJSONObject(i);
+                            String subPartId_O = jsonSubPart.getString("id_O");
+                            Integer subPartIndex = jsonSubPart.getInteger("index");
+                            setId_O.add(subPartId_O);
+                            if (jsonId_O.getJSONArray(subPartId_O) != null) {
+                                JSONArray arrayIndex = jsonId_O.getJSONArray(subPartId_O);
+                                arrayIndex.add(subPartIndex);
+                            } else {
+                                JSONArray arrayIndex = new JSONArray();
+                                arrayIndex.add(subPartIndex);
+                                jsonId_O.put(subPartId_O, arrayIndex);
+                            }
+
+                            if (jsonUpId_OIndex.getJSONArray(id_O + "." + index) != null) {
+                                JSONArray arraySubId_OIndex = jsonUpId_OIndex.getJSONArray(id_O + "." + index);
+                                arraySubId_OIndex.add(subPartId_O + "." + subPartIndex);
+                            } else {
+                                JSONArray arraySubId_OIndex = new JSONArray();
+                                arraySubId_OIndex.add(subPartId_O + "." + subPartIndex);
+                                jsonUpId_OIndex.put(id_O + "." + index, arraySubId_OIndex);
+                            }
+                        }
+                    }
+                    jsonObjAction.put("name", "[" + num + "] " + jsonObjAction.getJSONObject("wrdN").getString("cn"));
+                    jsonObjAction.put("wn2qtyneed", jsonObjItem.getDouble("wn2qtyneed"));
+                    jsonObjAction.put("id_O", id_O);
+                    jsonObjAction.put("wrdNO", order.getInfo().getWrdN());
+                    jsonObjAction.put("id_C", order.getInfo().getId_C());
+                    jsonObjAction.put("refB", jsonObjItem.getString("refB"));
+                    jsonObjAction.put("ref", jsonObjItem.getString("ref"));
+                    jsonObjAction.put("lST", order.getInfo().getLST());
+                    jsonObjAction.put("grpB", order.getInfo().getGrpB());
+                    jsonObjAction.put("wn4price", jsonObjItem.getDouble("wn4price"));
+                    jsonObjAction.put("wn2qtynow", jsonObjStock.getDouble("wn2qtynow"));
+                    jsonObjAction.put("wn2qtymade", jsonObjStock.getDouble("wn2qtymade"));
+                    num++;
+                    jsonAction.put(id_O + "." + index, jsonObjAction);
+                }
+            }
+        }
+        if (setId_O.size() > 0) {
+            recursionActionChart(setId_O, jsonId_O, jsonAction, jsonUpId_OIndex, jsonExcludeId_OIndex, num, type);
+        }
+    }
+
 }

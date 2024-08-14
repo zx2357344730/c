@@ -607,14 +607,14 @@ public class RedirectServiceImpl implements RedirectService {
 
             // 判断用户存不存在
             User userJson = qt.getMDContent(join_user,"info", User.class);
-            User userOne = qt.getMDContent(join_user, "rolex.objComp", User.class);
+            User userOne = qt.getMDContent(join_user, "rolex", User.class);
 
             // 不存在则返回出去
             if (null == userOne) {
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_IS_NO_FOUND.getCode(), null);
             }
 
-            if (null != userOne.getRolex().getJSONObject("objComp").getJSONObject(id_C)) {
+            if (null != userOne.getRolex().getJSONObject(id_C)) {
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.USER_JOIN_IS_HAVE.getCode(), null);
             }
 
@@ -647,7 +647,7 @@ public class RedirectServiceImpl implements RedirectService {
             }
             rolex.put("dep", "1000");
 
-            qt.setMDContent(join_user, qt.setJson("rolex.objComp." + id_C, rolex, "info.def_C", id_C), User.class);
+            qt.setMDContent(join_user, qt.setJson("rolex." + id_C, rolex, "info.def_C", id_C), User.class);
 
             JSONArray searchResult = qt.getES("lBUser", qt.setESFilt("id_CB", id_C, "id_U", join_user), 1);
 
@@ -1003,8 +1003,8 @@ PROD_CODE_OVERDUE.getCode(), null);
         // 校验权限先校验如果是rolex中有这家公司则可以直接拿当前他的权限，否则就是游客
 
 
-        User user = qt.getMDContent(id_U, "rolex.objComp."+prodJson.getString("id_C"),User.class);
-        JSONObject rolex = user.getRolex().getJSONObject("objComp").getJSONObject(prodJson.getString("id_C"));
+        User user = qt.getMDContent(id_U, "rolex."+prodJson.getString("id_C"),User.class);
+        JSONObject rolex = user.getRolex().getJSONObject(prodJson.getString("id_C"));
 
         JSONArray viewArray;
         // 游客权限

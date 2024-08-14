@@ -944,14 +944,14 @@ public class ModuleServicelmpl implements ModuleService {
         User user = qt.getMDContent(id_U, "rolex", User.class);
         JSONObject result;
         if (null == user || user.getRolex() == null ||
-                user.getRolex().getJSONObject("objComp").getJSONObject(id_C) == null) {
+                user.getRolex().getJSONObject(id_C) == null) {
             result = new JSONObject();
             result.put("id_U",id_U);
             result.put("desc","用户信息为空");
             resultArr.add(result);
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.REDIS_ORDER_NO_HAVE.getCode(), "");
         }
-        JSONObject rolexData = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
+        JSONObject rolexData = user.getRolex().getJSONObject(id_C);
 
 //        else {
 //            JSONObject rolex = user.getRolex();
@@ -962,7 +962,7 @@ public class ModuleServicelmpl implements ModuleService {
 //                resultArr.add(result);
 //            } else {
 //                // 获取公司权限信息集合
-//                JSONObject rolexData = rolex.getJSONObject("objComp").getJSONObject(id_C);
+//                JSONObject rolexData = rolex.getJSONObject(id_C);
 //                // 获取当前处理公司权限信息
 ////                JSONObject rolexData = rolexData.getJSONObject(id_C);
 //                if (null == rolexData) {
@@ -1109,7 +1109,7 @@ public class ModuleServicelmpl implements ModuleService {
                 //update Control, and Rolex
                 qt.setMDContent(assetId,qt.setJson("control.objMod",objMod),Asset.class);
 
-                qt.setMDContent(id_U, qt.setJson("rolex.objComp."+id_C+".modAuth",modAuth), User.class);
+                qt.setMDContent(id_U, qt.setJson("rolex."+id_C+".modAuth",modAuth), User.class);
 
 
             } else {
@@ -1130,7 +1130,7 @@ public class ModuleServicelmpl implements ModuleService {
 //            mod.put("bcdStatus",typeData);
 //            // 修改当前模块
 //            modAuth.put(modName,mod);
-//            qt.setMDContent(id_U, qt.setJson("rolex.objComp."+id_C+".modAuth",modAuth),User.class);
+//            qt.setMDContent(id_U, qt.setJson("rolex."+id_C+".modAuth",modAuth),User.class);
 //        }
 ////                }
 ////            }
@@ -1141,10 +1141,10 @@ public class ModuleServicelmpl implements ModuleService {
 
         User user = qt.getMDContent(id_U, "rolex", User.class);
         if (null == user || user.getRolex() == null ||
-                user.getRolex().getJSONObject("objComp").getJSONObject(id_C) == null) {
+                user.getRolex().getJSONObject(id_C) == null) {
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.REDIS_ORDER_NO_HAVE.getCode(), "");
         }
-        JSONObject rolexData = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
+        JSONObject rolexData = user.getRolex().getJSONObject(id_C);
         // this ONLY reset the status
         // 获取当前公司的模块信息
         JSONObject modAuth = rolexData.getJSONObject("modAuth");
@@ -1152,7 +1152,7 @@ public class ModuleServicelmpl implements ModuleService {
         mod.put("bcdStatus", bcdStatus);
         // 修改当前模块
         modAuth.put(modName, mod);
-        qt.setMDContent(id_U, qt.setJson("rolex.objComp." + id_C + ".modAuth", modAuth), User.class);
+        qt.setMDContent(id_U, qt.setJson("rolex." + id_C + ".modAuth", modAuth), User.class);
     }
 
 
@@ -1202,12 +1202,12 @@ public class ModuleServicelmpl implements ModuleService {
 //            //查询用户  rolex
 ////            Query rolexQ =  new Query(
 ////                    new Criteria("_id").is(id_U));
-////            rolexQ.fields().include("rolex.objComp."+id_C);
+////            rolexQ.fields().include("rolex."+id_C);
 ////
 ////            User user = mongoTemplate.findOne(rolexQ, User.class);
 //            User user = qt.getMDContent(id_U,"rolex", User.class);
 //
-//            JSONObject indexMap = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
+//            JSONObject indexMap = user.getRolex().getJSONObject(id_C);
 //
 //
 //            JSONArray objMod = indexMap.getJSONArray("objMod");
@@ -1222,8 +1222,8 @@ public class ModuleServicelmpl implements ModuleService {
 //            objMod.add(module);
 //
 //            //添加rolex
-////            mongoTemplate.updateFirst(rolexQ, new Update().set("rolex.objComp."+id_C,indexMap), User.class);
-//            qt.setMDContent(id_U,qt.setJson("rolex.objComp."+id_C,indexMap), User.class);
+////            mongoTemplate.updateFirst(rolexQ, new Update().set("rolex."+id_C,indexMap), User.class);
+//            qt.setMDContent(id_U,qt.setJson("rolex."+id_C,indexMap), User.class);
 //
 //
 //            //添加role.objAuth
@@ -1440,7 +1440,7 @@ public class ModuleServicelmpl implements ModuleService {
         mod1.put("a-core-3", val);
         rolex.put("modAuth", mod1);
 
-        qt.setMDContent(uid,qt.setJson("rolex.objComp."+new_id_C,rolex), User.class);
+        qt.setMDContent(uid,qt.setJson("rolex."+new_id_C,rolex), User.class);
 
         //a-core
         JSONObject coreObject = newComp.getJSONObject("a-core");
@@ -1465,7 +1465,7 @@ public class ModuleServicelmpl implements ModuleService {
 
         lNComp lncomp = new lNComp(new_id_C,new_id_C,comp.getInfo().getWrdN(),comp.getInfo().getWrddesc(),comp.getInfo().getRef(),comp.getInfo().getPic());
 
-        lSBComp lsbcomp = new lSBComp(tokData.getString("id_C"),tokData.getString("id_C"),new_id_C,new_id_C, cSeller.getInfo().getWrdN(),cSeller.getInfo().getWrddesc(),
+        lSBComp lsbcomp = new lSBComp("61a5940b01902729e2576ead","61a5940b01902729e2576ead",new_id_C,new_id_C, qt.setJson("cn", "Cresign 客服"),null,
                 comp.getInfo().getWrdN(),comp.getInfo().getWrddesc(),"1000","1000",comp.getInfo().getRef(),ref,cSeller.getInfo().getPic(),comp.getInfo().getPic());
         qt.addES("lncomp", lncomp);
         qt.addES("lsbcomp", lsbcomp);
@@ -1656,10 +1656,10 @@ public class ModuleServicelmpl implements ModuleService {
 //            Query compCondition = new Query(new Criteria("_id").is(id_C).and("info").exists(true));
 //
 //            compCondition.fields().include("info");
-//            Comp objComp = mongoTemplate.findOne(compCondition, Comp.class);
+//            Comp thisComp = mongoTemplate.findOne(compCondition, Comp.class);
 
-            Comp objComp = qt.getMDContent(id_C, "info", Comp.class);
-            if(objComp == null){
+            Comp thisComp = qt.getMDContent(id_C, "info", Comp.class);
+            if(thisComp == null){
                 System.out.println("no comp");
                 resultJson.put("boolean","false");
                 resultJson.put("reason","comp对象为空");
@@ -1685,7 +1685,7 @@ public class ModuleServicelmpl implements ModuleService {
             listObject.put("id_A", id);
             listObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             listObject.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-            listObject.put("id_CP", objComp.getInfo().getId_CP());
+            listObject.put("id_CP", thisComp.getInfo().getId_CP());
 
 //            request.source(listObject, XContentType.JSON);
 //            restHighLevelClient.index(request, RequestOptions.DEFAULT);

@@ -1097,7 +1097,7 @@ public class ActionServiceImpl implements ActionService {
                     }
 
                     qt.errPrint("logL is", logL);
-//                    ws.sendWS(logL);
+                    ws.sendWS(logL);
                 }
 
                 long time = 0;
@@ -1108,10 +1108,7 @@ public class ActionServiceImpl implements ActionService {
                     this.setFavRecent(tokData.getString("id_C"), tokData.getString("id_U"), id_O, index, id_FC, id_FS,
                             orderOItem.getWrdN(), orderOItem.getPic());
 
-                    LogFlow logSale = new LogFlow();
-                    logSale.setSaleLog(tokData, orderInfo.getString("id_CB"), "start", "开始执行", 4, id_O, id_O, "",
-                            orderInfo.getJSONObject("wrdN"), orderOItem.getGrpB());
-//                    ws.sendWS(logSale);
+
                 }
 
                 else if (duraType.equals("end")) {
@@ -1123,9 +1120,9 @@ public class ActionServiceImpl implements ActionService {
                     this.removeFavRecent(orderAction.getId_Us(), id_O, index);
                     orderAction.setId_Us(new JSONArray());
 
-                    LogFlow logSale = new LogFlow();
-                    logSale.setSaleLog(tokData, orderInfo.getString("id_CB"), "finish", "执行完毕", 4, id_O, id_O, "",
-                            orderInfo.getJSONObject("wrdN"), orderOItem.getGrpB());
+//                    LogFlow logSale = new LogFlow();
+//                    logSale.setSaleLog(tokData, orderInfo.getString("id_CB"), "finish", "执行完毕", 4, id_O, id_O, "",
+//                            orderInfo.getJSONObject("wrdN"), orderOItem.getGrpB());
 //                    ws.sendWS(logSale);
 
                     LogFlow logDURA = new LogFlow("action", id_FC,
@@ -1242,7 +1239,7 @@ public class ActionServiceImpl implements ActionService {
                         Double price = orderOItem.getWn4price() == null ? 0.0: orderOItem.getWn4price();
                         log.setLogData_assetflow(qtyAdding, price, "","");
 
-//                        ws.sendWS(log);
+                        ws.sendWS(log);
 
                     }
                 }
@@ -1591,8 +1588,6 @@ public class ActionServiceImpl implements ActionService {
                         logL.setLogData_action(unitActionPrnt, unitOItemPrnt);
                         logL.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
 
-
-
                         ws.sendWS(logL);
                     }
 
@@ -1606,7 +1601,6 @@ public class ActionServiceImpl implements ActionService {
                 }
             }
         }
-
 
     private long sumDura(String id_O, Integer index, LogFlow log) {
 
@@ -1645,7 +1639,7 @@ public class ActionServiceImpl implements ActionService {
             String time = qt.formatMs(ms);
             //System.out.println(time);
             log.setData(qt.setJson("wntDur", ms));
-            log.setZcndesc("任务总用时" + time);
+            log.setZcndesc("任务总用时" + time); // 任务等待用时 taStart - taPush
             ws.sendWS(log);
             return ms;
         } catch (Exception e)
@@ -1809,7 +1803,8 @@ public class ActionServiceImpl implements ActionService {
         // 判断订单为空
         if (null == order || order.getOItem() == null || order.getAction() == null) {
 
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在");
+
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ORDER_NOT_EXIST.getCode(), "订单不存在"+oid);
         }
         // 创建放回结果存储字典
         JSONObject result = new JSONObject();
@@ -2079,6 +2074,38 @@ public class ActionServiceImpl implements ActionService {
 
     @Override
     @Transactional(noRollbackFor = ResponseException.class)
+    public ApiResponse itemActivateStorage(JSONObject tokData, String id_O)
+    {
+
+//        String myCompId = tokData.getString("id_C");
+        JSONObject assetCollection = new JSONObject();
+
+        Order order = qt.getMDContent(id_O, Arrays.asList( "id", "info","oItem", "action"), Order.class);
+            JSONArray objAction = order.getAction().getJSONArray("objAction");
+
+            qt.errPrint("1", order, objAction);
+
+            for (Integer j = 0; j < objAction.size(); j++)
+            {
+                OrderAction unitAction = qt.cloneThis(objAction.getJSONObject(j), OrderAction.class);
+                if ((unitAction.getBmdpt() == 3 || unitAction.getBmdpt() == 2) && unitAction.getSumPrev() == 0) {
+
+                    if (!order.getInfo().getId_CB().equals(tokData.getString("id_C"))) // I am not the buyer
+                    {
+                        this.createStoQuestSL(assetCollection, tokData, order, order.getId(), j);
+                    } else {
+                        this.createStoQuest(assetCollection, tokData, order, order.getId(), j);
+                    }
+                }
+            }
+
+        dbu.setMDRefOP(assetCollection);
+
+        return retResult.ok(CodeEnum.OK.getCode(), "doneAll");
+    }
+
+    @Override
+    @Transactional(noRollbackFor = ResponseException.class)
     public ApiResponse dgActivateStorage(JSONObject tokData, String id_O)
     {
 
@@ -2322,7 +2349,7 @@ public class ActionServiceImpl implements ActionService {
     }
 
 
-    public void createStoQuest(JSONObject assetCollection, JSONObject tokData, Order order,String id_O, Integer index)
+    private void createStoQuest(JSONObject assetCollection, JSONObject tokData, Order order,String id_O, Integer index)
     {
         OrderAction unitAction = qt.cloneThis(order.getAction().getJSONArray("objAction").getJSONObject(index), OrderAction.class);
         OrderOItem unitOItem = qt.cloneThis(order.getOItem().getJSONArray("objItem").getJSONObject(index), OrderOItem.class);
@@ -2373,8 +2400,6 @@ public class ActionServiceImpl implements ActionService {
             Prod prod = qt.getMDContent(unitOItem.getId_P(), Arrays.asList("qtySafex."+myCompId,"view"), Prod.class);
 
             JSONObject qtySafex = qt.cloneObj(prod.getQtySafex());
-            System.out.println("qtySafex:");
-            System.out.println(JSON.toJSONString(qtySafex));
             JSONObject jsonSafex = qt.setJson("id_O", id_O, "index", index, "refOP",
                     unitAction.getRefOP(),
                     "wrdNO", unitOItem.getWrdN(), "wn2qty", unitOItem.getWn2qtyneed());
@@ -2399,6 +2424,83 @@ public class ActionServiceImpl implements ActionService {
             qt.setES("lBProd", qt.setESFilt("id_P", unitOItem.getId_P(), "id_CB", myCompId),
                     qt.setJson("wn2buy", qtySafex.getJSONObject(myCompId).getDouble("wn2buy")));
         }
+    }
+
+    private void createStoQuestSL(JSONObject assetCollection, JSONObject tokData, Order order,String id_O, Integer index)
+    {
+        OrderAction unitAction = qt.cloneThis(order.getAction().getJSONArray("objAction").getJSONObject(index), OrderAction.class);
+        OrderOItem unitOItem = qt.cloneThis(order.getOItem().getJSONArray("objItem").getJSONObject(index), OrderOItem.class);
+
+        String myCompId = tokData.getString("id_C");
+
+        JSONObject fcCheck = order.getAction().getJSONObject("grpGroup").getJSONObject(unitOItem.getGrp());
+        String id_FQ = "";
+
+        if (fcCheck != null) {
+            id_FQ = fcCheck.getString("id_Flow") != null
+                    && !unitOItem.getId_C().equals(myCompId) ?
+                    fcCheck.getString("id_Flow") : "";
+        }
+        Asset assetgrpA = qt.getConfig(myCompId,"a-auth", "def.objlSP." + unitOItem.getGrp());
+
+        String grpA = assetgrpA.getDef().getJSONObject("objlSP").getJSONObject(unitOItem.getGrp()).getString("grpA");
+
+        if (grpA == null)
+        {
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, ErrEnum.ASSET_OBJECT_NO_HAVE.getCode(), "获取数据为空 grpA");
+        }
+
+        Asset assetflow = qt.getMDContent(assetgrpA.getId(),"def.objlSA." + grpA, Asset.class);
+
+        String fcOrderId = assetflow.getDef().getJSONObject("objlSA").getJSONObject(grpA).getString("id_O");
+        String id_FC = assetflow.getDef().getJSONObject("objlSA").getJSONObject(grpA).getString("id_Flow");
+
+        if (fcOrderId == null || id_FC == null)
+        {
+            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, ErrEnum.ASSET_OBJECT_NO_HAVE.getCode(), "获取数据为空 FC id+O");
+        }
+
+        String desc = "[" + unitAction.getRefOP() + "] " + unitOItem.getWrdN().getString("cn") + "发货: " + unitOItem.getWn2qtyneed();
+
+        JSONObject probData = qt.setJson("logType", "assetflow", "pic", unitOItem.getPic(), "wrdNP", unitOItem.getWrdNP(), "wrdN", unitOItem.getWrdN(),
+                "ref", id_FC , "id_O", fcOrderId, "grpB", "1000", "id_OP", unitOItem.getId_OP(), "refOP", unitAction.getRefOP(), "wrddesc", qt.setJson("cn", desc),
+                "wrdprep", qt.setJson("cn",""));
+
+
+
+        this.createQuest(assetCollection, tokData,id_O, index, fcOrderId, id_FC, id_FQ, probData);
+        // then, set qtySafex
+//        if (!order.getInfo().getId_C().equals(myCompId))
+//        {
+//            // I am not the seller, someone else must be, so there must be qtySafex
+//            // add this qtyNeed into the qtyBuy, "buying more and not yet receive"
+//            Prod prod = qt.getMDContent(unitOItem.getId_P(), Arrays.asList("qtySafex."+myCompId,"view"), Prod.class);
+//
+//            JSONObject qtySafex = qt.cloneObj(prod.getQtySafex());
+//            JSONObject jsonSafex = qt.setJson("id_O", id_O, "index", index, "refOP",
+//                    unitAction.getRefOP(),
+//                    "wrdNO", unitOItem.getWrdN(), "wn2qty", unitOItem.getWn2qtyneed());
+//            if (qtySafex == null) {
+//                JSONArray arraySafex = qt.setArray(jsonSafex);
+//                prod.getView().add("qtySafex");
+//                JSONObject jsonId_C = qt.setJson("id_C", myCompId, "objSafex", arraySafex,"wn2buy", unitOItem.getWn2qtyneed());
+//                qtySafex = qt.setJson(myCompId, jsonId_C);
+//            } else if (qtySafex.getJSONObject(myCompId) == null) {
+//                JSONArray arraySafex = qt.setArray(jsonSafex);
+//                JSONObject jsonId_C = qt.setJson("id_C", myCompId, "objSafex", arraySafex, "wn2buy", unitOItem.getWn2qtyneed());
+//                qtySafex.put(myCompId, jsonId_C);
+//            } else {
+//                qtySafex.getJSONObject(myCompId).getJSONArray("objSafex").add(jsonSafex);
+//                qtySafex.getJSONObject(myCompId).put("wn2buy", DoubleUtils.add(qtySafex.getJSONObject(myCompId).getDouble("wn2buy"), unitOItem.getWn2qtyneed()));
+//            }
+//            // qtySafex.id_C. objSafex:{id_O, index, wn2qty} ok
+//            // wn2sum, wn2buy
+//            qt.setMDContent(unitOItem.getId_P(), qt.setJson("qtySafex."+myCompId, qtySafex.getJSONObject(myCompId),
+//                    "view", prod.getView()), Prod.class);
+//
+//            qt.setES("lBProd", qt.setESFilt("id_P", unitOItem.getId_P(), "id_CB", myCompId),
+//                    qt.setJson("wn2buy", qtySafex.getJSONObject(myCompId).getDouble("wn2buy")));
+//        }
     }
 
 
@@ -2547,15 +2649,24 @@ public class ActionServiceImpl implements ActionService {
 
         Integer index = 0;
         Integer prior = 1;
-        JSONObject actData = this.getActionData(id_O, index - 1);
 
         String id_FS = "";
         String myCompId = tokData.getString("id_C");
 
         if (id_O.equals(""))
         {                // 返回操作失败结果
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMyy");
+            JSONArray idArray = qt.getES("lSBOrder", qt.setESFilt("refB", "s-"+id_FC+ "-"+ dateFormat.format(new Date())), 1);
+            qt.errPrint("er", idArray,dateFormat.format(new Date()));
+
+            if (idArray.size() == 0)
+            {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
+            }
+            id_O = idArray.getJSONObject(0).getString("id_O");
         }
+        JSONObject actData = this.getActionData(id_O, index - 1);
+
         // Converting id_FS/id_FC
         if (logType.endsWith("SL"))
         {
@@ -2575,7 +2686,7 @@ public class ActionServiceImpl implements ActionService {
         }
 
         // Adding oItem and Action
-        OrderOItem unitOItem = new OrderOItem ("","",oItemData.getString("id_CP"),myCompId, myCompId,
+        OrderOItem unitOItem = new OrderOItem ("",oItemData.getString("id_OP"),oItemData.getString("id_CP"),myCompId, myCompId,
                 id_O,index,"","",
                 oItemData.getString("grp"),oItemData.getString("grpB"),prior,oItemData.getString("pic"),
                 oItemData.getInteger("lUT"),oItemData.getInteger("lCR"),oItemData.getDouble("wn2qtyneed"),
@@ -2623,10 +2734,6 @@ public class ActionServiceImpl implements ActionService {
        logLP.setLogData_action(unitAction,unitOItem);
         logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
         ws.sendWS(logLP);
-//
-//        JSONObject objQcSon = new JSONObject();
-//        objQcSon.put("score",0);
-//        objQcSon.put("foCount",3);
 
             qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,
                    "oStock.objData."+index, oStockData ), Order.class);
@@ -3114,7 +3221,6 @@ public class ActionServiceImpl implements ActionService {
     public Integer confirmOrder(JSONObject tokData,String id_O) {
 
         Order order = qt.getMDContent(id_O, "info",Order.class);
-        try {
         String id_C = tokData.getString("id_C");
         JSONObject mdJson = new JSONObject();
 
@@ -3192,22 +3298,38 @@ public class ActionServiceImpl implements ActionService {
         String desc = tokData.getJSONObject("wrdNReal").getString("cn") + "确认订单" ;
 
         String listType = order.getInfo().getId_CB().equals(id_C) ? "lBOrder" : "lSOrder";
-        }catch (Exception e){
-            System.out.println("出现异常:"+e.getMessage());
-            e.printStackTrace();
-        }
 
         //Writing update history
-//        LogFlow logUsage = new LogFlow();
-//        logUsage.setUsageLog(tokData, "confirm", desc, 2, id_O, listType,
-//                qt.setJson("cn", desc), listType == "lBOrder" ? order.getInfo().getGrpB(): order.getInfo().getGrp(), "");
-//        ws.sendESOnly(logUsage);
+        LogFlow logUsage = new LogFlow();
+        logUsage.setUsageLog(tokData, "confirm", desc, 2, id_O, listType,
+                qt.setJson("cn", desc), listType == "lBOrder" ? order.getInfo().getGrpB(): order.getInfo().getGrp(), "");
+        ws.sendESOnly(logUsage);
+
+        Asset asset = qt.getConfig(tokData.getString("id_C"), "a-auth","def");
+//        JSONObject slog = new JSONObject();
 //
+//        if (listType.equals("lBOrder"))
+//        {
+//            slog.put("id_FC", asset.getDef().getJSONObject("objlBO").getJSONObject(order.getInfo().getGrpB()).getString("id_Flow"));
+//            qt.upJson(slog, "id_FS", "", "id_C", order.getInfo().getId_C(), "id_CB", tokData.getString("id_C"));
+//        } else {
+//            slog.put("id_FS", asset.getDef().getJSONObject("objlSO").getJSONObject(order.getInfo().getGrp()).getString("id_Flow"));
+//            qt.upJson(slog, "id_FC", "", "id_CB", order.getInfo().getId_C(), "id_C", tokData.getString("id_C"));
+//        }
+
+        //    public String createTask(JSONObject tokData, String logType +SL, String id_FC, String id_O, JSONObject oItemData) {
 //        LogFlow logSale = new LogFlow();
-//        logSale.setSaleLog(tokData, order.getInfo().getId_CB(), "confirm", desc, 4, id_O, id_O,  listType,
+//        logSale.setSaleLog(tokData, slog.getString("id_C"), slog.getString("id_CB"), slog.getString("id_FC"), slog.getString("id_FS"), "confirm", desc, 4, id_O, id_O,  listType,
 //                order.getInfo().getWrdN(), listType == "lBOrder" ? order.getInfo().getGrpB(): order.getInfo().getGrp());
 //        ws.sendWS(logSale);
-
+        String taskName = listType.equals("lBOrder") ? order.getInfo().getRefB() : order.getInfo().getRef() + "单开始执行";
+        String id_Flow = listType.equals("lBOrder") ? asset.getDef().getJSONObject("objlBO").getJSONObject(order.getInfo().getGrpB()).getString("id_Flow") :
+                asset.getDef().getJSONObject("objlSO").getJSONObject(order.getInfo().getGrp()).getString("id_Flow");
+        JSONObject taskLog = qt.setJson("grpB", "1000", "grp", "1000", "id_CP", tokData.getString("id_C"),
+                "pic", order.getInfo().getPic(), "lUT", 0, "lCR", order.getInfo().getLCR(),
+                "wn2qtyneed", 1, "wn4price", 0,"id_OP", id_O,
+                "wrdN", qt.setJson("cn", taskName), "wrdNP", order.getInfo().getWrdN(), "wrdprep", order.getInfo().getWrddesc());
+        this.createTask(tokData, listType.equals("lBOrder") ? "saleflow" : "saleflowSL", id_Flow, "", taskLog);
         return order.getInfo().getLST();
     }
 

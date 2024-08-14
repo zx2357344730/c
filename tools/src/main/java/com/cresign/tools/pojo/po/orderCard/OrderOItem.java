@@ -101,7 +101,7 @@ public class OrderOItem {
         this.rKey =  UUID19.uuid8();
     }
 
-    private int wn4cost;
+    private Double wn4cost;
     /**
      * 单人单件用时
      */
@@ -179,11 +179,6 @@ public class OrderOItem {
     private Integer lCR = 0;
 
     /**
-     * 零件用户组别
-     */
-//    private String grpU;
-
-    /**
      * ### -零件制作用量,需要数量- 不用
      * 数量
      */
@@ -194,7 +189,6 @@ public class OrderOItem {
      * 零件单价
      */
     private Double wn4price;
-
 
     /**
      * 产品组别
@@ -207,7 +201,6 @@ public class OrderOItem {
      * 是否合并: 0 : 未合并，1 : 合并，2 : 被合并
      */
     private Integer merge = 0;
-//    private Integer bmdpt = 0;
 
     private Integer index = 0;
 
@@ -217,7 +210,6 @@ public class OrderOItem {
     private JSONObject wrdprep;
 
     private JSONArray subTask;
-
 
     /**
      *

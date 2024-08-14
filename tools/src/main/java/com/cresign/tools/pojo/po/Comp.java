@@ -17,6 +17,8 @@ public class Comp {
 
     private JSONObject file00s;
 
+    private JSONObject compReg;
+
     private JSONObject contact;
 
     private CompInfo info;

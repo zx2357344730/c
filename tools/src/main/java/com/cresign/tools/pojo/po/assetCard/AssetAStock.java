@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.dbTools.DoubleUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -84,7 +85,11 @@ public class AssetAStock {
     private JSONObject resvQty;
     private JSONArray arrPP;
     private JSONArray procQty;
+
+    @JsonProperty("lUT")
     private Integer lUT;
+
+    @JsonProperty("lCR")
     private Integer lCR;
     private String dep;
 }

@@ -46,20 +46,6 @@ public interface SetAuthService {
      */
     ApiResponse switchComp(String id_U, String id_C,String clientType);
 
-    /**
-     * 切换公司接口特殊
-     * @author JackSon
-     * @param id_U          用户id
-     * @param id_C          公司id
-     * @param clientType    客户端类型
-     * @ver 1.0
-     * @createDate: 2020/8/10 17:00
-     * @return java.lang.String
-     */
-    ApiResponse switchCompSpecial(String id_U, String id_C
-//            ,String grpU
-            ,String clientType);
-
 
     /**
      * 获取自己能切换公司的列表数据

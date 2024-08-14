@@ -18,7 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class AssetInfo {
 
     public AssetInfo(String id_C, String id_CP, String id_P, JSONObject wrdN, JSONObject wrddesc,
-                     String grp, String ref, String pic, Integer lAT) {
+                     String grp, String grpP, String ref, String pic, Integer lAT) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn","");
@@ -30,6 +30,7 @@ public class AssetInfo {
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
         this.grp = grp == null ? "": grp;
         this.grpB = grp == null ? "": grpB;
+        this.grpP = grpP == null ? "": grpP;
 
         this.ref = ref == null ? "": ref;
         this.pic = pic == null ? "": pic;
@@ -53,6 +54,8 @@ public class AssetInfo {
     private String grp;
 
     private String grpB;
+
+    private String grpP;
 
     private String ref;
 

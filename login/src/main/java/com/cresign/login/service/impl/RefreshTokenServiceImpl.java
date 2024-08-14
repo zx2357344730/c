@@ -60,7 +60,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 //                Query query = new Query(new Criteria("_id").is(id_U));
 //                query.fields().include("info").include("rolex.objComp");
 //                User user = mongoTemplate.findOne(query, User.class);
-                User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp"), User.class);
+                User user = qt.getMDContent(id_U, qt.strList("info", "rolex"), User.class);
 
                 // 获取登录数据给返回给前端
                 JSONObject allResult = loginResult.allResult(user, clientType, "refreshToken");
@@ -116,13 +116,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
                     // 通过id_U查询该用户
                     try {
-                        User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp." + id_C), User.class);
+                        User user = qt.getMDContent(id_U, qt.strList("info", "rolex." + id_C), User.class);
                         String token = "";
                         token = oauth.setToken(
                                 user,
                                 id_C,
-                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
-                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
+                                user.getRolex().getJSONObject(id_C).getString("grpU"),
+                                user.getRolex().getJSONObject(id_C).getString("dep"),
                                 clientType);
 
 
@@ -160,12 +160,12 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 //                    if (rdSet == null)
 //                    {
 //                        // 通过id_U查询该用户
-//                        User user = qt.getMDContent(id_U, qt.strList("info", "rolex.objComp."+ id_C), User.class);
+//                        User user = qt.getMDContent(id_U, qt.strList("info", "rolex."+ id_C), User.class);
 //                        token = oauth.setToken(
 //                                user,
 //                                id_C,
-//                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("grpU"),
-//                                user.getRolex().getJSONObject("objComp").getJSONObject(id_C).getString("dep"),
+//                                user.getRolex().getJSONObject(id_C).getString("grpU"),
+//                                user.getRolex().getJSONObject(id_C).getString("dep"),
 //                                clientType);
 //                        qt.setRDExpire(clientType+"RefreshToken",refreshToken,
 //                                clientType.equals("web")? 604800L : 3888000L);

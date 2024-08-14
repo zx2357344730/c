@@ -49,7 +49,7 @@ public class AuthCheck {
         }
         else {
             
-            Asset asset = qt.getConfig(id_C, "a-auth", "role.objData."+user_grpU+"."+listType+"."+grp);
+            Asset asset = qt.getConfig(id_C, "a-auth", "role.objData."+user_grpU+"."+ listType + "."+grp);
 
             JSONObject grpJson = new JSONObject();
             try {
@@ -178,8 +178,8 @@ public class AuthCheck {
         enabledArray.add("view");
         JSONObject result = new JSONObject();
 
-        User user = qt.getMDContent(id_U, "rolex.objComp."+id_C,User.class);
-        JSONObject rolex = user.getRolex().getJSONObject("objComp").getJSONObject(id_C);
+        User user = qt.getMDContent(id_U, "rolex."+id_C,User.class);
+        JSONObject rolex = user.getRolex().getJSONObject(id_C);
         if (rolex == null){
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, "042000", null);
         }

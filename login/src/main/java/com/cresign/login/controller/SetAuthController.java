@@ -77,22 +77,6 @@ public class SetAuthController {
     }
 
     @SecurityParameter
-    @PostMapping("/v1/switchCompSpecial")
-    public ApiResponse switchCompSpecial(@RequestBody Map<String, Object> reqMap) {
-
-        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"),"core",1);
-        try {
-            return setAuthService.switchCompSpecial(
-                    reqMap.get("id_U").toString(),
-                    reqMap.get("id_C").toString(),
-//                    reqMap.get("grpU").toString(),
-                    request.getHeader("clientType"));
-        } catch (Exception e) {
-            return getUserToken.err(new JSONObject(), "SetAuthController.switchCompSpecial", e);
-        }
-    }
-
-    @SecurityParameter
     @PostMapping("/v1/setAUN")
     public ApiResponse setAUN(
             @RequestBody Map<String, Object> reqMap) {

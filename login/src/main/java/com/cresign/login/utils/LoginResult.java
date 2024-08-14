@@ -51,8 +51,8 @@ public class LoginResult {
         if (StringUtils.isNotEmpty(user.getId()))
             infoData.put("id_U", user.getId());
 
-        infoData.put("grpU",user.getRolex().getJSONObject("objComp").getJSONObject(def_C).getString("grpU"));
-        infoData.put("dep",user.getRolex().getJSONObject("objComp").getJSONObject(def_C).getString("dep"));
+        infoData.put("grpU",user.getRolex().getJSONObject(def_C).getString("grpU"));
+        infoData.put("dep",user.getRolex().getJSONObject(def_C).getString("dep"));
 
         infoData.put("id_C", def_C);
 
@@ -60,8 +60,8 @@ public class LoginResult {
             token = oauth.setToken(
                     user,
                     def_C,
-                    user.getRolex().getJSONObject("objComp").getJSONObject(def_C).getString("grpU"),
-                    user.getRolex().getJSONObject("objComp").getJSONObject(def_C).getString("dep"),
+                    user.getRolex().getJSONObject(def_C).getString("grpU"),
+                    user.getRolex().getJSONObject(def_C).getString("dep"),
                     clientType);
 
             newAssignRFToken = oauth.setRefreshToken(user.getId(), clientType);

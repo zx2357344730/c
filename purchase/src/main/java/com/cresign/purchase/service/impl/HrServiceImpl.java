@@ -1283,13 +1283,13 @@ public class HrServiceImpl implements HrService {
         User user = qt.getMDContent(id_U, "rolex", User.class);
         qt.checkPowerUp(id_C, -1L, "lbuser");
 
-        if (user == null || null == user.getRolex() || user.getRolex().getJSONObject("objComp").getJSONObject(id_C) == null) {
+        if (user == null || null == user.getRolex() || user.getRolex().getJSONObject(id_C) == null) {
             throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), null);
         }
 
-        JSONObject result = user.getRolex().getJSONObject("objComp").fluentRemove(id_C);
+        JSONObject result = user.getRolex().fluentRemove(id_C);
 
-        qt.setMDContent(id_U,qt.setJson("rolex.objComp", result), User.class);
+        qt.setMDContent(id_U,qt.setJson("rolex", result), User.class);
 
         return retResult.ok(CodeEnum.OK.getCode(), "操作成功");
     }

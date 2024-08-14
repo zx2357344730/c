@@ -54,7 +54,7 @@ public class Oauth {
             dataSet.put("dep", dep);
 
             JSONArray modArray = new JSONArray();
-            JSONObject modAuth = user.getRolex().getJSONObject("objComp").getJSONObject(cid).getJSONObject("modAuth");
+            JSONObject modAuth = user.getRolex().getJSONObject(cid).getJSONObject("modAuth");
 
             if (modAuth == null) {
                 modArray.add("a-core-0");

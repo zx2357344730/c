@@ -106,12 +106,16 @@ public class lSBOrder {
     private String id_UC;
     private String id_UCB;
 
-    private JSONArray grpT = new JSONArray();
+    private Integer lDG = 0;
 
+    private JSONArray grpT = new JSONArray();
 
     private String grp;
 
     private String grpB;
+
+    private String usedGrp;
+    private String usedGrpB;
 
     private JSONObject wrdN;
     private JSONObject wrddesc;
@@ -149,6 +153,7 @@ public class lSBOrder {
     private double wn2progress;
 
     private double wn4mnymade;
+
 
     private double wn4mnynow;
 

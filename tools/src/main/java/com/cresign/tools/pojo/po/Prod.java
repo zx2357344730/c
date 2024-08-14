@@ -2,7 +2,9 @@ package com.cresign.tools.pojo.po;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cresign.tools.pojo.po.prodCard.ProdCost;
 import com.cresign.tools.pojo.po.prodCard.ProdInfo;
+import com.cresign.tools.pojo.po.prodCard.ProdPriceQty;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -44,11 +46,11 @@ public class Prod {
 
     private JSONObject color;
 
-    private JSONObject priceQty;
+    private ProdPriceQty priceQty;
 
     private JSONObject quali;
 
-    private JSONObject cost;
+    private ProdCost cost;
 
     private JSONObject link00s;   // 连接
 

@@ -109,7 +109,7 @@ public class FlowServiceImpl implements FlowService {
                 JSONObject newEmptyAction = new JSONObject();
                 salesOrderData.setAction(newEmptyAction);
             }
-            if (null != salesOrderData.getAction().getString("isDg")) {
+            if (null != salesOrderData.getAction().getString("lDG")) {
                 // 返回为空错误信息
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经被递归了");
             }
@@ -757,7 +757,7 @@ public class FlowServiceImpl implements FlowService {
 
             // 添加对应的产品零件递归信息
             salesOrder_Action.put("objAction",salesAction);
-            salesOrder_Action.put("isDg", "true");
+            salesOrder_Action.put("lDG", 1);
             salesOrder_Action.put("grpBGroup",grpBGroup);
             salesOrder_Action.put("grpGroup", grpGroup);
             salesOrder_Action.put("wn2progress", 0.0);
@@ -1931,10 +1931,16 @@ public class FlowServiceImpl implements FlowService {
 
     @Override
     public ApiResponse prodPart(String id_P) {
-            JSONObject jsonPart = new JSONObject();
+        JSONObject jsonPart = new JSONObject();
 //            JSONObject recurCheckList = new JSONObject();
 //            recurCheckList.put(id_P, "");
-            Prod prod = qt.getMDContent(id_P, Arrays.asList("info", "part"), Prod.class);
+        Prod prod = qt.getMDContent(id_P, Arrays.asList("info", "part"), Prod.class);
+
+        if (prod.getPart() == null || prod.getPart().getJSONArray("objItem").size() == 0)
+        {
+            return retResult.ok(CodeEnum.OK.getCode(), new JSONArray());
+        }
+
             JSONArray arrayObjItem = prod.getPart().getJSONArray("objItem");
 
             JSONObject stat = new JSONObject();
@@ -2338,7 +2344,7 @@ public class FlowServiceImpl implements FlowService {
             if (null != partDataES.getJSONObject(0).getDouble("wn4cost")) {
                 thisItem.put("wn4cost", partDataES.getJSONObject(0).getDouble("wn4cost"));
             } else {
-                thisItem.put("wn4cost", 0);
+                thisItem.put("wn4cost", 0.0);
             }
             if (null != partDataES.getJSONObject(0).getLong("wntSafe")) {
                 thisItem.put("wntSafe", partDataES.getJSONObject(0).getLong("wntSafe"));
@@ -2464,7 +2470,8 @@ public class FlowServiceImpl implements FlowService {
 
         for (int i = 0; i < prodList.size(); i++)
         {
-            if (prodList.get(i).getQtySafex() != null && prodList.get(i).getQtySafex().getJSONObject(id_C) != null) {
+            if (prodList.get(i).getQtySafex() != null && prodList.get(i).getQtySafex().getJSONObject(id_C) != null
+            && prodList.get(i).getQtySafex().getJSONObject(id_C).getJSONArray("objSafex") != null) {
                 JSONObject thisSafex = prodList.get(i).getQtySafex().getJSONObject(id_C);
 
                 for (int j = 0; j < thisSafex.getJSONArray("objSafex").size(); j++) {

@@ -123,6 +123,7 @@ public enum ErrEnum {
     WN2QTY_ERROR("022013"),
     //公司已存在
     COMP_IS_FOUND("022014"),
+
     //入库金额不能大于订单金额
     WN2CASH_ERROR("022015"),
     //用户的分组权限错误
@@ -163,6 +164,10 @@ public enum ErrEnum {
     PROC_ERROR("022033"),
     //refDC错误
     REFDC_ERROR("022034"),
+
+    //对方是真公司
+    COMP_REAL("022035"),
+
 
     /**
      add COUPA系列   023开头

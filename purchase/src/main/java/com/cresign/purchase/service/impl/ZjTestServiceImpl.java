@@ -773,7 +773,7 @@ public class ZjTestServiceImpl implements ZjTestService {
         mod1.put("a-core-3", val);
         rolex.put("modAuth", mod1);
 
-        qt.setMDContent(id_U,qt.setJson("rolex.objComp."+new_id_C,rolex), User.class);
+        qt.setMDContent(id_U,qt.setJson("rolex."+new_id_C,rolex), User.class);
 
         //a-core
         JSONObject coreObject = newSpace.getJSONObject("a-core");
@@ -893,10 +893,10 @@ public class ZjTestServiceImpl implements ZjTestService {
 //            Query compCondition = new Query(new Criteria("_id").is(id_C).and("info").exists(true));
 //
 //            compCondition.fields().include("info");
-//            Comp objComp = mongoTemplate.findOne(compCondition, Comp.class);
+//            Comp thisComp = mongoTemplate.findOne(compCondition, Comp.class);
 
-            Comp objComp = qt.getMDContent(id_C, "info", Comp.class);
-            if(objComp == null){
+            Comp thisComp = qt.getMDContent(id_C, "info", Comp.class);
+            if(thisComp == null){
                 System.out.println("no comp");
                 resultJson.put("boolean","false");
                 resultJson.put("reason","comp对象为空");
@@ -920,7 +920,7 @@ public class ZjTestServiceImpl implements ZjTestService {
             listObject.put("id_A", id);
             listObject.put("tmk", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
             listObject.put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-            listObject.put("id_CP", objComp.getInfo().getId_CP());
+            listObject.put("id_CP", thisComp.getInfo().getId_CP());
 
 //            request.source(listObject, XContentType.JSON);
 //            restHighLevelClient.index(request, RequestOptions.DEFAULT);

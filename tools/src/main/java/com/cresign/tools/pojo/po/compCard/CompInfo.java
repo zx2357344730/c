@@ -18,19 +18,19 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CompInfo {
 
-    public CompInfo(String id_C, String id_CP, JSONObject wrdN, JSONObject wrddesc, JSONObject wrdTag, String ref, String pic) {
+    public CompInfo(String id_C, String id_CP, JSONObject wrdN, JSONObject wrddesc, String ref, String pic) {
 
         JSONObject wrdEmpty = new JSONObject();
         wrdEmpty.put("cn", "");
 
-        JSONObject jsonTag = new JSONObject();
-        jsonTag.put("cn", new JSONArray());
+//        JSONObject jsonTag = new JSONObject();
+//        jsonTag.put("cn", "");
 
         this.id_C = id_C;
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
         this.wrdN = wrdN == null ? (JSONObject) wrdEmpty.clone(): wrdN;
         this.wrddesc = wrddesc == null ? (JSONObject) wrdEmpty.clone(): wrddesc;
-        this.wrdTag = wrdTag == null ? jsonTag: wrdTag;
+//        this.wrdTag = wrdTag == null ? jsonTag: wrdTag;
         this.ref = ref == null ? "": ref;
         this.pic = pic == null ? "": pic;
         this.tmk = DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate());
@@ -47,7 +47,11 @@ public class CompInfo {
 
     private JSONObject wrddesc;
 
+    private JSONObject compReg;
+
     private JSONObject wrdTag;
+
+//    private String grp;
 
     private String ref;
 

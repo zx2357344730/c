@@ -33,7 +33,8 @@ public class lSBComp {
         this.id_CP = id_CP == null || id_CP == "" ? id_C: id_CP;
 
 
-        this.id_CM = id_CP; this.id_CBM = id_CBP;
+        this.id_CM = id_CP;
+        this.id_CBM = id_CBP;
 
         this.id_CB = id_CB;
         this.id_CBP = id_CBP == null || id_CBP == "" ? id_CB: id_CBP;

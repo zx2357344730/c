@@ -110,7 +110,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         if (null == salesOrderData.getAction()) {
             salesOrderData.setAction(new JSONObject());
         }
-        if (null != salesOrderData.getAction().getString("isDg")) {
+        if (null != salesOrderData.getAction().getInteger("lDG")) {
             // 返回为空错误信息
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经被递归了");
         }
@@ -195,18 +195,10 @@ public class FlowNewServiceImpl implements FlowNewService {
 
         // 获取递归结果键
         Set<String> actionCollection = objActionCollection.keySet();
-        System.out.println("actionCollection:");
-        System.out.println(JSON.toJSONString(actionCollection));
         // before getting so many id_A, get myComp id_A first for future use
         Asset myDef = qt.getConfig(myCompId, "a-auth", "def");
         List<Order> addOrder = new ArrayList<>();
         Map<String,Asset> assetMap = new HashMap<>();
-        System.out.println("objActionCount:");
-        System.out.println(JSON.toJSONString(objActionCount));
-//        for (String key : objActionCount.keySet()) {
-//            JSONObject obj = objActionCount.getJSONObject(key);
-//            qt.setMDContent(key,qt.setJson("action.objActionCount",obj), Order.class);
-//        }
         // 遍历键，并创建采购单
         for (String thisOrderId : actionCollection) {
 
@@ -384,8 +376,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             }
 
             if (id_OParent.equals(thisOrderId)) {
-                System.out.println("zhu!!:"+(actionCollection.size()-1));
-                System.out.println(JSON.toJSONString(objActionCount.getJSONObject(salesOrderData.getId())));
+
                 // make sales order Action
                 if (setOrder) {
                     this.updateSalesOrder(casItemData, unitAction, unitOItem, salesOrderData
@@ -1033,7 +1024,7 @@ public class FlowNewServiceImpl implements FlowNewService {
             objOItem.setWntPrep(partInfo.getLong("wntPrep")==null?60:partInfo.getLong("wntPrep"));
             objOItem.setWntSafe(partInfo.getLong("wntSafe")==null?3600:partInfo.getLong("wntSafe"));
             objOItem.setWntDur(partInfo.getLong("wntDur")==null?30:partInfo.getLong("wntDur"));
-            objOItem.setWn4cost(partInfo.getInteger("wn4cost")==null?0:partInfo.getInteger("wn4cost"));
+            objOItem.setWn4cost(partInfo.getDouble("wn4cost")==null?0:partInfo.getDouble("wn4cost"));
 
             // if C=CB and bmdpt =1 means it's my own process, I cannot set grp
             if (prodCompId.equals(myCompId) && partInfo.getInteger("bmdpt").equals(1)) {
@@ -1535,7 +1526,7 @@ public class FlowNewServiceImpl implements FlowNewService {
 
         // 添加对应的产品零件递归信息
         salesOrder_Action.put("objAction", salesAction);
-        salesOrder_Action.put("isDg", "true");
+        salesOrder_Action.put("lDG", 1);
         salesOrder_Action.put("grpBGroup", grpBGroup);
         salesOrder_Action.put("grpGroup", grpGroup);
         salesOrder_Action.put("wn2progress", 0.0);
