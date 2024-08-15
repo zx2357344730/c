@@ -109,7 +109,7 @@ public class FlowServiceImpl implements FlowService {
                 JSONObject newEmptyAction = new JSONObject();
                 salesOrderData.setAction(newEmptyAction);
             }
-            if (null != salesOrderData.getAction().getString("lDG")) {
+            if (null != salesOrderData.getAction().getInteger("lDG") && salesOrderData.getAction().getInteger("lDG") > 0) {
                 // 返回为空错误信息
                 throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经被递归了");
             }
@@ -2282,7 +2282,16 @@ public class FlowServiceImpl implements FlowService {
                 }
                 stat.put("count", stat.getInteger("count") + 1);
 
-                JSONArray partDataES = qt.getES("lBProd", qt.setESFilt("id_P", thisItem.getString("id_P"), "id_CB", id_C));
+                JSONArray partDataESList = qt.getES("lBProd", qt.setESFilt("id_P", thisItem.getString("id_P"), "id_CB", id_C));
+
+                JSONObject partDataES = new JSONObject();
+                if (partDataESList.size() == 0)
+                {
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.PROD_NOT_FOUND.getCode(),  thisItem.getString("id_P"));
+                } else {
+                    partDataES = partDataESList.getJSONObject(0);
+                }
+
 
                 Prod thisProd = qt.getMDContent(thisItem.getString("id_P"), qt.strList("info", "part"), Prod.class);
 
@@ -2320,48 +2329,46 @@ public class FlowServiceImpl implements FlowService {
 
             // saving updated Key info into part
 
-                thisItem.put("grp", partDataES.getJSONObject(0).getString("grp"));
-                thisItem.put("grpB", partDataES.getJSONObject(0).getString("grpB"));
+            thisItem.put("grp", partDataES.getString("grp"));
+            thisItem.put("grpB", partDataES.getString("grpB"));
 
-            if (partDataES.getJSONObject(0).getInteger("lCR") != null) {
-                thisItem.put("lCR", partDataES.getJSONObject(0).getInteger("lCR"));
+            if (partDataES.getInteger("lCR") != null && partDataES.getInteger("lCR") != 0) {
+                thisItem.put("lCR", partDataES.getInteger("lCR"));
             }
-            if (partDataES.getJSONObject(0).getInteger("lUT") != null) {
-                thisItem.put("lUT", partDataES.getJSONObject(0).getInteger("lUT"));
+            if (partDataES.getInteger("lUT") != null) {
+                thisItem.put("lUT", partDataES.getInteger("lUT"));
             }
-                thisItem.put("wntDur", partDataES.getJSONObject(0).getInteger("wntDur"));
-            if (partDataES.getJSONObject(0).getDouble("wn4price") != null) {
-                thisItem.put("wn4price", partDataES.getJSONObject(0).getDouble("wn4price"));
+
+            thisItem.put("wntDur", partDataES.getInteger("wntDur"));
+
+            if (partDataES.getDouble("wn4price") != null && !DoubleUtils.doubleEquals(partDataES.getDouble("wn4price"),0.0)) {
+                thisItem.put("wn4price", partDataES.getDouble("wn4price"));
             }
-                thisItem.put("pic", partDataES.getJSONObject(0).getString("pic"));
-                thisItem.put("wrdN", partDataES.getJSONObject(0).getJSONObject("wrdN"));
-                thisItem.put("wrddesc", partDataES.getJSONObject(0).getJSONObject("wrddesc"));
-            thisItem.put("ref", partDataES.getJSONObject(0).getString("refB"));
-            thisItem.put("refB", partDataES.getJSONObject(0).getString("ref")==null?""
-                    :partDataES.getJSONObject(0).getString("ref"));
+            thisItem.put("pic", partDataES.getString("pic"));
+            thisItem.put("wrdN", partDataES.getJSONObject("wrdN"));
+            thisItem.put("wrddesc", partDataES.getJSONObject("wrddesc"));
+            thisItem.put("ref", partDataES.getString("ref")==null?"" :partDataES.getString("ref"));
+            thisItem.put("refB", partDataES.getString("refB")==null?"" :partDataES.getString("refB"));
             thisItem.put("bmdpt", bmdptValue);
             thisItem.put("id_PP", id_P);
-            if (null != partDataES.getJSONObject(0).getDouble("wn4cost")) {
-                thisItem.put("wn4cost", partDataES.getJSONObject(0).getDouble("wn4cost"));
+            if (null != partDataES.getDouble("wn4cost")) {
+                thisItem.put("wn4cost", partDataES.getDouble("wn4cost"));
             } else {
                 thisItem.put("wn4cost", 0.0);
             }
-            if (null != partDataES.getJSONObject(0).getLong("wntSafe")) {
-                thisItem.put("wntSafe", partDataES.getJSONObject(0).getLong("wntSafe"));
+
+            if (null != partDataES.getLong("wntSafe")) {
+                thisItem.put("wntSafe", partDataES.getLong("wntSafe"));
             } else {
                 thisItem.put("wntSafe", 0);
             }
-            if (null != partDataES.getJSONObject(0).getJSONObject("wrdTagB")) {
-                thisItem.put("wrdTagB", qt.cloneObj(partDataES.getJSONObject(0).getJSONObject("wrdTagB")));
+            if (null != partDataES.getJSONObject("wrdTagB")) {
+                thisItem.put("wrdTagB", qt.cloneObj(partDataES.getJSONObject("wrdTagB")));
             } else {
                 thisItem.put("wrdTagB", new JSONObject());
             }
-            if (null != partDataES.getJSONObject(0).getLong("wn0fsize")) {
-                thisItem.put("wn0fsize", partDataES.getJSONObject(0).getLong("wn0fsize"));
-            } else {
-                thisItem.put("wn0fsize", 0);
-            }
-                partItem.set(item, thisItem);
+
+            partItem.set(item, thisItem);
         }
         qt.setMDContent(id_P, qt.setJson("part.objItem", partItem),Prod.class);
     }
@@ -2449,7 +2456,6 @@ public class FlowServiceImpl implements FlowService {
             qt.delES("action", qt.setESFilt("id_OP", "exact", subOrderId));
             qt.delES("assetflow", qt.setESFilt("id_O", "exact", subOrderId));
             qt.delES("assetflow", qt.setESFilt("id_OP", "exact", subOrderId));
-
             qt.delES("msg", qt.setESFilt("id_O", "exact", subOrderId));
         }
 
@@ -2514,12 +2520,13 @@ public class FlowServiceImpl implements FlowService {
         view.remove("action");
         orderData.put("view", view);
 
-//        coupaUtil.updateOrderByListKeyVal(id_O,orderData);
         qt.setMDContent(id_O,orderData, Order.class);
         qt.delES("assetflow", qt.setESFilt("id_O", id_O));
         qt.delES("assetflow", qt.setESFilt("data.id_OP", id_O));
         qt.delES("msg", qt.setESFilt("id_O", id_O));
         qt.delES("action", qt.setESFilt("id_O", id_O));
+        qt.delES("saleflow", qt.setESFilt("id_O", id_O));
+
 
         //loop thru my flowControl, find the refOP, and remove it
         String refOP = orderParent.getInfo().getRef();

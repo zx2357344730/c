@@ -110,7 +110,7 @@ public class FlowNewServiceImpl implements FlowNewService {
         if (null == salesOrderData.getAction()) {
             salesOrderData.setAction(new JSONObject());
         }
-        if (null != salesOrderData.getAction().getInteger("lDG")) {
+        if (null != salesOrderData.getAction().getInteger("lDG") && salesOrderData.getAction().getInteger("lDG") > 0) {
             // 返回为空错误信息
             throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_OPERATION_IS_PROCESSED.getCode(), "已经被递归了");
         }
@@ -474,7 +474,6 @@ public class FlowNewServiceImpl implements FlowNewService {
 
                     dbu.summOrder(newPO, listCol);
                     // 新增订单
-//                qt.addMD(newPO);
                     addOrder.add(newPO);
 //                // **System.out.println("sales order SAVED " + newPO.getInfo().getWrdN().getString("cn"));
 
