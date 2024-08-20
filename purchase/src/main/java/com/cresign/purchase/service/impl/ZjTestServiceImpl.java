@@ -27,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +46,18 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author tang
@@ -65,6 +78,8 @@ public class ZjTestServiceImpl implements ZjTestService {
     private MongoTemplate mongoTemplate;
     @Autowired
     private HttpServletResponse response;
+    @Autowired
+    private RestHighLevelClient restHighLevelClient;
     @Autowired
     private CosUpload cos;
     private static final String sharePrefix = "share";
@@ -2383,7 +2398,7 @@ public class ZjTestServiceImpl implements ZjTestService {
                 ,"https://api.deepseek.com/chat/completions"
                 ,qt.setJson("Authorization","Bearer sk-f31affd654a3409e9f6468b5875fe85e"
                         ,"Accept","application/json"));
-        JSONObject json = qt.toJson(s);
+        JSONObject json = JSONObject.parseObject(s);
         qt.checkPowerUp(tokData.getString("id_C"), json.getJSONObject("usage").getLong("total_tokens"), "aitoken");
         System.out.println("请求结果:");
         System.out.println(s);
@@ -2394,6 +2409,8 @@ public class ZjTestServiceImpl implements ZjTestService {
     public ApiResponse aiQuestingDeepSeekByObj(JSONObject tokData,JSONObject descObj,String lang,String theOriginal) {
         JSONObject result = new JSONObject();
         try {
+            System.out.println("descObj:");
+            System.out.println(JSON.toJSONString(descObj));
             Date now = new Date();
             DateFormat df = DateFormat.getTimeInstance();
             String currentTime = df.format(now);
@@ -2408,43 +2425,53 @@ public class ZjTestServiceImpl implements ZjTestService {
                         , qt.setJson("Authorization", "Bearer sk-f31affd654a3409e9f6468b5875fe85e"
                                 , "Accept", "application/json"),result,key);
             }
+            System.out.println("result:"+size);
             System.out.println(JSON.toJSONString(result));
+//            System.out.println("descObj:");
+//            System.out.println(JSON.toJSONString(descObj));
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             AtomicBoolean isTrue = new AtomicBoolean(false);
             AtomicInteger count = new AtomicInteger();
+            AtomicBoolean isStop = new AtomicBoolean(false);
             // 这里写你要执行的任务逻辑
             Runnable task = () -> {
+                System.out.println("执行任务:");
                 if (result.keySet().size() == size) {
                     System.out.println("all全部请求成功!");
                     isTrue.set(true);
                 }
                 if (!isTrue.get()) {
-                    if (count.get() > 40) {
+                    if (count.get() > 15) {
                         executor.shutdown();
+                        isStop.set(true);
                         throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"请求超时,内部异常!");
                     }
                     count.getAndIncrement();
                 } else {
                     executor.shutdown();
+                    isStop.set(true);
                 }
             };
             // 第一个参数是要执行的任务，第二个参数是延迟多少时间开始执行，第三个参数是每隔多少时间重复执行
-            executor.scheduleAtFixedRate(task, 4, 2, TimeUnit.SECONDS);
-//            System.out.println(JSON.toJSONString(result));
-//            while (true) {
-//                if (result.keySet().size() == size) {
-//                    System.out.println("all全部请求成功!");
-//                    break;
-//                }
-//            }
+            executor.scheduleAtFixedRate(task, 3, 5, TimeUnit.SECONDS);
+//            executor.scheduleWithFixedDelay(task, 4, 2, TimeUnit.SECONDS);
             now = new Date();
             currentTime = df.format(now);
             System.out.println("结束时间:"+currentTime);
+            while (true) {
+                if (isStop.get()) {
+                    System.out.println("result:"+size+","+result.keySet().size());
+                    System.out.println(JSON.toJSONString(result));
+                    return retResult.ok(CodeEnum.OK.getCode(),result);
+                }
+            }
+//            return retResult.ok(CodeEnum.OK.getCode(),result);
         } catch (Exception e){
             e.printStackTrace();
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"内部异常!");
         }
-        System.out.println(JSON.toJSONString(result));
-        return retResult.ok(CodeEnum.OK.getCode(),result);
+//        System.out.println(JSON.toJSONString(result));
+//        return retResult.ok(CodeEnum.OK.getCode(),result);
     }
 
     public void spStr(JSONObject result,String key,String content){
@@ -2663,5 +2690,278 @@ public class ZjTestServiceImpl implements ZjTestService {
                     ,"casItemx."+id_C+".taOrderCount",thisOrderCount), Order.class);
         }
         return retResult.ok(CodeEnum.OK.getCode(), "更新状态成功");
+    }
+
+    @Override
+    public ApiResponse addFC(String id_A,String id_C, JSONObject requestJson) {
+//        qt.pullMDContent(id_A, "flowControl.objData", requestJson, Asset.class);
+        qt.pushMDContent(id_A, "flowControl.objData", requestJson, Asset.class);
+        try {
+            Asset asset = qt.getMDContent(id_A, "def.objlBP", Asset.class);
+            this.setFlowControlUserList(id_C, requestJson.getString("dep")
+                    , requestJson.getJSONArray("grpU"), requestJson.getJSONArray("id_UM"));
+            JSONObject lBProd = asset.getDef().getJSONObject("objlBP");
+            this.setFlowControlActionGrpB(requestJson.getJSONArray("grpB")
+                    ,requestJson.getString("id_O"), lBProd);
+        } catch (IOException e) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"出现异常!");
+        }
+        System.out.println("成功!");
+        return retResult.ok(CodeEnum.OK.getCode(), "成功");
+    }
+
+    @Override
+    public ApiResponse getFCStop(String id_A) {
+        Asset asset = qt.getMDContent(id_A, "flowControl.objStop", Asset.class);
+        if (null != asset && null != asset.getFlowControl() && null != asset.getFlowControl().getJSONArray("objStop")) {
+            return retResult.ok(CodeEnum.OK.getCode(), asset.getFlowControl().getJSONArray("objStop"));
+        }
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"信息为空!");
+    }
+
+    @Override
+    public ApiResponse setFCStop(String id_A, int index, boolean stop) {
+        Asset asset = qt.getMDContent(id_A, "flowControl", Asset.class);
+        if (null != asset && null != asset.getFlowControl() && null != asset.getFlowControl().getJSONArray("objStop")
+                && null != asset.getFlowControl().getJSONArray("objData")) {
+            JSONArray objStop = asset.getFlowControl().getJSONArray("objStop");
+            JSONArray objData = asset.getFlowControl().getJSONArray("objData");
+            if (stop) {
+                if (index <= (objData.size() - 1)) {
+                    JSONObject dataInfo = objData.getJSONObject(index);
+                    objData.remove(index);
+                    objStop.add(dataInfo);
+                } else {
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"下标超限!");
+                }
+            } else {
+                if (index <= (objStop.size() - 1)) {
+                    JSONObject removeInfo = objStop.getJSONObject(index);
+                    objStop.remove(index);
+                    objData.add(removeInfo);
+                } else {
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"下标超限!");
+                }
+            }
+            qt.setMDContent(id_A,qt.setJson("flowControl.objData",objData
+                    ,"flowControl.objStop",objStop), Asset.class);
+            return retResult.ok(CodeEnum.OK.getCode(), "成功");
+        }
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"信息为空!");
+    }
+
+    @Override
+    public ApiResponse updateFC2(String id_A, String id_C, JSONArray requestJsonArr) throws IOException {
+        JSONArray result = new JSONArray();
+        for (int i = 0; i < requestJsonArr.size(); i++) {
+            JSONObject requestJson = requestJsonArr.getJSONObject(i);
+            Asset asset = qt.getMDContentAP(id_A,
+                    qt.setJson("key", "flowControl.objData.id", "val", requestJson.getString("id")),
+                    qt.strList("flowControl.objData.$", "def.objlBP"), Asset.class);
+
+            if (asset == null) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), null);
+            }
+
+            JSONObject map = asset.getFlowControl().getJSONArray("objData").getJSONObject(0);
+            JSONObject lBProd = asset.getDef().getJSONObject("objlBP");
+
+            if (map.getString("id").equals(requestJson.getString("id"))) {
+
+                //取出差集  以数据库传来为主，前端为次。这样就拿到要提出群的组别
+                map.getJSONArray("grpU").removeAll(requestJson.getJSONArray("grpU"));
+
+                //拿到要踢出群的组别
+                if (map.getJSONArray("grpU").size() > 0){
+                    this.removeGrpUFromFC(id_C,map.getJSONArray("grpU"),map.getJSONArray("objUser"));
+                }
+                //添加群
+                JSONArray userArray = this.setFlowControlUserList(id_C, requestJson.getString("dep"), requestJson.getJSONArray("grpU"), requestJson.getJSONArray("id_UM"));
+
+                System.out.println("userArray"+ userArray);
+                map.putAll(requestJson);
+                map.put("objUser", userArray);
+
+            }
+            System.out.println("flowCon"+map);
+
+            qt.setMDContentAP(id_A,
+                    qt.setJson("key", "flowControl.objData.id", "val", requestJson.getString("id")),
+                    qt.setJson("flowControl.objData.$", map), Asset.class);
+            this.setFlowControlActionGrpB(requestJson.getJSONArray("grpB"),requestJson.getString("id_O"), lBProd);
+            result.add(map);
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), result);
+    }
+
+    public ApiResponse updateFC(String id_A, String id_U, String id_C, JSONObject requestJson) throws IOException {
+
+        Asset asset = qt.getMDContentAP(id_A,
+                qt.setJson("key", "flowControl.objData.id", "val", requestJson.getString("id")),
+                qt.strList("flowControl.objData.$", "def.objlBP"), Asset.class);
+
+        if (asset == null) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ASSET_NOT_FOUND.getCode(), null);
+        }
+
+        JSONObject map = asset.getFlowControl().getJSONArray("objData").getJSONObject(0);
+        JSONObject lBProd = asset.getDef().getJSONObject("objlBP");
+
+        if (map.getString("id").equals(requestJson.getString("id"))) {
+
+            //取出差集  以数据库传来为主，前端为次。这样就拿到要提出群的组别
+            map.getJSONArray("grpU").removeAll(requestJson.getJSONArray("grpU"));
+
+            //拿到要踢出群的组别
+            if (map.getJSONArray("grpU").size() > 0){
+                this.removeGrpUFromFC(id_C,map.getJSONArray("grpU"),map.getJSONArray("objUser"));
+            }
+            //添加群
+            JSONArray userArray = this.setFlowControlUserList(id_C, requestJson.getString("dep"), requestJson.getJSONArray("grpU"), requestJson.getJSONArray("id_UM"));
+
+            System.out.println("userArray"+ userArray);
+            map.putAll(requestJson);
+            map.put("objUser", userArray);
+
+        }
+        System.out.println("flowCon"+map);
+
+        qt.setMDContentAP(id_A,
+                qt.setJson("key", "flowControl.objData.id", "val", requestJson.getString("id")),
+                qt.setJson("flowControl.objData.$", map), Asset.class);
+        this.setFlowControlActionGrpB(requestJson.getJSONArray("grpB"),requestJson.getString("id_O"), lBProd);
+
+        return retResult.ok(CodeEnum.OK.getCode(), map);
+    }
+
+    private JSONArray setFlowControlUserList(String id_C, String dep, JSONArray grpU, JSONArray id_UM) throws IOException {
+
+        //构建查询库
+        SearchRequest searchRequest = new SearchRequest("lbuser");
+
+        //构建搜索条件
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+        JSONArray result = new JSONArray();
+
+        //根据职位和公司id查出所有人
+        for (Object o : grpU) {
+
+            QueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                    //条件1：当前公司id
+                    .must(QueryBuilders.termQuery("id_CB", id_C))
+                    //条件2：grpU
+                    .must(QueryBuilders.termQuery("grpU", o))
+                    .must(QueryBuilders.matchPhraseQuery("dep", dep));
+            searchSourceBuilder.query(queryBuilder);
+            searchSourceBuilder.from(0);
+            searchSourceBuilder.size(10000);
+            //把构建对象放入，指定查那个对象，把查询条件放进去
+            searchRequest.source(searchSourceBuilder);
+            //执行请求
+            SearchResponse search = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            for (SearchHit hit : search.getHits().getHits()) {
+                System.out.println("now is" + o + " " + dep + " " + hit.getSourceAsMap().get("id_U"));
+                JSONObject objUser = new JSONObject();
+                objUser.put("imp", 3);
+                objUser.put("id_U", hit.getSourceAsMap().get("id_U"));
+                //三元运算符
+                objUser.put("id_APP", hit.getSourceAsMap().getOrDefault("id_APP", ""));
+                result.add(objUser);
+            }
+        }
+
+        //Add manager into objUser
+        for (int k = 0; k < id_UM.size(); k++) {
+            boolean inResult = false;
+            for (int j=0; j< result.size(); j++)
+            {
+                //Check not repeated assigned in objUser by grpU 检查不会和职位重复。
+                if (result.getJSONObject(j).getString("id_U").equals(id_UM.get(k)))
+                {
+                    inResult = true;
+                }
+            }
+            if (!inResult) {
+                QueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                        //条件1：当前公司id
+                        .must(QueryBuilders.termQuery("id_CB", id_C))
+                        //条件2：grpU
+                        .must(QueryBuilders.termQuery("id_U", id_UM.get(k)));
+                searchSourceBuilder.query(queryBuilder);
+                searchSourceBuilder.from(0);
+                searchSourceBuilder.size(1);
+                searchRequest.source(searchSourceBuilder);
+                //执行请求
+                SearchResponse search = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+                for (SearchHit hit : search.getHits().getHits()) {
+                    JSONObject objUser = new JSONObject();
+                    objUser.put("imp", 3);
+                    objUser.put("id_U", hit.getSourceAsMap().get("id_U"));
+                    objUser.put("id_APP", hit.getSourceAsMap().getOrDefault("id_APP", ""));
+                    result.add(objUser);
+                }
+            }
+        }
+        return result;
+    }
+
+    //批量删除群
+    private void removeGrpUFromFC(String id_C, JSONArray grpU,JSONArray objUser ) throws IOException {
+
+        //构建查询库
+        SearchRequest searchRequest = new SearchRequest("lbuser");
+
+        //构建搜索条件
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+        //根据职位和公司id查出所有人
+        for (Object o : grpU) {
+
+            QueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                    //条件1：当前公司id
+                    .must(QueryBuilders.termQuery("id_CB", id_C))
+                    //条件2：grpU
+                    .must(QueryBuilders.termQuery("grpU", o));
+            searchSourceBuilder.query(queryBuilder);
+            searchSourceBuilder.from(0);
+            searchSourceBuilder.size(10000);
+            //把构建对象放入，指定查那个对象，把查询条件放进去
+            searchRequest.source(searchSourceBuilder);
+            //执行请求
+            SearchResponse search = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            for (SearchHit hit : search.getHits().getHits()) {
+
+                for (int i = 0; i < objUser.size(); i++) {
+
+                    if (objUser.getJSONObject(i).containsValue(hit.getSourceAsMap().get("id_U"))) {
+                        objUser.remove(i);
+                        i--;
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void setFlowControlActionGrpB(JSONArray grpB, String id_O, JSONObject defObject)
+    {
+
+        JSONObject result = new JSONObject();
+        for (int j = 0; j < grpB.size(); j++) {
+            result.put(grpB.getString(j),defObject.getJSONObject(grpB.getString(j)));
+        }
+        try {
+            Query orderFC = new Query(
+                    new Criteria("_id").is(id_O));
+            orderFC.fields().include("action.grpBGroup");
+            Update update = new Update();
+            update.set("action.grpBGroup", result);
+            mongoTemplate.updateFirst(orderFC, update, Order.class);
+        } catch (RuntimeException e) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.OBJECT_IS_NULL.getCode(), null);
+        }
     }
 }

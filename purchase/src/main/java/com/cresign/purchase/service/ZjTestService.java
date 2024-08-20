@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.cresign.tools.apires.ApiResponse;
 import com.cresign.tools.pojo.po.LogFlow;
 
+import java.io.IOException;
+
 /**
  * @author tang
  * @Description 作者很懒什么也没写
@@ -232,4 +234,12 @@ public interface ZjTestService {
     ApiResponse scanJoinGroupCode(String id_U,String token);
 
     ApiResponse updateOrderLDG(String id_O,String id_C);
+
+    ApiResponse addFC(String id_A,String id_C,JSONObject requestJson);
+
+    ApiResponse getFCStop(String id_A);
+
+    ApiResponse setFCStop(String id_A,int index,boolean stop);
+
+    ApiResponse updateFC2(String id_A, String id_C, JSONArray requestJsonArr) throws IOException;
 }

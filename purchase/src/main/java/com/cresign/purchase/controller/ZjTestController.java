@@ -714,4 +714,38 @@ public class ZjTestController {
             return getUserToken.err(new JSONObject(), "ZjTestController.updateOrderLDG", e);
         }
     }
+
+    @SecurityParameter
+    @PostMapping("/v1/addFC")
+    public ApiResponse addFC(@RequestBody JSONObject resJson) {
+        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.addFC(resJson.getString("id_A"), tokData.getString("id_C"), resJson.getJSONObject("requestJson"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.addFC", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/getFCStop")
+    public ApiResponse getFCStop(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.getFCStop(resJson.getString("id_A"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.getFCStop", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/setFCStop")
+    public ApiResponse setFCStop(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.setFCStop(resJson.getString("id_A"),resJson.getInteger("index")
+                    ,resJson.getBoolean("stop"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.setFCStop", e);
+        }
+    }
 }

@@ -796,11 +796,13 @@ public class ActionServiceImpl implements ActionService {
                         if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
                             setODate = new JSONObject();
                             JSONArray objData = oDateOld.getJSONArray("objData");
-                            JSONObject data = objData.getJSONObject(orderAction.getIndex());
-                            if (null != data) {
-                                data.put("taStart",(System.currentTimeMillis()/1000));
-                                objData.set(orderAction.getIndex(),data);
-                                setODate.put("objData",objData);
+                            if ((objData.size() - 1) <= orderAction.getIndex()) {
+                                JSONObject data = objData.getJSONObject(orderAction.getIndex());
+                                if (null != data) {
+                                    data.put("taStart",(System.currentTimeMillis()/1000));
+                                    objData.set(orderAction.getIndex(),data);
+                                    setODate.put("objData",objData);
+                                }
                             }
                         } else {
                             setODate = new JSONObject();
@@ -808,12 +810,14 @@ public class ActionServiceImpl implements ActionService {
                             for (int i = 0; i <= orderAction.getIndex(); i++) {
                                 objData.add(qt.setJson("index",i));
                             }
-                            JSONObject data = objData.getJSONObject(orderAction.getIndex());
-                            if (null != data) {
-                                data.put("taStart",(System.currentTimeMillis()/1000));
-                                objData.set(orderAction.getIndex(),data);
+                            if ((objData.size() - 1) <= orderAction.getIndex()) {
+                                JSONObject data = objData.getJSONObject(orderAction.getIndex());
+                                if (null != data) {
+                                    data.put("taStart",(System.currentTimeMillis()/1000));
+                                    objData.set(orderAction.getIndex(),data);
 //                                data.put("taStart",(System.currentTimeMillis()/1000));
-                                setODate.put("objData",objData);
+                                    setODate.put("objData",objData);
+                                }
                             }
                         }
                         if (lDG == 1 && orderAction.getBmdpt()==3) {
@@ -869,14 +873,16 @@ public class ActionServiceImpl implements ActionService {
                         if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
                             setODate = new JSONObject();
                             JSONArray objData = oDateOld.getJSONArray("objData");
-                            JSONObject data = objData.getJSONObject(orderAction.getIndex());
-                            if (null != data) {
-                                long taFin = System.currentTimeMillis() / 1000;
-                                long wntaDurtot = taFin - data.getLong("taStart");
-                                data.put("taFin",taFin);
-                                data.put("wntaDurtot",wntaDurtot);
-                                objData.set(orderAction.getIndex(),data);
-                                setODate.put("objData",objData);
+                            if ((objData.size() - 1) <= orderAction.getIndex()) {
+                                JSONObject data = objData.getJSONObject(orderAction.getIndex());
+                                if (null != data && null != data.getLong("taStart")) {
+                                    long taFin = System.currentTimeMillis() / 1000;
+                                    long wntaDurtot = taFin - data.getLong("taStart");
+                                    data.put("taFin",taFin);
+                                    data.put("wntaDurtot",wntaDurtot);
+                                    objData.set(orderAction.getIndex(),data);
+                                    setODate.put("objData",objData);
+                                }
                             }
                         }
                         lDG = setActCount(objCount, orderAction.getBmdpt(), lDG,mapKey,orderAction.getId_OP());
@@ -898,14 +904,16 @@ public class ActionServiceImpl implements ActionService {
                         if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
                             setODate = new JSONObject();
                             JSONArray objData = oDateOld.getJSONArray("objData");
-                            JSONObject data = objData.getJSONObject(orderAction.getIndex());
-                            if (null != data) {
-                                long taFin = System.currentTimeMillis() / 1000;
-                                long wntaDurtot = taFin - data.getLong("taStart");
-                                data.put("taFin",taFin);
-                                data.put("wntaDurtot",wntaDurtot);
-                                objData.set(orderAction.getIndex(),data);
-                                setODate.put("objData",objData);
+                            if ((objData.size() - 1) <= orderAction.getIndex()) {
+                                JSONObject data = objData.getJSONObject(orderAction.getIndex());
+                                if (null != data && null != data.getLong("taStart")) {
+                                    long taFin = System.currentTimeMillis() / 1000;
+                                    long wntaDurtot = taFin - data.getLong("taStart");
+                                    data.put("taFin",taFin);
+                                    data.put("wntaDurtot",wntaDurtot);
+                                    objData.set(orderAction.getIndex(),data);
+                                    setODate.put("objData",objData);
+                                }
                             }
                         }
                         lDG = setActCount(objCount, orderAction.getBmdpt(), lDG,mapKey,orderAction.getId_OP());
@@ -992,14 +1000,16 @@ public class ActionServiceImpl implements ActionService {
                         if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
                             setODate = new JSONObject();
                             JSONArray objData = oDateOld.getJSONArray("objData");
-                            JSONObject data = objData.getJSONObject(orderAction.getIndex());
-                            if (null != data) {
-                                long taFin = System.currentTimeMillis() / 1000;
-                                long wntaDurtot = taFin - data.getLong("taStart");
-                                data.put("taFin",taFin);
-                                data.put("wntaDurtot",wntaDurtot);
-                                objData.set(orderAction.getIndex(),data);
-                                setODate.put("objData",objData);
+                            if ((objData.size() - 1) <= orderAction.getIndex()) {
+                                JSONObject data = objData.getJSONObject(orderAction.getIndex());
+                                if (null != data && null != data.getLong("taStart")) {
+                                    long taFin = System.currentTimeMillis() / 1000;
+                                    long wntaDurtot = taFin - data.getLong("taStart");
+                                    data.put("taFin",taFin);
+                                    data.put("wntaDurtot",wntaDurtot);
+                                    objData.set(orderAction.getIndex(),data);
+                                    setODate.put("objData",objData);
+                                }
                             }
                         }
                         lDG = setActCount(objCount, orderAction.getBmdpt(), lDG,mapKey,orderAction.getId_OP());
