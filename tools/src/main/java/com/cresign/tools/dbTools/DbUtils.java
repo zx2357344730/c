@@ -1145,8 +1145,11 @@ public class DbUtils {
     }
 
     public Object scriptEngineVar(String var, JSONObject jsonVars) {
+        return this.scriptEngineVar(var, jsonVars, true);
+    }
+
+    public Object scriptEngineVar(String var, JSONObject jsonVars, Boolean bool) {
         try {
-//            System.out.println("");
             System.out.println("var=" + var);
             System.out.println("jsonVars=" + jsonVars);
             if (var.startsWith("##")) {
@@ -1288,14 +1291,16 @@ public class DbUtils {
                     String strCount = String.valueOf(sb);
                     strCount += count;
                     System.out.println("strCount=" + strCount);
-                    if (count == max) {
-                        count = 1;
-                    } else {
-                        count++;
+                    if (bool) {
+                        if (count == max) {
+                            count = 1;
+                        } else {
+                            count++;
+                        }
+                        System.out.println("count=" + count);
+                        JSONObject jsonUpdate = qt.setJson("refAuto.objCounter." + scriptSplit[2] + ".count", count);
+                        qt.setMDContent(asset.getId(), jsonUpdate, Asset.class);
                     }
-                    System.out.println("count=" + count);
-                    JSONObject jsonUpdate = qt.setJson("refAuto.objCounter." + scriptSplit[2] + ".count", count);
-                    qt.setMDContent(asset.getId(), jsonUpdate, Asset.class);
                     return strCount;
                 } else if (var.startsWith("##G")) {
                     String[] scriptSplit = var.split("\\.");
@@ -2433,10 +2438,10 @@ public class DbUtils {
     public JSONObject initOMoney() {
         JSONObject oMoney = qt.setJson(
                 "disType", "value",
-                "disVal", 0.0,
-                "addVal", 0.0,
+                "disVal", 0.0, //打折
+                "addVal", 0.0, //
                 "addType", "percent",
-                "tax", 0.0,
+                "tax", 0.0, //税率
                 "wn2mnyneed", 0.0, //要付的钱
                 "wn2mnytotal", 0.0, //货的价值
                 "wn2mnyterm", 0.0, //挂账的钱
@@ -2617,15 +2622,29 @@ public class DbUtils {
                     JSONObject jsonWares = mes.getChgSupp().getJSONObject("objWare");
                     jsonChgSupp.put(id_C, jsonWares);
                     if (jsonWares.getJSONObject(id_P) != null) {
-                        jsonLsasset.putAll(jsonWares.getJSONObject(id_P));
                         id_P = jsonWares.getJSONObject(id_P).getString("id_P");
+                        Double wn2port = jsonWares.getJSONObject(id_P).getDouble("wn2port");
+                        jsonLsasset.put("id_P", id_P);
+                        jsonLsasset.put("wn2qty", DoubleUtils.multiply(jsonLsasset.getDouble("wn2qty"), wn2port));
+                        JSONArray arraySpaceQty = jsonLsasset.getJSONArray("spaceQty");
+                        for (int j = 0; j < arraySpaceQty.size(); j++) {
+                            arraySpaceQty.set(j, DoubleUtils.multiply(arraySpaceQty.getDouble(j), wn2port));
+                        }
+                        jsonLsasset.put("spaceQty", arraySpaceQty);
                     }
                 }
             } else {
                 JSONObject jsonWares = jsonChgSupp.getJSONObject(id_C);
                 if (jsonWares.getJSONObject(id_P) != null) {
-                    jsonLsasset.putAll(jsonWares.getJSONObject(id_P));
                     id_P = jsonWares.getJSONObject(id_P).getString("id_P");
+                    Double wn2port = jsonWares.getJSONObject(id_P).getDouble("wn2port");
+                    jsonLsasset.put("id_P", id_P);
+                    jsonLsasset.put("wn2qty", DoubleUtils.multiply(jsonLsasset.getDouble("wn2qty"), wn2port));
+                    JSONArray arraySpaceQty = jsonLsasset.getJSONArray("spaceQty");
+                    for (int j = 0; j < arraySpaceQty.size(); j++) {
+                        arraySpaceQty.set(j, DoubleUtils.multiply(arraySpaceQty.getDouble(j), wn2port));
+                    }
+                    jsonLsasset.put("spaceQty", arraySpaceQty);
                 }
             }
             if (id_A != null && !id_A.equals("")) {
@@ -2696,14 +2715,16 @@ public class DbUtils {
 
                 if (jsonLsasset.getInteger("lAT").equals(3)) {
                     qt.errPrint("ia m in updateAsset.... ");
-                    lBProd lbprod = qt.getESItem("lBProd", id_P, id_C, lBProd.class);
-                    jsonLsasset.put("jsonLbprod", lbprod);
-                    grpP = lbprod.getGrpB();
+                    JSONArray arrayLbprod = qt.getES("lBProd", qt.setESFilt("id_CB", id_C, "id_P", id_P), 1);
+                    JSONObject jsonLbprod = arrayLbprod.getJSONObject(0);
+                    jsonLsasset.put("jsonLbprod", jsonLbprod);
+                    grpP = jsonLbprod.getString("grpB");
                     defKey = "objlBP";
                 } else if (jsonLsasset.getInteger("lAT").equals(2)) {
-                    lSProd lsprod = qt.getESItem("lSProd", id_P, id_C, lSProd.class);
-                    jsonLsasset.put("jsonLsprod", lsprod);
-                    grpP = lsprod.getGrp();
+                    JSONArray arrayLsprod = qt.getES("lSProd", qt.setESFilt("id_C", id_C, "id_P", id_P), 1);
+                    JSONObject jsonLsprod = arrayLsprod.getJSONObject(0);
+                    jsonLsasset.put("jsonLsprod", jsonLsprod);
+                    grpP = jsonLsprod.getString("grp");
                     defKey = "objlSP";
                 }
 
@@ -2797,7 +2818,6 @@ public class DbUtils {
         qt.setESMany("lBAsset", listBulkLbasset);
     }
 
-
     public void assetValueChange(Order order, JSONArray arrayAssetChg, List<JSONObject> listBulkAsset, List<JSONObject> listBulkLsasset,
                                  List<JSONObject> listBulkLbasset, String type, Boolean isLsa) {
 
@@ -2822,6 +2842,11 @@ public class DbUtils {
             String id_A = null;
             //index不为空是产品，反之是金钱
             // basically depends on what arrayAssetChg is, it will update asset accordingly, so this array is very important instruction
+            // type 1 = deduct/add qty by stocks
+            // type 2 = init stocks + qty add into it
+            // ??? what if deduct but
+            // type 3 = deduct/add money
+
 
             //K - should use lAT to check if this is Stock
             JSONObject prod = assetChgObj.getJSONObject("jsonProd");

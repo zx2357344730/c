@@ -685,38 +685,38 @@ public class Qt {
 
     public void errPrint(String title, Exception e, Object... vars)
     {
-//        try {
-//            System.out.println("****[" + title + "]****");
-//            for (Object item : vars) {
-//                if (item == null) {
-//                    System.out.println("....null");
-//                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
-//                    System.out.println(this.toJArray(item));
-//                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
-//                        item.getClass().toString().startsWith("class java.util")) {
-//
-//                    System.out.println(this.toJson(item));
-//
-//                    JSONObject looper = this.toJson(item);
-//                    looper.forEach((k, v) ->{
-//                        System.out.println(k + ":" + v);
-//                    });
-//                    System.out.println("----------------------------------------");
-//
-//
-//                } else {
-//                    System.out.println(item);
-//                }
-//            }
-//            System.out.println("*****[End]*****");
-//
-//            if (e != null)
-//                e.printStackTrace();
-//        }
-//        catch (Exception ex)
-//        {
-//            System.out.println("****" + title + " is NULL ****");
-//        }
+        try {
+            System.out.println("****[" + title + "]****");
+            for (Object item : vars) {
+                if (item == null) {
+                    System.out.println("....null");
+                } else if (item.getClass().toString().startsWith("class java.util.Array")) {
+                    System.out.println(this.toJArray(item));
+                } else if (item.getClass().toString().startsWith("class com.cresign.tools.pojo") ||
+                        item.getClass().toString().startsWith("class java.util")) {
+
+                    System.out.println(this.toJson(item));
+
+                    JSONObject looper = this.toJson(item);
+                    looper.forEach((k, v) ->{
+                        System.out.println(k + ":" + v);
+                    });
+                    System.out.println("----------------------------------------");
+
+
+                } else {
+                    System.out.println(item);
+                }
+            }
+            System.out.println("*****[End]*****");
+
+            if (e != null)
+                e.printStackTrace();
+        }
+        catch (Exception ex)
+        {
+            System.out.println("****" + title + " is NULL ****");
+        }
     }
 
     public void errPrint(String title, Object... vars)

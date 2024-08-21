@@ -88,6 +88,8 @@ public class OrderAction {
      */
     private Integer bisPush = 0;
 
+    private JSONArray arrTask = new JSONArray();
+
     /**
      * A special Type defining
      * 0 = DG, 4 = Being Skipped ,7 = Tasks/Quest?, 5 = ?

@@ -313,7 +313,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                                     oDate.put("grpUNum",queryId.getJSONObject(dep).getInteger(grpB));
                                 } else {
                                     oDate.put("grpUNum",1);
-                                    System.out.println("grpUNum信息为空-默认-人数写入:");
+//                                    System.out.println("grpUNum信息为空-默认-人数写入:");
                                 }
                             }
                             else {

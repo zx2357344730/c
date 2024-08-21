@@ -796,7 +796,7 @@ public class ActionServiceImpl implements ActionService {
                         if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
                             setODate = new JSONObject();
                             JSONArray objData = oDateOld.getJSONArray("objData");
-                            if ((objData.size() - 1) <= orderAction.getIndex()) {
+                            if (objData.size() > orderAction.getIndex()) {
                                 JSONObject data = objData.getJSONObject(orderAction.getIndex());
                                 if (null != data) {
                                     data.put("taStart",(System.currentTimeMillis()/1000));
@@ -810,7 +810,7 @@ public class ActionServiceImpl implements ActionService {
                             for (int i = 0; i <= orderAction.getIndex(); i++) {
                                 objData.add(qt.setJson("index",i));
                             }
-                            if ((objData.size() - 1) <= orderAction.getIndex()) {
+                            if (objData.size() > orderAction.getIndex()) {
                                 JSONObject data = objData.getJSONObject(orderAction.getIndex());
                                 if (null != data) {
                                     data.put("taStart",(System.currentTimeMillis()/1000));
@@ -873,7 +873,7 @@ public class ActionServiceImpl implements ActionService {
                         if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
                             setODate = new JSONObject();
                             JSONArray objData = oDateOld.getJSONArray("objData");
-                            if ((objData.size() - 1) <= orderAction.getIndex()) {
+                            if (objData.size() > orderAction.getIndex()) {
                                 JSONObject data = objData.getJSONObject(orderAction.getIndex());
                                 if (null != data && null != data.getLong("taStart")) {
                                     long taFin = System.currentTimeMillis() / 1000;
@@ -904,7 +904,7 @@ public class ActionServiceImpl implements ActionService {
                         if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
                             setODate = new JSONObject();
                             JSONArray objData = oDateOld.getJSONArray("objData");
-                            if ((objData.size() - 1) <= orderAction.getIndex()) {
+                            if (objData.size() > orderAction.getIndex()) {
                                 JSONObject data = objData.getJSONObject(orderAction.getIndex());
                                 if (null != data && null != data.getLong("taStart")) {
                                     long taFin = System.currentTimeMillis() / 1000;
@@ -1000,7 +1000,7 @@ public class ActionServiceImpl implements ActionService {
                         if (null != oDateOld && null != oDateOld.getJSONArray("objData")) {
                             setODate = new JSONObject();
                             JSONArray objData = oDateOld.getJSONArray("objData");
-                            if ((objData.size() - 1) <= orderAction.getIndex()) {
+                            if (objData.size() > orderAction.getIndex()) {
                                 JSONObject data = objData.getJSONObject(orderAction.getIndex());
                                 if (null != data && null != data.getLong("taStart")) {
                                     long taFin = System.currentTimeMillis() / 1000;
@@ -2649,13 +2649,14 @@ public class ActionServiceImpl implements ActionService {
 
     /**
      * Create task OItem + Action + Log
+     *
      * @return java.lang.String  返回结果: 递归结果
      * @author tang
      * @ver 1.0.0
      * @date 2020/8/6 9:03
      */
     @Override
-    public String createTask(JSONObject tokData, String logType, String id_FC, String id_O, JSONObject oItemData) {
+    public Integer createTask(JSONObject tokData, String logType, String id_FC, String id_O, JSONObject oItemData) {
 
         Integer index = 0;
         Integer prior = 1;
@@ -2718,7 +2719,6 @@ public class ActionServiceImpl implements ActionService {
                 new JSONArray(),new JSONArray(),new JSONArray(),prtPrev,
                 oItemData.getJSONObject("wrdNP"),oItemData.getJSONObject("wrdN"));
 
-        allAction.add(unitAction);
 
         JSONObject oStockData = qt.setJson("wn2qtynow", 0.0, "wn2qtymade", 0.0,
                 "id_P", unitOItem.getId_P(),
@@ -2742,16 +2742,21 @@ public class ActionServiceImpl implements ActionService {
                 oItemData.getString("pic"),tokData.getString("dep"),oItemData.getJSONObject("wrdN").getString("cn") +"准备开始",3,
                 qt.cloneObj(oItemData.getJSONObject("wrdN")),tokData.getJSONObject("wrdNReal"));
        logLP.setLogData_action(unitAction,unitOItem);
+       if (oItemData.getJSONArray("arrTask") != null)
+       {
+           logLP.getData().put("arrTask", oItemData.getJSONArray("arrTask"));
+           unitAction.setArrTask(oItemData.getJSONArray("arrTask"));
+
+       }
         logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
         ws.sendWS(logLP);
+        allAction.add(unitAction);
 
-            qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,
-                   "oStock.objData."+index, oStockData ), Order.class);
-            qt.setES("lSBOrder", qt.setESFilt("id_O", id_O), qt.setJson("tmd",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())));
+        qt.setMDContent(id_O, qt.setJson("action.objAction",allAction, "oItem.objItem."+index, unitOItem,
+               "oStock.objData."+index, oStockData ), Order.class);
+        qt.setES("lSBOrder", qt.setESFilt("id_O", id_O), qt.setJson("tmd",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate())));
 
-
-
-        return "done";
+        return index;
     }
 
 
@@ -2947,6 +2952,54 @@ public class ActionServiceImpl implements ActionService {
         return retResult.ok(CodeEnum.OK.getCode(), "done");
     }
 
+    @Override
+    public String createTaskAndQuest(JSONObject tokData, String id_FC, String id_FQ, boolean isSL, String grp, String inputMsg, JSONArray arrTask) {
+
+
+        //1. get all id_O, id_OProb ok
+        //2. send logs ok, once get
+        //3. set order.index
+        //4. make sure the log has "id_O, index, wrdN, id_P, wn2qtyneed,  refOP"
+        //
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMyy");
+        JSONArray idArray = qt.getES("lSBOrder", qt.setESFilt("refB", "s-"+id_FC+ "-"+ dateFormat.format(new Date())), 1);
+
+        if (idArray.size() == 0)
+        {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
+        }
+        String id_O = idArray.getJSONObject(0).getString("id_O");
+
+        JSONObject oItemData =
+                qt.setJson("grp", isSL? grp : "", "grpB", isSL? "": grp,
+                "grpU", tokData.getString("grpU"), "grpUB", tokData.getString("grpU"),
+                "id_C", tokData.getString("id_C"), "id_CB", tokData.getString("id_C"),
+                "id_O", id_O, "id_CP", tokData.getString("id_C"), "id_P", "", "id", id_FC,
+                "lCR", 0, "lUT", 1, "pic", "", "ref", "", "seq", 1, "wn0prior", 1, "wn2qtyneed", 1,
+                "wrdN", qt.setJson("cn", inputMsg), "wrddesc", qt.setJson("cn", inputMsg),
+                "wrdprep", qt.setJson("cn", ""), "wn4price", 0);
+
+        oItemData.put("arrTask", arrTask);
+
+        Integer indexO = this.createTask(tokData, "action", id_FC, id_O, oItemData);
+
+        JSONObject probData = qt.setJson("logType", "action",
+                "pic", oItemData.getString("pic"),
+                "wrdNP", oItemData.getJSONObject("wrdN"),
+                "wrdN", qt.setJson("cn", "需要处理"),
+                "ref", "",
+                "id_OP", id_O,
+                "refOP", "",
+                "wrddesc", oItemData.getJSONObject("wrddesc"),
+                "wrdprep",qt.setJson("cn", ""),
+                "arrTask", arrTask);
+
+
+        this.createQuest(new JSONObject(), tokData, id_O, indexO, "", id_FC, id_FQ, probData);
+
+        return "done";
+    }
+
     /**
      * *** 新增提问任务 ***
      * Get the id_ProbFC, get the id_O of prob, get the last item
@@ -2982,7 +3035,14 @@ public class ActionServiceImpl implements ActionService {
 
         if (id_Prob.equals(""))
         {                // 返回操作失败结果
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMyy");
+            JSONArray idArray = qt.getES("lSBOrder", qt.setESFilt("refB", "s-"+id_FQ+ "-"+ dateFormat.format(new Date())), 1);
+
+            if (idArray.size() == 0)
+            {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ERR_GET_ORDER_NULL.getCode(), "没有关联订单");
+            }
+            id_Prob = idArray.getJSONObject(0).getString("id_O");
         }
 
         // go to prob fixing group, make a new OItem, send log
@@ -3072,6 +3132,12 @@ public class ActionServiceImpl implements ActionService {
                 probData.getString("pic"),tokData.getString("dep"),probData.getJSONObject("wrdN").getString("cn"),3,probData.getJSONObject("wrdN"),tokData.getJSONObject("wrdNReal"));
 
         logProb.setLogData_action(unitAction,unitOItem);
+        if (probData.getJSONArray("arrTask") != null)
+        {
+            logProb.getData().put("arrTask", probData.getJSONArray("arrTask"));
+            unitAction.setArrTask(probData.getJSONArray("arrTask"));
+
+        }
         logProb.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
         ws.sendWS(logProb);
 
@@ -3332,14 +3398,17 @@ public class ActionServiceImpl implements ActionService {
 //        logSale.setSaleLog(tokData, slog.getString("id_C"), slog.getString("id_CB"), slog.getString("id_FC"), slog.getString("id_FS"), "confirm", desc, 4, id_O, id_O,  listType,
 //                order.getInfo().getWrdN(), listType == "lBOrder" ? order.getInfo().getGrpB(): order.getInfo().getGrp());
 //        ws.sendWS(logSale);
-        String taskName = listType.equals("lBOrder") ? order.getInfo().getRefB() : order.getInfo().getRef() + "单开始执行";
-        String id_Flow = listType.equals("lBOrder") ? asset.getDef().getJSONObject("objlBO").getJSONObject(order.getInfo().getGrpB()).getString("id_Flow") :
-                asset.getDef().getJSONObject("objlSO").getJSONObject(order.getInfo().getGrp()).getString("id_Flow");
-        JSONObject taskLog = qt.setJson("grpB", "1000", "grp", "1000", "id_CP", tokData.getString("id_C"),
-                "pic", order.getInfo().getPic(), "lUT", 0, "lCR", order.getInfo().getLCR(),
-                "wn2qtyneed", 1, "wn4price", 0,"id_OP", id_O,
-                "wrdN", qt.setJson("cn", taskName), "wrdNP", order.getInfo().getWrdN(), "wrdprep", order.getInfo().getWrddesc());
-        this.createTask(tokData, listType.equals("lBOrder") ? "saleflow" : "saleflowSL", id_Flow, "", taskLog);
+
+       if (!order.getInfo().getId_C().equals(order.getInfo().getId_CB())) {
+           String taskName = listType.equals("lBOrder") ? order.getInfo().getRefB() : order.getInfo().getRef() + "单开始执行";
+           String id_Flow = listType.equals("lBOrder") ? asset.getDef().getJSONObject("objlBO").getJSONObject(order.getInfo().getGrpB()).getString("id_Flow") :
+                   asset.getDef().getJSONObject("objlSO").getJSONObject(order.getInfo().getGrp()).getString("id_Flow");
+           JSONObject taskLog = qt.setJson("grpB", "1000", "grp", "1000", "id_CP", tokData.getString("id_C"),
+                   "pic", order.getInfo().getPic(), "lUT", 0, "lCR", order.getInfo().getLCR(),
+                   "wn2qtyneed", 1, "wn4price", 0, "id_OP", id_O,
+                   "wrdN", qt.setJson("cn", taskName), "wrdNP", order.getInfo().getWrdN(), "wrdprep", order.getInfo().getWrddesc());
+           this.createTask(tokData, listType.equals("lBOrder") ? "saleflow" : "saleflowSL", id_Flow, "", taskLog);
+       }
         return order.getInfo().getLST();
     }
 
@@ -3380,6 +3449,33 @@ public class ActionServiceImpl implements ActionService {
 
         qt.setMDContent(id_O, qt.setJson("info.lST", order.getInfo().getLST()), Order.class);
         qt.setES("lSBOrder", qt.setESFilt("id_O", id_O), qt.setJson("lST", order.getInfo().getLST()));
+////////////////////////////////
+
+        if (!order.getInfo().getId_C().equals(order.getInfo().getId_CB())) {
+            //  if lS, getFlowId, then find id_O by getES,
+
+//            String taskName = "订单取消执行";
+//            String id_Flow = listType.equals("lBOrder") ? asset.getDef().getJSONObject("objlBO").getJSONObject(order.getInfo().getGrpB()).getString("id_Flow") :
+//                    asset.getDef().getJSONObject("objlSO").getJSONObject(order.getInfo().getGrp()).getString("id_Flow");
+//
+//            LogFlow logLP = new LogFlow(logType,id_FC,
+//                    id_FS,"stateChg", tokData.getString("id_U"),tokData.getString("grpU"),"",unitOItem.getGrpB(), "",id_O,id_O,index, myCompId,myCompId,
+//                    oItemData.getString("pic"),tokData.getString("dep"),oItemData.getJSONObject("wrdN").getString("cn") +"准备开始",3,
+//                    qt.cloneObj(oItemData.getJSONObject("wrdN")),tokData.getJSONObject("wrdNReal"));
+//            logLP.setLogData_action(unitAction,unitOItem);
+//            if (oItemData.getJSONArray("arrTask") != null)
+//            {
+//                logLP.getData().put("arrTask", oItemData.getJSONArray("arrTask"));
+//            }
+//            logLP.setActionTime(DateUtils.getTimeStamp(), 0L, "push");
+//            ws.sendWS(logLP);
+//
+//
+//            JSONObject taskLog = qt.setJson("grpB", "1000", "grp", "1000", "id_CP", tokData.getString("id_C"),
+//                    "pic", order.getInfo().getPic(), "lUT", 0, "lCR", order.getInfo().getLCR(),
+//                    "wn2qtyneed", 1, "wn4price", 0, "id_OP", id_O,
+//                    "wrdN", qt.setJson("cn", taskName), "wrdNP", order.getInfo().getWrdN(), "wrdprep", order.getInfo().getWrddesc());
+        }
         return retResult.ok(CodeEnum.OK.getCode(), order.getInfo());
     }
 

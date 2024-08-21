@@ -133,13 +133,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                     }
                     catch (Exception e)
                     {
-                        return retResult.ok( ErrEnum.JWT_USER_OVERDUE.getCode(), "");
+                        return retResult.ok( ErrEnum.JWT_USER_OVERDUE.getCode(), "out1");
                     }
 
             }
 //            }
         }
-        return retResult.ok( ErrEnum.JWT_USER_OVERDUE.getCode(), "");
+        return retResult.ok( ErrEnum.JWT_USER_OVERDUE.getCode(), "out2");
     }
 
 //    @Override

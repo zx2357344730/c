@@ -334,16 +334,37 @@ public class ActionController {
         JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
 
         try {
-            String result = actionService.createTask(
+            Integer result = actionService.createTask(
                     tokData,
                     reqJson.getString("logType"),
                     reqJson.getString("id_FC"),
                     reqJson.getString("id_O"),
                     reqJson.getJSONObject("oItemData"));
-            return retResult.ok(CodeEnum.OK.getCode(), result);
+            return retResult.ok(CodeEnum.OK.getCode(), result.toString());
 
         } catch (Exception e) {
             return getUserToken.err(reqJson, "createTask", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/createTaskAndQuest")
+    public ApiResponse createTaskAndQuest(@RequestBody JSONObject reqJson) {
+        JSONObject tokData = getUserToken.getTokenDataX(request.getHeader("authorization"), request.getHeader("clientType"), "core", 1);
+
+        try {
+            String result = actionService.createTaskAndQuest(
+                    tokData,
+                    reqJson.getString("id_FC"),
+                    reqJson.getString("id_FQ"),
+                    reqJson.getBoolean("isSL"),
+                    reqJson.getString("grp"),
+                    reqJson.getString("inputMsg"),
+                    reqJson.getJSONArray("arrTask"));
+            return retResult.ok(CodeEnum.OK.getCode(), result);
+
+        } catch (Exception e) {
+            return getUserToken.err(reqJson, "createTaskAndQuest", e);
         }
     }
 

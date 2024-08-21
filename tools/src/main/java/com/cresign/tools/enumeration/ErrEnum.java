@@ -42,6 +42,8 @@ public enum ErrEnum {
     //不存在
     NO_HAVE("6002"),
 
+
+
     //refAuto不存在
     REFAUTO_ERROR("6002"),
 
@@ -90,6 +92,8 @@ public enum ErrEnum {
     //名字不存在
 
     FLOW_NOT_FOUND("021015"),
+    //oMoney不存在
+    OMONEY_NO_HAVE("021016"),
 
 
     /**

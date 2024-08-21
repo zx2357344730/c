@@ -59,10 +59,12 @@ public interface ActionService {
     ApiResponse dgActivateSingle(String id_O, Integer index, String myCompId, String id_U, String grpU, String dep,JSONObject wrdNU);
 
 
-    String createTask(JSONObject tokData, String logType, String id_FC, String id_O,JSONObject oItemData);
+    Integer createTask(JSONObject tokData, String logType, String id_FC, String id_O, JSONObject oItemData);
 
     ApiResponse createTaskNew(String logType, String id, String id_FS, String id_O, String myCompId, String id_U, String grpU,
                            String dep, JSONObject oItemData, JSONObject wrdNU);
+
+    String createTaskAndQuest(JSONObject tokData, String id_FC, String id_FQ, boolean isSL, String grp, String inputMsg, JSONArray arrTask);
 
     String createQuest(JSONObject assetCollection, JSONObject tokData, String id_O, Integer index, String id_Prob, String id_FC, String id_FQ, JSONObject probData);
 

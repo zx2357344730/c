@@ -3920,7 +3920,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                             date.put("grpUNum",queryId.getJSONObject(dep).getInteger(grpB));
                         } else {
                             date.put("grpUNum",1);
-                            System.out.println("grpUNum信息为空-默认-人数写入:");
+//                            System.out.println("grpUNum信息为空-默认-人数写入:");
                         }
                     }
                     else {
@@ -3929,7 +3929,7 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                         if (null == as || null == as.getChkin() || null == as.getChkin().getJSONObject("objChkin")) {
                             date.put("grpUNum",1);
                             depIdData.put(grpB,1);
-                            System.out.println("Asset为空-默认-人数写入:");
+//                            System.out.println("Asset为空-默认-人数写入:");
                         }
                         else {
                             JSONObject objChkin = as.getChkin().getJSONObject("objChkin");
@@ -3939,14 +3939,14 @@ public class TimeZjServiceImplX extends TimeZj implements TimeZjService {
                                 JSONObject wnUser = grpBChkData.getJSONObject("wnUser");
                                 if (null!= wnUser && wnUser.containsKey(teStart+"")) {
                                     depIdData.put(grpB,wnUser.getInteger(teStart+""));
-                                    System.out.println("最新人数写入:");
+//                                    System.out.println("最新人数写入:");
                                 } else {
                                     if (null != wn0UserCount && wn0UserCount > 0) {
                                         depIdData.put(grpB,wn0UserCount);
 //                                        System.out.println("wn0UserCount-人数写入:");
                                     } else {
                                         depIdData.put(grpB,1);
-                                        System.out.println("wn0UserCount为空-默认-人数写入:");
+//                                        System.out.println("wn0UserCount为空-默认-人数写入:");
                                     }
                                 }
                             }
