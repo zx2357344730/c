@@ -953,7 +953,7 @@ public class FlowNewServiceImpl implements FlowNewService {
                         if (null != as1 && null != as1.getDef() && null != as1.getDef().getJSONObject("objlBP") && null != as1.getDef().getJSONObject("objlBP").getJSONObject(grpB)) {
                             grpName = as1.getDef().getJSONObject("objlBP").getJSONObject(grpB).getJSONObject("wrdN").getString("cn");
                         } else {
-                            grpName = "为空-prodCompId:"+prodCompId+"-grpB:"+grpB;
+                            grpName = "分组待定";
                         }
                         orderName.put("cn", upperAction.getRefOP() + " 派工单-00" + casItemData.size()+":" +grpName);
                     } else {

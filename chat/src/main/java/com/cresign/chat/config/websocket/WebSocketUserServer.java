@@ -563,7 +563,6 @@ public class WebSocketUserServer implements RocketMQListener<String> {
                 // 不为空则判断 传过来的 refreshToken 是否与 redis中的 refreshToken一致
                 if (refreshTokenResult.equals(id_U)) {
                     JSONObject rdSet = qt.getRDSet(clientType + "Token", token);
-                    qt.errPrint("rdSet", null, rdSet, clientType, token);
                     if (rdSet == null) {
                         // 通过id_U查询该用户
                         User user = qt.getMDContent(id_U, qt.strList("info", "rolex."+ id_C), User.class);

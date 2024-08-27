@@ -676,7 +676,7 @@ public class ZjTestController {
             return zjService.aiQuestingDeepSeekByObj(
                     tokData,resJson.getJSONObject("descObj"),
                     resJson.getString("lang"),
-                    resJson.getString("theOriginal"));
+                    resJson.getString("langOld"));
         } catch (Exception e) {
             return getUserToken.err(new JSONObject(), "ZjTestController.aiQuestingDeepSeekByObj", e);
         }

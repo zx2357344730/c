@@ -73,6 +73,19 @@ public interface SetAuthService {
      */
 //    ApiResponse updateDefCard(String id_U, String id_C, JSONObject defData);
 
+        /**
+         * 切换公司接口特殊
+         * @author JackSon
+         * @param id_U          用户id
+         * @param id_C          公司id
+         * @param clientType    客户端类型
+         * @ver 1.0
+         * @createDate: 2020/8/10 17:00
+         * @return java.lang.String
+         */
+        ApiResponse switchCompSpecial(String id_U, String id_C
+    //            ,String grpU
+                ,String clientType);
     /**
      * 更新id_AUN卡数据
      * @author Kevin

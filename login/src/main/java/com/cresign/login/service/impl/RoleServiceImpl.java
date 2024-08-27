@@ -463,6 +463,7 @@ public class RoleServiceImpl implements RoleService {
                     result.getJSONObject("card").remove("role");
                     result.getJSONObject("card").remove("def");
                     result.getJSONObject("card").remove("control");
+                    result.getJSONObject("card").remove("locSetup");
                     result.getJSONObject("card").remove("setPdf");
                     result.getJSONObject("card").remove("cTrigger");
                     result.getJSONObject("card").remove("chgSupp");

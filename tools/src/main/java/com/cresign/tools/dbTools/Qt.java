@@ -1674,7 +1674,6 @@ public class Qt {
 
                 hit.getSourceAsMap().put("tmd", DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
                 hit.getSourceAsMap().putAll(listCol);
-
                 bulk.add(new UpdateRequest(listType, hit.getId()).doc(hit.getSourceAsMap()));
 
             }
