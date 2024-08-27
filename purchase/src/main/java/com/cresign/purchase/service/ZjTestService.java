@@ -229,9 +229,11 @@ public interface ZjTestService {
 
     ApiResponse setStFt(String id_O,JSONObject setObj);
 
-    ApiResponse genJoinGroupCode(String id_C);
+    ApiResponse genJoinGroupCode(String id_C,String id_FC,String id_U,String grpU,String id_APP);
 
     ApiResponse scanJoinGroupCode(String id_U,String token);
+
+    ApiResponse exitGroup(String id_U,String id_C,String id_FC);
 
     ApiResponse updateOrderLDG(String id_O,String id_C);
 
@@ -239,7 +241,7 @@ public interface ZjTestService {
 
     ApiResponse getFCStop(String id_A);
 
-    ApiResponse setFCStop(String id_A,int index,boolean stop);
+    ApiResponse setFCStop(String id_A,String id_FC,boolean stop);
 
     ApiResponse updateFC2(String id_A, String id_C, JSONArray requestJsonArr) throws IOException;
 }

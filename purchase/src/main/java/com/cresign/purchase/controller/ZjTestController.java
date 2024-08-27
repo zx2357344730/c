@@ -742,10 +742,57 @@ public class ZjTestController {
     public ApiResponse setFCStop(@RequestBody JSONObject resJson) {
 //        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
         try {
-            return zjService.setFCStop(resJson.getString("id_A"),resJson.getInteger("index")
+            return zjService.setFCStop(resJson.getString("id_A"),resJson.getString("id_FC")
                     ,resJson.getBoolean("stop"));
         } catch (Exception e) {
             return getUserToken.err(new JSONObject(), "ZjTestController.setFCStop", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/updateFC2")
+    public ApiResponse updateFC2(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.updateFC2(resJson.getString("id_A"),resJson.getString("id_C")
+                    ,resJson.getJSONArray("requestJsonArr"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.updateFC2", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/genJoinGroupCode")
+    public ApiResponse genJoinGroupCode(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.genJoinGroupCode(resJson.getString("id_C"),resJson.getString("id_FC")
+                    ,resJson.getString("id_U"),resJson.getString("grpU"),resJson.getString("id_APP"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.genJoinGroupCode", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/scanJoinGroupCode")
+    public ApiResponse scanJoinGroupCode(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.scanJoinGroupCode(resJson.getString("id_U"),resJson.getString("token"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.scanJoinGroupCode", e);
+        }
+    }
+
+    @SecurityParameter
+    @PostMapping("/v1/exitGroup")
+    public ApiResponse exitGroup(@RequestBody JSONObject resJson) {
+//        JSONObject tokData = getUserToken.getTokenData(request.getHeader("authorization"), request.getHeader("clientType"));
+        try {
+            return zjService.exitGroup(resJson.getString("id_U"),resJson.getString("id_C")
+                    ,resJson.getString("id_FC"));
+        } catch (Exception e) {
+            return getUserToken.err(new JSONObject(), "ZjTestController.exitGroup", e);
         }
     }
 }

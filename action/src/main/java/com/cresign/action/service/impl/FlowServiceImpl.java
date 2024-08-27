@@ -1936,7 +1936,8 @@ public class FlowServiceImpl implements FlowService {
 //            recurCheckList.put(id_P, "");
         Prod prod = qt.getMDContent(id_P, Arrays.asList("info", "part"), Prod.class);
 
-        if (prod.getPart() == null || prod.getPart().getJSONArray("objItem").size() == 0)
+        if (null == prod || null == prod.getPart() || null == prod.getPart().getJSONArray("objItem")
+                || prod.getPart().getJSONArray("objItem").size() == 0)
         {
             return retResult.ok(CodeEnum.OK.getCode(), new JSONArray());
         }

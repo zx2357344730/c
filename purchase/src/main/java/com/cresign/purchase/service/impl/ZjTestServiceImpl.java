@@ -2550,59 +2550,6 @@ public class ZjTestServiceImpl implements ZjTestService {
         return retResult.ok(CodeEnum.OK.getCode(),oDate);
     }
 
-    @Override
-    public ApiResponse genJoinGroupCode(String id_C) {
-//        String QR_URL = "https://www.cresign.cn/qrCode?qrType=qrJoinGroup&t=";
-        String QR_URL = "http://127.0.0.1:8080/qrCode?qrType=qrJoinGroup&t=";
-        String token = UUID19.uuid();
-
-        qt.setRDSet("join_group",token,id_C,60L);
-        String url = QR_URL + token;
-        return retResult.ok(CodeEnum.OK.getCode(), url);
-    }
-
-    @Override
-    public ApiResponse scanJoinGroupCode(String id_U, String token) {
-        String join_group = qt.getRDSetStr("join_group", token);
-        if (null == join_group) {
-            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.ADDINDEX_ERROR.getCode(),null);
-        }
-        User user = qt.getMDContent(id_U,qt.strList("info"), User.class);
-        if (user == null) {
-            throw new ErrorResponseException(HttpStatus.FORBIDDEN, CodeEnum.FORBIDDEN.getCode(), null);
-        }
-        UserInfo userInfo = user.getInfo();
-        // 创建日志
-        LogFlow logFlow = new LogFlow();
-        // 设置日志基础属性
-        logFlow.setImp(3);
-        logFlow.setLogType("join");
-        logFlow.setSubType("group");
-        logFlow.setZcndesc("加入群");
-        logFlow.setId_U(id_U);
-        logFlow.setId_Us(qt.setArray(id_U));
-        logFlow.setId_C(join_group);
-        logFlow.setWrdN(userInfo.getWrdN());
-        logFlow.setWrdNU(userInfo.getWrdNReal());
-        logFlow.setPic(userInfo.getPic());
-        logFlow.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-        // 创建日志详细数据
-        JSONObject data = new JSONObject();
-        // 设置日志详细数据
-        data.put("date",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
-        data.put("type","normal");
-        data.put("chkType","normal");
-        data.put("locLat","0");
-        data.put("locLong","0");
-        // 获取当前时间日期
-        LocalDate date = getDate(data.getString("date"));
-        // 添加当前时间日期
-        data.put("theSameDay",date.getYear()+"/"+ date.getMonthValue()+"/"+ date.getDayOfMonth());
-        logFlow.setData(data);
-        ws.sendWS(logFlow);
-        return retResult.ok(CodeEnum.OK.getCode(), "打卡成功");
-    }
-
     private ApiResponse createTempFileSetData(JSONObject aArrange,String aId){
         try {
             File tempFile = File.createTempFile(".json", "");
@@ -2693,13 +2640,174 @@ public class ZjTestServiceImpl implements ZjTestService {
     }
 
     @Override
+    public ApiResponse genJoinGroupCode(String id_C,String id_FC,String id_U,String grpU,String id_APP) {
+//        String QR_URL = "https://www.cresign.cn/qrCode?qrType=qrJoinGroup&t=";
+        String QR_URL = "http://127.0.0.1:8080/qrCode?qrType=qrJoinGroup&t=";
+        String token = UUID19.uuid();
+
+//        qt.setRDSet("join_group",token,id_C,60L);
+        qt.putRDHashMany("join_group", token, qt.setJson("id_C",id_C,"id_FC",id_FC
+                ,"id_U",id_U,"grpU",grpU,"id_APP",null==id_APP?"":id_APP), 300L);
+        String url = QR_URL + token;
+        return retResult.ok(CodeEnum.OK.getCode(), url);
+    }
+
+    @Override
+    public ApiResponse scanJoinGroupCode(String id_U, String token) {
+//        String join_group = qt.getRDSetStr("join_group", token);
+        if (!qt.hasRDKey("join_group", token)) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"加入群二维码已过期");
+        }
+        JSONObject join_group = qt.toJson(qt.getRDHashAll("join_group", token));
+        if (null == join_group) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"加入群二维码已过期");
+        }
+        User user = qt.getMDContent(id_U,qt.strList("info"), User.class);
+        if (user == null) {
+            throw new ErrorResponseException(HttpStatus.FORBIDDEN, ErrEnum.LOG_GET_DATA_NULL.getCode(), "获取数据库数据为空");
+        }
+        UserInfo userInfo = user.getInfo();
+        // 创建日志
+        LogFlow logFlow = new LogFlow();
+        // 设置日志基础属性
+        logFlow.setImp(3);
+        logFlow.setLogType("join");
+        logFlow.setSubType("group");
+        logFlow.setZcndesc("加入群");
+        logFlow.setId_U(id_U);
+        logFlow.setId_Us(qt.setArray(id_U));
+        logFlow.setId_C(join_group.getString("id_C"));
+        logFlow.setWrdN(userInfo.getWrdN());
+        logFlow.setWrdNU(userInfo.getWrdNReal());
+        logFlow.setPic(userInfo.getPic());
+        logFlow.setTmd(DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        // 创建日志详细数据
+        JSONObject data = new JSONObject();
+        // 设置日志详细数据
+        data.put("date",DateUtils.getDateNow(DateEnum.DATE_TIME_FULL.getDate()));
+        data.put("type","normal");
+        data.put("chkType","normal");
+        data.put("locLat","0");
+        data.put("locLong","0");
+        // 获取当前时间日期
+        LocalDate date = getDate(data.getString("date"));
+        // 添加当前时间日期
+        data.put("theSameDay",date.getYear()+"/"+ date.getMonthValue()+"/"+ date.getDayOfMonth());
+        logFlow.setData(data);
+//        ws.sendWS(logFlow);
+        Asset asset = qt.getConfig(join_group.getString("id_C"), "a-auth", "flowControl.objData");
+        if (null == asset || null == asset.getFlowControl() || null == asset.getFlowControl().getJSONArray("objData")) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"asset数据为空");
+        }
+        JSONArray objData = asset.getFlowControl().getJSONArray("objData");
+        String id_FC = join_group.getString("id_FC");
+        String id_UJoin = join_group.getString("id_U");
+        String grpU = join_group.getString("grpU");
+        String id_APP = join_group.getString("id_APP");
+        boolean isJoin = false;
+        for (int i = 0; i < objData.size(); i++) {
+            JSONObject groupData = objData.getJSONObject(i);
+            if (groupData.getString("id").equals(id_FC)) {
+                JSONArray objUser = groupData.getJSONArray("objUser");
+                for (int j = 0; j < objUser.size(); j++) {
+                    JSONObject userData = objUser.getJSONObject(j);
+                    if (userData.getString("id_U").equals(id_UJoin)) {
+                        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"你已经加入过该群");
+                    }
+                }
+                objUser.add(qt.setJson("id_U",id_UJoin,"id_APP",null==id_APP?"":id_APP,"imp",3));
+                JSONObject setJson = qt.setJson("flowControl.objData." + i + ".objUser", objUser);
+                JSONArray grpUArr = groupData.getJSONArray("grpU");
+                boolean isGrpU = false;
+                for (int j = 0; j < grpUArr.size(); j++) {
+                    if (grpU.equals(grpUArr.getString(j))) {
+                        isGrpU = true;
+                        break;
+                    }
+                }
+                if (!isGrpU) {
+                    grpUArr.add(grpU);
+                    setJson.put("flowControl.objData." + i + ".grpU", grpUArr);
+                }
+                boolean isUm = false;
+                JSONArray id_UM = groupData.getJSONArray("id_UM");
+                for (int j = 0; j < id_UM.size(); j++) {
+                    if (id_UM.getString(j).equals(id_UJoin)) {
+                        isUm = true;
+                        break;
+                    }
+                }
+                if (!isUm) {
+                    id_UM.add(id_UJoin);
+                    setJson.put("flowControl.objData." + i + ".id_UM", id_UM);
+                }
+                qt.setMDContent(asset.getId(),setJson, Asset.class);
+                isJoin = true;
+                break;
+            }
+        }
+        if (!isJoin) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"加入群失败");
+        }
+        return retResult.ok(CodeEnum.OK.getCode(), "加入群成功");
+    }
+
+    @Override
+    public ApiResponse exitGroup(String id_U,String id_C,String id_FC) {
+        Asset asset = qt.getConfig(id_C, "a-auth", "flowControl.objData");
+        if (null == asset || null == asset.getFlowControl() || null == asset.getFlowControl().getJSONArray("objData")) {
+            throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"asset数据为空");
+        }
+        JSONArray objData = asset.getFlowControl().getJSONArray("objData");
+        for (int i = 0; i < objData.size(); i++) {
+            JSONObject groupData = objData.getJSONObject(i);
+            if (groupData.getString("id").equals(id_FC)) {
+                JSONArray objUser = groupData.getJSONArray("objUser");
+                int exitIndex = -1;
+                for (int j = 0; j < objUser.size(); j++) {
+                    JSONObject userData = objUser.getJSONObject(j);
+                    if (userData.getString("id_U").equals(id_U)) {
+                        exitIndex = j;
+                        break;
+                    }
+                }
+                JSONObject setJson = new JSONObject();
+                int umIndex = -1;
+                JSONArray id_UM = groupData.getJSONArray("id_UM");
+                for (int j = 0; j < id_UM.size(); j++) {
+                    if (id_UM.getString(j).equals(id_U)) {
+                        umIndex = j;
+                        break;
+                    }
+                }
+                if (umIndex!=-1) {
+                    id_UM.remove(umIndex);
+                    setJson.put("flowControl.objData." + i + ".id_UM", id_UM);
+                }
+                if (exitIndex == -1) {
+                    throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"用户不在该群");
+                } else {
+                    objUser.remove(exitIndex);
+                    setJson.put("flowControl.objData." + i + ".objUser", objUser);
+                    qt.setMDContent(asset.getId(),setJson, Asset.class);
+                    return retResult.ok(CodeEnum.OK.getCode(), "退出群成功");
+                }
+            }
+        }
+        throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"群编号不存在");
+    }
+
+    @Override
     public ApiResponse addFC(String id_A,String id_C, JSONObject requestJson) {
 //        qt.pullMDContent(id_A, "flowControl.objData", requestJson, Asset.class);
-        qt.pushMDContent(id_A, "flowControl.objData", requestJson, Asset.class);
         try {
+            //redis添加群
+            JSONArray objUser = this.setFlowControlUserList(id_C, requestJson.getString("dep")
+                    , requestJson.getJSONArray("grpU"), requestJson.getJSONArray("id_UM"));;
+            requestJson.put("objUser",objUser);
+            qt.pushMDContent(id_A, "flowControl.objData", requestJson, Asset.class);
+
             Asset asset = qt.getMDContent(id_A, "def.objlBP", Asset.class);
-            this.setFlowControlUserList(id_C, requestJson.getString("dep")
-                    , requestJson.getJSONArray("grpU"), requestJson.getJSONArray("id_UM"));
             JSONObject lBProd = asset.getDef().getJSONObject("objlBP");
             this.setFlowControlActionGrpB(requestJson.getJSONArray("grpB")
                     ,requestJson.getString("id_O"), lBProd);
@@ -2720,12 +2828,23 @@ public class ZjTestServiceImpl implements ZjTestService {
     }
 
     @Override
-    public ApiResponse setFCStop(String id_A, int index, boolean stop) {
+    public ApiResponse setFCStop(String id_A, String id_FC, boolean stop) {
         Asset asset = qt.getMDContent(id_A, "flowControl", Asset.class);
         if (null != asset && null != asset.getFlowControl() && null != asset.getFlowControl().getJSONArray("objStop")
                 && null != asset.getFlowControl().getJSONArray("objData")) {
             JSONArray objStop = asset.getFlowControl().getJSONArray("objStop");
             JSONArray objData = asset.getFlowControl().getJSONArray("objData");
+            int index = -1;
+            for (int i = 0; i < objData.size(); i++) {
+                JSONObject data = objData.getJSONObject(i);
+                if (data.getString("id").equals(id_FC)) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index == -1) {
+                throw new ErrorResponseException(HttpStatus.OK, ErrEnum.LOG_FAILF.getCode(),"群不存在!");
+            }
             if (stop) {
                 if (index <= (objData.size() - 1)) {
                     JSONObject dataInfo = objData.getJSONObject(index);

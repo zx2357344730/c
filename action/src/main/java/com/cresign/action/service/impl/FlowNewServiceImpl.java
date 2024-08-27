@@ -949,8 +949,12 @@ public class FlowNewServiceImpl implements FlowNewService {
                 if (prodCompId.equals(myCompId)) {
                     if (isDivideGrp) {
                         Asset as1 = qt.getConfig(prodCompId, "a-auth", "def.objlBP."+grpB+".wrdN");
-                        String grpName = as1.getDef().getJSONObject("objlBP").getJSONObject(grpB).getJSONObject("wrdN").getString("cn");
-
+                        String grpName;
+                        if (null != as1 && null != as1.getDef() && null != as1.getDef().getJSONObject("objlBP") && null != as1.getDef().getJSONObject("objlBP").getJSONObject(grpB)) {
+                            grpName = as1.getDef().getJSONObject("objlBP").getJSONObject(grpB).getJSONObject("wrdN").getString("cn");
+                        } else {
+                            grpName = "为空-prodCompId:"+prodCompId+"-grpB:"+grpB;
+                        }
                         orderName.put("cn", upperAction.getRefOP() + " 派工单-00" + casItemData.size()+":" +grpName);
                     } else {
                         orderName.put("cn", upperAction.getRefOP() + " 派工单-00" + casItemData.size());
